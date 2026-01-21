@@ -5,11 +5,40 @@ import { log } from "@/utils/logger";
  * Tüm kategorileri getirir.
  */
 export async function getCategories() {
-    const response = await serverFetch("/categories", { next: { revalidate: 10 } });
+    log("[API home.js] getCategories: İstek gönderiliyor - URL: /categories");
+
+
+    const response = await serverFetch("/categories", {
+        next: { revalidate: 0 }, // Cache'i devre dışı bırak
+        cache: "no-store" // Cache'i tamamen devre dweışı bırak
+    });
+
+    log("[API home.js] getCategories: API cevabı alındı", {
+        hasResponse: !!response,
+        status: response?.status,
+        dataLength: response?.data ? (Array.isArray(response.data) ? response.data.length : "not array") : "no data",
+        responseTime: response?.response_time,
+        fullResponse: response,
+    });
+
     if (response?.status === "success") {
-        return response.data || [];
+        const categories = response.data || [];
+        log(`[API home.js] getCategories success: ${categories.length} kategori yüklendi`, {
+            categories: categories.map(cat => ({
+                name: cat.name,
+                slug: cat.slug,
+                is_active: cat.is_active,
+            })),
+        });
+        return categories;
     }
-    log("[API home.js] getCategories failed:", response);
+
+    log("[API home.js] getCategories failed:", {
+        status: response?.status,
+        message: response?.message,
+        hasData: !!response?.data,
+        response: response,
+    });
     return [];
 }
 
@@ -19,18 +48,18 @@ export async function getCategories() {
  */
 export async function getBanners() {
     try {
-        // Banner için daha fazla retry (Cloudflare challenge için)
-        const response = await serverFetch("/banners?type=slider", { 
+        // Banner için retry
+        const response = await serverFetch("/banners?type=slider", {
             cache: "no-store",
-            retries: 5, // Banner için 5 retry (Cloudflare challenge için)
+            retries: 2, // Banner için 2 retry
         });
-        
+
         // serverFetch hata durumunda null döndürür
         if (!response) {
             log("[API home.js] getBanners: API response is null (serverFetch returned null)");
             return [];
         }
-        
+
         if (response?.status === "success") {
             const banners = response.data || [];
             if (banners.length > 0) {
@@ -38,7 +67,7 @@ export async function getBanners() {
             }
             return banners;
         }
-        
+
         // API'den error response geldi
         log("[API home.js] getBanners failed:", {
             status: response?.status,
@@ -62,16 +91,16 @@ export async function getBanners() {
  */
 export async function getCollectionBanner() {
     try {
-        const response = await serverFetch("/banners?type=collectionbanner", { 
-            next: { revalidate: 0 } 
+        const response = await serverFetch("/banners?type=collectionbanner", {
+            next: { revalidate: 0 }
         });
-        
+
         // serverFetch hata durumunda null döndürür
         if (!response) {
             log("[API home.js] getCollectionBanner: API response is null (serverFetch returned null)");
             return null;
         }
-        
+
         if (response?.status === "success" && response.data) {
             // API'den dizi gelirse ilk elemanı, obje gelirse direkt döndür
             const banner = Array.isArray(response.data) ? response.data[0] : response.data;
@@ -80,7 +109,7 @@ export async function getCollectionBanner() {
                 return banner;
             }
         }
-        
+
         // API'den error response geldi
         log("[API home.js] getCollectionBanner failed:", {
             status: response?.status,
@@ -104,16 +133,16 @@ export async function getCollectionBanner() {
  */
 export async function getCollections() {
     try {
-        const response = await serverFetch("/banners?type=collections", { 
-            next: { revalidate: 0 } 
+        const response = await serverFetch("/banners?type=collections", {
+            next: { revalidate: 0 }
         });
-        
+
         // serverFetch hata durumunda null döndürür
         if (!response) {
             log("[API home.js] getCollections: API response is null (serverFetch returned null)");
             return [];
         }
-        
+
         if (response?.status === "success") {
             const collections = Array.isArray(response.data) ? response.data : (response.data ? [response.data] : []);
             if (collections.length > 0) {
@@ -121,7 +150,7 @@ export async function getCollections() {
             }
             return collections;
         }
-        
+
         // API'den error response geldi
         log("[API home.js] getCollections failed:", {
             status: response?.status,
@@ -151,11 +180,11 @@ export async function getTopbar() {
     if (response?.status === "success") {
         const data = response.data || [];
         const isActive = !!response.is_active;
-        
+
         if (isActive && data.length > 0) {
             log(`[API home.js] getTopbar success: ${data.length} topbar item(s) loaded`);
         }
-        
+
         return {
             data,
             isActive

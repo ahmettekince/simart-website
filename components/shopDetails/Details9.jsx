@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import Slider5 from "./sliders/Slider5";
 import { openCartModal } from "@/utils/openCartModal";
 import Image from "next/image";
@@ -8,13 +9,109 @@ import { colors, paymentImages, sizeOptions } from "@/data/singleProductOptions"
 import StickyItem from "./StickyItem";
 import Quantity from "./Quantity";
 import { useContextElement } from "@/context/Context";
+import { useCartStore } from "@/stores/cartStore";
 export default function Details9({ product }) {
   const [currentColor, setCurrentColor] = useState(colors[0]);
-  const [currentSize, setCurrentSize] = useState(sizeOptions[0]);
-  const minQuantity = product.min_purchase_quantity || 1;
-  const maxQuantity =
-    product.max_purchase_quantity && product.max_purchase_quantity > 0 ? product.max_purchase_quantity : null;
+  const { addItem } = useCartStore();
+  const cartItems = useCartStore((s) => s.items);
+  const [isAdding, setIsAdding] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  // Trendyol tarzı animasyonlu mesajlar
+  const announcementMessages = useMemo(() => {
+    const messages = [
+      "Geç kalma! 56 kişi bu ürünü sepetine ekledi.",
+      "Son 24 saatte 120 kişi bu ürünü satın aldı.",
+      "Stokta sadece 5 adet kaldı!",
+      "Bu ürünü 340 kişi beğendi.",
+      "Hızlı kargo ile 1-2 gün içinde kapında!",
+    ];
+    return messages;
+  }, []);
+
+  const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  useEffect(() => {
+    if (announcementMessages.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setIsAnimating(true);
+      // Animasyon başladıktan sonra index'i değiştir
+      setTimeout(() => {
+        setCurrentMessageIndex((prev) => (prev + 1) % announcementMessages.length);
+        // Animasyon bitince animating state'ini sıfırla
+        setTimeout(() => {
+          setIsAnimating(false);
+        }, 50);
+      }, 300); // Animasyon süresi
+    }, 4000); // Her 4 saniyede bir değiş
+
+    return () => clearInterval(interval);
+  }, [announcementMessages.length]);
+
+  // Sadece API varyasyonları varsa göster; yoksa varyasyon alanı hiç render olmasın
+  const hasVariations = useMemo(() => {
+    return product && Array.isArray(product.variations) && product.variations.length > 0;
+  }, [product?.variations]);
+
+  // Ana ürün varyasyonu (kendi ürünü), sadece API varyasyonları varsa kullan
+  const baseVariation = useMemo(() => {
+    if (!product || !hasVariations) return null;
+    const categorySlug =
+      product.primary_category?.slug || (Array.isArray(product.categories) && product.categories[0]?.slug) || "urunler";
+    return {
+      name: product.name || product.title || "",
+      slug: product.slug || "",
+      category_slug: categorySlug,
+      is_in_stock: product.is_in_stock,
+      is_pre_order: product.is_pre_order,
+    };
+  }, [product, hasVariations]);
+
+  // API'den gelen varyasyonlar + ana ürün (sadece API varyasyonu varsa)
+  const allVariations = useMemo(() => {
+    if (!hasVariations) return [];
+    const list = [];
+    if (baseVariation && baseVariation.slug) {
+      list.push(baseVariation);
+    }
+    product.variations.forEach((variation) => {
+      if (!variation) return;
+      const slug = variation.slug || "";
+      const category_slug = variation.category_slug || baseVariation?.category_slug || "urunler";
+      // Ana ürünle aynı slug + kategori ise tekrar ekleme
+      if (baseVariation && slug === baseVariation.slug && category_slug === baseVariation.category_slug) {
+        return;
+      }
+      list.push({
+        ...variation,
+        slug,
+        category_slug,
+      });
+    });
+    return list;
+  }, [product, baseVariation, hasVariations]);
+
+  const [currentVariation, setCurrentVariation] = useState(hasVariations ? allVariations[0] : null);
+
+  useEffect(() => {
+    if (hasVariations && allVariations.length > 0) setCurrentVariation(allVariations[0]);
+    else setCurrentVariation(null);
+  }, [hasVariations, allVariations]);
+
+  // Min/Max: API ne veriyorsa onu uygula (min=min, max=max). max < min gelirse max=min.
+  const minQuantity = Number.isFinite(product?.min_purchase_quantity) ? Number(product.min_purchase_quantity) : 1;
+  const rawMax =
+    product?.max_purchase_quantity === null || product?.max_purchase_quantity === undefined
+      ? null
+      : Number(product.max_purchase_quantity);
+  const maxQuantity = rawMax === null || Number.isNaN(rawMax) ? null : Math.max(rawMax, minQuantity);
   const [quantity, setQuantity] = useState(minQuantity);
+
+  const existingCartItem = useMemo(() => {
+    return cartItems?.find((it) => it?.product?.id === product?.id || it?.id === product?.id) || null;
+  }, [cartItems, product?.id]);
 
   // Süreli indirim kontrolü
   const timeBasedDiscount = useMemo(() => {
@@ -70,6 +167,31 @@ export default function Details9({ product }) {
     addToWishlist,
     isAddedtoWishlist,
   } = useContextElement();
+
+  const handleAddToCartAnimated = async () => {
+    if (isAdding || showSuccess) return;
+
+    // Anasayfadaki gibi: her tık +1 (ilk eklemede min > 1 ise min kadar ekle)
+    const currentQtyInCart = existingCartItem?.quantity || 0;
+    const increment = currentQtyInCart === 0 ? Math.max(1, minQuantity) : 1;
+    const nextQty = currentQtyInCart + increment;
+
+    if (maxQuantity !== null && maxQuantity !== undefined && nextQty > maxQuantity) {
+      alert(`Maksimum sipariş miktarı ${maxQuantity} adettir.`);
+      return;
+    }
+
+    setIsAdding(true);
+    try {
+      await addItem(product, increment, false);
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 2000);
+    } catch (error) {
+      console.error("Sepete ekleme hatası:", error);
+    } finally {
+      setIsAdding(false);
+    }
+  };
   return (
     <section className="flat-spacing-4 pt_0" style={{ maxWidth: "100vw", overflow: "clip" }}>
       <div className="tf-main-product section-image-zoom">
@@ -81,8 +203,7 @@ export default function Details9({ product }) {
                   <Slider5
                     handleColor={handleColor}
                     currentColor={currentColor.value}
-                    firstImage={product.imgSrc}
-                    galleryImages={product.gallery_images || product.images || []}
+                    galleryImages={product.images || product.gallery_images || []}
                     model3dUrl={product.model_3d_url}
                   />
                 </div>
@@ -96,10 +217,23 @@ export default function Details9({ product }) {
                     <h5>{product.title ? product.title : "Cotton jersey top"}</h5>
                   </div>
                   <div className="tf-product-info-badges">
-                    <div className="badges">Best seller</div>
                     <div className="product-status-content">
                       <i className="icon-lightning" />
-                      <p className="fw-6">Geç kalma! 56 kişi bu ürünü sepetine ekledi.</p>
+                      <div className="announcement-messages-wrapper">
+                        {announcementMessages.map((message, idx) => {
+                          const isActive = idx === currentMessageIndex;
+                          const isNext = idx === (currentMessageIndex + 1) % announcementMessages.length;
+                          const isAnimatingOut = isActive && isAnimating;
+                          return (
+                            <p
+                              key={idx}
+                              className={`fw-6 announcement-message ${isActive ? "active" : ""} ${isNext && isAnimating ? "next" : ""} ${isAnimatingOut ? "animating-out" : ""}`}
+                            >
+                              {message}
+                            </p>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                   <div className="tf-product-info-price">
@@ -118,10 +252,7 @@ export default function Details9({ product }) {
                       </div>
                     )}
                   </div>
-                  <div className="tf-product-info-liveview">
-                    <div className="liveview-count">20</div>
-                    <p className="fw-6"> Kişi şu anda bu ürünü inceliyor</p>
-                  </div>
+
                   {timeBasedDiscount && countdownTargetDate && (
                     <div className="tf-product-info-countdown">
                       <div className="countdown-wrap">
@@ -140,70 +271,70 @@ export default function Details9({ product }) {
                       </div>
                     </div>
                   )}
-                  <div className="tf-product-info-variant-picker">
-                    <div className="variant-picker-item"></div>
-                    <div className="variant-picker-item">
-                      <div className="d-flex justify-content-between align-items-center">
-                        <div className="variant-picker-label">
-                          Size: <span className="fw-6 variant-picker-label-value">{currentSize.value}</span>
-                        </div>
-                        <a href="#find_size" data-bs-toggle="modal" className="find-size fw-6">
-                          Find your size
-                        </a>
+                  {hasVariations && (
+                    <div className="tf-product-info-variant-picker">
+                      <div className="variant-picker-item"></div>
+                      <div className="variant-picker-item">
+                        <form className="variant-picker-values">
+                          {allVariations.map((variation, idx) => {
+                            const inputId = `variation-${idx}`;
+                            const isActive =
+                              currentVariation &&
+                              (currentVariation.slug === variation.slug || currentVariation.name === variation.name);
+                            const variationUrl = `/magaza/${variation.category_slug || "urunler"}/${variation.slug || ""
+                              }`;
+                            return (
+                              <React.Fragment key={variation.slug || variation.name || idx}>
+                                <input type="radio" name="variation" id={inputId} readOnly checked={isActive} />
+                                <label
+                                  onClick={() => {
+                                    if (!isActive) setCurrentVariation(variation);
+                                  }}
+                                  className="style-text"
+                                  htmlFor={inputId}
+                                  data-value={variation.slug || variation.name}
+                                >
+                                  <p>
+                                    <Link href={variationUrl}>{variation.name}</Link>
+                                  </p>
+                                </label>
+                              </React.Fragment>
+                            );
+                          })}
+                        </form>
                       </div>
-                      <form className="variant-picker-values">
-                        {sizeOptions.map((size) => (
-                          <React.Fragment key={size.id}>
-                            <input type="radio" name="size1" id={size.id} readOnly checked={currentSize == size} />
-                            <label
-                              onClick={() => setCurrentSize(size)}
-                              className="style-text"
-                              htmlFor={size.id}
-                              data-value={size.value}
-                            >
-                              <p>{size.value}</p>
-                            </label>
-                          </React.Fragment>
-                        ))}
-                      </form>
                     </div>
-                  </div>
+                  )}
                   <div className="tf-product-info-quantity">
-                    <div className="quantity-title fw-6">Quantity</div>
-                    <Quantity
-                      setQuantity={setQuantity}
-                      minQuantity={product.min_purchase_quantity || 1}
-                      maxQuantity={product.max_purchase_quantity || null}
-                    />
+                    <Quantity setQuantity={setQuantity} minQuantity={minQuantity} maxQuantity={maxQuantity} />
                   </div>
                   <div className="tf-product-info-buy-button">
                     <form onSubmit={(e) => e.preventDefault()} className="">
-                      <a
-                        onClick={() => {
-                          // Miktar kontrolü
-                          const finalQuantity = Math.max(
-                            minQuantity,
-                            maxQuantity && maxQuantity > 0 ? Math.min(quantity, maxQuantity) : quantity
-                          );
-                          openCartModal();
-                          addProductToCart(product.id, finalQuantity);
-                        }}
-                        className="tf-btn btn-fill justify-content-center fw-6 fs-16 flex-grow-1 animate-hover-btn "
-                      >
-                        <span> {isAddedToCartProducts(product.id) ? "Zaten Eklendi" : "Sepete Ekle"} - </span>
-                        <span className="tf-qty-price">₺{(finalPrice * quantity).toLocaleString("tr-TR")}</span>
-                      </a>
-                      <a
-                        onClick={() => addToWishlist(product.id)}
-                        className="tf-product-btn-wishlist hover-tooltip box-icon bg_white wishlist btn-icon-action"
-                      >
-                        <span className={`icon icon-heart ${isAddedtoWishlist(product.id) ? "added" : ""}`} />
-                        <span className="tooltip">
-                          {" "}
-                          {isAddedtoWishlist(product.id) ? "Already Wishlisted" : "Add to Wishlist"}
-                        </span>
-                        <span className="icon icon-delete" />
-                      </a>
+                      <div className="tf-product-buy-actions">
+                        <button
+                          type="button"
+                          onClick={handleAddToCartAnimated}
+                          disabled={isAdding || showSuccess}
+                          className={`main-cart-btn ${showSuccess ? "success-animation" : ""}`}
+                          style={{ opacity: 1 }}
+                        >
+                          <span className="button-text-main">
+                            {showSuccess ? "Sepete Eklendi" : isAdding ? "Ekleniyor..." : "Sepete Ekle"}
+                          </span>
+                          {showSuccess && <span className="button-text-slide">Sepete Eklendi</span>}
+                        </button>
+                        <a
+                          onClick={() => addToWishlist(product.id)}
+                          className="tf-product-btn-wishlist hover-tooltip box-icon bg_white wishlist btn-icon-action wish-action-btn"
+                        >
+                          <span className={`icon icon-heart ${isAddedtoWishlist(product.id) ? "added" : ""}`} />
+                          <span className="tooltip">
+                            {" "}
+                            {isAddedtoWishlist(product.id) ? "Already Wishlisted" : "Add to Wishlist"}
+                          </span>
+                          <span className="icon icon-delete" />
+                        </a>
+                      </div>
 
                       {/* <div className="w-100">
                         <a href="#" className="btns-full">
@@ -221,6 +352,193 @@ export default function Details9({ product }) {
                       </div> */}
                     </form>
                   </div>
+
+                  <style jsx global>{`
+                    /* Trendyol tarzı animasyonlu mesajlar */
+                    .product-status-content {
+                      position: relative;
+                      display: flex;
+                      align-items: center;
+                      gap: 8px;
+                      overflow: hidden;
+                      min-height: 24px;
+                    }
+
+                    .announcement-messages-wrapper {
+                      position: relative;
+                      flex: 1;
+                      overflow: hidden;
+                      min-height: 24px;
+                    }
+
+                    .announcement-message {
+                      position: absolute;
+                      top: 0;
+                      left: 0;
+                      width: 100%;
+                      opacity: 0;
+                      transform: translateY(100%);
+                      transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                        transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                      white-space: nowrap;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                      pointer-events: none;
+                    }
+
+                    .announcement-message.active {
+                      opacity: 1;
+                      transform: translateY(0);
+                      position: relative;
+                      pointer-events: auto;
+                    }
+
+                    /* Animasyon sırasında aktif mesaj yukarı kayıyor */
+                    .announcement-message.active.animating-out {
+                      opacity: 0;
+                      transform: translateY(-100%);
+                      position: absolute;
+                    }
+
+                    /* Yeni mesaj alttan geliyor */
+                    .announcement-message.next {
+                      opacity: 1;
+                      transform: translateY(0);
+                      position: relative;
+                      pointer-events: auto;
+                    }
+
+                    /* Varyasyon butonları: arkaplan beyaz, yazı siyah, gölge yok */
+                    .tf-product-info-variant-picker .variant-picker-values .style-text {
+                      background: #fff !important;
+                      color: #000 !important;
+                      border: 1px solid #e5e7eb !important;
+                      box-shadow: none !important;
+                    }
+                    /* Sadece seçili OLMAYAN varyasyonlarda hover border yansın */
+                    .tf-product-info-variant-picker
+                      .variant-picker-values
+                      input[type="radio"]:not(:checked)
+                      + .style-text:hover {
+                      border-color: #111 !important;
+                    }
+                    .tf-product-info-variant-picker .variant-picker-values .style-text p,
+                    .tf-product-info-variant-picker .variant-picker-values .style-text a {
+                      color: #000 !important;
+                    }
+                    /* Seçili varyasyon: hafif soluk, tıklanamaz, hover efekti yok */
+                    .tf-product-info-variant-picker
+                      .variant-picker-values
+                      input[type="radio"]:checked
+                      + .style-text {
+                      opacity: 0.7;
+                      box-shadow: none !important;
+                      pointer-events: none;
+                    }
+
+                    /* Anasayfa ile aynı Sepete Eklendi animasyonu */
+                    .tf-product-buy-actions {
+                      display: flex;
+                      align-items: center;
+                      gap: 12px;
+                      width: 100%;
+                    }
+
+                    /* Wishlist butonu: anasayfadaki gibi yuvarlak ikon */
+                    .tf-product-buy-actions .wish-action-btn {
+                      width: 44px;
+                      height: 44px;
+                      min-width: 44px;
+                      min-height: 44px;
+                      max-width: 44px;
+                      max-height: 44px;
+                      border-radius: 50%;
+                      border: 1px solid #ddd;
+                      background: #fff;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      cursor: pointer;
+                      padding: 0;
+                    }
+
+                    .main-cart-btn {
+                      height: 44px;
+                      border-radius: 999px;
+                      font-size: 13px;
+                      font-weight: 600;
+                      overflow: hidden;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      padding: 0 16px;
+                      border: 1px solid var(--primary);
+                      background: var(--primary);
+                      color: #fff;
+                      cursor: pointer;
+                      position: relative;
+                      transition: all 0.3s ease;
+                      flex: 1 1 auto;
+                      min-width: 0;
+                    }
+
+                    .main-cart-btn:disabled {
+                      opacity: 1 !important;
+                      cursor: not-allowed;
+                    }
+
+                    .main-cart-btn .button-text-main,
+                    .main-cart-btn .button-text-slide {
+                      width: 100%;
+                      text-align: center;
+                      white-space: nowrap;
+                      overflow: hidden;
+                      text-overflow: ellipsis;
+                    }
+
+                    .main-cart-btn.success-animation {
+                      background: #10b981;
+                      border-color: #10b981;
+                      overflow: hidden;
+                    }
+
+                    .main-cart-btn.success-animation .button-text-main {
+                      opacity: 0;
+                      transform: translateY(100%);
+                      transition: opacity 0.2s, transform 0.2s;
+                    }
+
+                    .main-cart-btn.success-animation .button-text-slide {
+                      position: absolute;
+                      inset: 0;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      padding: 0 16px;
+                      color: #fff;
+                      z-index: 1;
+                      animation: slideUpFromButton 2s cubic-bezier(0.4, 0, 0.2, 1);
+                    }
+
+                    @keyframes slideUpFromButton {
+                      0% {
+                        transform: translateY(100%);
+                        opacity: 0;
+                      }
+                      20% {
+                        transform: translateY(0);
+                        opacity: 1;
+                      }
+                      80% {
+                        transform: translateY(0);
+                        opacity: 1;
+                      }
+                      100% {
+                        transform: translateY(100%);
+                        opacity: 0;
+                      }
+                    }
+                  `}</style>
                   <div className="tf-product-info-extra-link">
                     {/* <a
                       href="#compare_color"
@@ -265,7 +583,7 @@ export default function Details9({ product }) {
                       <div className="text fw-6">Paylaş</div>
                     </a>
                   </div>
-                  <div className="tf-product-info-delivery-return">
+                  {/* <div className="tf-product-info-delivery-return">
                     <div className="row">
                       <div className="col-xl-6 col-12">
                         <div className="tf-product-delivery">
@@ -289,7 +607,7 @@ export default function Details9({ product }) {
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </div> */}
                   <div className="tf-product-info-trust-seal">
                     <div className="tf-product-trust-mess">
                       <i className="icon-safe" />

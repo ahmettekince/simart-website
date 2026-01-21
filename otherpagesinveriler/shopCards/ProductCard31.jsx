@@ -1,24 +1,20 @@
 "use client";
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import { useContextElement } from "@/context/Context";
 import Link from "next/link";
-import CountdownComponent from "../common/Countdown";
-export const ProductCard26 = ({ product }) => {
+import { useContextElement } from "@/context/Context";
+import CountdownComponent from "../../components/common/Countdown";
+export const ProductCard31 = ({ product }) => {
   const [currentImage, setCurrentImage] = useState(product.imgSrc);
   const { setQuickViewItem } = useContextElement();
-  const {
-    setQuickAddItem,
-    addToWishlist,
-    isAddedtoWishlist,
-    addToCompareItem,
-    isAddedtoCompareItem,
-  } = useContextElement();
+  const { setQuickAddItem, addToWishlist, isAddedtoWishlist, addToCompareItem, isAddedtoCompareItem } =
+    useContextElement();
   useEffect(() => {
     setCurrentImage(product.imgSrc);
   }, [product]);
+
   return (
-    <div className="card-product style-7" key={product.id}>
+    <div className="card-product fl-item type-1" key={product.id}>
       <div className="card-product-wrapper">
         <Link href={`/product-detail/${product.id}`} className="product-img">
           <Image
@@ -31,28 +27,26 @@ export const ProductCard26 = ({ product }) => {
           />
           <Image
             className="lazyload img-hover"
-            data-src={product.imgHoverSrc}
-            src={product.imgHoverSrc}
+            data-src={product.imgHoverSrc ? product.imgHoverSrc : product.imgSrc}
+            src={product.imgHoverSrc ? product.imgHoverSrc : product.imgSrc}
             alt="image-product"
             width={720}
             height={1005}
           />
         </Link>
-        <div className="list-product-btn">
+        <div className="list-product-btn absolute-2">
           <a
-            onClick={() => addToWishlist(product.id)}
-            className="box-icon wishlist bg_white round btn-icon-action"
+            href="#quick_add"
+            onClick={() => setQuickAddItem(product.id)}
+            data-bs-toggle="modal"
+            className="box-icon bg_white quick-add tf-btn-loading"
           >
-            <span
-              className={`icon icon-heart ${
-                isAddedtoWishlist(product.id) ? "added" : ""
-              }`}
-            />
-            <span className="tooltip">
-              {isAddedtoWishlist(product.id)
-                ? "Already Wishlisted"
-                : "Add to Wishlist"}
-            </span>
+            <span className="icon icon-bag" />
+            <span className="tooltip">Quick Add</span>
+          </a>
+          <a onClick={() => addToWishlist(product.id)} className="box-icon bg_white wishlist btn-icon-action">
+            <span className={`icon icon-heart ${isAddedtoWishlist(product.id) ? "added" : ""}`} />
+            <span className="tooltip">{isAddedtoWishlist(product.id) ? "Already Wishlisted" : "Add to Wishlist"}</span>
             <span className="icon icon-delete" />
           </a>
           <a
@@ -60,26 +54,17 @@ export const ProductCard26 = ({ product }) => {
             data-bs-toggle="offcanvas"
             aria-controls="offcanvasLeft"
             onClick={() => addToCompareItem(product.id)}
-            className="box-icon wishlist bg_white round btn-icon-action"
+            className="box-icon bg_white compare btn-icon-action"
           >
-            <span
-              className={`icon icon-compare ${
-                isAddedtoCompareItem(product.id) ? "added" : ""
-              }`}
-            />
-            <span className="tooltip">
-              {" "}
-              {isAddedtoCompareItem(product.id)
-                ? "Already Compared"
-                : "Add to Compare"}
-            </span>
+            <span className={`icon icon-compare ${isAddedtoCompareItem(product.id) ? "added" : ""}`} />
+            <span className="tooltip"> {isAddedtoCompareItem(product.id) ? "Already Compared" : "Add to Compare"}</span>
             <span className="icon icon-check" />
           </a>
           <a
             href="#quick_view"
             onClick={() => setQuickViewItem(product)}
             data-bs-toggle="modal"
-            className="box-icon wishlist bg_white round btn-icon-action"
+            className="box-icon bg_white quickview tf-btn-loading"
           >
             <span className="icon icon-view" />
             <span className="tooltip">Quick View</span>
@@ -88,40 +73,30 @@ export const ProductCard26 = ({ product }) => {
         {product.countdown && (
           <div className="countdown-box">
             <div className="js-countdown">
-              <CountdownComponent labels={product.countdown.labels} />
+              <CountdownComponent />
             </div>
           </div>
         )}
         {product.sizes && (
-          <div className="size-list ">
+          <div className="size-list">
             {product.sizes.map((size) => (
               <span key={size}>{size}</span>
             ))}
           </div>
         )}
       </div>
-      <div className="card-product-info">
-        <a
-          href="#quick_add"
-          onClick={() => setQuickAddItem(product.id)}
-          data-bs-toggle="modal"
-          className="btn-quick-add quick-add"
-        >
-          QUICK ADD
-        </a>
+      <div className="card-product-info ">
         <Link href={`/product-detail/${product.id}`} className="title link">
           {product.title}
         </Link>
         <span className="price">${product.price.toFixed(2)}</span>
         {product.colors && (
-          <ul className="list-color-product">
+          <ul className="list-color-product ">
             {product.colors.map((color) => (
               <li
-                className={`list-color-item color-swatch ${
-                  currentImage == color.imgSrc ? "active" : ""
-                } `}
-                onMouseOver={() => setCurrentImage(color.imgSrc)}
+                className={`list-color-item color-swatch ${currentImage == color.imgSrc ? "active" : ""} `}
                 key={color.name}
+                onMouseOver={() => setCurrentImage(color.imgSrc)}
               >
                 <span className="tooltip">{color.name}</span>
                 <span className={`swatch-value ${color.colorClass}`} />

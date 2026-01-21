@@ -1,6 +1,6 @@
 "use client";
 
-import { ProductCardWishlist } from "@/components/shopCards/ProductCardWishlist";
+import { ProductCardWishlist } from "@/otherpagesinveriler/shopCards/ProductCardWishlist";
 import { useContextElement } from "@/context/Context";
 import { allProducts } from "@/data/products";
 import Link from "next/link";
@@ -11,9 +11,7 @@ export default function Wishlist() {
   const [wishListItems, setWishListItems] = useState([]);
   useEffect(() => {
     if (wishList) {
-      setWishListItems(
-        [...allProducts].filter((el) => wishList.includes(el.id))
-      );
+      setWishListItems([...allProducts].filter((el) => wishList.includes(el.id)));
     }
   }, [wishList]);
   return (
@@ -26,13 +24,8 @@ export default function Wishlist() {
       </div>
       {!wishListItems.length && (
         <>
-          <div
-            className="row align-items-center w-100"
-            style={{ rowGap: "20px" }}
-          >
-            <div className="col-lg-3 col-md-6 fs-18">
-              Your wishlist is empty
-            </div>
+          <div className="row align-items-center w-100" style={{ rowGap: "20px" }}>
+            <div className="col-lg-3 col-md-6 fs-18">Your wishlist is empty</div>
             <div className="col-lg-3  col-md-6">
               <Link
                 href={`/shop-default`}

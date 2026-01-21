@@ -2,7 +2,7 @@
 import { allProducts } from "@/data/products";
 import { useContextElement } from "@/context/Context";
 import { useEffect, useState } from "react";
-import { ProductCardWishlist } from "../shopCards/ProductCardWishlist";
+import { ProductCardWishlist } from "../../otherpagesinveriler/shopCards/ProductCardWishlist";
 import Link from "next/link";
 
 export default function Wishlist() {
@@ -11,9 +11,7 @@ export default function Wishlist() {
   useEffect(() => {
     if (wishList) {
       console.log(wishList);
-      setWishListItems(
-        [...allProducts].filter((el) => wishList.includes(el.id))
-      );
+      setWishListItems([...allProducts].filter((el) => wishList.includes(el.id)));
     }
   }, [wishList]);
 
@@ -27,13 +25,8 @@ export default function Wishlist() {
         </div>
         {!wishListItems.length && (
           <>
-            <div
-              className="row align-items-center w-100"
-              style={{ rowGap: "20px" }}
-            >
-              <div className="col-lg-3 col-md-6 fs-18">
-                Your wishlist is empty
-              </div>
+            <div className="row align-items-center w-100" style={{ rowGap: "20px" }}>
+              <div className="col-lg-3 col-md-6 fs-18">Your wishlist is empty</div>
               <div className="col-lg-3  col-md-6">
                 <Link
                   href={`/shop-default`}

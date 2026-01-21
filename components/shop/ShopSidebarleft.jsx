@@ -54,11 +54,7 @@ export default function ShopSidebarleft() {
         </div>
       </section>
       <div className="btn-sidebar-style2">
-        <button
-          data-bs-toggle="offcanvas"
-          data-bs-target="#sidebarmobile"
-          aria-controls="offcanvas"
-        >
+        <button data-bs-toggle="offcanvas" data-bs-target="#sidebarmobile" aria-controls="offcanvas">
           <i className="icon icon-sidebar-2" />
         </button>
       </div>

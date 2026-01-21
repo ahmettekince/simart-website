@@ -3,17 +3,12 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useContextElement } from "@/context/Context";
-import CountdownComponent from "../common/Countdown";
+import CountdownComponent from "../../components/common/Countdown";
 export const ProductCard5 = ({ product }) => {
   const [currentImage, setCurrentImage] = useState(product.imgSrc);
   const { setQuickViewItem } = useContextElement();
-  const {
-    setQuickAddItem,
-    addToWishlist,
-    isAddedtoWishlist,
-    addToCompareItem,
-    isAddedtoCompareItem,
-  } = useContextElement();
+  const { setQuickAddItem, addToWishlist, isAddedtoWishlist, addToCompareItem, isAddedtoCompareItem } =
+    useContextElement();
   return (
     <div className="card-product style-5" key={product.id}>
       <div className="card-product-wrapper">
@@ -49,16 +44,8 @@ export const ProductCard5 = ({ product }) => {
             onClick={() => addToWishlist(product.id)}
             className="box-icon bg_white wishlist btn-icon-action shadow-none"
           >
-            <span
-              className={`icon icon-heart ${
-                isAddedtoWishlist(product.id) ? "added" : ""
-              }`}
-            />
-            <span className="tooltip">
-              {isAddedtoWishlist(product.id)
-                ? "Already Wishlisted"
-                : "Add to Wishlist"}
-            </span>
+            <span className={`icon icon-heart ${isAddedtoWishlist(product.id) ? "added" : ""}`} />
+            <span className="tooltip">{isAddedtoWishlist(product.id) ? "Already Wishlisted" : "Add to Wishlist"}</span>
             <span className="icon icon-delete" />
           </a>
           <a
@@ -68,17 +55,8 @@ export const ProductCard5 = ({ product }) => {
             onClick={() => addToCompareItem(product.id)}
             className="box-icon bg_white compare btn-icon-action shadow-none"
           >
-            <span
-              className={`icon icon-compare ${
-                isAddedtoCompareItem(product.id) ? "added" : ""
-              }`}
-            />
-            <span className="tooltip">
-              {" "}
-              {isAddedtoCompareItem(product.id)
-                ? "Already Compared"
-                : "Add to Compare"}
-            </span>
+            <span className={`icon icon-compare ${isAddedtoCompareItem(product.id) ? "added" : ""}`} />
+            <span className="tooltip"> {isAddedtoCompareItem(product.id) ? "Already Compared" : "Add to Compare"}</span>
             <span className="icon icon-check" />
           </a>
           <a
@@ -115,9 +93,7 @@ export const ProductCard5 = ({ product }) => {
           <ul className="list-color-product">
             {product.colors.map((color) => (
               <li
-                className={`list-color-item color-swatch ${
-                  currentImage == color.imgSrc ? "active" : ""
-                }  `}
+                className={`list-color-item color-swatch ${currentImage == color.imgSrc ? "active" : ""}  `}
                 onMouseOver={() => setCurrentImage(color.imgSrc)}
                 key={color.name}
               >

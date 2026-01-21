@@ -2400,7 +2400,7 @@
     gap: 15px;
     .img-product {
       width: 64px;
-      height: 64px;
+      height: 85px;
       border: 1px solid var(--line);
       border-radius: 3px;
       position: relative;
@@ -2411,7 +2411,7 @@
         width: 20px;
         height: 20px;
         border-radius: 999px;
-        background-color: #666;
+        background-color: #3c81b5;
         color: var(--white);
         @include mixin.flex(center, center);
         font-size: 12px;

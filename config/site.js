@@ -31,22 +31,68 @@ export const siteConfig = {
         },
     },
 
-    // Sosyal Medya
-    social: {
-        facebook: "https://facebook.com/simart",
-        instagram: "https://instagram.com/simart",
-        twitter: "https://twitter.com/simart",
-        linkedin: "https://linkedin.com/company/simart",
-    },
+    // Sosyal Medya - Footer'da gösterilecek sırayla
+    social: [
+        {
+            name: "facebook",
+            url: "https://www.facebook.com/simartteknoloji",
+            icon: "icon-fb",
+            iconSize: "fs-14",
+            className: "social-facebook",
+        },
+        {
+            name: "twitter",
+            url: "https://x.com/simartteknoloji",
+            icon: "icon-Icon-x",
+            iconSize: "fs-12",
+            className: "social-twiter",
+        },
+        {
+            name: "instagram",
+            url: "https://www.instagram.com/simartteknoloji/",
+            icon: "icon-instagram",
+            iconSize: "fs-14",
+            className: "social-instagram",
+        },
+        {
+            name: "tiktok",
+            url: "",
+            icon: "icon-tiktok",
+            iconSize: "fs-14",
+            className: "social-tiktok",
+        },
+        {
+            name: "pinterest",
+            url: "",
+            icon: "icon-pinterest-1",
+            iconSize: "fs-14",
+            className: "social-pinterest",
+        },
+        {
+            name: "youtube",
+            url: "https://www.youtube.com/c/ŞımartTeknoloji",
+            icon: "icon-youtube",
+            iconSize: "fs-14",
+            className: "social-youtube",
+        },
+        {
+            name: "linkedin",
+            url: "https://www.linkedin.com/company/şımart-teknoloji/",
+            icon: "icon-linkedin",
+            iconSize: "fs-14",
+            className: "social-linkedin",
+        },
+    ],
 
     // Site Bilgileri
     site: {
         name: "Şımart Teknoloji",
-        description: "Robot Süpürge ve Akıllı Ev Sistemleri",
+        title: "Robot Süpürge ve Akıllı Ev Sistemleri",
         url: "https://simart.me/",
         logo: "https://simart.me/uploads/systems/logo.webp",
         author: "Şımart Teknoloji",
-        keywords:"Şımart Teknoloji Destek, Akıllı Ev Sistemleri Destek, Şımart Ürün Açıklamaları, Şımart Teknoloji Videolar, Şımart Teknik Destek, Akıllı Cihaz Yardım, Şımart Teknoloji Ürün Desteği, Şımart Kullanım Videoları, Şımart Teknoloji Yardım",
+        description:"Şımart Teknoloji, robot süpürgeler, akıllı ev sistemleri ve IoT çözümlerinde öncüdür. Ev otomasyonu ve yaşamı kolaylaştıran teknolojilerle hizmetinizdeyiz.",
+        keywords:"Şımart Teknoloji, Akıllı Ev Sistemleri, IoT Çözümleri, Robot Süpürge, Akıllı Cihazlar, Teknolojik Ürünler, Ev Otomasyonu, Şımart Ürünleri, Akıllı Teknoloji, IoT Ürünleri",
 
         og: {
             title: "Şımart Teknoloji - Robot Süpürge ve Akıllı Ev Sistemleri",

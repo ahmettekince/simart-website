@@ -57,9 +57,7 @@ export default function SidebarFilter({ setProducts }) {
   const [selectedAvailabilities, setSelectedAvailabilities] = useState([]);
   const handleSelectAvailabilities = (availability) => {
     if (selectedAvailabilities.includes(availability)) {
-      setSelectedAvailabilities((pre) => [
-        ...pre.filter((el) => el != availability),
-      ]);
+      setSelectedAvailabilities((pre) => [...pre.filter((el) => el != availability)]);
     } else {
       setSelectedAvailabilities((pre) => [...pre, availability]);
     }
@@ -78,43 +76,26 @@ export default function SidebarFilter({ setProducts }) {
 
     filteredArrays = [
       ...filteredArrays,
-      [
-        ...products1.filter(
-          (elm) => elm.price >= price[0] && elm.price <= price[1]
-        ),
-      ],
+      [...products1.filter((elm) => elm.price >= price[0] && elm.price <= price[1])],
     ];
     // console.log(filteredByPrice, "filteredByPrice");
     if (selectedColors.length) {
       filteredArrays = [
         ...filteredArrays,
-        [
-          ...products1.filter((elm) =>
-            elm.colors
-              ?.map((el2) => el2.name)
-              .some((el3) => selectedColors.includes(el3))
-          ),
-        ],
+        [...products1.filter((elm) => elm.colors?.map((el2) => el2.name).some((el3) => selectedColors.includes(el3)))],
       ];
     }
 
     // console.log(filteredByselectedColors, "filteredByselectedColors");
     if (selectedBrands.length) {
-      filteredArrays = [
-        ...filteredArrays,
-        [...products1.filter((elm) => selectedBrands.includes(elm.brand))],
-      ];
+      filteredArrays = [...filteredArrays, [...products1.filter((elm) => selectedBrands.includes(elm.brand))]];
     }
 
     // console.log(filteredByselectedBrands, "filteredByselectedBrands");
     if (selectedSizes.length) {
       filteredArrays = [
         ...filteredArrays,
-        [
-          ...products1.filter((elm) =>
-            elm.sizes?.some((elm2) => selectedSizes.includes(elm2))
-          ),
-        ],
+        [...products1.filter((elm) => elm.sizes?.some((elm2) => selectedSizes.includes(elm2)))],
       ];
     }
 
@@ -124,25 +105,15 @@ export default function SidebarFilter({ setProducts }) {
         ...filteredArrays,
         [
           ...products1.filter((elm) =>
-            selectedAvailabilities
-              .map((elm3) => elm3.isAvailable)
-              .some((elm4) => elm4 == elm.isAvailable)
+            selectedAvailabilities.map((elm3) => elm3.isAvailable).some((elm4) => elm4 == elm.isAvailable)
           ),
         ],
       ];
     }
 
-    const commonItems = products1.filter((item) =>
-      filteredArrays.every((array) => array.includes(item))
-    );
+    const commonItems = products1.filter((item) => filteredArrays.every((array) => array.includes(item)));
     setProducts(commonItems);
-  }, [
-    price,
-    selectedColors,
-    selectedBrands,
-    selectedAvailabilities,
-    selectedSizes,
-  ]);
+  }, [price, selectedColors, selectedBrands, selectedAvailabilities, selectedSizes]);
   const clearFilter = () => {
     setSelectedColors([]);
     setSelectedBrands([]);
@@ -213,15 +184,7 @@ export default function SidebarFilter({ setProducts }) {
                   />
                   <label className="label">
                     <span>{availability.text}</span>&nbsp;
-                    <span>
-                      (
-                      {
-                        products1.filter(
-                          (elm) => elm.isAvailable == availability.isAvailable
-                        ).length
-                      }
-                      )
-                    </span>
+                    <span>({products1.filter((elm) => elm.isAvailable == availability.isAvailable).length})</span>
                   </label>
                 </li>
               ))}
@@ -286,17 +249,10 @@ export default function SidebarFilter({ setProducts }) {
                   className="list-item d-flex gap-12 align-items-center"
                   onClick={() => handleSelectBrand(brand)}
                 >
-                  <input
-                    type="radio"
-                    className="tf-check"
-                    readOnly
-                    checked={selectedBrands.includes(brand)}
-                  />
+                  <input type="radio" className="tf-check" readOnly checked={selectedBrands.includes(brand)} />
                   <label className="label">
                     <span>{brand}</span>&nbsp;
-                    <span>
-                      ({products1.filter((elm) => elm.brand == brand).length})
-                    </span>
+                    <span>({products1.filter((elm) => elm.brand == brand).length})</span>
                   </label>
                 </li>
               ))}
@@ -332,13 +288,7 @@ export default function SidebarFilter({ setProducts }) {
                   <label className="label">
                     <span>{elm.name}</span>&nbsp;
                     <span>
-                      (
-                      {
-                        products1.filter((el) =>
-                          el.colors?.map((col) => col?.name)?.includes(elm.name)
-                        ).length
-                      }
-                      )
+                      ({products1.filter((el) => el.colors?.map((col) => col?.name)?.includes(elm.name)).length})
                     </span>
                   </label>
                 </li>
@@ -373,11 +323,7 @@ export default function SidebarFilter({ setProducts }) {
                   />
                   <label className="label">
                     <span>{elm}</span>&nbsp;
-                    <span>
-                      (
-                      {products1.filter((el) => el.sizes?.includes(elm)).length}
-                      )
-                    </span>
+                    <span>({products1.filter((el) => el.sizes?.includes(elm)).length})</span>
                   </label>
                 </li>
               ))}
@@ -386,10 +332,7 @@ export default function SidebarFilter({ setProducts }) {
         </div>
       </form>
       <div className="mt-5"></div>
-      <a
-        className="tf-btn style-2 btn-fill rounded animate-hover-btn"
-        onClick={clearFilter}
-      >
+      <a className="tf-btn style-2 btn-fill rounded animate-hover-btn" onClick={clearFilter}>
         Clear Filter
       </a>
     </div>

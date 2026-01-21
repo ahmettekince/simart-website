@@ -6,9 +6,9 @@ export default function Sorting({ products = [], setFinalSorted }) {
   const [selectedOptions, setSelectedOptions] = useState(sortingOptions[0]);
 
   useEffect(() => {
-    if (selectedOptions.text == "Default") {
+    if (selectedOptions.text == "Varsayılan") {
       setFinalSorted([...products]);
-    } else if (selectedOptions.text == "Alphabetically, A-Z") {
+    } else if (selectedOptions.text == "Alfabetik, A-Z") {
       setFinalSorted(
         [...products].sort((a, b) => {
           const nameA = (a.name || a.title || "").toLowerCase();
@@ -16,7 +16,7 @@ export default function Sorting({ products = [], setFinalSorted }) {
           return nameA.localeCompare(nameB);
         })
       );
-    } else if (selectedOptions.text == "Alphabetically, Z-A") {
+    } else if (selectedOptions.text == "Alfabetik, Z-A") {
       setFinalSorted(
         [...products].sort((a, b) => {
           const nameA = (a.name || a.title || "").toLowerCase();
@@ -24,18 +24,22 @@ export default function Sorting({ products = [], setFinalSorted }) {
           return nameB.localeCompare(nameA);
         })
       );
-    } else if (selectedOptions.text == "Price, low to high") {
-      setFinalSorted([...products].sort((a, b) => {
-        const priceA = a.discount_price || a.price || 0;
-        const priceB = b.discount_price || b.price || 0;
-        return priceA - priceB;
-      }));
-    } else if (selectedOptions.text == "Price, high to low") {
-      setFinalSorted([...products].sort((a, b) => {
-        const priceA = a.discount_price || a.price || 0;
-        const priceB = b.discount_price || b.price || 0;
-        return priceB - priceA;
-      }));
+    } else if (selectedOptions.text == "En düşük fiyat") {
+      setFinalSorted(
+        [...products].sort((a, b) => {
+          const priceA = a.discount_price || a.price || 0;
+          const priceB = b.discount_price || b.price || 0;
+          return priceA - priceB;
+        })
+      );
+    } else if (selectedOptions.text == "En yüksek fiyat") {
+      setFinalSorted(
+        [...products].sort((a, b) => {
+          const priceA = a.discount_price || a.price || 0;
+          const priceB = b.discount_price || b.price || 0;
+          return priceB - priceA;
+        })
+      );
     }
   }, [products, selectedOptions, setFinalSorted]);
 

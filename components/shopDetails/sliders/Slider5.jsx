@@ -5,211 +5,79 @@ import { useEffect, useRef, useState } from "react";
 import { Navigation, Thumbs } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Gallery, Item } from "react-photoswipe-gallery";
+import ModelViewerModal from "@/components/modals/ModelViewerModal";
 
 export default function Slider5({
   currentColor = "Beige",
   handleColor = () => { },
-  firstImage,
   galleryImages = [],
   model3dUrl = null,
 }) {
-  // galleryImages varsa onu kullan, yoksa eski sabit array'i kullan
-  let images = galleryImages && galleryImages.length > 0
-    ? galleryImages.map((img, index) => {
-        // API'den gelen görsel formatını normalize et
-        const imageUrl = typeof img === 'string' 
-          ? img 
-          : (img.url || img.thumbnail_url || img.src || "");
-        const altText = typeof img === 'object' ? (img.alt_text || img.alt || "") : "";
-        
+  // Tek kaynak: galleryImages. İlk görsel zaten cover olarak kabul edilir.
+  const normalized = Array.isArray(galleryImages)
+    ? galleryImages
+      .map((img, index) => {
+        const src = typeof img === "string" ? img : img?.url || img?.src || "";
+        if (!src) return null;
         return {
           id: index + 1,
-          src: imageUrl,
-          alt: altText,
-          width: typeof img === 'object' ? (img.width || 770) : 770,
-          height: typeof img === 'object' ? (img.height || 1075) : 1075,
-          dataValue: currentColor.toLowerCase(),
+          src,
+          alt: typeof img === "object" ? img?.alt_text || img?.alt || "" : "",
+          width: typeof img === "object" ? img?.width || 770 : 770,
+          height: typeof img === "object" ? img?.height || 1075 : 1075,
+          dataValue: currentColor?.toLowerCase?.() || "beige",
         };
       })
-    : [
+      .filter(Boolean)
+    : [];
+
+  const images =
+    normalized.length > 0
+      ? [...normalized]
+      : [
         {
           id: 1,
-          src: firstImage || "/images/shop/products/p-d1.png",
+          src: "/images/placeholder.jpg",
           alt: "",
           width: 770,
           height: 1075,
-          dataValue: "beige",
-        },
-        {
-          id: 2,
-          src: "/images/shop/products/hmgoepprod.jpg",
-          alt: "",
-          width: 713,
-          height: 1070,
-          dataValue: "beige",
-        },
-        {
-          id: 3,
-          src: "/images/shop/products/hmgoepprod2.jpg",
-          alt: "img-compare",
-          width: 713,
-          height: 1070,
-          dataValue: "beige",
-        },
-        {
-          id: 4,
-          src: "/images/shop/products/preview_images/img-3d-1.jpg",
-          modelSrc: "/images/shop/products/preview_images/dance-bag_3d.glb",
-          alt: "img-compare",
-          width: 713,
-          height: 1070,
-          dataValue: "beige",
-          is3D: true,
-          isModel: true,
-        },
-        {
-          id: 5,
-          src: "/images/shop/products/hmgoepprod4.jpg",
-          alt: "img-compare",
-          width: 768,
-          height: 1152,
-          dataValue: "beige",
-        },
-        {
-          id: 6,
-          src: "/images/shop/products/hmgoepprod5.jpg",
-          alt: "img-compare",
-          width: 713,
-          height: 1070,
-          dataValue: "beige",
-        },
-        {
-          id: 7,
-          src: "/images/shop/products/hmgoepprod6.jpg",
-          alt: "",
-          width: 768,
-          height: 1152,
-          dataValue: "black",
-        },
-        {
-          id: 8,
-          src: "/images/shop/products/hmgoepprod7.jpg",
-          alt: "",
-          width: 713,
-          height: 1070,
-          dataValue: "black",
-        },
-        {
-          id: 9,
-          src: "/images/shop/products/hmgoepprod8.jpg",
-          alt: "",
-          width: 713,
-          height: 1070,
-          dataValue: "black",
-        },
-        {
-          id: 10,
-          src: "/images/shop/products/hmgoepprod9.jpg",
-          alt: "",
-          width: 768,
-          height: 1152,
-          dataValue: "black",
-        },
-        {
-          id: 11,
-          src: "/images/shop/products/hmgoepprod10.jpg",
-          alt: "",
-          width: 713,
-          height: 1070,
-          dataValue: "blue",
-        },
-        {
-          id: 12,
-          src: "/images/shop/products/hmgoepprod11.jpg",
-          alt: "",
-          width: 713,
-          height: 1070,
-          dataValue: "blue",
-        },
-        {
-          id: 13,
-          src: "/images/shop/products/hmgoepprod12.jpg",
-          alt: "",
-          width: 768,
-          height: 1152,
-          dataValue: "blue",
-        },
-        {
-          id: 14,
-          src: "/images/shop/products/hmgoepprod13.jpg",
-          alt: "",
-          width: 768,
-          height: 1152,
-          dataValue: "blue",
-        },
-        {
-          id: 15,
-          src: "/images/shop/products/hmgoepprod14.jpg",
-          alt: "",
-          width: 768,
-          height: 1152,
-          dataValue: "white",
-        },
-        {
-          id: 16,
-          src: "/images/shop/products/hmgoepprod15.jpg",
-          alt: "",
-          width: 768,
-          height: 1152,
-          dataValue: "white",
-        },
-        {
-          id: 17,
-          src: "/images/shop/products/hmgoepprod16.jpg",
-          alt: "",
-          width: 768,
-          height: 1152,
-          dataValue: "white",
-        },
-        {
-          id: 18,
-          src: "/images/shop/products/hmgoepprod17.jpg",
-          alt: "",
-          width: 768,
-          height: 1152,
-          dataValue: "white",
+          dataValue: currentColor?.toLowerCase?.() || "beige",
         },
       ];
 
-  // 3D modeli statik olarak son fotoğa ekle
-  // Şimdilik her zaman temsili 3D modeli kullan (bizim 3D modelimiz gelene kadar)
-  const model3d = "/images/shop/products/preview_images/dance-bag_3d.glb";
-  const model3dPoster = "/images/shop/products/preview_images/img-3d-1.jpg";
-  
-  // images array'ine 3D modeli her zaman ekle (en sona)
-  if (images && images.length > 0) {
+  // 3D Model Mantığı
+  const staticModelUrl = "/images/shop/products/preview_images/dance-bag_3d.glb";
+  const finalModelUrl = model3dUrl || staticModelUrl;
+
+  // Her zaman model ekle (static veya prop'tan gelen)
+  if (finalModelUrl) {
     images.push({
       id: images.length + 1,
-      src: model3dPoster,
-      modelSrc: model3d,
+      src: images[0]?.src || "/images/placeholder.jpg",
+      modelSrc: finalModelUrl,
       alt: "3D Model",
       width: 713,
       height: 1070,
-      dataValue: currentColor.toLowerCase(),
+      dataValue: currentColor?.toLowerCase?.() || "beige",
       is3D: true,
       isModel: true,
     });
   }
-
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
   const swiperRef = useRef(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeModelUrl, setActiveModelUrl] = useState(null);
+
+  // Slide değişince etkileşimi sıfırla
+  const handleSlideChange = (swiper) => {
+    handleColor(images[swiper.activeIndex].dataValue);
+  };
+
   useEffect(() => {
-    const slideIndex =
-      images.filter(
-        (elm) => elm.dataValue.toLowerCase() == currentColor.toLowerCase()
-      )[0].id - 1;
+    const slideIndex = images.filter((elm) => elm.dataValue.toLowerCase() == currentColor.toLowerCase())[0].id - 1;
     swiperRef.current.slideTo(slideIndex);
   }, [currentColor]);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       // Dynamically import @google/model-viewer
@@ -218,9 +86,11 @@ export default function Slider5({
       });
     }
   }, []);
+
   useEffect(() => {
     // Function to initialize Drift
     const imageZoom = () => {
+      if (window.innerWidth < 768) return;
       const driftAll = document.querySelectorAll(".tf-image-zoom");
       const pane = document.querySelector(".tf-zoom-main");
 
@@ -268,8 +138,19 @@ export default function Slider5({
     };
   }, []); // Empty dependency array to run only once on mount
 
+  // Model açma fonksiyonu
+  const openModelViewer = (url) => {
+    setActiveModelUrl(url);
+    setIsModalOpen(true);
+  };
+
   return (
     <>
+      <ModelViewerModal
+        show={isModalOpen}
+        onHide={() => setIsModalOpen(false)}
+        modelSrc={activeModelUrl}
+      />
       <Swiper
         dir="ltr"
         direction="vertical"
@@ -310,6 +191,7 @@ export default function Slider5({
       <Gallery>
         <Swiper
           dir="ltr"
+          style={{ touchAction: "pan-y" }}
           spaceBetween={10}
           slidesPerView={1}
           navigation={{
@@ -321,45 +203,63 @@ export default function Slider5({
           thumbs={{ swiper: thumbsSwiper }}
           modules={[Thumbs, Navigation]}
           onSwiper={(swiper) => (swiperRef.current = swiper)}
-          onSlideChange={(swiper) => {
-            handleColor(images[swiper.activeIndex].dataValue);
-          }}
+          onSlideChange={handleSlideChange}
         >
           {images.map((slide, index) =>
             slide.isModel ? (
               <SwiperSlide className="swiper-slide" key={index}>
-                <div className="item">
-                  <div className="tf-model-viewer swiper-no-swiping">
-                    <model-viewer
-                      reveal="auto"
-                      toggleable="true"
-                      data-model-id="36168614805808"
-                      src={slide.modelSrc}
-                      camera-controls="true"
-                      data-shopify-feature="1.12"
+                <div
+                  className="item"
+                  style={{
+                    position: 'relative',
+                    height: '100%',
+                    width: '100%',
+                    aspectRatio: '713 / 1070',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: '#f5f5f5'
+                  }}
+                >
+                  {/* Poster Resmi (Arkaplan) */}
+                  {slide.src && slide.src !== "/images/placeholder.jpg" && (
+                    <Image
+                      className="lazyload"
+                      data-src={slide.src}
                       alt={""}
-                      poster={slide.src}
-                      className="tf-model-viewer-ui"
-                      tabindex="1"
-                      data-js-focus-visible=""
-                      ar-status="not-presenting"
-                    ></model-viewer>
-                    {/* <div className="tf-model-viewer-ui-button">
-                    <div className="wrap-btn-viewer">
-                      <i className="icon-btn3d"></i>
-                    </div>
-                  </div> */}
-                  </div>
+                      src={slide.src}
+                      width={slide.width}
+                      height={slide.height}
+                      style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover' }}
+                    />
+                  )}
+
+                  {/* Model Açma Butonu (Merkezde) */}
+                  <button
+                    onClick={() => openModelViewer(slide.modelSrc)}
+                    style={{
+                      zIndex: 20,
+                      padding: '12px 24px',
+                      backgroundColor: 'rgba(0,0,0,0.8)',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '30px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '8px',
+                      cursor: 'pointer',
+                      backdropFilter: 'blur(5px)'
+                    }}
+                  >
+                    <i className="icon-btn3d" style={{ fontSize: '32px' }}></i>
+                    <span style={{ fontSize: '14px', fontWeight: '600' }}>3D İncele</span>
+                  </button>
                 </div>
               </SwiperSlide>
             ) : (
               <SwiperSlide className="swiper-slide" key={index}>
-                <Item
-                  original={slide.src}
-                  thumbnail={slide.src}
-                  width={slide.width}
-                  height={slide.height}
-                >
+                <Item original={slide.src} thumbnail={slide.src} width={slide.width} height={slide.height}>
                   {({ ref, open }) => (
                     <a onClick={open} className="item">
                       <Image

@@ -66,21 +66,10 @@ export default function ContactForm() {
           <div className="tf-content-right">
             <h5 className="mb_20">Bizimle iletişime geçin</h5>
             <div>
-              <form
-                ref={formRef}
-                onSubmit={sendMail}
-                className="form-contact"
-                id="contactform"
-              >
+              <form ref={formRef} onSubmit={sendMail} className="form-contact" id="contactform">
                 <div className="d-flex gap-15 mb_15">
                   <fieldset className="w-100">
-                    <input
-                      type="text"
-                      name="full_name"
-                      id="name"
-                      required
-                      placeholder="İsim Soyisim *"
-                    />
+                    <input type="text" name="full_name" id="name" required placeholder="İsim Soyisim *" />
                   </fieldset>
                   <fieldset className="w-100">
                     <input
@@ -95,13 +84,7 @@ export default function ContactForm() {
                 </div>
                 <div className="mb_15">
                   <fieldset className="w-100">
-                    <input
-                      type="text"
-                      name="phone"
-                      id="phone"
-                      required
-                      placeholder="Telefon Numaranız *"
-                    />
+                    <input type="text" name="phone" id="phone" required placeholder="Telefon Numaranız *" />
                   </fieldset>
                 </div>
                 <div className="mb_15">
@@ -115,12 +98,8 @@ export default function ContactForm() {
                     defaultValue={""}
                   />
                 </div>
-                <div
-                  className={`tfSubscribeMsg ${showMessage ? "active" : ""}`}
-                >
-                  <p style={{ color: success ? "rgb(52, 168, 83)" : "red" }}>
-                    {apiMessage}
-                  </p>
+                <div className={`tfSubscribeMsg ${showMessage ? "active" : ""}`}>
+                  <p style={{ color: success ? "rgb(52, 168, 83)" : "red" }}>{apiMessage}</p>
                 </div>
                 <div className="send-wrap">
                   <button
@@ -140,7 +119,11 @@ export default function ContactForm() {
               <p className="mb_15">
                 <strong>Adres</strong>
               </p>
-              <p>{siteConfig.contact.address.street}<br></br> {siteConfig.contact.address.district} / {siteConfig.contact.address.city} {siteConfig.contact.address.country} Posta Kodu: {siteConfig.contact.address.postalCode}</p>
+              <p>
+                {siteConfig.contact.address.street}
+                <br></br> {siteConfig.contact.address.district} / {siteConfig.contact.address.city}{" "}
+                {siteConfig.contact.address.country} Posta Kodu: {siteConfig.contact.address.postalCode}
+              </p>
             </div>
             <div className="mb_20">
               <p className="mb_15">
@@ -183,7 +166,9 @@ export default function ContactForm() {
               </p>
               <div className="d-flex align-items-center gap-10">
                 <i className="icon-mail fs-15" />
-                <Link href="mailto:destek@simart.me" className="text-black">destek@simart.me</Link>
+                <Link href="mailto:destek@simart.me" className="text-black">
+                  destek@simart.me
+                </Link>
               </div>
             </div>
             <div className="mb_36">
@@ -197,20 +182,14 @@ export default function ContactForm() {
               <ul className="tf-social-icon d-flex gap-20 style-default">
                 {socialLinksWithBorder.map((link, index) => (
                   <li key={index}>
-                    <a
-                      href={link.href}
-                      className={`box-icon link round ${link.className} ${link.borderClass}`}
-                    >
-                      <i
-                        className={`icon ${link.iconSize} ${link.iconClass}`}
-                      />
+                    <a href={link.href} className={`box-icon link round ${link.className} ${link.borderClass}`}>
+                      <i className={`icon ${link.iconSize} ${link.iconClass}`} />
                     </a>
                   </li>
                 ))}
               </ul>
             </div>
           </div>
-
         </div>
       </div>
     </section>

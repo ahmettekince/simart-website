@@ -5,15 +5,15 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { log } from "@/utils/logger";
 
-const ORDER_NOTE_KEY = 'cart_order_note';
+const ORDER_NOTE_KEY = "cart_order_note";
 
 export default function Cart() {
   const { items, updateQuantity, removeItem } = useCartStore();
   const [orderNote, setOrderNote] = useState("");
-  
+
   // Sayfa yüklendiğinde localStorage'dan sipariş notunu oku
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const savedNote = localStorage.getItem(ORDER_NOTE_KEY);
       if (savedNote) {
         setOrderNote(savedNote);
@@ -23,11 +23,11 @@ export default function Cart() {
       }
     }
   }, []);
-  
+
   // Sipariş notu değiştiğinde localStorage'a kaydet
   const handleOrderNoteChange = (value) => {
     setOrderNote(value);
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       if (value && value.trim()) {
         localStorage.setItem(ORDER_NOTE_KEY, value);
         log("[Cart] Sipariş notu localStorage'a kaydedildi:", value);
@@ -37,7 +37,7 @@ export default function Cart() {
       }
     }
   };
-  
+
   // API'den gelen totals.total kullan, yoksa local hesapla (fallback)
   const totalPrice = useCartStore((state) => {
     if (state.totals && state.totals.total !== null && state.totals.total !== undefined) {
@@ -45,7 +45,7 @@ export default function Cart() {
     }
     return state.items.reduce((total, item) => {
       const itemPrice = item.discount_price || item.price || 0;
-      return total + (itemPrice * item.quantity);
+      return total + itemPrice * item.quantity;
     }, 0);
   });
 
@@ -92,11 +92,7 @@ export default function Cart() {
             </svg>
             <p>Bu ürünler sınırlıdır, sipariş veriniz</p>
           </div>
-          <div
-            className="js-countdown timer-count"
-            data-timer={600}
-            data-labels="d:,h:,m:,s"
-          />
+          <div className="js-countdown timer-count" data-timer={600} data-labels="d:,h:,m:,s" />
         </div>
         <div className="tf-page-cart-wrap">
           <div className="tf-page-cart-item">
@@ -115,17 +111,13 @@ export default function Cart() {
                     const itemPrice = item.discount_price || item.price || 0;
                     const itemTotal = itemPrice * item.quantity;
                     // Kategori slug'ını al (fallback ile)
-                    const categorySlug = item.product?.categories?.[0]?.slug || 
-                                       item.product?.primary_category?.slug || 
-                                       "urunler";
-                    
+                    const categorySlug =
+                      item.product?.categories?.[0]?.slug || item.product?.primary_category?.slug || "urunler";
+
                     return (
                       <tr key={i} className="tf-cart-item file-delete">
                         <td className="tf-cart-item_product">
-                          <Link
-                            href={`/magaza/${categorySlug}/${item.slug}`}
-                            className="img-box"
-                          >
+                          <Link href={`/magaza/${categorySlug}/${item.slug}`} className="img-box">
                             <Image
                               alt={item.name || "img-product"}
                               src={item.image || "/images/default-product.jpg"}
@@ -134,40 +126,24 @@ export default function Cart() {
                             />
                           </Link>
                           <div className="cart-info">
-                            <Link
-                              href={`/magaza/${categorySlug}/${item.slug}`}
-                              className="cart-title link"
-                            >
+                            <Link href={`/magaza/${categorySlug}/${item.slug}`} className="cart-title link">
                               {item.name}
                             </Link>
                             <div className="cart-meta-variant"></div>
-                            <span
-                              className="remove-cart link remove"
-                              onClick={() => handleRemoveItem(item.id)}
-                            >
+                            <span className="remove-cart link remove" onClick={() => handleRemoveItem(item.id)}>
                               Kaldır
                             </span>
                           </div>
                         </td>
-                        <td
-                          className="tf-cart-item_price"
-                          cart-data-title="Price"
-                        >
-                          <div className="cart-price">
-                            ₺{itemPrice.toLocaleString('tr-TR')}
-                          </div>
+                        <td className="tf-cart-item_price" cart-data-title="Price">
+                          <div className="cart-price">₺{itemPrice.toLocaleString("tr-TR")}</div>
                         </td>
-                        <td
-                          className="tf-cart-item_quantity"
-                          cart-data-title="Quantity"
-                        >
+                        <td className="tf-cart-item_quantity" cart-data-title="Quantity">
                           <div className="cart-quantity">
                             <div className="wg-quantity">
                               <span
                                 className="btn-quantity minus-btn"
-                                onClick={() =>
-                                  setQuantity(item.id, item.quantity - 1)
-                                }
+                                onClick={() => setQuantity(item.id, item.quantity - 1)}
                               >
                                 <svg
                                   className="d-inline-block"
@@ -184,15 +160,11 @@ export default function Cart() {
                                 name="number"
                                 value={item.quantity}
                                 min={1}
-                                onChange={(e) =>
-                                  setQuantity(item.id, parseInt(e.target.value) || 1)
-                                }
+                                onChange={(e) => setQuantity(item.id, parseInt(e.target.value) || 1)}
                               />
                               <span
                                 className="btn-quantity plus-btn"
-                                onClick={() =>
-                                  setQuantity(item.id, item.quantity + 1)
-                                }
+                                onClick={() => setQuantity(item.id, item.quantity + 1)}
                               >
                                 <svg
                                   className="d-inline-block"
@@ -207,15 +179,9 @@ export default function Cart() {
                             </div>
                           </div>
                         </td>
-                        <td
-                          className="tf-cart-item_total"
-                          cart-data-title="Total"
-                        >
-                          <div
-                            className="cart-total"
-                            style={{ minWidth: "60px" }}
-                          >
-                            ₺{itemTotal.toLocaleString('tr-TR')}
+                        <td className="tf-cart-item_total" cart-data-title="Total">
+                          <div className="cart-total" style={{ minWidth: "60px" }}>
+                            ₺{itemTotal.toLocaleString("tr-TR")}
                           </div>
                         </td>
                       </tr>
@@ -253,7 +219,7 @@ export default function Cart() {
           </div>
           <div className="tf-page-cart-footer">
             <div className="tf-cart-footer-inner">
-              <div className="tf-free-shipping-bar">
+              {/* <div className="tf-free-shipping-bar">
                 <div className="tf-progress-bar">
                   <span style={{ width: "50%" }}>
                     <div className="progress-car">
@@ -276,18 +242,16 @@ export default function Cart() {
                 <div className="tf-progress-msg">
                   <span className="fw-6">Ücretsiz kargo</span>
                 </div>
-              </div>
+              </div> */}
               <div className="tf-page-cart-checkout">
-                <div className="shipping-calculator">
+                {/* <div className="shipping-calculator">
                   <summary
                     className="accordion-shipping-header d-flex justify-content-between align-items-center collapsed"
                     data-bs-target="#shipping"
                     data-bs-toggle="collapse"
                     aria-controls="shipping"
                   >
-                    <h3 className="shipping-calculator-title">
-                      Kargo Tahmini
-                    </h3>
+                    <h3 className="shipping-calculator-title">Kargo Tahmini</h3>
                     <span className="shipping-calculator_accordion-icon" />
                   </summary>
                   <div className="collapse" id="shipping">
@@ -303,7 +267,7 @@ export default function Cart() {
                           <option value="---" data-provinces="[]">
                             ---
                           </option>
-                          
+
                           <option
                             value="United States"
                             data-provinces="[['Alabama','Alabama'],['Alaska','Alaska'],['American Samoa','American Samoa'],['Arizona','Arizona'],['Arkansas','Arkansas'],['Armed Forces Americas','Armed Forces Americas'],['Armed Forces Europe','Armed Forces Europe'],['Armed Forces Pacific','Armed Forces Pacific'],['California','California'],['Colorado','Colorado'],['Connecticut','Connecticut'],['Delaware','Delaware'],['District of Columbia','Washington DC'],['Federated States of Micronesia','Micronesia'],['Florida','Florida'],['Georgia','Georgia'],['Guam','Guam'],['Hawaii','Hawaii'],['Idaho','Idaho'],['Illinois','Illinois'],['Indiana','Indiana'],['Iowa','Iowa'],['Kansas','Kansas'],['Kentucky','Kentucky'],['Louisiana','Louisiana'],['Maine','Maine'],['Marshall Islands','Marshall Islands'],['Maryland','Maryland'],['Massachusetts','Massachusetts'],['Michigan','Michigan'],['Minnesota','Minnesota'],['Mississippi','Mississippi'],['Missouri','Missouri'],['Montana','Montana'],['Nebraska','Nebraska'],['Nevada','Nevada'],['New Hampshire','New Hampshire'],['New Jersey','New Jersey'],['New Mexico','New Mexico'],['New York','New York'],['North Carolina','North Carolina'],['North Dakota','North Dakota'],['Northern Mariana Islands','Northern Mariana Islands'],['Ohio','Ohio'],['Oklahoma','Oklahoma'],['Oregon','Oregon'],['Palau','Palau'],['Pennsylvania','Pennsylvania'],['Puerto Rico','Puerto Rico'],['Rhode Island','Rhode Island'],['South Carolina','South Carolina'],['South Dakota','South Dakota'],['Tennessee','Tennessee'],['Texas','Texas'],['Utah','Utah'],['Vermont','Vermont'],['Virgin Islands','U.S. Virgin Islands'],['Virginia','Virginia'],['Washington','Washington'],['West Virginia','West Virginia'],['Wisconsin','Wisconsin'],['Wyoming','Wyoming']]"
@@ -315,14 +279,14 @@ export default function Cart() {
                           </option>
                         </select>
                       </fieldset>
-                      
+
                       <button className="tf-btn btn-fill animate-hover-btn radius-3 justify-content-center">
                         <span>Tahmini Süre</span>
                       </button>
                     </div>
                   </div>
-                </div>
-                <div className="cart-checkbox">
+                </div> */}
+                {/* <div className="cart-checkbox">
                   <input
                     type="checkbox"
                     className="tf-check"
@@ -332,32 +296,24 @@ export default function Cart() {
                     <span>Hediye ambalajı ister misiniz?</span> Sadece
                     <span className="fw-5">5.00 ₺</span>
                   </label>
-                </div>
+                </div> */}
                 <div className="tf-cart-totals-discounts">
                   <h3>Toplam</h3>
-                  <span className="total-value">
-                    ₺{totalPrice.toLocaleString('tr-TR')}
-                  </span>
+                  <span className="total-value">₺{totalPrice.toLocaleString("tr-TR")}</span>
                 </div>
-                
+
                 <div className="cart-checkbox">
-                  <input
-                    type="checkbox"
-                    className="tf-check"
-                    id="check-agree"
-                  />
+                  <input type="checkbox" className="tf-check" id="check-agree" />
                   <label htmlFor="check-agree" className="fw-4">
-                    
-                    <Link href={`/terms-conditions`}>Şartları ve Koşulları</Link>
-                    {" "}kabul ediyorum
+                    <Link href={`/sartlar-ve-kosullar`}>Şartları ve Koşulları</Link> kabul ediyorum
                   </label>
                 </div>
                 <div className="cart-checkout-btn">
                   <Link
-                    href={`/checkout`}
+                    href={`/odeme`}
                     className="tf-btn w-100 btn-fill animate-hover-btn radius-3 justify-content-center"
                   >
-                    <span>Check out</span>
+                    <span>Siparişi Tamamla</span>
                   </Link>
                 </div>
                 <div className="tf-page-cart_imgtrust">
@@ -387,7 +343,7 @@ export default function Cart() {
                         />
                       </svg>
                     </div>
-                    <div className="payment-item">
+                    {/* <div className="payment-item">
                       <svg
                         viewBox="0 0 38 24"
                         xmlns="http://www.w3.org/2000/svg"
@@ -418,7 +374,7 @@ export default function Cart() {
                           d="M23.3 8.1c-.1-.1-.2-.1-.3-.1-.1 0-.2 0-.3-.1-.3-.1-.7-.1-1.1-.1h-3c-.1 0-.2 0-.2.1-.2.1-.3.2-.3.4l-.7 4.4v.1c0-.3.3-.5.6-.5h1.3c2.5 0 4.1-1 4.6-3.8v-.2c-.1-.1-.3-.2-.5-.2h-.1z"
                         />
                       </svg>
-                    </div>
+                    </div> */}
                     <div className="payment-item">
                       <svg
                         viewBox="0 0 38 24"

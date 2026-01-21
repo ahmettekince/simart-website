@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { getPageBySlug } from "@/api/pages";
 import Header from "@/components/headers/Header";
-import Footer from "@/components/footers/Footer";
 import { webPageSchema } from "@/lib/schema";
 import { siteConfig } from "@/config/site";
 
@@ -24,21 +23,10 @@ export async function generateMetadata({ params }) {
   const description = page.seo?.description || "Şımart Teknoloji sayfa içeriği";
   const keywords = page.seo?.keywords || siteConfig.site.keywords;
 
-  // WebPage schema oluştur
-  const pageUrl = `${siteConfig.site.url}${slug}`;
-  const schema = webPageSchema({
-    name: title,
-    url: pageUrl,
-    description: description,
-  });
-
   return {
     title: `${title}`,
     description: description,
     keywords: keywords,
-    other: {
-      "script:ld+json": JSON.stringify(schema),
-    },
   };
 }
 
@@ -52,8 +40,22 @@ export default async function DynamicPage({ params }) {
     return notFound();
   }
 
+  // WebPage schema oluştur
+  const pageUrl = `${siteConfig.site.url}/${slug}`;
+  const pageJsonLd = webPageSchema({
+    name: page.title || "Şımart Teknoloji Sayfa İçeriği",
+    url: pageUrl,
+    description: page.seo?.description || page.title || "Şımart Teknoloji sayfa içeriği",
+  });
+
   return (
     <>
+      {/* WebPage JSON-LD */}
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(pageJsonLd) }}
+      />
       <Header />
       <div className="container py-5">
         <div className="row">
@@ -63,7 +65,6 @@ export default async function DynamicPage({ params }) {
           </div>
         </div>
       </div>
-      <Footer />
     </>
   );
 }

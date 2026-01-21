@@ -6,29 +6,32 @@ import Link from "next/link";
 import { getBlogs } from "@/api/blogs";
 import { webPageSchema } from "../../lib/schema";
 
-const schema = webPageSchema({
-  name: "Blog - Şımart Teknoloji",
-  url: "https://simart.me/blog",
-  description:
-    "Şımart Teknoloji blog sayfası, akıllı ev sistemleri ve teknolojik yenilikler hakkında en güncel bilgi kaynağınız.",
-});
-
 export const metadata = {
   title: "Blog - Şımart Teknoloji",
   description:
     "Şımart Teknoloji blog sayfası, akıllı ev sistemleri ve teknolojik yenilikler hakkında en güncel bilgi kaynağınız.",
   author: "Şımart Teknoloji",
   robots: "index, follow",
-  other: {
-    "script:ld+json": JSON.stringify(schema),
-  },
 };
 
 export default async function page() {
   const blogs = await getBlogs();
 
+  const blogJsonLd = webPageSchema({
+    name: "Blog - Şımart Teknoloji",
+    url: "https://simart.me/blog",
+    description:
+      "Şımart Teknoloji blog sayfası, akıllı ev sistemleri ve teknolojik yenilikler hakkında en güncel bilgi kaynağınız.",
+  });
+
   return (
     <>
+      {/* WebPage JSON-LD */}
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(blogJsonLd) }}
+      />
       <Header />
       <div className="tf-page-title">
         <div className="container-full">

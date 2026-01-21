@@ -1,12 +1,9 @@
 import { products1 } from "@/data/products";
 import React from "react";
 import ProductCardSimart from "../shopCards/ProductCardSimart";
-import Productcard23 from "../shopCards/Productcard23";
+import Productcard23 from "../../otherpagesinveriler/shopCards/Productcard23";
 
-export default function ProductGrid({
-  gridItems = 4,
-  allproducts = products1,
-}) {
+export default function ProductGrid({ gridItems = 4, allproducts = products1 }) {
   return (
     <>
       <div
@@ -26,10 +23,7 @@ export default function ProductGrid({
           ))}
         </div>
       ) : (
-        <div
-          className="grid-layout wrapper-shop"
-          data-grid={`grid-${gridItems}`}
-        >
+        <div className="grid-layout wrapper-shop" data-grid={`grid-${gridItems}`}>
           {/* card product 1 */}
           {allproducts.map((elm, i) => (
             <ProductCardSimart product={elm} key={i} />

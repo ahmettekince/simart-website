@@ -2,13 +2,9 @@
 
 import { useEffect, useState } from "react";
 
-export default function Quantity({ 
-  setQuantity = (value) => {},
-  minQuantity = 1,
-  maxQuantity = null,
-}) {
+export default function Quantity({ setQuantity = (value) => {}, minQuantity = 1, maxQuantity = null }) {
   const [count, setCount] = useState(minQuantity);
-  
+
   useEffect(() => {
     setQuantity(count);
   }, [count, setQuantity]);
@@ -16,17 +12,17 @@ export default function Quantity({
   // Miktarı güncelle (min ve max kontrolü ile)
   const updateCount = (newCount) => {
     let finalCount = newCount;
-    
+
     // Minimum kontrolü
     if (finalCount < minQuantity) {
       finalCount = minQuantity;
     }
-    
+
     // Maksimum kontrolü (varsa)
     if (maxQuantity && maxQuantity > 0 && finalCount > maxQuantity) {
       finalCount = maxQuantity;
     }
-    
+
     setCount(finalCount);
   };
 
@@ -52,11 +48,11 @@ export default function Quantity({
   return (
     <div className="wg-quantity">
       <span
-        className={`btn-quantity minus-btn ${count <= minQuantity ? 'disabled' : ''}`}
+        className={`btn-quantity minus-btn ${count <= minQuantity ? "disabled" : ""}`}
         onClick={handleDecrease}
         style={{
           opacity: count <= minQuantity ? 0.5 : 1,
-          cursor: count <= minQuantity ? 'not-allowed' : 'pointer',
+          cursor: count <= minQuantity ? "not-allowed" : "pointer",
         }}
       >
         -
@@ -70,11 +66,11 @@ export default function Quantity({
         value={count}
       />
       <span
-        className={`btn-quantity plus-btn ${maxQuantity && maxQuantity > 0 && count >= maxQuantity ? 'disabled' : ''}`}
+        className={`btn-quantity plus-btn ${maxQuantity && maxQuantity > 0 && count >= maxQuantity ? "disabled" : ""}`}
         onClick={handleIncrease}
         style={{
           opacity: maxQuantity && maxQuantity > 0 && count >= maxQuantity ? 0.5 : 1,
-          cursor: maxQuantity && maxQuantity > 0 && count >= maxQuantity ? 'not-allowed' : 'pointer',
+          cursor: maxQuantity && maxQuantity > 0 && count >= maxQuantity ? "not-allowed" : "pointer",
         }}
       >
         +

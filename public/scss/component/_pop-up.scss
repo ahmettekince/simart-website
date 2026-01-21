@@ -261,6 +261,12 @@
       &.social-pinterest {
         background: var(--pinterest-cl);
       }
+      &.social-youtube {
+        background: var(--youtube-cl);
+      }
+      &.social-linkedin {
+        background: var(--linkedin-cl);
+      }
     }
   }
   .form-share {
@@ -287,7 +293,7 @@
     max-width: min(900px, 90vw);
     .modal-content {
       // max-height: calc(100svh - 16px);
-    }
+    } 
   }
   .tf-rte {
     overflow-y: auto;
@@ -797,7 +803,6 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid var(--line);
     height: 60px;
     .title {
       font-size: 20px;
@@ -902,10 +907,10 @@
     }
   }
   .tf-minicart-recommendations {
-    margin: 12px 24px;
+    margin: 0px 24px;
     padding: 12px;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-    background: transparent;
+    border-radius: 10px;
+    background: #fff9e6; // Sarı arka plan - sepetteki ürünlerle karıştırılmaması için
     .tf-minicart-recommendations-heading {
       margin-bottom: 10px;
       display: flex;

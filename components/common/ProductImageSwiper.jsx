@@ -27,6 +27,76 @@ export default function ProductImageSwiper({
 }) {
     const [currentIndex, setCurrentIndex] = useState(0);
 
+    // Helper to render campaign tags
+    const renderCampaignTags = () => {
+        if (!campaignTags || campaignTags.length === 0) return null;
+
+        const positionCounters = { left: 0, center: 0, right: 0 };
+        const renderTags = [];
+
+        campaignTags.forEach((tag, index) => {
+            const tagUrl = typeof tag === 'string'
+                ? tag
+                : (tag?.url || tag?.image_url || tag?.src || tag);
+
+            if (!tagUrl || typeof tagUrl !== 'string') return;
+
+            const position = (typeof tag === 'object' ? tag.position : null) || 'left';
+            const counter = positionCounters[position];
+
+            if (counter < 3) {
+                let positionStyle = {};
+
+                if (position === 'left') {
+                    positionStyle = { left: '10px' };
+                } else if (position === 'center') {
+                    positionStyle = { left: '50%', transform: 'translateX(-50%)' };
+                } else if (position === 'right') {
+                    positionStyle = { right: '10px' };
+                }
+
+                renderTags.push({
+                    url: tagUrl,
+                    position: position,
+                    style: {
+                        position: 'absolute',
+                        zIndex: 10,
+                        '--tag-index': counter,
+                        ...positionStyle,
+                    },
+                    key: `${position}-${counter}-${index}`,
+                });
+
+                positionCounters[position]++;
+            }
+        });
+
+        return (
+            <>
+                {renderTags.map((tag) => (
+                    <Link
+                        key={tag.key}
+                        href={`/magaza/${categorySlug}/${productSlug}`}
+                        className="campaign-tag"
+                        style={{
+                            ...tag.style,
+                            cursor: 'pointer',
+                            display: 'block',
+                        }}
+                    >
+                        <Image
+                            src={tag.url}
+                            alt="Campaign Tag"
+                            width={60}
+                            height={60}
+                            className="campaign-tag-img"
+                        />
+                    </Link>
+                ))}
+            </>
+        );
+    };
+
     if (!images || images.length === 0) {
         return (
             <div className="product-img">
@@ -54,7 +124,7 @@ export default function ProductImageSwiper({
             return image;
         }
         if (image && typeof image === 'object') {
-            return image.url || image.webp_url || image.thumbnail_url || image;
+            return image.url || image.webp_url || image.src || image;
         }
         return image;
     };
@@ -62,7 +132,7 @@ export default function ProductImageSwiper({
     // Tek görsel varsa Swiper kullanma
     if (images.length === 1) {
         const imageUrl = getImageUrl(images[0]);
-        
+
         return (
             <>
                 <div style={{ position: 'relative', width: '100%', height: '100%' }}>
@@ -92,85 +162,37 @@ export default function ProductImageSwiper({
                             loading="lazy"
                         />
                     </Link>
-                    {/* Kampanya etiketleri */}
-                    {campaignTags && campaignTags.length > 0 && (
-                        <>
-                            {(() => {
-                                const positionCounters = { left: 0, center: 0, right: 0 };
-                                const tagHeight = 75;
-                                const gap = 10;
-                                const renderTags = [];
-
-                            campaignTags.forEach((tag, index) => {
-                                // Tag URL'ini normalize et (string veya object olabilir)
-                                const tagUrl = typeof tag === 'string' 
-                                    ? tag 
-                                    : (tag?.url || tag?.image_url || tag?.src || tag);
-                                
-                                // Eğer geçerli bir URL yoksa atla
-                                if (!tagUrl || typeof tagUrl !== 'string') {
-                                    return;
-                                }
-
-                                const position = (typeof tag === 'object' ? tag.position : null) || 'left';
-                                const counter = positionCounters[position];
-
-                                if (counter < 3) {
-                                    let positionStyle = {};
-                                    const topValue = 10 + (counter * (tagHeight + gap));
-
-                                    if (position === 'left') {
-                                        positionStyle = { top: `${topValue}px`, left: '10px' };
-                                    } else if (position === 'center') {
-                                        positionStyle = { top: `${topValue}px`, left: '50%', transform: 'translateX(-50%)' };
-                                    } else if (position === 'right') {
-                                        positionStyle = { top: `${topValue}px`, right: '10px' };
-                                    }
-
-                                    renderTags.push({
-                                        url: tagUrl,
-                                        position: position,
-                                        style: {
-                                            position: 'absolute',
-                                            zIndex: 10,
-                                            ...positionStyle,
-                                        },
-                                        key: `${position}-${counter}-${index}`,
-                                    });
-
-                                    positionCounters[position]++;
-                                }
-                            });
-
-                            return renderTags.map((tag) => (
-                                <Link
-                                    key={tag.key}
-                                    href={`/magaza/${categorySlug}/${productSlug}`}
-                                    className="campaign-tag"
-                                    style={{
-                                        ...tag.style,
-                                        cursor: 'pointer',
-                                        display: 'block',
-                                    }}
-                                >
-                                    <Image
-                                        src={tag.url}
-                                        alt="Campaign Tag"
-                                        width={60}
-                                        height={60}
-                                        style={{
-                                            maxWidth: '75px',
-                                            height: 'auto',
-                                            objectFit: 'contain',
-                                        }}
-                                    />
-                                </Link>
-                            ));
-                            })()}
-                        </>
-                    )}
+                    {renderCampaignTags()}
                 </div>
                 <style jsx global>{`
+                    /* Campaign Tags Styling */
+                    .campaign-tag {
+                        --tag-height: 75px; 
+                        --tag-gap: 10px;
+                        --base-top: 10px;
+                        
+                        top: calc(var(--base-top) + (var(--tag-index) * (var(--tag-height) + var(--tag-gap))));
+                    }
+                    .campaign-tag-img {
+                        max-width: 75px;
+                        height: auto;
+                        object-fit: contain;
+                        transition: all 0.2s ease;
+                    }
+
+                    /* Mobile Responsiveness for Tags */
+                    @media (max-width: 768px) {
+                        .campaign-tag {
+                            --tag-height: 50px;
+                            --tag-gap: 5px;
+                        }
+                        .campaign-tag-img {
+                            max-width: 50px;
+                            width: auto;
+                            max-height: 50px; 
+                        }
+                    }
+
                     .no-hover-effect .img-product,
                     .no-hover-effect:hover .img-product,
                     .card-product-wrapper:hover .no-hover-effect .img-product {
@@ -220,89 +242,41 @@ export default function ProductImageSwiper({
                         );
                     })}
                 </Swiper>
-                {/* Kampanya etiketleri */}
-                {campaignTags && campaignTags.length > 0 && (
-                    <>
-                        {(() => {
-                            const positionCounters = { left: 0, center: 0, right: 0 };
-                            const tagHeight = 75;
-                            const gap = 10;
-                            const renderTags = [];
 
-                            campaignTags.forEach((tag, index) => {
-                                // Tag URL'ini normalize et (string veya object olabilir)
-                                const tagUrl = typeof tag === 'string' 
-                                    ? tag 
-                                    : (tag?.url || tag?.image_url || tag?.src || tag);
-                                
-                                // Eğer geçerli bir URL yoksa atla
-                                if (!tagUrl || typeof tagUrl !== 'string') {
-                                    return;
-                                }
+                {renderCampaignTags()}
 
-                                const position = (typeof tag === 'object' ? tag.position : null) || 'left';
-                                const counter = positionCounters[position];
-
-                                if (counter < 3) {
-                                    let positionStyle = {};
-                                    const topValue = 10 + (counter * (tagHeight + gap));
-
-                                    if (position === 'left') {
-                                        positionStyle = { top: `${topValue}px`, left: '10px' };
-                                    } else if (position === 'center') {
-                                        positionStyle = { top: `${topValue}px`, left: '50%', transform: 'translateX(-50%)' };
-                                    } else if (position === 'right') {
-                                        positionStyle = { top: `${topValue}px`, right: '10px' };
-                                    }
-
-                                    renderTags.push({
-                                        url: tagUrl,
-                                        position: position,
-                                        style: {
-                                            position: 'absolute',
-                                            zIndex: 10,
-                                            ...positionStyle,
-                                        },
-                                        key: `${position}-${counter}-${index}`,
-                                    });
-
-                                    positionCounters[position]++;
-                                }
-                            });
-
-                            return renderTags.map((tag) => (
-                                <Link
-                                    key={tag.key}
-                                    href={`/magaza/${categorySlug}/${productSlug}`}
-                                    className="campaign-tag"
-                                    style={{
-                                        ...tag.style,
-                                        cursor: 'pointer',
-                                        display: 'block',
-                                    }}
-                                >
-                                    <Image
-                                        src={tag.url}
-                                        alt="Campaign Tag"
-                                        width={60}
-                                        height={60}
-                                        style={{
-                                            maxWidth: '75px',
-                                            height: 'auto',
-                                            objectFit: 'contain',
-                                        }}
-                                    />
-                                </Link>
-                            ));
-                        })()}
-                    </>
-                )}
             </div>
             <style jsx global>{`
-                .no-hover-effect .img-product,
-                .no-hover-effect:hover .img-product {
-                    opacity: 1 !important;
+                /* Campaign Tags Styling - Duplicate for Swiper version since JSX Styles are scoped or need to be global for this usage */
+               .campaign-tag {
+                    --tag-height: 75px; 
+                    --tag-gap: 10px;
+                    --base-top: 10px;
+                    
+                    top: calc(var(--base-top) + (var(--tag-index) * (var(--tag-height) + var(--tag-gap))));
                 }
+                .campaign-tag-img {
+                    max-width: 75px !important;
+                    height: auto;
+                    object-fit: contain;
+                    transition: all 0.2s ease;
+                }
+
+                /* Mobile Responsiveness for Tags */
+                @media (max-width: 768px) {
+                    .campaign-tag {
+                        --tag-height: 50px;
+                        --tag-gap: 5px;
+                    }
+                    .campaign-tag-img {
+                       max-width: 50px !important;
+                       width: auto !important;
+                       max-height: 50px !important;
+                    }
+                }
+
+                .no-hover-effect .img-product,
+                .no-hover-effect:hover .img-product,
                 .card-product-wrapper:hover .no-hover-effect .img-product {
                     opacity: 1 !important;
                 }
@@ -310,8 +284,8 @@ export default function ProductImageSwiper({
                     position: absolute;
                     bottom: 10px;
                     left: 50%;
-                    transform: translateX(-50%);
-                    z-index: 10;
+                    transform: translate3d(-50%, 0, 20px);
+                    z-index: 50;
                     display: flex;
                     gap: 6px;
                     justify-content: center;

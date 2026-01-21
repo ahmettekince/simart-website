@@ -275,6 +275,9 @@ export class ProductModel {
             
             // İndirimler
             time_based_discounts: product.time_based_discounts || [],
+
+            // Varyasyonlar
+            variations: product.variations || [],
             
             // Bundle
             bundle_items: product.bundle_items || null,

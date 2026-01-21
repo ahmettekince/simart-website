@@ -8,22 +8,17 @@ import Collections from "@/components/homes/home-electronic/Collections";
 import Hero from "@/components/homes/home-electronic/Hero";
 import Products from "@/components/homes/home-electronic/Products";
 import Testimonials from "@/components/homes/home-electronic/Testimonials";
-import React, { cache } from "react";
+import React from "react";
 import { getCategories, getBanners, getCollectionBanner, getCollections } from "@/api/home";
 import { getMenus } from "@/api/menus";
 import { siteConfig } from "@/config/site";
 import { organizationSchema } from "@/lib/schema";
-
-const schema = organizationSchema();
 
 export const metadata = {
   title: "Şımart Teknoloji - Robot Süpürge ve Akıllı Ev Sistemleri",
   description:
     "Şımart Teknoloji, robot süpürgeler, akıllı ev sistemleri ve IoT çözümlerinde öncüdür. Ev otomasyonu ve yaşamı kolaylaştıran teknolojilerle hizmetinizdeyiz.",
   base: siteConfig.site.url,
-  other: {
-    "script:ld+json": JSON.stringify(schema),
-  },
 };
 
 export const dynamic = "force-dynamic";
@@ -37,8 +32,17 @@ export default async function Home() {
     getCollections(),
   ]);
 
+  const organizationJsonLd = organizationSchema();
+
   return (
-    <div className="color-primary-15">
+    <>
+      {/* Organization JSON-LD */}
+      <script
+        type="application/ld+json"
+        suppressHydrationWarning
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+      />
+      <div className="color-primary-15">
       <Header textClass={"text-black"} menuItems={menuItems} />
       <Hero banners={banners} />
       {/* <Marquee /> */}
@@ -51,5 +55,6 @@ export default async function Home() {
       <Blogs />
       <Features />
     </div>
+    </>
   );
 }

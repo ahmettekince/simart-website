@@ -4,9 +4,8 @@ import { products1 } from "@/data/products";
 import Image from "next/image";
 import Link from "next/link";
 import { useRef, useEffect, useState, useMemo } from "react";
-import { Pagination } from "swiper/modules";
-import { Swiper, SwiperSlide } from "swiper/react";
 import { log } from "@/utils/logger";
+import CartRecommendations from "./CartRecommendations";
 
 const ORDER_NOTE_KEY = "cart_order_note";
 
@@ -65,40 +64,7 @@ export default function ShopCart() {
             <span className="icon-close icon-close-popup" data-bs-dismiss="modal" />
           </div>
           <div className="wrap">
-            <div className="tf-minicart-recommendations">
-              <div className="tf-minicart-recommendations-heading">
-                <div className="tf-minicart-recommendations-title">Şunları da beğenebilirsiniz</div>
-                <div className="sw-dots small style-2 cart-slide-pagination spdsc1" />
-              </div>
-              <Swiper
-                dir="ltr"
-                modules={[Pagination]}
-                pagination={{
-                  clickable: true,
-                  clickable: true,
-                  el: ".spdsc1",
-                }}
-                className="swiper tf-cart-slide"
-              >
-                {products1.slice(0, 2).map((elm, i) => (
-                  <SwiperSlide key={i} className="swiper-slide">
-                    <div className="tf-minicart-recommendations-item">
-                      <div className="tf-minicart-recommendations-item-image">
-                        <Link href={`/product-detail/${elm.id}`}>
-                          <Image alt="image" src={elm.imgSrc} width={720} height={1005} />
-                        </Link>
-                      </div>
-                      <div className="tf-minicart-recommendations-item-infos flex-grow-1">
-                        <Link className="title" href={`/product-detail/${1}`}>
-                          {elm.title}
-                        </Link>
-                        <div className="price">₺{elm.price.toLocaleString("tr-TR")}</div>
-                      </div>
-                    </div>
-                  </SwiperSlide>
-                ))}
-              </Swiper>
-            </div>
+            <CartRecommendations products={items} maxItems={10} />
             <div className="tf-mini-cart-wrap">
               <div className="tf-mini-cart-main">
                 <div className="tf-mini-cart-sroll">
@@ -121,48 +87,48 @@ export default function ShopCart() {
                       const itemPrice = item.discount_price || item.price || 0;
 
                       return (
-                        <div key={i} className="tf-mini-cart-item">
-                          <div className="tf-mini-cart-image">
+                      <div key={i} className="tf-mini-cart-item">
+                        <div className="tf-mini-cart-image">
                             <Link href={productUrl}>
-                              <Image
+                            <Image
                                 alt={item.name}
                                 src={imageUrl}
-                                width={668}
-                                height={932}
-                                style={{ objectFit: "cover" }}
-                              />
-                            </Link>
-                          </div>
-                          <div className="tf-mini-cart-info">
+                              width={668}
+                              height={932}
+                              style={{ objectFit: "cover" }}
+                            />
+                          </Link>
+                        </div>
+                        <div className="tf-mini-cart-info">
                             <Link className="title link" href={productUrl}>
                               {item.name}
-                            </Link>
+                          </Link>
                             <div className="price fw-6">₺{itemPrice.toLocaleString("tr-TR")}</div>
-                            <div className="tf-mini-cart-btns">
-                              <div className="wg-quantity small">
-                                <span
-                                  className="btn-quantity minus-btn"
+                          <div className="tf-mini-cart-btns">
+                            <div className="wg-quantity small">
+                              <span
+                                className="btn-quantity minus-btn"
                                   onClick={() => setQuantity(item.id, item.quantity - 1)}
-                                >
-                                  -
-                                </span>
-                                <input
-                                  type="text"
-                                  name="number"
+                              >
+                                -
+                              </span>
+                              <input
+                                type="text"
+                                name="number"
                                   value={item.quantity}
-                                  min={1}
+                                min={1}
                                   onChange={(e) => setQuantity(item.id, parseInt(e.target.value) || 1)}
-                                />
-                                <span
-                                  className="btn-quantity plus-btn"
+                              />
+                              <span
+                                className="btn-quantity plus-btn"
                                   onClick={() => setQuantity(item.id, item.quantity + 1)}
-                                >
-                                  +
-                                </span>
-                              </div>
-                              <div
-                                className="tf-mini-cart-remove"
-                                style={{ cursor: "pointer" }}
+                              >
+                                +
+                              </span>
+                            </div>
+                            <div
+                              className="tf-mini-cart-remove"
+                              style={{ cursor: "pointer" }}
                                 onClick={async () => {
                                   try {
                                     await removeItem(item.id);
@@ -170,12 +136,12 @@ export default function ShopCart() {
                                     console.error("Sepetten çıkarma hatası:", error);
                                   }
                                 }}
-                              >
-                                Kaldır
-                              </div>
+                            >
+                              Kaldır
                             </div>
                           </div>
                         </div>
+                      </div>
                       );
                     })}
 
@@ -205,19 +171,19 @@ export default function ShopCart() {
                     <div className="tf-cart-totals-item tf-cart-totals-item-small">
                       <div className="tf-cart-total-label">Ara Toplam</div>
                       <div className="tf-cart-total-value">₺{cartTotals.subtotal.toLocaleString("tr-TR")}</div>
-                    </div>
+                  </div>
                     <div className="tf-cart-totals-item tf-cart-totals-item-small">
                       <div className="tf-cart-total-label">İndirim</div>
                       <div className="tf-cart-total-value">
                         {cartTotals.discount > 0 ? `-₺${cartTotals.discount.toLocaleString("tr-TR")}` : "₺0"}
-                      </div>
-                    </div>
+                  </div>
+                </div>
                     <div className="tf-cart-totals-item tf-cart-totals-item-total">
                       <div className="tf-cart-total-label fw-6">Toplam</div>
                       <div className="tf-cart-total-value fw-6">₺{cartTotals.total.toLocaleString("tr-TR")}</div>
                     </div>
                   </div>
-
+                  
                   <div className="tf-mini-cart-line" />
 
                   <div className="tf-mini-cart-view-checkout">

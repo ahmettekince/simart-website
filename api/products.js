@@ -7,7 +7,7 @@ import { ProductModel } from "@/models/Product";
  */
 export async function getProducts(params = "") {
     const endpoint = `/products${params ? `?${params}` : ""}`;
-    const response = await serverFetch(endpoint, { next: { revalidate: 10 } });
+    const response = await serverFetch(endpoint, { next: { revalidate: 0 } });
 
     if (response?.status === "success") {
         return response.data || [];
@@ -28,7 +28,7 @@ export async function getProductsByCategory(categorySlug) {
     }
 
     const endpoint = `/products/category/${categorySlug}`;
-    const response = await serverFetch(endpoint, { next: { revalidate: 10 } });
+    const response = await serverFetch(endpoint, { next: { revalidate: 0 } });
 
     if (response?.status === "success") {
         return response.data || [];
@@ -50,7 +50,7 @@ export async function getProductBySlug(productSlug) {
     }
 
     const endpoint = `/products/${productSlug}`;
-    const response = await serverFetch(endpoint, { next: { revalidate: 10 } });
+    const response = await serverFetch(endpoint, { next: { revalidate: 0 } });
 
     if (response?.status === "success" && response.data) {
         try {

@@ -32,10 +32,10 @@ export const layouts = [
 ];
 
 export const sortingOptions = [
-  { text: "Default" },
+  { text: "Önerilen Sıralama " },
 
-  { text: "Alphabetically, A-Z" },
-  { text: "Alphabetically, Z-A" },
-  { text: "Price, low to high" },
-  { text: "Price, high to low" },
+  { text: "Alfabetik, A-Z" },
+  { text: "Alfabetik, Z-A" },
+  { text: "En düşük fiyat" },
+  { text: "En yüksek fiyat" },
 ];

@@ -29,21 +29,9 @@ export default async function RootLayout({ children }) {
 
   return (
     <html lang="tr">
-      <head>
-        {/* Google reCaptcha */}
-        <script src="https://www.google.com/recaptcha/api.js" async></script>
-        {/* Google Analytics */}
-        {/* <script src="https://www.googletagmanager.com/gtag/js?id=G-GQP4JCTH72" async></script> */}
-        {/* <script id="ga-init">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-GQP4JCTH72');
-          `}
-        </script> */}
-      </head>
       <body className="preload-wrapper">
+        {/* Google reCaptcha (body içinde yükleniyor) */}
+        <script src="https://www.google.com/recaptcha/api.js" async></script>
         <div className="preload preload-container" id="preloader">
           <div className="preload-logo">
             <div className="spinner"></div>

@@ -5,6 +5,8 @@ import Link from "next/link";
 import axios from "axios";
 
 import { paymentImages } from "@/data/footerLinks";
+import { siteConfig } from "@/config/site";
+
 export default function Footer({ bgColor = "", footerMenus = null }) {
   useEffect(() => {
     const headings = document.querySelectorAll(".footer-heading-moblie");
@@ -93,36 +95,95 @@ export default function Footer({ bgColor = "", footerMenus = null }) {
                       </p>
                     </li>
                   </ul>
-                  <Link href={`/contact-1`} className="tf-btn btn-line">
+                  <Link href={`/iletisim`} className="tf-btn btn-line">
                     Haritada İncele
                     <i className="icon icon-arrow1-top-left" />
                   </Link>
                   <ul className="tf-social-icon d-flex gap-10">
-                    <li>
-                      <a href="#" className="box-icon w_34 round social-facebook social-line">
-                        <i className="icon fs-14 icon-fb" />
-                      </a>
-                    </li>
-                    <li>
-                      <a href="#" className="box-icon w_34 round social-twiter social-line">
-                        <i className="icon fs-12 icon-Icon-x" />
-                      </a>
-                    </li>
-                    <li>
-                      <a href="#" className="box-icon w_34 round social-instagram social-line">
-                        <i className="icon fs-14 icon-instagram" />
-                      </a>
-                    </li>
-                    <li>
-                      <a href="#" className="box-icon w_34 round social-tiktok social-line">
-                        <i className="icon fs-14 icon-tiktok" />
-                      </a>
-                    </li>
-                    <li>
-                      <a href="#" className="box-icon w_34 round social-pinterest social-line">
-                        <i className="icon fs-14 icon-pinterest-1" />
-                      </a>
-                    </li>
+                    {siteConfig.social.facebook && (
+                      <li>
+                        <a
+                          href={siteConfig.social.facebook}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="box-icon w_34 round social-facebook social-line"
+                        >
+                          <i className="icon fs-14 icon-fb" />
+                        </a>
+                      </li>
+                    )}
+                    {siteConfig.social.twitter && (
+                      <li>
+                        <a
+                          href={siteConfig.social.twitter}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="box-icon w_34 round social-twiter social-line"
+                        >
+                          <i className="icon fs-12 icon-Icon-x" />
+                        </a>
+                      </li>
+                    )}
+                    {siteConfig.social.instagram && (
+                      <li>
+                        <a
+                          href={siteConfig.social.instagram}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="box-icon w_34 round social-instagram social-line"
+                        >
+                          <i className="icon fs-14 icon-instagram" />
+                        </a>
+                      </li>
+                    )}
+                    {siteConfig.social.tiktok && (
+                      <li>
+                        <a
+                          href={siteConfig.social.tiktok}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="box-icon w_34 round social-tiktok social-line"
+                        >
+                          <i className="icon fs-14 icon-tiktok" />
+                        </a>
+                      </li>
+                    )}
+                    {siteConfig.social.pinterest && (
+                      <li>
+                        <a
+                          href={siteConfig.social.pinterest}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="box-icon w_34 round social-pinterest social-line"
+                        >
+                          <i className="icon fs-14 icon-pinterest-1" />
+                        </a>
+                      </li>
+                    )}
+                    {siteConfig.social.youtube && (
+                      <li>
+                        <a
+                          href={siteConfig.social.youtube}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="box-icon w_34 round social-youtube social-line"
+                        >
+                          <i className="icon fs-14 icon-youtube" />
+                        </a>
+                      </li>
+                    )}
+                    {siteConfig.social.linkedin && (
+                      <li>
+                        <a
+                          href={siteConfig.social.linkedin}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="box-icon w_34 round social-linkedin social-line"
+                        >
+                          <i className="icon fs-14 icon-linkedin" />
+                        </a>
+                      </li>
+                    )}
                   </ul>
                 </div>
               </div>

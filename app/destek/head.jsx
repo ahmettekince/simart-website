@@ -1,14 +1,6 @@
-import React from "react";
-import SupportForm from "@/components/support/SupportForm";
-import Header from "@/components/headers/Header";
-import { webPageSchema } from "../../lib/schema";
+import { webPageSchema } from "@/lib/schema";
 
-export const metadata = {
-  title: "Destek - Şımart Teknoloji",
-  description: "Şımart Teknoloji destek sayfası. Sorularınız için bizimle iletişime geçin.",
-};
-
-export default function SupportPage() {
+export default function Head() {
   const supportJsonLd = webPageSchema({
     name: "Destek - Şımart Teknoloji",
     url: "https://simart.me/destek",
@@ -18,14 +10,12 @@ export default function SupportPage() {
 
   return (
     <>
-      {/* WebPage JSON-LD */}
+      {/* WebPage JSON-LD (Destek) */}
       <script
         type="application/ld+json"
-        suppressHydrationWarning
         dangerouslySetInnerHTML={{ __html: JSON.stringify(supportJsonLd) }}
       />
-      <Header />
-      <SupportForm />
     </>
   );
 }
+

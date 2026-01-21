@@ -3,10 +3,10 @@ import { layouts, sortingOptions } from "@/data/shop";
 import { useState } from "react";
 import Pagination from "../common/Pagination";
 import { products1 } from "@/data/products";
-import Productcard4 from "../shopCards/Productcart4";
+import Productcard4 from "../../otherpagesinveriler/shopCards/Productcart4";
 import ShopFilter from "./ShopFilter";
 import Sorting from "./Sorting";
-import Productcard23 from "../shopCards/Productcard23";
+import Productcard23 from "../../otherpagesinveriler/shopCards/Productcard23";
 
 export default function ProductStyle4() {
   const [gridItems, setGridItems] = useState(4);
@@ -18,12 +18,7 @@ export default function ProductStyle4() {
         <div className="container">
           <div className="tf-shop-control grid-3 align-items-center">
             <div className="tf-control-filter">
-              <a
-                href="#filterShop"
-                data-bs-toggle="offcanvas"
-                aria-controls="offcanvasLeft"
-                className="tf-btn-filter"
-              >
+              <a href="#filterShop" data-bs-toggle="offcanvas" aria-controls="offcanvasLeft" className="tf-btn-filter">
                 <span className="icon icon-filter" />
                 <span className="text">Filter</span>
               </a>
@@ -70,10 +65,7 @@ export default function ProductStyle4() {
                 {/* card product 2 */}
               </div>
             ) : (
-              <div
-                className="grid-layout wrapper-shop"
-                data-grid={`grid-${gridItems}`}
-              >
+              <div className="grid-layout wrapper-shop" data-grid={`grid-${gridItems}`}>
                 {/* card product 1 */}
                 {finalSorted.map((elm, i) => (
                   <Productcard4 product={elm} key={i} />

@@ -4,7 +4,7 @@ import { log } from "./logger";
 
 const BACKEND_URL = process.env.BACKEND_URL;
 const MAX_RETRIES = 3;
-const RETRY_DELAY = 1250; // 2 saniye
+const RETRY_DELAY = 100; // 0.1 saniye
 
 /**
  * Cloudflare challenge sayfası olup olmadığını kontrol eder

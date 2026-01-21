@@ -1,7 +1,7 @@
 import React from "react";
 import Pagination from "../common/Pagination";
 import { products1 } from "@/data/products";
-import Productcard23 from "../shopCards/Productcard23";
+import Productcard23 from "../../otherpagesinveriler/shopCards/Productcard23";
 
 export default function ShopStyleList() {
   return (

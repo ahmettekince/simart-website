@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import apiClient from "@/utils/apiClient";
 import { log } from "@/utils/logger";
-import { ProductCard } from "../shopCards/ProductCard";
+import { ProductCard } from "../../otherpagesinveriler/shopCards/ProductCard";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import { products1 } from "@/data/products";

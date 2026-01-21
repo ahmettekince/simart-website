@@ -8,7 +8,7 @@ import ShopFilter from "./ShopFilter";
  * MagazaDisplay - Client Component
  * Bu bileşen artık filtreleme ve sıralama özelliklerini de içeriyor.
  */
-export default function MagazaDisplay({ products: initialProducts = [] }) {
+export default function MagazaDisplay({ products: initialProducts = [], categories = [] }) {
     const [products, setProducts] = useState(initialProducts);
     const [finalSorted, setFinalSorted] = useState([]);
 
@@ -20,20 +20,13 @@ export default function MagazaDisplay({ products: initialProducts = [] }) {
     return (
         <>
             <section className="magaza-list-section">
-
                 <div className="container">
-
                     {/* Filtre ve Sıralama Çubuğu */}
                     <div className="magaza-controls">
                         <div className="control-left">
-                            <a
-                                href="#filterShop"
-                                data-bs-toggle="offcanvas"
-                                aria-controls="offcanvasLeft"
-                                className="tf-btn-filter"
-                            >
+                            <a href="#filterShop" data-bs-toggle="offcanvas" aria-controls="offcanvasLeft" className="tf-btn-filter">
                                 <span className="icon icon-filter" />
-                                <span className="text">Filtrele</span>
+                                <span className="text">Kategoriler</span>
                             </a>
                         </div>
 
@@ -118,7 +111,7 @@ export default function MagazaDisplay({ products: initialProducts = [] }) {
             </section>
 
             {/* Yan Filtre Menüsü (Offcanvas) */}
-            <ShopFilter setProducts={setProducts} products={initialProducts} />
+            <ShopFilter setProducts={setProducts} products={initialProducts} categories={categories} />
         </>
     );
 }
