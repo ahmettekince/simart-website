@@ -14,7 +14,7 @@ import { productSchema } from "@/lib/schema";
  * Dinamik metadata oluşturma
  */
 export async function generateMetadata({ params }) {
-  const { kategori, urun } = await params;
+    const { kategori, urun } = await params;
 
   if (!urun) {
     return {
@@ -23,15 +23,15 @@ export async function generateMetadata({ params }) {
     };
   }
 
-  const product = await getProductBySlug(urun);
-  if (!product) {
-    return {
-      title: "Ürün Bulunamadı - Şımart Teknoloji",
-      description: "Aradığınız ürün bulunamadı.",
-    };
-  }
+    const product = await getProductBySlug(urun);
+    if (!product) {
+        return {
+            title: "Ürün Bulunamadı - Şımart Teknoloji",
+            description: "Aradığınız ürün bulunamadı.",
+        };
+    }
 
-  const productName = product.name || product.title || "Ürün";
+    const productName = product.name || product.title || "Ürün";
   const productDescription =
     product.description || `${productName} ürün detayları, özellikleri ve kullanıcı yorumları.`;
   
@@ -49,15 +49,15 @@ export async function generateMetadata({ params }) {
     product.images || product.gallery_images || (product.image ? [product.image] : [])
   );
 
-  return {
-    title: `${productName} - Şımart Teknoloji`,
+    return {
+        title: `${productName} - Şımart Teknoloji`,
     description: productDescription,
     openGraph: {
       title: productName,
       description: productDescription,
       images: productImages.length > 0 ? productImages : [],
     },
-  };
+    };
 }
 
 export default async function page({ params }) {

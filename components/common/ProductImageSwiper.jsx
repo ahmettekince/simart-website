@@ -210,6 +210,7 @@ export default function ProductImageSwiper({
                     modules={[Pagination, Navigation]}
                     spaceBetween={0}
                     slidesPerView={1}
+                    loop={true}
                     pagination={{
                         clickable: true,
                         dynamicBullets: false,
@@ -294,7 +295,7 @@ export default function ProductImageSwiper({
                 .product-images-swiper .swiper-pagination-bullet {
                     width: 6px !important;
                     height: 6px !important;
-                    background-color: rgba(0, 0, 0, 0.4) !important;
+                    background-color: #f5f5f5 !important;
                     opacity: 1 !important;
                     border-radius: 50% !important;
                     transition: all 0.3s ease !important;
@@ -303,7 +304,7 @@ export default function ProductImageSwiper({
                 .product-images-swiper .swiper-pagination-bullet-active {
                     width: 24px !important;
                     height: 6px !important;
-                    background-color: rgba(0, 0, 0, 0.8) !important;
+                    background-color: #3c81b5 !important;
                     border-radius: 3px !important;
                 }
             `}</style>

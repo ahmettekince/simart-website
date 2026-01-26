@@ -75,7 +75,7 @@ export default function Footer({ bgColor = "", footerMenus = null }) {
                 <div className="footer-infor">
                   <div className="footer-logo">
                     <Link href={`/`}>
-                      <Image alt="image" src="/images/logo/logo.png" width="136" height="21" />
+                      <Image alt="image" src="/images/logo/logo.svg" width="150" height="21" />
                     </Link>
                   </div>
                   <ul>
@@ -212,7 +212,10 @@ export default function Footer({ bgColor = "", footerMenus = null }) {
                       </div>
                     )
                 )}
-              <div className="col-xl-3 col-md-6 col-12">
+
+
+              <div className="col-xl-3 col-md-6 col-12 ">
+
                 <div className="footer-newsletter footer-col-block">
                   <div className="footer-heading footer-heading-desktop">
                     <h6>Abone Olun</h6>
@@ -247,7 +250,7 @@ export default function Footer({ bgColor = "", footerMenus = null }) {
                             type="email"
                             name="email"
                             className="subscribe-email"
-                            placeholder="Enter your email...."
+                            placeholder="E-posta adresinizi giriniz..."
                             tabIndex={0}
                             aria-required="true"
                             autoComplete="abc@xyz.com"

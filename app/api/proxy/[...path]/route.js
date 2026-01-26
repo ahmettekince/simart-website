@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import axios from "axios";
 import crypto from "crypto";
 
-const BACKEND_URL = "https://api.simart.cloud/api/v1";
+const BACKEND_URL = process.env.BACKEND_URL;
 
 async function handleRequest(request, params, method) {
     const resolvedParams = await params;
@@ -44,7 +44,7 @@ async function handleRequest(request, params, method) {
         const cookieStore = await cookies();
         const cookieHeaders = [];
         let deviceId = null;
-        
+
         cookieStore.getAll().forEach(cookie => {
             cookieHeaders.push(`${cookie.name}=${cookie.value}`);
             // DEVICE_ID cookie'sini X-Device-ID header'ı olarak ekle
@@ -67,10 +67,94 @@ async function handleRequest(request, params, method) {
                 ...(deviceId && { "X-Device-ID": deviceId }),
             },
             data: body,
-            withCredentials: true, // Cookie'leri otomatik gönder
+            // Server-side axios'ta withCredentials gereksiz, cookie'leri zaten manuel gönderiyoruz
+            // Ancak response headers'ını tam olarak almak için validateStatus ekleyelim
+            validateStatus: () => true, // Tüm status kodlarını kabul et (Set-Cookie header'larını almak için)
         });
 
-        return NextResponse.json(response.data, { status: response.status });
+        // Backend'den gelen Set-Cookie header'larını NextResponse'a aktar
+        const nextResponse = NextResponse.json(response.data, { status: response.status });
+        
+        // Set-Cookie header'larını kontrol et ve ekle
+        // Axios response headers'ında Set-Cookie'ler lowercase 'set-cookie' olarak gelir ve array olabilir
+        const setCookieHeaders = response.headers['set-cookie'];
+        
+        // Debug: Sadece Set-Cookie header'larını logla
+        if (process.env.NODE_ENV === 'development') {
+            if (setCookieHeaders) {
+                console.log('[Proxy] Set-Cookie:', setCookieHeaders);
+            }
+        }
+        if (setCookieHeaders && Array.isArray(setCookieHeaders)) {
+            setCookieHeaders.forEach(cookie => {
+                // Cookie string'ini parse et ve NextResponse'a ekle
+                // Format: "name=value; Path=/; Max-Age=3600; HttpOnly; SameSite=Lax"
+                const cookieParts = cookie.split(';');
+                const [nameValue] = cookieParts;
+                const [name, ...valueParts] = nameValue.split('=');
+                const value = valueParts.join('='); // Eğer value'da = varsa
+                
+                // Cookie options'ları parse et
+                const options = {};
+                cookieParts.slice(1).forEach(part => {
+                    const trimmed = part.trim();
+                    if (trimmed.toLowerCase().startsWith('path=')) {
+                        options.path = trimmed.substring(5);
+                    } else if (trimmed.toLowerCase().startsWith('max-age=')) {
+                        options.maxAge = parseInt(trimmed.substring(8));
+                    } else if (trimmed.toLowerCase().startsWith('expires=')) {
+                        options.expires = new Date(trimmed.substring(8));
+                    } else if (trimmed.toLowerCase() === 'httponly') {
+                        options.httpOnly = true;
+                    } else if (trimmed.toLowerCase().startsWith('samesite=')) {
+                        const sameSiteValue = trimmed.substring(9).toLowerCase();
+                        if (sameSiteValue === 'strict' || sameSiteValue === 'lax' || sameSiteValue === 'none') {
+                            options.sameSite = sameSiteValue;
+                        }
+                    } else if (trimmed.toLowerCase() === 'secure') {
+                        options.secure = true;
+                    }
+                });
+                
+                // Default değerler
+                if (!options.path) options.path = '/';
+                if (!options.sameSite) options.sameSite = 'lax';
+                
+                nextResponse.cookies.set(name.trim(), value, options);
+            });
+        } else if (setCookieHeaders) {
+            // Tek bir cookie string olarak gelmişse
+            const cookieParts = setCookieHeaders.split(';');
+            const [nameValue] = cookieParts;
+            const [name, ...valueParts] = nameValue.split('=');
+            const value = valueParts.join('=');
+            
+            const options = {};
+            cookieParts.slice(1).forEach(part => {
+                const trimmed = part.trim();
+                if (trimmed.toLowerCase().startsWith('path=')) {
+                    options.path = trimmed.substring(5);
+                } else if (trimmed.toLowerCase().startsWith('max-age=')) {
+                    options.maxAge = parseInt(trimmed.substring(8));
+                } else if (trimmed.toLowerCase() === 'httponly') {
+                    options.httpOnly = true;
+                } else if (trimmed.toLowerCase().startsWith('samesite=')) {
+                    const sameSiteValue = trimmed.substring(9).toLowerCase();
+                    if (sameSiteValue === 'strict' || sameSiteValue === 'lax' || sameSiteValue === 'none') {
+                        options.sameSite = sameSiteValue;
+                    }
+                } else if (trimmed.toLowerCase() === 'secure') {
+                    options.secure = true;
+                }
+            });
+            
+            if (!options.path) options.path = '/';
+            if (!options.sameSite) options.sameSite = 'lax';
+            
+            nextResponse.cookies.set(name.trim(), value, options);
+        }
+        
+        return nextResponse;
     } catch (error) {
         console.error("Proxy Error:", {
             message: error.message,

@@ -91,8 +91,9 @@ export const siteConfig = {
         url: "https://simart.me/",
         logo: "https://simart.me/uploads/systems/logo.webp",
         author: "Şımart Teknoloji",
-        description:"Şımart Teknoloji, robot süpürgeler, akıllı ev sistemleri ve IoT çözümlerinde öncüdür. Ev otomasyonu ve yaşamı kolaylaştıran teknolojilerle hizmetinizdeyiz.",
-        keywords:"Şımart Teknoloji, Akıllı Ev Sistemleri, IoT Çözümleri, Robot Süpürge, Akıllı Cihazlar, Teknolojik Ürünler, Ev Otomasyonu, Şımart Ürünleri, Akıllı Teknoloji, IoT Ürünleri",
+        description: "Şımart Teknoloji, robot süpürgeler, akıllı ev sistemleri ve IoT çözümlerinde öncüdür. Ev otomasyonu ve yaşamı kolaylaştıran teknolojilerle hizmetinizdeyiz.",
+        keywords: "Şımart Teknoloji, Akıllı Ev Sistemleri, IoT Çözümleri, Robot Süpürge, Akıllı Cihazlar, Teknolojik Ürünler, Ev Otomasyonu, Şımart Ürünleri, Akıllı Teknoloji, IoT Ürünleri",
+        recaptchaSiteKey: process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI", // Google test key - Production için değiştirin
 
         og: {
             title: "Şımart Teknoloji - Robot Süpürge ve Akıllı Ev Sistemleri",
@@ -100,7 +101,7 @@ export const siteConfig = {
             image: "https://simart.me/og.jpg",
             type: "website",
             locale: "tr_TR",
-        }, 
+        },
         twitter: {
             card: "summary_large_image",
             title: "Şımart Teknoloji - Robot Süpürge ve Akıllı Ev Sistemleri",
@@ -109,7 +110,7 @@ export const siteConfig = {
             site: "@simartteknoloji",
             creator: "@simartteknoloji",
         },
-        itemprop:{
+        itemprop: {
             name: "Şımart Teknoloji - Robot Süpürge ve Akıllı Ev Sistemleri",
             description: "Şımart Teknoloji, robot süpürgeler, akıllı ev sistemleri ve IoT çözümlerinde öncüdür. Ev otomasyonu ve yaşamı kolaylaştıran teknolojilerle hizmetinizdeyiz.",
             image: "https://simart.me/uploads/systems/seo.jpg",

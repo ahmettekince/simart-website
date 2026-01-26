@@ -3,6 +3,9 @@
 import { useEffect, useState } from "react";
 
 export default function Quantity({ setQuantity = (value) => {}, minQuantity = 1, maxQuantity = null }) {
+  const parsedMax = maxQuantity === null || maxQuantity === undefined ? null : Number(maxQuantity);
+  const effectiveMax =
+    parsedMax === 0 ? 999 : (Number.isFinite(parsedMax) ? parsedMax : null);
   const [count, setCount] = useState(minQuantity);
 
   useEffect(() => {
@@ -19,14 +22,18 @@ export default function Quantity({ setQuantity = (value) => {}, minQuantity = 1,
     }
 
     // Maksimum kontrolü (varsa)
-    if (maxQuantity && maxQuantity > 0 && finalCount > maxQuantity) {
-      finalCount = maxQuantity;
+    if (effectiveMax && effectiveMax > 0 && finalCount > effectiveMax) {
+      finalCount = effectiveMax;
     }
 
     setCount(finalCount);
   };
 
   const handleDecrease = () => {
+    // Minimum 1 kontrolü - 1'den küçük olamaz
+    if (count <= minQuantity) {
+      return;
+    }
     const newCount = count - 1;
     if (newCount >= minQuantity) {
       updateCount(newCount);
@@ -35,7 +42,7 @@ export default function Quantity({ setQuantity = (value) => {}, minQuantity = 1,
 
   const handleIncrease = () => {
     const newCount = count + 1;
-    if (!maxQuantity || maxQuantity === 0 || newCount <= maxQuantity) {
+    if (!effectiveMax || effectiveMax === 0 || newCount <= effectiveMax) {
       updateCount(newCount);
     }
   };
@@ -59,18 +66,18 @@ export default function Quantity({ setQuantity = (value) => {}, minQuantity = 1,
       </span>
       <input
         min={minQuantity}
-        max={maxQuantity || undefined}
+        max={effectiveMax || undefined}
         type="number"
         onChange={handleInputChange}
         name="number"
         value={count}
       />
       <span
-        className={`btn-quantity plus-btn ${maxQuantity && maxQuantity > 0 && count >= maxQuantity ? "disabled" : ""}`}
+        className={`btn-quantity plus-btn ${effectiveMax && effectiveMax > 0 && count >= effectiveMax ? "disabled" : ""}`}
         onClick={handleIncrease}
         style={{
-          opacity: maxQuantity && maxQuantity > 0 && count >= maxQuantity ? 0.5 : 1,
-          cursor: maxQuantity && maxQuantity > 0 && count >= maxQuantity ? "not-allowed" : "pointer",
+          opacity: effectiveMax && effectiveMax > 0 && count >= effectiveMax ? 0.5 : 1,
+          cursor: effectiveMax && effectiveMax > 0 && count >= effectiveMax ? "not-allowed" : "pointer",
         }}
       >
         +

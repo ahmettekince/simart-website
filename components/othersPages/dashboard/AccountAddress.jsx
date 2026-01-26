@@ -13,7 +13,7 @@ export default function AccountAddress() {
           className="tf-btn btn-fill animate-hover-btn btn-address mb_20"
           onClick={() => setactiveEdit(true)}
         >
-          Add a new address
+          Yeni Adres Ekle
         </button>
         <form
           className="show-form-address wd-form-address"
@@ -21,7 +21,7 @@ export default function AccountAddress() {
           onSubmit={(e) => e.preventDefault()}
           style={activeEdit ? { display: "block" } : { display: "none" }}
         >
-          <div className="title">Add a new address</div>
+          <div className="title">Yeni Adres Ekle</div>
           <div className="box-field grid-2-lg">
             <div className="tf-field style-1">
               <input
@@ -35,7 +35,7 @@ export default function AccountAddress() {
                 className="tf-field-label fw-4 text_black-2"
                 htmlFor="firstname"
               >
-                First name
+                Adınız
               </label>
             </div>
             <div className="tf-field style-1">
@@ -50,7 +50,7 @@ export default function AccountAddress() {
                 className="tf-field-label fw-4 text_black-2"
                 htmlFor="lastname"
               >
-                Last name
+                Soyadınız
               </label>
             </div>
           </div>
@@ -67,7 +67,7 @@ export default function AccountAddress() {
                 className="tf-field-label fw-4 text_black-2"
                 htmlFor="company"
               >
-                Company
+                Şirket
               </label>
             </div>
           </div>
@@ -84,7 +84,7 @@ export default function AccountAddress() {
                 className="tf-field-label fw-4 text_black-2"
                 htmlFor="address"
               >
-                Address
+                Adres
               </label>
             </div>
           </div>
@@ -101,7 +101,7 @@ export default function AccountAddress() {
                 className="tf-field-label fw-4 text_black-2"
                 htmlFor="city"
               >
-                City
+                Şehir
               </label>
             </div>
           </div>
@@ -110,7 +110,7 @@ export default function AccountAddress() {
               htmlFor="country"
               className="mb_10 fw-4 text-start d-block text_black-2 "
             >
-              Country/Region
+              Ülke/Bölge
             </label>
             <div className="select-custom">
               <select
@@ -267,7 +267,7 @@ export default function AccountAddress() {
                 className="tf-field-label fw-4 text_black-2"
                 htmlFor="AddressZipNew"
               >
-                Postal/ZIP code
+                Posta Kodu
               </label>
             </div>
           </div>
@@ -284,7 +284,7 @@ export default function AccountAddress() {
                 className="tf-field-label fw-4 text_black-2"
                 htmlFor="phone"
               >
-                Phone
+                Telefon
               </label>
             </div>
           </div>
@@ -296,37 +296,37 @@ export default function AccountAddress() {
                 className="tf-check"
               />
               <label htmlFor="check-new-address" className="text_black-2 fw-4">
-                Set as default address.
+                Varsayılan adres olarak ayarla.
               </label>
             </div>
           </div>
           <div className="d-flex align-items-center justify-content-center gap-20">
             <button type="button" className="tf-btn btn-fill animate-hover-btn">
-              Add address
+              Adresi Ekle
             </button>
             <span
               className="tf-btn btn-fill animate-hover-btn btn-hide-address"
               onClick={() => setactiveEdit(false)}
             >
-              Cancel
+              İptal
             </span>
           </div>
         </form>
-        <h6 className="mb_20">Default</h6>
-        <p>themesflat</p>
-        <p>1234 Fashion Street, Suite 567</p>
-        <p>New York</p>
+        <h6 className="mb_20">Varsayılan</h6>
+        <p>Adınız Soyadınız</p>
+        <p>Adresiniz</p>
+        <p>Şehir</p>
         <p>info@fashionshop.com</p>
-        <p className="mb_10">(212) 555-1234</p>
+        <p className="mb_10">Telefon Numaranız</p>
         <div className="d-flex gap-10 justify-content-center">
           <button
             className="tf-btn btn-fill animate-hover-btn justify-content-center btn-edit-address"
             onClick={() => setactiveAdd(true)}
           >
-            <span>Edit</span>
+            <span>Düzenle</span>
           </button>
           <button className="tf-btn btn-outline animate-hover-btn justify-content-center">
-            <span>Delete</span>
+            <span>Sil</span>
           </button>
         </div>
         <form
@@ -335,7 +335,7 @@ export default function AccountAddress() {
           onSubmit={(e) => e.preventDefault()}
           style={activeAdd ? { display: "block" } : { display: "none" }}
         >
-          <div className="title">Edit address</div>
+          <div className="title">Adresi Düzenle</div>
           <div className="box-field grid-2-lg">
             <div className="tf-field style-1">
               <input
@@ -349,7 +349,7 @@ export default function AccountAddress() {
                 className="tf-field-label fw-4 text_black-2"
                 htmlFor="firstnameEdit"
               >
-                First name
+                Adınız
               </label>
             </div>
             <div className="tf-field style-1">
@@ -364,7 +364,7 @@ export default function AccountAddress() {
                 className="tf-field-label fw-4 text_black-2"
                 htmlFor="lastnameEdit"
               >
-                Last name
+                Soyadınız
               </label>
             </div>
           </div>
@@ -381,7 +381,7 @@ export default function AccountAddress() {
                 className="tf-field-label fw-4 text_black-2"
                 htmlFor="companyEdit"
               >
-                Company
+                Şirket
               </label>
             </div>
           </div>
@@ -398,7 +398,7 @@ export default function AccountAddress() {
                 className="tf-field-label fw-4 text_black-2"
                 htmlFor="addressEdit"
               >
-                Address
+                Adres
               </label>
             </div>
           </div>
@@ -415,7 +415,7 @@ export default function AccountAddress() {
                 className="tf-field-label fw-4 text_black-2"
                 htmlFor="cityEdit"
               >
-                City
+                Şehir
               </label>
             </div>
           </div>
@@ -424,7 +424,7 @@ export default function AccountAddress() {
               htmlFor="countryEdit"
               className="mb_10 fw-4 text-start d-block text_black-2"
             >
-              Country/Region
+              Ülke/Bölge
             </label>
             <div className="select-custom">
               <select

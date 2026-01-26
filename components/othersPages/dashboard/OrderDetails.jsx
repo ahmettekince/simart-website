@@ -50,7 +50,7 @@ export default function OrderDetails() {
       document
         .querySelectorAll(".widget-menu-tab .item-title")
         .forEach((title) => {
-          title.removeEventListener("click", () => {});
+          title.removeEventListener("click", () => { });
         });
     };
   }, []);
@@ -66,25 +66,25 @@ export default function OrderDetails() {
           />
         </figure>
         <div className="content">
-          <div className="badge">In Progress</div>
+          <div className="badge">Devam Ediyor</div>
           <h6 className="mt-8 fw-5">Order #17493</h6>
         </div>
       </div>
       <div className="tf-grid-layout md-col-2 gap-15">
         <div className="item">
-          <div className="text-2 text_black-2">Item</div>
+          <div className="text-2 text_black-2">Ürün</div>
           <div className="text-2 mt_4 fw-6">Fashion</div>
         </div>
         <div className="item">
-          <div className="text-2 text_black-2">Courier</div>
+          <div className="text-2 text_black-2">Kargo</div>
           <div className="text-2 mt_4 fw-6">Ribbed modal T-shirt</div>
         </div>
         <div className="item">
-          <div className="text-2 text_black-2">Start Time</div>
+          <div className="text-2 text_black-2">Başlangıç Zamanı</div>
           <div className="text-2 mt_4 fw-6">04 September 2024, 13:30:23</div>
         </div>
         <div className="item">
-          <div className="text-2 text_black-2">Address</div>
+          <div className="text-2 text_black-2">Adres</div>
           <div className="text-2 mt_4 fw-6">
             1234 Fashion Street, Suite 567, New York
           </div>
@@ -93,16 +93,16 @@ export default function OrderDetails() {
       <div className="widget-tabs style-has-border widget-order-tab">
         <ul className="widget-menu-tab">
           <li className="item-title active">
-            <span className="inner">Order History</span>
+            <span className="inner">Sipariş Geçmişi</span>
           </li>
           <li className="item-title">
-            <span className="inner">Item Details</span>
+            <span className="inner">Ürün Detayları</span>
           </li>
           <li className="item-title">
-            <span className="inner">Courier</span>
+            <span className="inner">Kargo</span>
           </li>
           <li className="item-title">
-            <span className="inner">Receiver</span>
+            <span className="inner">Alıcı</span>
           </li>
         </ul>
         <div className="widget-content-tab">
@@ -113,15 +113,15 @@ export default function OrderDetails() {
                   <div className="timeline-badge success" />
                   <div className="timeline-box">
                     <a className="timeline-panel" href="#">
-                      <div className="text-2 fw-6">Product Shipped</div>
+                      <div className="text-2 fw-6">Ürün Gönderildi</div>
                       <span>10/07/2024 4:30pm</span>
                     </a>
                     <p>
-                      <strong>Courier Service : </strong>FedEx World Service
+                      <strong>Kargo Hizmeti : </strong>FedEx World Service
                       Center
                     </p>
                     <p>
-                      <strong>Estimated Delivery Date : </strong>12/07/2024
+                      <strong>Tahmini Teslimat Tarihi : </strong>12/07/2024
                     </p>
                   </div>
                 </li>
@@ -129,14 +129,14 @@ export default function OrderDetails() {
                   <div className="timeline-badge success" />
                   <div className="timeline-box">
                     <a className="timeline-panel" href="#">
-                      <div className="text-2 fw-6">Product Shipped</div>
+                      <div className="text-2 fw-6">Ürün Gönderildi</div>
                       <span>10/07/2024 4:30pm</span>
                     </a>
                     <p>
-                      <strong>Tracking Number : </strong>2307-3215-6759
+                      <strong>Takip Numarası : </strong>2307-3215-6759
                     </p>
                     <p>
-                      <strong>Warehouse : </strong>T-Shirt 10b
+                      <strong>Depo : </strong>T-Shirt 10b
                     </p>
                   </div>
                 </li>
@@ -144,7 +144,7 @@ export default function OrderDetails() {
                   <div className="timeline-badge" />
                   <div className="timeline-box">
                     <a className="timeline-panel" href="#">
-                      <div className="text-2 fw-6">Product Packaging</div>
+                      <div className="text-2 fw-6">Ürün Paketlendi</div>
                       <span>12/07/2024 4:34pm</span>
                     </a>
                   </div>
@@ -153,7 +153,7 @@ export default function OrderDetails() {
                   <div className="timeline-badge" />
                   <div className="timeline-box">
                     <a className="timeline-panel" href="#">
-                      <div className="text-2 fw-6">Order Placed</div>
+                      <div className="text-2 fw-6">Sipariş Verildi</div>
                       <span>11/07/2024 2:36pm</span>
                     </a>
                   </div>
@@ -174,57 +174,54 @@ export default function OrderDetails() {
               <div className="content">
                 <div className="text-2 fw-6">Ribbed modal T-shirt</div>
                 <div className="mt_4">
-                  <span className="fw-6">Price :</span> $28.95
+                  <span className="fw-6">Fiyat :</span> $28.95
                 </div>
                 <div className="mt_4">
-                  <span className="fw-6">Size :</span> XL
+                  <span className="fw-6">Beden :</span> XL
                 </div>
               </div>
             </div>
             <ul>
               <li className="d-flex justify-content-between text-2">
-                <span>Total Price</span>
+                <span>Toplam Fiyat</span>
                 <span className="fw-6">$28.95</span>
               </li>
               <li className="d-flex justify-content-between text-2 mt_4 pb_8 line">
-                <span>Total Discounts</span>
+                <span>Toplam İndirim</span>
                 <span className="fw-6">$10</span>
               </li>
               <li className="d-flex justify-content-between text-2 mt_8">
-                <span>Order Total</span>
+                <span>Toplam Sipariş</span>
                 <span className="fw-6">$18.95</span>
               </li>
             </ul>
           </div>
           <div className="widget-content-inner">
             <p>
-              Our courier service is dedicated to providing fast, reliable, and
-              secure delivery solutions tailored to meet your needs. Whether
-              you're sending documents, parcels, or larger shipments, our team
-              ensures that your items are handled with the utmost care and
-              delivered on time. With a commitment to customer satisfaction,
-              real-time tracking, and a wide network of routes, we make it easy
-              for you to send and receive packages both locally and
-              internationally. Choose our service for a seamless and efficient
-              delivery experience.
+              Kargo hizmetimiz hızlı, güvenilir ve güvenli teslimat çözümlerini
+              sunmak için odaklanıyor. Belge, paket veya büyük gönderileriniz için
+              ihtiyaçlarınıza uygun hızlı, güvenilir ve güvenli teslimat çözümleri
+              sunuyoruz. Müşteri memnuniyetine odaklanarak gerçek zamanlı takip,
+              geniş rotalar ve yerel ve uluslararası teslimat seçenekleriyle
+              sizin için kolay ve verimli teslimat deneyimi sunuyoruz.
             </p>
           </div>
           <div className="widget-content-inner">
             <p className="text-2 text_success">
-              Thank you Your order has been received
+              Teşekkürler, Siparişiniz alındı
             </p>
             <ul className="mt_20">
               <li>
-                Order Number : <span className="fw-7">#17493</span>
+                Sipariş Numarası : <span className="fw-7">#17493</span>
               </li>
               <li>
-                Date : <span className="fw-7"> 17/07/2024, 02:34pm</span>
+                Tarih : <span className="fw-7"> 17/07/2024, 02:34pm</span>
               </li>
               <li>
-                Total : <span className="fw-7">$18.95</span>
+                Toplam : <span className="fw-7">$18.95</span>
               </li>
               <li>
-                Payment Methods :<span className="fw-7">Cash on Delivery</span>
+                Ödeme Yöntemi :<span className="fw-7">Nakliye Ödemesi</span>
               </li>
             </ul>
           </div>

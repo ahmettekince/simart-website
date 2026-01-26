@@ -1,19 +1,54 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination } from "swiper/modules";
 import { useCartStore } from "@/stores/cartStore";
+import { getCartRecommendations } from "@/api/cart";
 
 /**
  * Cart modal içinde "Şunları da beğenebilirsiniz" alanı.
- * İleride API'den sepet-özel öneri listesi gelince sadece burası/props değişecek.
+ * Sepette ürün yoksa API'den önerileri çeker, varsa props'tan gelen ürünleri gösterir.
  */
-export default function CartRecommendations({ title = "Şunları da beğenebilirsiniz", products = [], maxItems = 10 }) {
-  const items = Array.isArray(products) ? products.slice(0, maxItems) : [];
-  if (items.length === 0) return null;
+export default function CartRecommendations({ title = "Şunları da beğenebilirsiniz", products = [], maxItems = 10, showWhenEmpty = false }) {
+  const { items } = useCartStore();
+  const [apiRecommendations, setApiRecommendations] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const hasCartItems = items && items.length > 0;
+  
+  // Sepette ürün yoksa ve showWhenEmpty true ise API'den önerileri çek
+  useEffect(() => {
+    if (showWhenEmpty && !hasCartItems && apiRecommendations.length === 0 && !loading) {
+      setLoading(true);
+      getCartRecommendations()
+        .then((recommendations) => {
+          if (recommendations && recommendations.length > 0) {
+            setApiRecommendations(recommendations);
+          }
+        })
+        .catch((error) => {
+          console.error("Öneriler yüklenirken hata:", error);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showWhenEmpty, hasCartItems]);
+
+  // Sepette ürün varsa props'tan gelen ürünleri kullan, yoksa API'den gelen önerileri kullan
+  const itemsToShow = hasCartItems 
+    ? (Array.isArray(products) ? products.slice(0, maxItems) : [])
+    : (Array.isArray(apiRecommendations) ? apiRecommendations.slice(0, maxItems) : []);
+
+  // Sepette ürün varsa ve showWhenEmpty false ise göster (normal davranış)
+  // Sepette ürün yoksa ve showWhenEmpty true ise API'den öneriler geldiyse göster
+  if (hasCartItems && itemsToShow.length === 0) return null;
+  if (!hasCartItems && !showWhenEmpty) return null;
+  if (!hasCartItems && showWhenEmpty && loading) return null; // Loading sırasında gösterilmez
+  if (!hasCartItems && showWhenEmpty && itemsToShow.length === 0) return null; // Öneriler yoksa gösterilmez
 
   const paginationClass = "spdsc1"; // Sabit class - sadece bir instance olduğu için
 
@@ -34,7 +69,7 @@ export default function CartRecommendations({ title = "Şunları da beğenebilir
         }}
         className="swiper tf-cart-slide"
       >
-        {items.map((product, i) => (
+        {itemsToShow.map((product, i) => (
           <SwiperSlide key={product?.id ?? i} className="swiper-slide">
             <RecommendationItem product={product} />
           </SwiperSlide>
@@ -50,7 +85,7 @@ function RecommendationItem({ product }) {
   const [showSuccess, setShowSuccess] = useState(false);
 
   const title = product?.name || product?.title || "";
-  const finalPrice = product?.discount_price || product?.price || 0;
+  const finalPrice = product?.final_price || product?.discount_price || product?.price || 0;
 
   const getCategorySlug = () => {
     // Sepetteki ürün yapısı: item.product?.categories veya item.product?.primary_category
@@ -87,6 +122,7 @@ function RecommendationItem({ product }) {
     product?.imgSrc ||
     product?.product?.cover_image?.url ||
     product?.cover_image?.url ||
+    product?.cover_image?.thumbnail_url || // API'den gelen öneriler için
     product?.images?.[0]?.url ||
     product?.images?.[0] ||
     "/images/placeholder.jpg";

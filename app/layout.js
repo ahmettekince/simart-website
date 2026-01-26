@@ -15,9 +15,7 @@ export const metadata = {
   description: siteConfig.site.description,
   keywords: siteConfig.site.keywords,
   author: siteConfig.site.author,
-  og: siteConfig.site.og,
-  twitter: siteConfig.site.twitter,
-  itemprop: siteConfig.site.itemprop,
+  // og, twitter ve itemprop her sayfada ayrı tanımlanacak
 };
 
 export default async function RootLayout({ children }) {

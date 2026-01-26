@@ -29,10 +29,10 @@ export default function Collections({ collections = [] }) {
           {collections.map((collection, index) => {
             const { images, title, subtitle, link, button_text } = collection;
             // Tüm cihazlarda aynı görseli kullan (responsive görsel yok)
-            const imageUrl = images?.url || images?.desktop?.url || images?.tablet?.url || images?.mobil?.url;
-            
+            const imageUrl = images?.url || images?.desktop?.url || images?.tablet?.url || images?.mobile?.url;
+
             if (!imageUrl) return null;
-            
+
             return (
               <SwiperSlide key={collection.id || index}>
                 <div className="collection-item-v4 lg hover-img">
@@ -76,7 +76,7 @@ export default function Collections({ collections = [] }) {
                       {link && (
                         <Button
                           href={link}
-                          text={ "shop now"}
+                          text={"shop now"}
                         />
                       )}
                     </div>

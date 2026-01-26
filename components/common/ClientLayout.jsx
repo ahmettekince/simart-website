@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { useCartStore } from "@/stores/cartStore";
+import { useAuthStore } from "@/stores/authStore";
 import { getCart } from "@/api/cart";
 import HomesModal from "@/components/modals/HomesModal";
 import Context from "@/context/Context";
@@ -32,6 +33,11 @@ export default function ClientLayout({ children }) {
     const [scrollDirection, setScrollDirection] = useState("down");
     const syncFromAPI = useCartStore((state) => state.syncFromAPI);
     const isSynced = useCartStore((state) => state.isSynced);
+    const initAuth = useAuthStore((state) => state.initAuth);
+
+    useEffect(() => {
+        initAuth();
+    }, [initAuth]);
 
     useEffect(() => {
         if (typeof window !== "undefined") {

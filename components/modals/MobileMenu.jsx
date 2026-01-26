@@ -4,10 +4,29 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import apiClient from "@/utils/apiClient";
 import { log } from "@/utils/logger";
+import { useAuthStore } from "@/stores/authStore";
 
 export default function MobileMenu({ menuItems: initialMenuItems = [] }) {
   const pathname = usePathname();
   const [menuItems, setMenuItems] = useState(initialMenuItems);
+  const { isAuthenticated, logout } = useAuthStore();
+
+  const handleLogout = async (e) => {
+    e.preventDefault();
+    try {
+      await apiClient.post("/customer/logout");
+      logout();
+      // Cookie cleanup
+      document.cookie = "_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      document.cookie = "_token=; path=/; domain=" + window.location.hostname + "; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      window.location.href = "/giris-yap";
+    } catch (error) {
+      console.error("Logout error:", error);
+      document.cookie = "_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      document.cookie = "_token=; path=/; domain=" + window.location.hostname + "; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+      window.location.href = "/giris-yap";
+    }
+  };
 
   useEffect(() => {
     if (initialMenuItems.length === 0) {
@@ -136,10 +155,17 @@ export default function MobileMenu({ menuItems: initialMenuItems = [] }) {
           </div>
         </div>
         <div className="mb-bottom">
-          <Link href={`/login`} className="site-nav-icon">
-            <i className="icon icon-account" />
-            Login
-          </Link>
+          {isAuthenticated ? (
+            <a href="#" onClick={handleLogout} className="site-nav-icon">
+              <i className="icon icon-account" />
+              Çıkış Yap
+            </a>
+          ) : (
+            <Link href={`/giris-yap`} className="site-nav-icon">
+              <i className="icon icon-account" />
+              Giriş Yap
+            </Link>
+          )}
         </div>
       </div>
     </div>

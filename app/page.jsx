@@ -19,6 +19,27 @@ export const metadata = {
   description:
     "Şımart Teknoloji, robot süpürgeler, akıllı ev sistemleri ve IoT çözümlerinde öncüdür. Ev otomasyonu ve yaşamı kolaylaştıran teknolojilerle hizmetinizdeyiz.",
   base: siteConfig.site.url,
+  og: {
+    title: "Şımart Teknoloji - Robot Süpürge ve Akıllı Ev Sistemleri",
+    description: "Şımart Teknoloji, robot süpürgeler, akıllı ev sistemleri ve IoT çözümlerinde öncüdür. Ev otomasyonu ve yaşamı kolaylaştıran teknolojilerle hizmetinizdeyiz.",
+    image: "https://simart.me/og.jpg",
+    type: "website",
+    locale: "tr_TR",
+    url: "https://simart.me",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Şımart Teknoloji - Robot Süpürge ve Akıllı Ev Sistemleri",
+    description: "Şımart Teknoloji, robot süpürgeler, akıllı ev sistemleri ve IoT çözümlerinde öncüdür. Ev otomasyonu ve yaşamı kolaylaştıran teknolojilerle hizmetinizdeyiz.",
+    image: "https://simart.me/og.jpg",
+    site: "@simartteknoloji",
+    creator: "@simartteknoloji",
+  },
+  other: {
+    "itemprop:name": "Şımart Teknoloji - Robot Süpürge ve Akıllı Ev Sistemleri",
+    "itemprop:description": "Şımart Teknoloji, robot süpürgeler, akıllı ev sistemleri ve IoT çözümlerinde öncüdür. Ev otomasyonu ve yaşamı kolaylaştıran teknolojilerle hizmetinizdeyiz.",
+    "itemprop:image": "https://simart.me/uploads/systems/seo.jpg",
+  },
 };
 
 export const dynamic = "force-dynamic";
@@ -32,7 +53,10 @@ export default async function Home() {
     getCollections(),
   ]);
 
-  const organizationJsonLd = organizationSchema();
+  const organizationJsonLd = organizationSchema({
+    url: siteConfig.site.url,
+    description: metadata.description,
+  });
 
   return (
     <>
@@ -43,18 +67,18 @@ export default async function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
       />
       <div className="color-primary-15">
-      <Header textClass={"text-black"} menuItems={menuItems} />
-      <Hero banners={banners} />
-      {/* <Marquee /> */}
-      <Categories categories={categories} />
-      <CollectionBanner banner={collectionBanner} />
-      <Collections collections={collections} />
-      {/* <Countdown /> */}
-      <Products />
-      <Testimonials />
-      <Blogs />
-      <Features />
-    </div>
+        <Header textClass={"text-black"} menuItems={menuItems} />
+        <Hero banners={banners} />
+        {/* <Marquee /> */}
+        <Categories categories={categories} />
+        <CollectionBanner banner={collectionBanner} />
+        <Collections collections={collections} />
+        {/* <Countdown /> */}
+        <Products />
+        <Testimonials />
+        <Blogs />
+        <Features />
+      </div>
     </>
   );
 }

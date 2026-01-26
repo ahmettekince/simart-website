@@ -1,14 +1,21 @@
-import Footer from "@/components/footers/Footer";
 import Header from "@/components/headers/Header";
 import DashboardNav from "@/components/othersPages/dashboard/DashboardNav";
 import Orders from "@/components/othersPages/dashboard/Orders";
 import React from "react";
+import { checkAuthServer } from "@/utils/authServer";
+import { redirect } from "next/navigation";
 
 export const metadata = {
   title: "My Account Orders || Ecomus - Ultimate Nextjs Ecommerce Template",
   description: "Ecomus - Ultimate Nextjs Ecommerce Template",
 };
-export default function page() {
+export default async function page() {
+  const isAuthenticated = await checkAuthServer();
+
+  if (!isAuthenticated) {
+    redirect("/giris-yap");
+  }
+
   return (
     <>
       <Header />
@@ -30,7 +37,6 @@ export default function page() {
         </div>
       </section>
 
-      <Footer />
     </>
   );
 }

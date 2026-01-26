@@ -7,38 +7,17 @@ import { log } from "@/utils/logger";
 export async function getCategories() {
     log("[API home.js] getCategories: İstek gönderiliyor - URL: /categories");
 
-
     const response = await serverFetch("/categories", {
         next: { revalidate: 0 }, // Cache'i devre dışı bırak
         cache: "no-store" // Cache'i tamamen devre dweışı bırak
     });
 
-    log("[API home.js] getCategories: API cevabı alındı", {
-        hasResponse: !!response,
-        status: response?.status,
-        dataLength: response?.data ? (Array.isArray(response.data) ? response.data.length : "not array") : "no data",
-        responseTime: response?.response_time,
-        fullResponse: response,
-    });
-
     if (response?.status === "success") {
         const categories = response.data || [];
-        log(`[API home.js] getCategories success: ${categories.length} kategori yüklendi`, {
-            categories: categories.map(cat => ({
-                name: cat.name,
-                slug: cat.slug,
-                is_active: cat.is_active,
-            })),
-        });
+
         return categories;
     }
 
-    log("[API home.js] getCategories failed:", {
-        status: response?.status,
-        message: response?.message,
-        hasData: !!response?.data,
-        response: response,
-    });
     return [];
 }
 

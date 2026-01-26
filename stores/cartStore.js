@@ -5,7 +5,7 @@
 
 import { create } from 'zustand';
 import { openCartModal } from '@/utils/openCartModal';
-import { addToCart as addToCartAPI, removeFromCart as removeFromCartAPI, getCart } from '@/api/cart';
+import { addToCart as addToCartAPI, removeFromCart as removeFromCartAPI, decreaseCartQuantity as decreaseCartQuantityAPI, getCart } from '@/api/cart';
 import { log } from '@/utils/logger';
 
 /**
@@ -61,239 +61,257 @@ const calculateTotalItems = (items) => {
  */
 export const useCartStore = create(
     (set, get) => ({
-            // State
-            items: [],
-            cartId: null, // API'den gelen cart ID
-            deviceId: null, // Device ID
-            isSynced: false, // API ile senkronize mi?
-            totals: null, // API'den gelen toplam bilgileri (subtotal, discount, tax, total)
+        // State
+        items: [],
+        cartId: null, // API'den gelen cart ID
+        deviceId: null, // Device ID
+        isSynced: false, // API ile senkronize mi?
+        totals: null, // API'den gelen toplam bilgileri (subtotal, discount, tax, total)
+        applied_campaigns: [], // Uygulanan kampanyalar
 
-            // Actions
+        // Actions
 
-            /**
-             * Sepete ürün ekle (API ile senkronize)
-             * @param {Object} product - Ürün objesi
-             * @param {number} quantity - Miktar (varsayılan: 1)
-             * @param {boolean} openModal - Modal açılsın mı? (varsayılan: false)
-             */
-            addItem: async (product, quantity = 1, openModal = false) => {
-                if (!product || !product.id) {
-                    log('[CartStore] addItem: Geçersiz ürün objesi');
-                    return;
-                }
+        /**
+         * Sepete ürün ekle (API ile senkronize)
+         * @param {Object} product - Ürün objesi
+         * @param {number} quantity - Miktar (varsayılan: 1)
+         * @param {boolean} openModal - Modal açılsın mı? (varsayılan: false)
+         */
+        addItem: async (product, quantity = 1, openModal = false) => {
+            if (!product || !product.id) {
+                log('[CartStore] addItem: Geçersiz ürün objesi');
+                return;
+            }
 
-                const productSlug = product.slug || '';
-                if (!productSlug) {
-                    log('[CartStore] addItem: Ürün slug\'ı bulunamadı');
-                    return;
-                }
+            const productSlug = product.slug || '';
+            if (!productSlug) {
+                log('[CartStore] addItem: Ürün slug\'ı bulunamadı');
+                return;
+            }
 
-                try {
-                    // API'ye istek at
-                    const cartData = await addToCartAPI(productSlug, quantity);
-                    
-                    // API başarılı döndüyse, güncel sepeti çek ve store'u güncelle
-                    if (cartData) {
-                        const updatedCart = await getCart();
-                        if (updatedCart) {
-                            get().syncFromAPI(updatedCart);
-                            log('[CartStore] addItem - Store updated');
+            try {
+                // API'ye istek at
+                const cartData = await addToCartAPI(productSlug, quantity);
 
-                            // Modal açılması gerekiyorsa
-                            if (openModal) {
-                                if (typeof window !== 'undefined') {
-                                    setTimeout(() => {
-                                        openCartModal();
-                                    }, 100);
-                                }
-                            }
-                        }
-                    } else {
-                        log('[CartStore] addItem: API başarısız oldu');
-                    }
-                } catch (error) {
-                    log('[CartStore] addItem error:', error);
-                }
-            },
-
-            /**
-             * Ürün miktarını güncelle (API ile senkronize)
-             * @param {number} productId - Ürün ID'si (store'daki id)
-             * @param {number} quantity - Yeni miktar (minimum 1)
-             */
-            updateQuantity: async (productId, quantity) => {
-                if (quantity < 1) {
-                    log('[CartStore] updateQuantity: Miktar 1\'den küçük olamaz');
-                    return;
-                }
-
-                const state = get();
-                const item = state.items.find(item => item.id === productId);
-
-                if (!item) {
-                    log(`[CartStore] updateQuantity: Ürün bulunamadı (ID: ${productId})`);
-                    return;
-                }
-
-                // Slug'ı bul
-                const slug = item.slug || item.product?.slug;
-                
-                if (!slug) {
-                    log(`[CartStore] updateQuantity: Ürün slug'ı bulunamadı (ID: ${productId})`);
-                    return;
-                }
-
-                try {
-                    // Quantity farkını hesapla
-                    const quantityDiff = quantity - item.quantity;
-                    
-                    // Eğer artırma varsa, her artırma için API'ye ekleme isteği at (1'er 1'er)
-                    if (quantityDiff > 0) {
-                        for (let i = 0; i < quantityDiff; i++) {
-                            const result = await addToCartAPI(slug, 1);
-                            if (!result) break; // Başarısız olursa dur
-                        }
-                    } else if (quantityDiff < 0) {
-                        // Azaltma varsa, her azaltma için API'ye çıkarma isteği at (1'er 1'er)
-                        for (let i = 0; i < Math.abs(quantityDiff); i++) {
-                            const result = await removeFromCartAPI(slug);
-                            if (!result) break; // Başarısız olursa dur
-                        }
-                    }
-
-                    // Tüm API işlemleri başarılı olduysa, güncel sepeti çek ve store'u güncelle
+                // API başarılı döndüyse, güncel sepeti çek ve store'u güncelle
+                if (cartData) {
                     const updatedCart = await getCart();
                     if (updatedCart) {
                         get().syncFromAPI(updatedCart);
-                        log('[CartStore] updateQuantity - Store updated');
-                    }
-                } catch (error) {
-                    log('[CartStore] updateQuantity error:', error);
-                }
-            },
+                        log('[CartStore] addItem - Store updated');
 
-            /**
-             * Sepetten ürün çıkar (API ile senkronize)
-             * @param {number} productId - Ürün ID'si (store'daki id)
-             * @param {string} [productSlug] - Ürün slug'ı (API için, eğer yoksa store'dan alınır)
-             */
-            removeItem: async (productId, productSlug = null) => {
-                const state = get();
-                const item = state.items.find(item => item.id === productId);
-                
-                if (!item) {
-                    log(`[CartStore] removeItem: Ürün bulunamadı (ID: ${productId})`);
-                    return;
-                }
-
-                // Slug'ı bul (parametre olarak gelmediyse store'dan al)
-                const slug = productSlug || item.slug || item.product?.slug;
-                
-                if (!slug) {
-                    log(`[CartStore] removeItem: Ürün slug'ı bulunamadı (ID: ${productId})`);
-                    return;
-                }
-
-                try {
-                    // API'ye istek at
-                    const cartData = await removeFromCartAPI(slug);
-                    
-                    // API başarılı döndüyse, güncel sepeti çek ve store'u güncelle
-                    if (cartData) {
-                        const updatedCart = await getCart();
-                        if (updatedCart) {
-                            get().syncFromAPI(updatedCart);
-                            log('[CartStore] removeItem - Store updated');
+                        // Modal açılması gerekiyorsa
+                        if (openModal) {
+                            if (typeof window !== 'undefined') {
+                                setTimeout(() => {
+                                    openCartModal();
+                                }, 100);
+                            }
                         }
-                    } else {
-                        log('[CartStore] removeItem: API başarısız oldu');
                     }
-                } catch (error) {
-                    log('[CartStore] removeItem error:', error);
+                } else {
+                    log('[CartStore] addItem: API başarısız oldu');
                 }
-            },
+            } catch (error) {
+                log('[CartStore] addItem error:', error);
+            }
+        },
 
-            /**
-             * Ürünün sepette olup olmadığını kontrol et
-             * @param {number} productId - Ürün ID'si
-             * @returns {boolean} Sepette var mı?
-             */
-            isInCart: (productId) => {
-                return get().items.some(item => item.id === productId);
-            },
+        /**
+         * Ürün miktarını güncelle (API ile senkronize)
+         * @param {number} productId - Ürün ID'si (store'daki id)
+         * @param {number} quantity - Yeni miktar (minimum 1)
+         */
+        updateQuantity: async (productId, quantity) => {
+            if (quantity < 1) {
+                log('[CartStore] updateQuantity: Miktar 1\'den küçük olamaz');
+                return;
+            }
 
-            /**
-             * Sepetteki ürünü getir
-             * @param {number} productId - Ürün ID'si
-             * @returns {CartItem | undefined} Sepetteki ürün
-             */
-            getItem: (productId) => {
-                return get().items.find(item => item.id === productId);
-            },
+            const state = get();
+            const item = state.items.find(item => item.id === productId);
 
-            /**
-             * Sepeti tamamen temizle
-             */
-            clearCart: () => {
-                set({ 
-                    items: [],
-                    cartId: null,
-                    deviceId: null,
-                    totals: null,
-                    isSynced: false
-                });
-                // Sipariş notunu localStorage'dan da temizle
-                if (typeof window !== 'undefined') {
-                    localStorage.removeItem('cart_order_note');
+            if (!item) {
+                log(`[CartStore] updateQuantity: Ürün bulunamadı (ID: ${productId})`);
+                return;
+            }
+
+            const rawMax =
+                item.max_purchase_quantity ?? item.product?.max_purchase_quantity ?? item.product?.max_quantity ?? null;
+            const parsedMax = rawMax === null || rawMax === undefined ? null : Number(rawMax);
+            const maxQty =
+                parsedMax === 0 ? 999 : (Number.isFinite(parsedMax) ? parsedMax : null);
+            if (maxQty && quantity > maxQty) {
+                quantity = maxQty;
+            }
+
+            // Slug'ı bul
+            const slug = item.slug || item.product?.slug;
+
+            if (!slug) {
+                log(`[CartStore] updateQuantity: Ürün slug'ı bulunamadı (ID: ${productId})`);
+                return;
+            }
+
+            try {
+                // Quantity farkını hesapla
+                const quantityDiff = quantity - item.quantity;
+
+                // Eğer artırma varsa, her artırma için API'ye ekleme isteği at (1'er 1'er)
+                if (quantityDiff > 0) {
+                    for (let i = 0; i < quantityDiff; i++) {
+                        const result = await addToCartAPI(slug, 1);
+                        if (!result) break; // Başarısız olursa dur
+                    }
+                } else if (quantityDiff < 0) {
+                    // Azaltma varsa, /cart-minus/items endpoint'ini kullan (toplu azaltma)
+                    const decreaseAmount = Math.abs(quantityDiff);
+                    const result = await decreaseCartQuantityAPI(slug, decreaseAmount);
+                    if (!result) {
+                        log('[CartStore] updateQuantity: decreaseCartQuantity API başarısız oldu');
+                        return;
+                    }
                 }
-            },
 
-            /**
-             * API'den gelen sepet verisini store'a senkronize et
-             * @param {Object} apiCartData - API'den gelen normalize edilmiş sepet verisi
-             */
-            syncFromAPI: (apiCartData) => {
-                if (!apiCartData || !apiCartData.items) {
-                    console.warn('[CartStore] syncFromAPI: Geçersiz sepet verisi');
-                    return;
+                // Tüm API işlemleri başarılı olduysa, güncel sepeti çek ve store'u güncelle
+                const updatedCart = await getCart();
+                if (updatedCart) {
+                    get().syncFromAPI(updatedCart);
+                    log('[CartStore] updateQuantity - Store updated');
                 }
+            } catch (error) {
+                log('[CartStore] updateQuantity error:', error);
+            }
+        },
 
-                // API'den gelen items'ı store formatına çevir
-                const storeItems = apiCartData.items.map(apiItem => {
-                    // coverImage direkt URL string veya null olabilir
-                    const imageUrl = apiItem.product.coverImage || '';
-                    
-                    return {
-                        id: apiItem.productId, // Store'da product.id kullanıyoruz (UI için)
-                        productId: apiItem.productId,
-                        apiItemId: apiItem.id, // API'deki item ID'si (güncelleme/silme için)
-                        name: apiItem.product.name || '',
-                        slug: apiItem.product.slug || '',
-                        price: apiItem.unitPrice,
-                        discount_price: apiItem.discountAmount > 0 ? apiItem.unitPrice - apiItem.discountAmount : null,
-                        quantity: apiItem.quantity,
-                        image: imageUrl,
-                        // API'den gelen ek bilgiler
-                        taxAmount: apiItem.taxAmount,
-                        total: apiItem.total,
-                        // Product objesi (minimal)
-                        product: {
-                            id: apiItem.product.id,
-                            name: apiItem.product.name,
-                            slug: apiItem.product.slug,
-                            sku: apiItem.product.sku,
-                            cover_image: apiItem.product.coverImage,
-                        }
-                    };
-                });
+        /**
+         * Sepetten ürün çıkar (API ile senkronize)
+         * @param {number} productId - Ürün ID'si (store'daki id)
+         * @param {string} [productSlug] - Ürün slug'ı (API için, eğer yoksa store'dan alınır)
+         */
+        removeItem: async (productId, productSlug = null) => {
+            const state = get();
+            const item = state.items.find(item => item.id === productId);
 
-                set({
-                    items: storeItems,
-                    cartId: apiCartData.cartId,
-                    deviceId: apiCartData.deviceId,
-                    totals: apiCartData.totals || null,
-                    isSynced: true,
-                });
-            },
-        })
+            if (!item) {
+                log(`[CartStore] removeItem: Ürün bulunamadı (ID: ${productId})`);
+                return;
+            }
+
+            // Slug'ı bul (parametre olarak gelmediyse store'dan al)
+            const slug = productSlug || item.slug || item.product?.slug;
+
+            if (!slug) {
+                log(`[CartStore] removeItem: Ürün slug'ı bulunamadı (ID: ${productId})`);
+                return;
+            }
+
+            try {
+                // API'ye istek at
+                const cartData = await removeFromCartAPI(slug);
+
+                // API başarılı döndüyse, güncel sepeti çek ve store'u güncelle
+                if (cartData) {
+                    const updatedCart = await getCart();
+                    if (updatedCart) {
+                        get().syncFromAPI(updatedCart);
+                        log('[CartStore] removeItem - Store updated');
+                    }
+                } else {
+                    log('[CartStore] removeItem: API başarısız oldu');
+                }
+            } catch (error) {
+                log('[CartStore] removeItem error:', error);
+            }
+        },
+
+        /**
+         * Ürünün sepette olup olmadığını kontrol et
+         * @param {number} productId - Ürün ID'si
+         * @returns {boolean} Sepette var mı?
+         */
+        isInCart: (productId) => {
+            return get().items.some(item => item.id === productId);
+        },
+
+        /**
+         * Sepetteki ürünü getir
+         * @param {number} productId - Ürün ID'si
+         * @returns {CartItem | undefined} Sepetteki ürün
+         */
+        getItem: (productId) => {
+            return get().items.find(item => item.id === productId);
+        },
+
+        /**
+         * Sepeti tamamen temizle
+         */
+        clearCart: () => {
+            set({
+                items: [],
+                cartId: null,
+                deviceId: null,
+                totals: null,
+                isSynced: false
+            });
+            // Sipariş notunu localStorage'dan da temizle
+            if (typeof window !== 'undefined') {
+                localStorage.removeItem('cart_order_note');
+            }
+        },
+
+        /**
+         * API'den gelen sepet verisini store'a senkronize et
+         * @param {Object} apiCartData - API'den gelen normalize edilmiş sepet verisi
+         */
+        syncFromAPI: (apiCartData) => {
+            if (!apiCartData || !apiCartData.items) {
+                console.warn('[CartStore] syncFromAPI: Geçersiz sepet verisi');
+                return;
+            }
+
+            // API'den gelen items'ı store formatına çevir
+            const storeItems = apiCartData.items.map(apiItem => {
+                // coverImage direkt URL string veya null olabilir
+                const imageUrl = apiItem.product.coverImage || '';
+
+                return {
+                    id: apiItem.productId, // Store'da product.id kullanıyoruz (UI için)
+                    productId: apiItem.productId,
+                    apiItemId: apiItem.id, // API'deki item ID'si (güncelleme/silme için)
+                    name: apiItem.product.name || '',
+                    slug: apiItem.product.slug || '',
+                    price: apiItem.unitPrice, // Normal fiyat
+                    discount_price: apiItem.discountAmount > 0 ? apiItem.discountAmount : null, // İndirimli fiyat (eğer varsa)
+                    quantity: apiItem.quantity,
+                    image: imageUrl,
+                    is_gift: apiItem.is_gift || false,
+                    source_product_ids: apiItem.source_product_ids || [],
+                    applied_campaign_ids: apiItem.applied_campaign_ids || [],
+                    max_purchase_quantity: apiItem.product.maxPurchaseQuantity ?? null,
+                    // API'den gelen ek bilgiler
+                    taxAmount: apiItem.taxAmount,
+                    total: apiItem.total,
+                    // Product objesi (minimal)
+                    product: {
+                        id: apiItem.product.id,
+                        name: apiItem.product.name,
+                        slug: apiItem.product.slug,
+                        sku: apiItem.product.sku,
+                        cover_image: apiItem.product.coverImage,
+                        max_purchase_quantity: apiItem.product.maxPurchaseQuantity ?? null,
+                    }
+                };
+            });
+
+            set({
+                items: storeItems,
+                cartId: apiCartData.cartId,
+                deviceId: apiCartData.deviceId,
+                totals: apiCartData.totals || null,
+                applied_campaigns: apiCartData.applied_campaigns || [],
+                isSynced: true,
+            });
+        },
+    })
 );

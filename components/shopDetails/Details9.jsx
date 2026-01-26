@@ -106,7 +106,9 @@ export default function Details9({ product }) {
     product?.max_purchase_quantity === null || product?.max_purchase_quantity === undefined
       ? null
       : Number(product.max_purchase_quantity);
-  const maxQuantity = rawMax === null || Number.isNaN(rawMax) ? null : Math.max(rawMax, minQuantity);
+  const normalizedMax =
+    rawMax === 0 ? 999 : (rawMax === null || Number.isNaN(rawMax) ? null : rawMax);
+  const maxQuantity = normalizedMax === null ? null : Math.max(normalizedMax, minQuantity);
   const [quantity, setQuantity] = useState(minQuantity);
 
   const existingCartItem = useMemo(() => {
@@ -305,18 +307,18 @@ export default function Details9({ product }) {
                       </div>
                     </div>
                   )}
-                  <div className="tf-product-info-quantity">
-                    <Quantity setQuantity={setQuantity} minQuantity={minQuantity} maxQuantity={maxQuantity} />
-                  </div>
                   <div className="tf-product-info-buy-button">
                     <form onSubmit={(e) => e.preventDefault()} className="">
-                      <div className="tf-product-buy-actions">
+                      <div className="tf-product-buy-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                        <div className="tf-product-info-quantity" style={{ margin: 0 }}>
+                          <Quantity setQuantity={setQuantity} minQuantity={minQuantity} maxQuantity={maxQuantity} />
+                        </div>
                         <button
                           type="button"
                           onClick={handleAddToCartAnimated}
                           disabled={isAdding || showSuccess}
                           className={`main-cart-btn ${showSuccess ? "success-animation" : ""}`}
-                          style={{ opacity: 1 }}
+                          style={{ opacity: 1, flex: 1, minWidth: '200px' }}
                         >
                           <span className="button-text-main">
                             {showSuccess ? "Sepete Eklendi" : isAdding ? "Ekleniyor..." : "Sepete Ekle"}
@@ -326,6 +328,7 @@ export default function Details9({ product }) {
                         <a
                           onClick={() => addToWishlist(product.id)}
                           className="tf-product-btn-wishlist hover-tooltip box-icon bg_white wishlist btn-icon-action wish-action-btn"
+                          style={{ flexShrink: 0 }}
                         >
                           <span className={`icon icon-heart ${isAddedtoWishlist(product.id) ? "added" : ""}`} />
                           <span className="tooltip">

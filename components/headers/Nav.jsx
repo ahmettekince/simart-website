@@ -1,9 +1,7 @@
 "use client";
 import Link from "next/link";
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { usePathname } from "next/navigation";
-import apiClient from "@/utils/apiClient";
-import { log } from "@/utils/logger";
 import { ProductCard } from "../../otherpagesinveriler/shopCards/ProductCard";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
@@ -11,38 +9,7 @@ import { products1 } from "@/data/products";
 
 export default function Nav({ isArrow = true, textColor = "", Linkfs = "", menuItems: initialMenuItems = [] }) {
   const pathname = usePathname();
-  const [menuItems, setMenuItems] = useState(initialMenuItems);
-
-  useEffect(() => {
-    // Eğer dışarıdan hazır menü gelirse onu kullan
-    if (initialMenuItems && initialMenuItems.length > 0) {
-      setMenuItems(initialMenuItems);
-      return;
-    }
-
-    // Eğer dışarıdan menü gelmiyorsa ve biz henüz çekmemişsek (state boşsa) API'den çek
-    if (menuItems.length === 0) {
-      const fetchMenu = async () => {
-        try {
-          const response = await apiClient.get("/menus?type=header-menu");
-          if (response.data?.status === "success" && Array.isArray(response.data.data?.items)) {
-            setMenuItems(response.data.data.items);
-          } else {
-            log("[Nav.jsx] Menu API response invalid:", response?.data);
-          }
-        } catch (error) {
-          log("[Nav.jsx] Failed to fetch menu:", {
-            message: error.message,
-            status: error.response?.status,
-            statusText: error.response?.statusText,
-            url: error.config?.url,
-          });
-          // Hata durumunda menuItems boş kalır, bu yüzden render edilmez
-        }
-      };
-      fetchMenu();
-    }
-  }, [initialMenuItems]);
+  const menuItems = initialMenuItems;
 
   const isMenuActive = (menuItem) => {
     const url = menuItem.url || "";
@@ -82,9 +49,8 @@ export default function Nav({ isArrow = true, textColor = "", Linkfs = "", menuI
             <Link
               href={item.url || "#"}
               target={item.target || "_self"}
-              className={`item-link ${Linkfs} ${textColor} ${isMenuActive(item) ? "activeMenu" : ""} ${
-                item.css_class || ""
-              }`}
+              className={`item-link ${Linkfs} ${textColor} ${isMenuActive(item) ? "activeMenu" : ""} ${item.css_class || ""
+                }`}
             >
               {item.title}
               {item.children?.length > 0 && isArrow && <i className="icon icon-arrow-down" />}
@@ -112,9 +78,8 @@ export default function Nav({ isArrow = true, textColor = "", Linkfs = "", menuI
                                     <Link
                                       href={subItem.url || "#"}
                                       target={subItem.target || "_self"}
-                                      className={`menu-link-text link ${isMenuActive(subItem) ? "activeMenu" : ""} ${
-                                        subItem.css_class || ""
-                                      }`}
+                                      className={`menu-link-text link ${isMenuActive(subItem) ? "activeMenu" : ""} ${subItem.css_class || ""
+                                        }`}
                                     >
                                       {subItem.title}
                                     </Link>
@@ -162,9 +127,8 @@ export default function Nav({ isArrow = true, textColor = "", Linkfs = "", menuI
                         <Link
                           href={subItem.url || "#"}
                           target={subItem.target || "_self"}
-                          className={`menu-link-text link ${isMenuActive(subItem) ? "activeMenu" : ""} ${
-                            subItem.css_class || ""
-                          }`}
+                          className={`menu-link-text link ${isMenuActive(subItem) ? "activeMenu" : ""} ${subItem.css_class || ""
+                            }`}
                         >
                           {subItem.title}
                         </Link>
@@ -176,9 +140,8 @@ export default function Nav({ isArrow = true, textColor = "", Linkfs = "", menuI
                                   <Link
                                     href={subItem2.url || "#"}
                                     target={subItem2.target || "_self"}
-                                    className={`menu-link-text link ${isMenuActive(subItem2) ? "activeMenu" : ""} ${
-                                      subItem2.css_class || ""
-                                    }`}
+                                    className={`menu-link-text link ${isMenuActive(subItem2) ? "activeMenu" : ""} ${subItem2.css_class || ""
+                                      }`}
                                   >
                                     {subItem2.title}
                                   </Link>

@@ -24,7 +24,7 @@ export default function AccountEdit() {
               className="tf-field-label fw-4 text_black-2"
               htmlFor="property1"
             >
-              First name
+              Adınız
             </label>
           </div>
           <div className="tf-field style-1 mb_15">
@@ -40,7 +40,7 @@ export default function AccountEdit() {
               className="tf-field-label fw-4 text_black-2"
               htmlFor="property2"
             >
-              Last name
+              Soyadınız
             </label>
           </div>
           <div className="tf-field style-1 mb_15">
@@ -57,10 +57,10 @@ export default function AccountEdit() {
               className="tf-field-label fw-4 text_black-2"
               htmlFor="property3"
             >
-              Email
+              E-posta adresiniz
             </label>
           </div>
-          <h6 className="mb_20">Password Change</h6>
+          <h6 className="mb_20">Şifre Değiştirme</h6>
           <div className="tf-field style-1 mb_30">
             <input
               className="tf-field-input tf-input"
@@ -75,7 +75,7 @@ export default function AccountEdit() {
               className="tf-field-label fw-4 text_black-2"
               htmlFor="property4"
             >
-              Current password
+              Mevcut Şifreniz
             </label>
           </div>
           <div className="tf-field style-1 mb_30">
@@ -92,7 +92,7 @@ export default function AccountEdit() {
               className="tf-field-label fw-4 text_black-2"
               htmlFor="property5"
             >
-              New password
+              Yeni Şifreniz
             </label>
           </div>
           <div className="tf-field style-1 mb_30">
@@ -109,7 +109,7 @@ export default function AccountEdit() {
               className="tf-field-label fw-4 text_black-2"
               htmlFor="property6"
             >
-              Confirm password
+              Yeni Şifreniz Tekrar
             </label>
           </div>
           <div className="mb_20">
@@ -117,7 +117,7 @@ export default function AccountEdit() {
               type="submit"
               className="tf-btn w-100 radius-3 btn-fill animate-hover-btn justify-content-center"
             >
-              Save Changes
+              Değişiklikleri Kaydet
             </button>
           </div>
         </form>

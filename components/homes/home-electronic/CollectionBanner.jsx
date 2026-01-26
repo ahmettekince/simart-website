@@ -42,10 +42,10 @@ export default function CollectionBanner({ banner = null }) {
           <div className="d-block d-md-none">
             <Image
               className="lazyload"
-              data-src={images?.mobil?.url}
+              data-src={images?.mobile?.url}
               alt={title || "img-banner"}
               loading="lazy"
-              src={images?.mobil?.url}
+              src={images?.mobile?.url}
               width={600}
               height={400}
             />

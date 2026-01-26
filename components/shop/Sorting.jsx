@@ -6,7 +6,14 @@ export default function Sorting({ products = [], setFinalSorted }) {
   const [selectedOptions, setSelectedOptions] = useState(sortingOptions[0]);
 
   useEffect(() => {
-    if (selectedOptions.text == "Varsayılan") {
+    const currentLabel = (selectedOptions?.text || "").trim().toLowerCase();
+    const defaultLabel = (sortingOptions?.[0]?.text || "").trim().toLowerCase();
+    if (
+      currentLabel === defaultLabel ||
+      currentLabel === "varsayılan" ||
+      currentLabel === "önerilen sıralama" ||
+      currentLabel === "onerilen siralama"
+    ) {
       setFinalSorted([...products]);
     } else if (selectedOptions.text == "Alfabetik, A-Z") {
       setFinalSorted(

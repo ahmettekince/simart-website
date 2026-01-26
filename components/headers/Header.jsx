@@ -5,8 +5,10 @@ import Link from "next/link";
 import CartLength from "@/components/common/CartLength";
 import WishlistLength from "@/components/common/WishlistLength";
 import MobileMenu from "@/components/modals/MobileMenu";
+import AccountIcon from "@/components/headers/AccountIcon";
+import { getMenus } from "@/api/menus";
 
-export default function Header({
+export default async function Header({
   textClass,
   bgColor = "",
   uppercase = false,
@@ -14,6 +16,9 @@ export default function Header({
   Linkfs = "",
   menuItems = [],
 }) {
+  const resolvedMenuItems =
+    menuItems && menuItems.length > 0 ? menuItems : await getMenus();
+
   return (
     <>
       <header
@@ -47,7 +52,7 @@ export default function Header({
                 <Image
                   alt="logo"
                   className="logo"
-                  src="/images/logo/logo.png"
+                  src="/images/logo/logo.svg"
                   width="136"
                   height="21"
                 />
@@ -59,7 +64,7 @@ export default function Header({
                   <Nav
                     isArrow={isArrow}
                     Linkfs={Linkfs}
-                    menuItems={menuItems}
+                    menuItems={resolvedMenuItems}
                   />
 
                 </ul>
@@ -78,22 +83,16 @@ export default function Header({
                   </a>
                 </li>
                 <li className="nav-account">
-                  <a
-                    href="#login"
-                    data-bs-toggle="modal"
-                    className="nav-icon-item"
-                  >
-                    <i className="icon icon-account" />
-                  </a>
+                  <AccountIcon />
                 </li>
-                <li className="nav-wishlist">
+                {/* <li className="nav-wishlist">
                   <Link href={`/istek-listesi`} className="nav-icon-item">
                     <i className="icon icon-heart" />
                     <span className={`count-box ${bgColor}`}>
                       <WishlistLength />
                     </span>
                   </Link>
-                </li>
+                </li> */}
                 <li className="nav-cart">
                   <a
                     href="#shoppingCart"
@@ -111,7 +110,7 @@ export default function Header({
           </div>
         </div>
       </header>
-      <MobileMenu menuItems={menuItems} />
+      <MobileMenu menuItems={resolvedMenuItems} />
     </>
   );
 }

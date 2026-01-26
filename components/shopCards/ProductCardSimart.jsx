@@ -13,6 +13,8 @@ export default function ProductCardSimart({ product }) {
   const [isAdding, setIsAdding] = React.useState(false);
   const [showSuccess, setShowSuccess] = React.useState(false);
 
+  const [isWishlistProcessing, setIsWishlistProcessing] = React.useState(false);
+
   // -- Veriler --
   const title = product.name || product.title;
   const finalPrice = product.discount_price || product.price || 0;
@@ -145,9 +147,13 @@ export default function ProductCardSimart({ product }) {
               {showSuccess && <span className="button-text-slide">Sepete Eklendi</span>}
             </button>
           </div>
-          <button
+          {/* <button
             onClick={() => {
+              if (isWishlistProcessing) return;
+
+              setIsWishlistProcessing(true);
               addToWishlist(product.id);
+
               // Tooltip'i kapat
               if (typeof window !== "undefined") {
                 const tooltips = document.querySelectorAll(".action-tooltip");
@@ -156,6 +162,11 @@ export default function ProductCardSimart({ product }) {
                   tooltip.style.visibility = "hidden";
                 });
               }
+
+              // Cooldown: 500ms sonra tekrar tıklanabilir
+              setTimeout(() => {
+                setIsWishlistProcessing(false);
+              }, 500);
             }}
             onMouseLeave={() => {
               // Mouse ayrıldığında tooltip'i kapat
@@ -167,11 +178,16 @@ export default function ProductCardSimart({ product }) {
                 });
               }
             }}
+            disabled={isWishlistProcessing}
             className={`wish-action-btn ${isAdded ? "active" : ""}`}
+            style={{
+              cursor: isWishlistProcessing ? "wait" : "pointer",
+              opacity: isWishlistProcessing ? 0.7 : 1
+            }}
           >
             <i className={`icon ${isAdded ? "icon-delete" : "icon-heart"}`} />
             <span className="action-tooltip">{isAdded ? "Favorilerden Kaldır" : "Favorilere Ekle"}</span>
-          </button>
+          </button> */}
         </div>
       </div>
 
@@ -183,14 +199,14 @@ export default function ProductCardSimart({ product }) {
           min-height: 400px;
                     background: #fff;
                     border: 1px solid #e0e0e0;
-                    border-radius: 20px;
+                    border-radius: 12px;
                     position: relative;
                 }
                 
                 /* Görsel Alanı: Kesme Sadece Burada (Tooltip'i engellemesin diye) */
                 .card-image-area {
                     overflow: hidden;
-                    border-radius: 20px 20px 0 0;
+                    border-radius: 12px 12px 0 0;
           flex-shrink: 0;
                     transform: translateZ(0);
                 }
@@ -244,9 +260,9 @@ export default function ProductCardSimart({ product }) {
                     -webkit-line-clamp: 2;
                     -webkit-box-orient: vertical;
                     overflow: hidden;
-                    font-size: 14px;
+                    font-size: 12px;
                     line-height: 20px;
-                    font-weight: 500;
+                    font-weight: bold;
                     color: #000;
                 }
         .rating-wrap {
@@ -284,7 +300,7 @@ export default function ProductCardSimart({ product }) {
         .main-cart-btn {
           width: 100%;
           height: 44px;
-          border-radius: 999px;
+          border-radius: 12px;
           font-size: 13px;
           font-weight: 600;
           white-space: nowrap;

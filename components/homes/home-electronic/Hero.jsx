@@ -84,7 +84,7 @@ function BannerContent({ images }) {
       {/* Mobile Version (< 768px) */}
       <div className="d-block d-md-none w-100 mobile-banner-wrap">
         <Image
-          src={images.mobil?.url}
+          src={images.mobile?.url}
           alt="Banner Mobile"
           width={600}
           height={800}
