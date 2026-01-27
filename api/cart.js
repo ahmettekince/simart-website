@@ -7,8 +7,13 @@ import { log } from "@/utils/logger";
  */
 export async function getCart() {
     try {
-        const response = await apiClient.get("/cart");
+        const response = await apiClient.get("/cart", {
+            validateStatus: (status) => status === 200 || status === 404,
+        });
 
+        if (response.status === 404) {
+            return null;
+        }
         if (response?.data?.status === "success" && response.data.data) {
             const cartData = response.data.data;
 
@@ -43,9 +48,9 @@ export async function getCart() {
                             sku: item.product?.sku || "",
                             coverImage: imageUrl,
                             maxPurchaseQuantity:
-                              item.product?.max_purchase_quantity ??
-                              item.product?.max_quantity ??
-                              null,
+                                item.product?.max_purchase_quantity ??
+                                item.product?.max_quantity ??
+                                null,
                         }
                     };
                 }),
@@ -253,8 +258,13 @@ export async function removeFromCart(productSlug) {
  */
 export async function getCartRecommendations() {
     try {
-        const response = await apiClient.get("/cart-recommendation");
+        const response = await apiClient.get("/cart-recommendation", {
+            validateStatus: (status) => status === 200 || status === 404,
+        });
 
+        if (response.status === 404) {
+            return [];
+        }
         if (response?.data?.status === "success" && Array.isArray(response.data.data)) {
             // Sadece gerekli alanları normalize et
             const recommendations = response.data.data.map(product => ({

@@ -1,20 +1,75 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import apiClient from "@/utils/apiClient";
+import { siteConfig } from "@/config/site";
 
 export default function Register() {
   const router = useRouter();
+  const recaptchaRef = useRef(null);
+  const recaptchaWidgetId = useRef(null);
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
     email: "",
     password: "",
   });
+  const [agreements, setAgreements] = useState({
+    termsAccepted: true, // Şartlar ve Koşullar (varsayılan true)
+    newsletterSubscription: true, // Kampanya bildirimleri (varsayılan true)
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [recaptchaVerified, setRecaptchaVerified] = useState(false);
+  const [recaptchaLoaded, setRecaptchaLoaded] = useState(false);
+
+  // Google reCAPTCHA site key
+  const RECAPTCHA_SITE_KEY = siteConfig.site.recaptchaSiteKey || process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "";
+
+  useEffect(() => {
+    // Key yoksa test modunda çalış (otomatik doğrulanmış sayılır)
+    if (!RECAPTCHA_SITE_KEY || RECAPTCHA_SITE_KEY === "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI") {
+      setRecaptchaVerified(true);
+      setRecaptchaLoaded(true);
+      return;
+    }
+
+    // reCAPTCHA script'inin yüklenmesini bekle
+    const checkRecaptcha = () => {
+      if (window.grecaptcha && window.grecaptcha.render) {
+        setRecaptchaLoaded(true);
+        // Widget'ı render et
+        if (recaptchaRef.current && !recaptchaRef.current.hasChildNodes()) {
+          const widgetId = window.grecaptcha.render(recaptchaRef.current, {
+            sitekey: RECAPTCHA_SITE_KEY,
+            callback: (token) => {
+              setRecaptchaVerified(true);
+            },
+            'expired-callback': () => {
+              setRecaptchaVerified(false);
+            },
+            'error-callback': () => {
+              setRecaptchaVerified(false);
+            }
+          });
+          recaptchaWidgetId.current = widgetId;
+        }
+      } else {
+        setTimeout(checkRecaptcha, 100);
+      }
+    };
+
+    // Script yüklenmişse direkt kontrol et, değilse bekle
+    if (document.readyState === 'complete') {
+      checkRecaptcha();
+    } else {
+      window.addEventListener('load', checkRecaptcha);
+      return () => window.removeEventListener('load', checkRecaptcha);
+    }
+  }, [RECAPTCHA_SITE_KEY]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -22,6 +77,32 @@ export default function Register() {
       ...prev,
       [name]: value,
     }));
+    // Field error'ı temizle
+    if (fieldErrors[name]) {
+      setFieldErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+    // Mesajları temizle
+    setMessage("");
+    setError("");
+  };
+
+  const handleAgreementChange = (name) => {
+    setAgreements((prev) => ({
+      ...prev,
+      [name]: !prev[name],
+    }));
+    // Field error'ı temizle
+    if (name === "termsAccepted" && fieldErrors.terms_accepted) {
+      setFieldErrors((prev) => {
+        const newErrors = { ...prev };
+        delete newErrors.terms_accepted;
+        return newErrors;
+      });
+    }
     // Mesajları temizle
     setMessage("");
     setError("");
@@ -32,6 +113,14 @@ export default function Register() {
     setIsLoading(true);
     setMessage("");
     setError("");
+    setFieldErrors({});
+
+    // reCAPTCHA kontrolü (key varsa)
+    if (RECAPTCHA_SITE_KEY && RECAPTCHA_SITE_KEY !== "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" && !recaptchaVerified) {
+      setError("Lütfen reCAPTCHA'yı tamamlayın.");
+      setIsLoading(false);
+      return;
+    }
 
     try {
       // Query parametreleri ile POST isteği gönder
@@ -41,6 +130,8 @@ export default function Register() {
           last_name: formData.last_name,
           email: formData.email,
           password: formData.password,
+          terms_accepted: agreements.termsAccepted,
+          newsletter_subscription: agreements.newsletterSubscription,
         },
       });
 
@@ -53,6 +144,12 @@ export default function Register() {
           document.cookie = `DEVICE_ID=${response.data.data.device_id_token}; path=/; max-age=31536000; SameSite=Lax`;
         }
 
+        // reCAPTCHA'yı resetle
+        if (RECAPTCHA_SITE_KEY && window.grecaptcha && recaptchaWidgetId.current !== null) {
+          window.grecaptcha.reset(recaptchaWidgetId.current);
+          setRecaptchaVerified(false);
+        }
+
         // 2 saniye sonra yönlendir veya sayfayı yenile
         setTimeout(() => {
           window.location.href = "/";
@@ -61,13 +158,29 @@ export default function Register() {
         setError(response.data?.message || "Kayıt işlemi başarısız oldu.");
       }
     } catch (err) {
-      // Hata mesajını göster
-      const errorMessage =
-        err.response?.data?.message ||
-        err.response?.data?.error ||
-        err.message ||
-        "Kayıt işlemi sırasında bir hata oluştu.";
-      setError(errorMessage);
+      // API'den gelen hataları parse et
+      if (err.response?.data?.errors) {
+        const errors = err.response.data.errors;
+        const parsedErrors = {};
+
+        // Her field için ilk hatayı al
+        Object.keys(errors).forEach((key) => {
+          if (Array.isArray(errors[key]) && errors[key].length > 0) {
+            parsedErrors[key] = errors[key][0];
+          }
+        });
+
+        setFieldErrors(parsedErrors);
+        setError(err.response?.data?.message || "Lütfen formu kontrol edin.");
+      } else {
+        // Genel hata mesajı
+        const errorMessage =
+          err.response?.data?.message ||
+          err.response?.data?.error ||
+          err.message ||
+          "Kayıt işlemi sırasında bir hata oluştu.";
+        setError(errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -77,10 +190,10 @@ export default function Register() {
     <section className="flat-spacing-10">
       <div className="container">
         <div className="form-register-wrap">
-          <div className="flat-title align-items-start gap-0 mb_30 px-0">
+          <div className="flat-title align-items-start gap-0  px-0">
             <h5 className="mb_18">Kayıt Ol</h5>
             <p className="text_black-2">
-              Şımart Teknoloji'ye kayıt olun ve erken satış erişimine, yeni gelenler, trendler ve promosyonlara erişin. İptal etmek için e-postalarımızda iptal et butonuna tıklayın.
+              Giriş yap veya hesap oluştur, fırsatları kaçırma!
             </p>
           </div>
           <div>
@@ -120,7 +233,7 @@ export default function Register() {
               <div className="tf-grid-layout md-col-2 mb_15">
                 <div className="tf-field style-1">
                   <input
-                    className="tf-field-input tf-input"
+                    className={`tf-field-input tf-input ${fieldErrors.first_name ? "error" : ""}`}
                     placeholder=" "
                     type="text"
                     id="first_name"
@@ -128,17 +241,23 @@ export default function Register() {
                     value={formData.first_name}
                     onChange={handleChange}
                     required
+                    style={fieldErrors.first_name ? { borderColor: "#dc3545" } : {}}
                   />
                   <label
-                    className="tf-field-label fw-4 text_black-2"
+                    className="tf-field-label fw-6 text_black-2"
                     htmlFor="first_name"
                   >
                     Adınız *
                   </label>
+                  {fieldErrors.first_name && (
+                    <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                      {fieldErrors.first_name}
+                    </div>
+                  )}
                 </div>
                 <div className="tf-field style-1">
                   <input
-                    className="tf-field-input tf-input"
+                    className={`tf-field-input tf-input ${fieldErrors.last_name ? "error" : ""}`}
                     placeholder=" "
                     type="text"
                     id="last_name"
@@ -146,18 +265,24 @@ export default function Register() {
                     value={formData.last_name}
                     onChange={handleChange}
                     required
+                    style={fieldErrors.last_name ? { borderColor: "#dc3545" } : {}}
                   />
                   <label
-                    className="tf-field-label fw-4 text_black-2"
+                    className="tf-field-label fw-6 text_black-2"
                     htmlFor="last_name"
                   >
                     Soyadınız *
                   </label>
+                  {fieldErrors.last_name && (
+                    <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                      {fieldErrors.last_name}
+                    </div>
+                  )}
                 </div>
               </div>
               <div className="tf-field style-1 mb_15">
                 <input
-                  className="tf-field-input tf-input"
+                  className={`tf-field-input tf-input ${fieldErrors.email ? "error" : ""}`}
                   placeholder=" "
                   type="email"
                   autoComplete="email"
@@ -166,13 +291,19 @@ export default function Register() {
                   value={formData.email}
                   onChange={handleChange}
                   required
+                  style={fieldErrors.email ? { borderColor: "#dc3545" } : {}}
                 />
                 <label
-                  className="tf-field-label fw-4 text_black-2"
+                  className="tf-field-label fw-6 text_black-2"
                   htmlFor="email"
                 >
                   E-posta *
                 </label>
+                {fieldErrors.email && (
+                  <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                    {fieldErrors.email}
+                  </div>
+                )}
               </div>
               <div className="tf-field style-1 mb_30">
                 <input
@@ -187,17 +318,109 @@ export default function Register() {
                   required
                 />
                 <label
-                  className="tf-field-label fw-4 text_black-2"
+                  className="tf-field-label fw-6 text_black-2"
                   htmlFor="password"
                 >
                   Şifre *
                 </label>
               </div>
+
+              {/* Şartlar ve Koşullar */}
+              <div className="mb_20" style={{ marginTop: "20px" }}>
+                <div
+                  className="box-checkbox fieldset-radio"
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: "8px",
+                    marginBottom: "15px",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    id="termsAccepted"
+                    className="tf-check"
+                    checked={agreements.termsAccepted}
+                    onChange={() => handleAgreementChange("termsAccepted")}
+                    required
+                    style={{ marginTop: "4px", flexShrink: 0 }}
+                  />
+                  <label
+                    htmlFor="termsAccepted"
+                    className="text_black-2 fw-4"
+                    style={{ fontSize: "14px", lineHeight: "1.5", cursor: "pointer" }}
+                  >
+                    <Link
+                      href="/kullanım-sartlari"
+                      target="_blank"
+                      style={{ color: "#007bff", textDecoration: "underline" }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Şartlar ve Koşullar
+                    </Link>
+                    'ı okudum, kabul ediyorum.
+                  </label>
+                </div>
+                {fieldErrors.terms_accepted && (
+                  <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "-10px", marginBottom: "10px", marginLeft: "28px" }}>
+                    {fieldErrors.terms_accepted}
+                  </div>
+                )}
+
+                <div
+                  className="box-checkbox fieldset-radio"
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: "8px",
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    id="newsletterSubscription"
+                    className="tf-check"
+                    checked={agreements.newsletterSubscription}
+                    onChange={() => handleAgreementChange("newsletterSubscription")}
+                    style={{ marginTop: "4px", flexShrink: 0 }}
+                  />
+                  <label
+                    htmlFor="newsletterSubscription"
+                    className="text_black-2 fw-4"
+                    style={{ fontSize: "14px", lineHeight: "1.5", cursor: "pointer" }}
+                  >
+                    Kampanya ve fırsatlardan e-posta/SMS ile haberdar olmak istiyorum.
+                  </label>
+                </div>
+              </div>
+
+              {/* reCAPTCHA */}
+              {RECAPTCHA_SITE_KEY && RECAPTCHA_SITE_KEY !== "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" && (
+                <div className="mb_20">
+                  <div ref={recaptchaRef} id="recaptcha-container-register"></div>
+                  {!recaptchaLoaded && (
+                    <div style={{ fontSize: '12px', color: '#999', marginTop: '8px' }}>
+                      reCAPTCHA yükleniyor...
+                    </div>
+                  )}
+                  <div className="mt-2" style={{ fontSize: '12px', color: '#666' }}>
+                    <span>reCAPTCHA</span>
+                    <span className="mx-1">•</span>
+                    <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" style={{ color: '#666' }}>
+                      Gizlilik
+                    </a>
+                    <span className="mx-1">•</span>
+                    <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" style={{ color: '#666' }}>
+                      Şartlar
+                    </a>
+                  </div>
+                </div>
+              )}
+
               <div className="mb_20">
                 <button
                   type="submit"
                   className="tf-btn w-100 radius-3 btn-fill animate-hover-btn justify-content-center"
-                  disabled={isLoading}
+                  disabled={isLoading || !agreements.termsAccepted}
                 >
                   {isLoading ? "Kayıt yapılıyor..." : "Kayıt Ol"}
                 </button>

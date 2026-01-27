@@ -6,6 +6,7 @@ import axios from "axios";
 
 import { paymentImages } from "@/data/footerLinks";
 import { siteConfig } from "@/config/site";
+import Logo from "@/components/common/Logo";
 
 export default function Footer({ bgColor = "", footerMenus = null }) {
   useEffect(() => {
@@ -75,7 +76,15 @@ export default function Footer({ bgColor = "", footerMenus = null }) {
                 <div className="footer-infor">
                   <div className="footer-logo">
                     <Link href={`/`}>
-                      <Image alt="image" src="/images/logo/logo.svg" width="150" height="21" />
+                      <Image
+                        alt="image"
+                        src="/images/logo/logo.svg"
+                        width={136}
+                        height={21}
+                        loading="lazy"
+                        fetchPriority="low"
+                        unoptimized
+                      />
                     </Link>
                   </div>
                   <ul>

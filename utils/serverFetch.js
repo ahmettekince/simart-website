@@ -7,20 +7,6 @@ const MAX_RETRIES = 3;
 const RETRY_DELAY = 100; // 0.1 saniye
 
 /**
- * Cloudflare challenge sayfası olup olmadığını kontrol eder
- */
-function isCloudflareChallenge(text) {
-    if (!text || typeof text !== "string") return false;
-    return (
-        text.includes("Just a moment") ||
-        text.includes("challenge-platform") ||
-        text.includes("cf-challenge") ||
-        text.includes("__cf_chl_") ||
-        text.includes("Enable JavaScript and cookies")
-    );
-}
-
-/**
  * Response'un JSON olup olmadığını kontrol eder
  */
 function isJsonResponse(response) {
@@ -49,7 +35,6 @@ export async function serverFetch(endpoint, options = {}) {
             .update(dataToSign)
             .digest("hex");
 
-        // User-Agent'ı daha gerçekçi yap (Cloudflare için önemli)
         const defaultUserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
         const userAgent = process.env.USER_AGENT || defaultUserAgent;
 
@@ -91,31 +76,10 @@ export async function serverFetch(endpoint, options = {}) {
                 responseText = "";
             }
 
-            // Cloudflare challenge kontrolü
-            if (isCloudflareChallenge(responseText)) {
-                const isLastAttempt = attempt === retries;
-                log(`[serverFetch] ⚠️  CLOUDFLARE CHALLENGE DETECTED! (Attempt ${attempt}/${retries})`);
-                
-                if (isLastAttempt) {
-                    log("----------------------------------------------------------------");
-                    log(`[serverFetch] CLOUDFLARE CHALLENGE - All retries exhausted!`);
-                    log(`- URL: ${url}`);
-                    log(`- Status: ${response.status} ${response.statusText}`);
-                    log(`- This usually means Cloudflare is blocking the request`);
-                    log(`- Check: User-Agent, IP reputation, or API rate limits`);
-                    log("----------------------------------------------------------------");
-                    return null;
-                }
-
-                // Retry için bekle
-                await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * attempt));
-                continue;
-            }
-
             // JSON response kontrolü
             if (!isJsonResponse(response)) {
                 log(`[serverFetch] ⚠️  Non-JSON response detected (Content-Type: ${response.headers.get("content-type")})`);
-                
+
                 if (responseText.length > 500) {
                     log(`[serverFetch] Response preview: ${responseText.substring(0, 500)}...`);
                 } else {
@@ -130,18 +94,18 @@ export async function serverFetch(endpoint, options = {}) {
                 log(`- Status: ${response.status} ${response.statusText}`);
                 log(`- Response Body: ${responseText.substring(0, 500)}${responseText.length > 500 ? "..." : ""}`);
                 log("----------------------------------------------------------------");
-                
+
                 // 4xx hataları için retry yapma
                 if (response.status >= 400 && response.status < 500) {
                     return null;
                 }
-                
+
                 // 5xx hataları için retry yap
                 if (attempt < retries) {
                     await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * attempt));
                     continue;
                 }
-                
+
                 return null;
             }
 
@@ -156,24 +120,24 @@ export async function serverFetch(endpoint, options = {}) {
                 log(`- Parse Error: ${parseError.message}`);
                 log(`- Response Preview: ${responseText.substring(0, 500)}...`);
                 log("----------------------------------------------------------------");
-                
+
                 if (attempt < retries) {
                     await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * attempt));
                     continue;
                 }
-                
+
                 return null;
             }
         } catch (error) {
             lastError = error;
             const duration = Date.now() - startTime;
-            
+
             if (attempt < retries) {
                 log(`[serverFetch] Network error (attempt ${attempt}/${retries}): ${error.message}. Retrying...`);
                 await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * attempt));
                 continue;
             }
-            
+
             log("----------------------------------------------------------------");
             log(`[serverFetch] CRITICAL/NETWORK ERROR!`);
             log(`- Method/URL: ${method} ${url}`);

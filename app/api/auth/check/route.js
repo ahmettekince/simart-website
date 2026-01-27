@@ -9,7 +9,6 @@ export async function GET() {
         const secretKey = process.env.TOKEN_SEC_KEY;
 
         if (!encryptedToken || !secretKey) {
-            console.log("------------------------------- isAuthenticated: false ----------------------------------------");
             return NextResponse.json({ isAuthenticated: false });
 
         }
@@ -17,7 +16,6 @@ export async function GET() {
         // Şifre çözme işlemi (Node.js tarafında crypto modülü ile)
         const decoded = Buffer.from(encryptedToken, 'base64');
         if (decoded.length < 28) {
-            console.log("------------------------------- isAuthenticated: false ----------------------------------------");
             return NextResponse.json({ isAuthenticated: false });
         }
 
@@ -39,7 +37,6 @@ export async function GET() {
 
         const isAuthenticated = decrypted === 'true';
 
-        console.log("------------------------------- isAuthenticated: trueee ----------------------------------------");
         return NextResponse.json({ isAuthenticated });
     } catch (e) {
         console.error("Auth check error:", e);

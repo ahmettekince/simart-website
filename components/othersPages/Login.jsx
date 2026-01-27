@@ -1,13 +1,16 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import apiClient from "@/utils/apiClient";
 import { useAuthStore } from "@/stores/authStore";
+import { siteConfig } from "@/config/site";
 
 export default function Login() {
   const router = useRouter();
   const { setAuthenticated } = useAuthStore();
+  const recaptchaRef = useRef(null);
+  const recaptchaWidgetId = useRef(null);
   const [loginData, setLoginData] = useState({
     email: "",
     password: "",
@@ -15,6 +18,53 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [recaptchaVerified, setRecaptchaVerified] = useState(false);
+  const [recaptchaLoaded, setRecaptchaLoaded] = useState(false);
+
+  // Google reCAPTCHA site key
+  const RECAPTCHA_SITE_KEY = siteConfig.site.recaptchaSiteKey || process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "";
+
+  useEffect(() => {
+    // Key yoksa test modunda çalış (otomatik doğrulanmış sayılır)
+    if (!RECAPTCHA_SITE_KEY || RECAPTCHA_SITE_KEY === "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI") {
+      setRecaptchaVerified(true);
+      setRecaptchaLoaded(true);
+      return;
+    }
+
+    // reCAPTCHA script'inin yüklenmesini bekle
+    const checkRecaptcha = () => {
+      if (window.grecaptcha && window.grecaptcha.render) {
+        setRecaptchaLoaded(true);
+        // Widget'ı render et
+        if (recaptchaRef.current && !recaptchaRef.current.hasChildNodes()) {
+          const widgetId = window.grecaptcha.render(recaptchaRef.current, {
+            sitekey: RECAPTCHA_SITE_KEY,
+            callback: (token) => {
+              setRecaptchaVerified(true);
+            },
+            'expired-callback': () => {
+              setRecaptchaVerified(false);
+            },
+            'error-callback': () => {
+              setRecaptchaVerified(false);
+            }
+          });
+          recaptchaWidgetId.current = widgetId;
+        }
+      } else {
+        setTimeout(checkRecaptcha, 100);
+      }
+    };
+
+    // Script yüklenmişse direkt kontrol et, değilse bekle
+    if (document.readyState === 'complete') {
+      checkRecaptcha();
+    } else {
+      window.addEventListener('load', checkRecaptcha);
+      return () => window.removeEventListener('load', checkRecaptcha);
+    }
+  }, [RECAPTCHA_SITE_KEY]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -33,6 +83,13 @@ export default function Login() {
     setMessage("");
     setError("");
 
+    // reCAPTCHA kontrolü (key varsa)
+    if (RECAPTCHA_SITE_KEY && RECAPTCHA_SITE_KEY !== "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" && !recaptchaVerified) {
+      setError("Lütfen reCAPTCHA'yı tamamlayın.");
+      setIsLoading(false);
+      return;
+    }
+
     try {
       // Query parametreleri ile POST isteği gönder
       const response = await apiClient.post("/customer/login", null, {
@@ -45,7 +102,7 @@ export default function Login() {
       if (response.data?.status === "success") {
         // Başarı mesajını göster
         setMessage(response.data?.message || "Giriş başarılı.");
-        
+
         // Auth state'ini güncelle
         setAuthenticated(true);
 
@@ -54,6 +111,12 @@ export default function Login() {
         // ama yine de client-side'da da kaydedelim (fallback)
         if (response.data?.data?.device_id_token) {
           document.cookie = `DEVICE_ID=${response.data.data.device_id_token}; path=/; max-age=31536000; SameSite=Lax`;
+        }
+
+        // reCAPTCHA'yı resetle
+        if (RECAPTCHA_SITE_KEY && window.grecaptcha && recaptchaWidgetId.current !== null) {
+          window.grecaptcha.reset(recaptchaWidgetId.current);
+          setRecaptchaVerified(false);
         }
 
         // 2 saniye sonra hesabım sayfasına yönlendir
@@ -200,6 +263,30 @@ export default function Login() {
                       Şifrenizi mi unuttunuz?
                     </a>
                   </div>
+
+                  {/* reCAPTCHA */}
+                  {RECAPTCHA_SITE_KEY && RECAPTCHA_SITE_KEY !== "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" && (
+                    <div className="mb_20">
+                      <div ref={recaptchaRef} id="recaptcha-container-login"></div>
+                      {!recaptchaLoaded && (
+                        <div style={{ fontSize: '12px', color: '#999', marginTop: '8px' }}>
+                          reCAPTCHA yükleniyor...
+                        </div>
+                      )}
+                      <div className="mt-2" style={{ fontSize: '12px', color: '#666' }}>
+                        <span>reCAPTCHA</span>
+                        <span className="mx-1">•</span>
+                        <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" style={{ color: '#666' }}>
+                          Gizlilik
+                        </a>
+                        <span className="mx-1">•</span>
+                        <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" style={{ color: '#666' }}>
+                          Şartlar
+                        </a>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="">
                     <button
                       type="submit"
@@ -216,7 +303,7 @@ export default function Login() {
           <div className="tf-login-content">
             <h5 className="mb_36">Yeni Misiniz?</h5>
             <p className="mb_20">
-              Şımart Teknoloji'ye kayıt olun ve erken satış erişimine, yeni gelenler, trendler ve promosyonlara erişin. İptal etmek için e-postalarımızda iptal et butonuna tıklayın.
+              Şımart Teknoloji'ye kayıt olun ve erken satış erişimine, yeni gelenler, trendler ve promosyonlara erişin.
             </p>
             <Link href={`/kayit-ol`} className="tf-btn btn-line">
               Kayıt Ol

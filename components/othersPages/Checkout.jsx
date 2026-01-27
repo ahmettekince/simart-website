@@ -4,6 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState, useMemo } from "react";
 import { log } from "@/utils/logger";
+import apiClient from "@/utils/apiClient";
+import SearchableSelect from "@/components/common/SearchableSelect";
 
 const ORDER_NOTE_KEY = "cart_order_note";
 
@@ -44,6 +46,74 @@ export default function Checkout() {
   const [orderNote, setOrderNote] = useState("");
   const [sameBillingAddress, setSameBillingAddress] = useState(true); // Default: teslimat ve fatura adresi aynı
   const [invoiceType, setInvoiceType] = useState("individual"); // "individual" veya "corporate"
+
+  // Şehir ve ilçe state'leri
+  const [cities, setCities] = useState([]);
+  const [selectedCityId, setSelectedCityId] = useState("");
+  const [districts, setDistricts] = useState([]);
+  const [selectedDistrictId, setSelectedDistrictId] = useState("");
+
+  // Fatura adresi için state'ler
+  const [selectedBillingCityId, setSelectedBillingCityId] = useState("");
+  const [billingDistricts, setBillingDistricts] = useState([]);
+  const [selectedBillingDistrictId, setSelectedBillingDistrictId] = useState("");
+
+  // Şehirleri yükle
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        const response = await apiClient.get("/cities");
+        if (response.data && response.data.status === "success" && response.data.data) {
+          setCities(response.data.data);
+        }
+      } catch (error) {
+        log("Şehirler yüklenirken hata:", error);
+      }
+    };
+    fetchCities();
+  }, []);
+
+  // İlçeleri yükle (teslimat)
+  useEffect(() => {
+    const fetchDistricts = async () => {
+      if (!selectedCityId) {
+        setDistricts([]);
+        setSelectedDistrictId("");
+        return;
+      }
+      try {
+        const response = await apiClient.get(`/districts?city_id=${selectedCityId}`);
+        if (response.data && response.data.status === "success" && response.data.data) {
+          setDistricts(response.data.data);
+        }
+      } catch (error) {
+        log("İlçeler yüklenirken hata:", error);
+        setDistricts([]);
+      }
+    };
+    fetchDistricts();
+  }, [selectedCityId]);
+
+  // Fatura adresi için ilçeleri yükle
+  useEffect(() => {
+    const fetchBillingDistricts = async () => {
+      if (!selectedBillingCityId) {
+        setBillingDistricts([]);
+        setSelectedBillingDistrictId("");
+        return;
+      }
+      try {
+        const response = await apiClient.get(`/districts?city_id=${selectedBillingCityId}`);
+        if (response.data && response.data.status === "success" && response.data.data) {
+          setBillingDistricts(response.data.data);
+        }
+      } catch (error) {
+        log("Fatura ilçeleri yüklenirken hata:", error);
+        setBillingDistricts([]);
+      }
+    };
+    fetchBillingDistricts();
+  }, [selectedBillingCityId]);
 
   // Sayfa yüklendiğinde localStorage'dan sipariş notunu oku
   useEffect(() => {
@@ -102,43 +172,58 @@ export default function Checkout() {
 
               <fieldset className="box fieldset">
                 <label htmlFor="city">İl</label>
-                <div className="select-custom">
-                  <select required className="tf-select w-100" id="city" name="delivery[city]">
-                    <option value="">Seçiniz</option>
-                    {/* İl listesi buraya eklenecek */}
-                  </select>
-                </div>
+                <SearchableSelect
+                  id="city"
+                  name="delivery[city]"
+                  options={cities}
+                  value={selectedCityId}
+                  onChange={(value) => {
+                    setSelectedCityId(value);
+                    setSelectedDistrictId("");
+                  }}
+                  placeholder="Seçiniz"
+                  required
+                  searchPlaceholder="Şehir ara..."
+                />
               </fieldset>
 
               <fieldset className="box fieldset">
                 <label htmlFor="district">İlçe</label>
-                <div className="select-custom">
-                  <select required className="tf-select w-100" id="district" name="delivery[district]">
-                    <option value="">Önce il seçiniz</option>
-                  </select>
-                </div>
+                <SearchableSelect
+                  id="district"
+                  name="delivery[district]"
+                  options={districts}
+                  value={selectedDistrictId}
+                  onChange={(value) => {
+                    setSelectedDistrictId(value);
+                  }}
+                  placeholder={selectedCityId ? "Seçiniz" : "Önce il seçiniz"}
+                  disabled={!selectedCityId}
+                  required
+                  searchPlaceholder="İlçe ara..."
+                />
               </fieldset>
 
-              <fieldset className="box fieldset">
+              {/* <fieldset className="box fieldset">
                 <label htmlFor="neighborhood">Mahalle / Semt*</label>
                 <div className="select-custom">
                   <select required className="tf-select w-100" id="neighborhood" name="delivery[neighborhood]">
                     <option value="">Önce ilçe seçiniz</option>
                   </select>
                 </div>
-              </fieldset>
+              </fieldset> */}
 
-              <fieldset className="box fieldset">
+              {/* <fieldset className="box fieldset">
                 <label htmlFor="street">Sokak / Cadde</label>
                 <div className="select-custom">
                   <select required className="tf-select w-100" id="street" name="delivery[street]">
                     <option value="">Önce mahalle seçiniz</option>
                   </select>
                 </div>
-              </fieldset>
+              </fieldset> */}
 
               <fieldset className="box fieldset">
-                <label htmlFor="address-detail">Bina numarası, kapı numarası, bina adı....</label>
+                <label htmlFor="address-detail">Adres Detayı</label>
                 <textarea
                   name="delivery[address_detail]"
                   id="address-detail"
@@ -265,20 +350,36 @@ export default function Checkout() {
 
                   <fieldset className="box fieldset">
                     <label htmlFor="billing-city">İl*</label>
-                    <div className="select-custom">
-                      <select required className="tf-select w-100" id="billing-city" name="billing[city]">
-                        <option value="">Seçiniz</option>
-                      </select>
-                    </div>
+                    <SearchableSelect
+                      id="billing-city"
+                      name="billing[city]"
+                      options={cities}
+                      value={selectedBillingCityId}
+                      onChange={(value) => {
+                        setSelectedBillingCityId(value);
+                        setSelectedBillingDistrictId("");
+                      }}
+                      placeholder="Seçiniz"
+                      required
+                      searchPlaceholder="Şehir ara..."
+                    />
                   </fieldset>
 
                   <fieldset className="box fieldset">
                     <label htmlFor="billing-district">İlçe*</label>
-                    <div className="select-custom">
-                      <select required className="tf-select w-100" id="billing-district" name="billing[district]">
-                        <option value="">Önce il seçiniz</option>
-                      </select>
-                    </div>
+                    <SearchableSelect
+                      id="billing-district"
+                      name="billing[district]"
+                      options={billingDistricts}
+                      value={selectedBillingDistrictId}
+                      onChange={(value) => {
+                        setSelectedBillingDistrictId(value);
+                      }}
+                      placeholder={selectedBillingCityId ? "Seçiniz" : "Önce il seçiniz"}
+                      disabled={!selectedBillingCityId}
+                      required
+                      searchPlaceholder="İlçe ara..."
+                    />
                   </fieldset>
 
                   <fieldset className="box fieldset">
@@ -467,14 +568,8 @@ export default function Checkout() {
                   <h6 className="total fw-5">₺{cartTotals.total.toLocaleString("tr-TR")}</h6>
                 </div>
                 <div className="wd-check-payment">
-                  <div className="fieldset-radio mb_20">
-                    <input required type="radio" name="payment" id="bank" className="tf-check" defaultChecked />
-                    <label htmlFor="bank">Doğrudan banka transfer</label>
-                  </div>
-                  <div className="fieldset-radio mb_20">
-                    <input required type="radio" name="payment" id="delivery" className="tf-check" />
-                    <label htmlFor="delivery">Nakit teslimat</label>
-                  </div>
+
+
                   <p className="text_black-2 mb_20">
                     Kişisel verileriniz siparişinizi işlemek için kullanılacak, bu web sitesinde deneyiminizi
                     desteklemek ve diğer amaçlar için kullanılacaktır.

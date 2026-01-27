@@ -18,12 +18,6 @@ export default async function page() {
   return (
     <>
       <Header />
-      <div className="tf-page-title style-2">
-        <div className="container-full">
-          <div className="heading text-center">Şımart Teknoloji Dünyasına Giriş Yap</div>
-        </div>
-      </div>
-
       <Login />
 
     </>

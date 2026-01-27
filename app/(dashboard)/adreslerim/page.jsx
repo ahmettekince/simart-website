@@ -19,11 +19,7 @@ export default async function page() {
   return (
     <>
       <Header />
-      <div className="tf-page-title">
-        <div className="container-full">
-          <div className="heading text-center">My Account Address</div>
-        </div>
-      </div>
+
       <section className="flat-spacing-11">
         <div className="container">
           <div className="row">
