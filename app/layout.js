@@ -4,6 +4,8 @@ import "rc-slider/assets/index.css";
 import ClientLayout from "@/components/common/ClientLayout";
 import Topbar from "@/components/headers/Topbar";
 
+import { SpeedInsights } from "@vercel/speed-insights/next"
+
 //Api İstekleri
 import { getTopbar } from "@/api/home";
 import { getFooterMenus } from "@/api/menus";
@@ -27,6 +29,7 @@ export default async function RootLayout({ children }) {
 
   return (
     <html lang="tr">
+      <SpeedInsights />
       <body className="preload-wrapper">
         {/* Google reCaptcha (body içinde yükleniyor) */}
         <script src="https://www.google.com/recaptcha/api.js" async></script>
