@@ -7,6 +7,7 @@ import axios from "axios";
 import { paymentImages } from "@/data/footerLinks";
 import { siteConfig } from "@/config/site";
 import Logo from "@/components/common/Logo";
+import apiClient from "@/utils/apiClient";
 
 export default function Footer({ bgColor = "", footerMenus = null }) {
   useEffect(() => {
@@ -33,12 +34,13 @@ export default function Footer({ bgColor = "", footerMenus = null }) {
   const formRef = useRef();
   const [success, setSuccess] = useState(true);
   const [showMessage, setShowMessage] = useState(false);
+  const [apiMessage, setApiMessage] = useState("");
 
   const handleShowMessage = () => {
     setShowMessage(true);
     setTimeout(() => {
       setShowMessage(false);
-    }, 2000);
+    }, 5000);
   };
 
   const sendEmail = async (e) => {
@@ -46,21 +48,24 @@ export default function Footer({ bgColor = "", footerMenus = null }) {
     const email = e.target.email.value;
 
     try {
-      const response = await axios.post("https://express-brevomail.vercel.app/api/contacts", {
-        email,
+      const response = await apiClient.post("/newsletter/subscribe", null, {
+        params: { email },
       });
 
-      if ([200, 201].includes(response.status)) {
+      if (response.data && response.data.status === "success") {
         e.target.reset(); // Reset the form
         setSuccess(true); // Set success state
+        setApiMessage(response.data.message || "Başarıyla abone oldunuz.");
         handleShowMessage();
       } else {
         setSuccess(false); // Handle unexpected responses
+        setApiMessage(response.data?.message || "Bir hata oluştu.");
         handleShowMessage();
       }
     } catch (error) {
       console.error("Error:", error.response?.data || "An error occurred");
       setSuccess(false); // Set error state
+      setApiMessage(error.response?.data?.message || "Bir hata oluştu. Lütfen tekrar deneyin.");
       handleShowMessage();
       e.target.reset(); // Reset the form
     }
@@ -238,9 +243,9 @@ export default function Footer({ bgColor = "", footerMenus = null }) {
                     </div>
                     <div className={`tfSubscribeMsg ${showMessage ? "active" : ""}`}>
                       {success ? (
-                        <p style={{ color: "rgb(52, 168, 83)" }}>Başarıyla abone oldunuz.</p>
+                        <p style={{ color: "rgb(52, 168, 83)" }}>{apiMessage || "Başarıyla abone oldunuz."}</p>
                       ) : (
-                        <p style={{ color: "red" }}>Bir hata oluştu</p>
+                        <p style={{ color: "red" }}>{apiMessage || "Bir hata oluştu"}</p>
                       )}
                     </div>
                     <form

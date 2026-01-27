@@ -89,11 +89,28 @@ export default function AccountEdit() {
           return;
         }
 
-        // TODO: Şifre değiştirme API endpoint'i eklenecek
-        // const response = await apiClient.put("/customer/change-password", {
-        //   current_password: passwordData.current_password,
-        //   new_password: passwordData.new_password,
-        // });
+        // Şifre değiştirme API endpoint'i
+        const passwordResponse = await apiClient.post("/customer/change-password", null, {
+          params: {
+            current_password: passwordData.current_password,
+            new_password: passwordData.new_password,
+            new_password_confirmation: passwordData.new_password_confirm,
+          },
+        });
+
+        if (passwordResponse.data?.status === "success") {
+          setMessage(passwordResponse.data?.message || "Şifreniz başarıyla değiştirildi.");
+          // Şifre alanlarını temizle
+          setPasswordData({
+            current_password: "",
+            new_password: "",
+            new_password_confirm: "",
+          });
+        } else {
+          setError(passwordResponse.data?.message || "Şifre değiştirilirken bir hata oluştu.");
+          setIsSaving(false);
+          return;
+        }
       }
 
       // Müşteri bilgilerini güncelle
