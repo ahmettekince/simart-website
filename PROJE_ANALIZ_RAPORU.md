@@ -10,7 +10,7 @@ Bu rapor, proje kod tabanının incelenmesi sonucunda tespit edilen güvenlik a�
 **Dosya:** `next.config.mjs`
 **Bulgu:** `images.remotePatterns` yapılandırmasında `hostname: '**'` kullanılarak tüm dış kaynaklardan gelen resimlere izin verilmiş.
 **Risk:** Bu durum, sunucunuzun kötü niyetli kişiler tarafından **Server-Side Request Forgery (SSRF)** veya resim işleme servisi üzerinden **Denial of Service (DoS)** saldırıları için kullanılmasına neden olabilir.
-**Öneri:** Sadece güvenilen ve kullanılan resim sunucularının (örn: S3 bucket, CDN domaini) domainlerini `remotePatterns` listesine ekleyiniz.
+**Öneri:** Sadece güvenilen ve kullanılan resim sunucularının (örn: S3 bucket, CDN domaini) domainlerini `remotePatterns` listesine ekleyiniz. Kod taraması sonucunda `simart.me` domaininin kullanıldığı tespit edilmiştir.
 
 ```javascript
 // MEVCUT (GÜVENSİZ)
@@ -20,8 +20,9 @@ remotePatterns: [
 
 // ÖNERİLEN
 remotePatterns: [
-  { protocol: 'https', hostname: 'my-bucket.s3.amazonaws.com' },
-  { protocol: 'https', hostname: 'cdn.example.com' },
+  { protocol: 'https', hostname: 'simart.me' },
+  // Geliştirme ortamı için localhost gerekebilir
+  { protocol: 'http', hostname: 'localhost' },
 ]
 ```
 
@@ -37,7 +38,7 @@ remotePatterns: [
 **Dosya:** `utils/serverFetch.js`
 **Bulgu:** Kod, istekleri Chrome tarayıcısı gibi göstermek için sahte bir `User-Agent` kullanıyor ve Cloudflare challenge'larını tespit etmeye çalışıyor (`isCloudflareChallenge`).
 **Risk:** Bu, uygulamanızın backend'inin aslında public bir API olmadığını veya korunduğunu gösterir. Cloudflare kuralları değişirse uygulamanız çalışamaz hale gelir.
-**Öneri:** Backend sahibiyle iletişime geçip resmi bir API anahtarı veya IP whitelist izni alın.
+**Durum:** Kullanıcı tarafından bu madde ile ilgili güncelleme yapıldığı belirtilmiştir. (Gözden Geçirildi/Çözüldü)
 
 ### 🟡 Düşük Seviye (Low Severity)
 
