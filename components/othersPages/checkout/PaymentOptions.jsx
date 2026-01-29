@@ -122,6 +122,14 @@ export default function PaymentOptions({ cartTotal }) {
                 gap: 20px !important;
               }
             }
+            .payment-checkbox::before {
+              content: none !important;
+              display: none !important;
+            }
+            .payment-checkbox:checked::before {
+              content: none !important;
+              display: none !important;
+            }
           `
         }} />
         {/* Sol Sütun - Kart Formu */}
@@ -323,7 +331,15 @@ export default function PaymentOptions({ cartTotal }) {
               <input
                 type="checkbox"
                 required
-                style={{ marginTop: "3px", cursor: "pointer", flexShrink: 0 }}
+                style={{ 
+                  marginTop: "3px", 
+                  cursor: "pointer", 
+                  flexShrink: 0,
+                  width: "16px",
+                  height: "16px",
+                  minWidth: "16px"
+                }}
+                className="payment-checkbox"
               />
               <span>
                 Gizlilik Politikasını, Şartlar ve Koşulları ve İade ve Geri Ödeme Politikası okudum, kabul ediyorum.
@@ -374,17 +390,15 @@ export default function PaymentOptions({ cartTotal }) {
                       border: "1px solid #e5e5e5",
                       borderRadius: "8px",
                       overflow: "hidden",
-                      maxHeight: "400px",
-                      overflowY: "auto",
                     }}
                   >
                     <table style={{ width: "100%", borderCollapse: "collapse" }}>
                       <thead>
                         <tr style={{ backgroundColor: "#f9f9f9", borderBottom: "1px solid #e5e5e5" }}>
-                          <th style={{ padding: "12px", textAlign: "left", fontSize: "13px", fontWeight: "600", color: "#333", width: "40px" }}></th>
-                          <th style={{ padding: "12px", textAlign: "left", fontSize: "13px", fontWeight: "600", color: "#333" }}>Taksit</th>
-                          <th style={{ padding: "12px", textAlign: "right", fontSize: "13px", fontWeight: "600", color: "#333" }}>Aylık Ödeme</th>
-                          <th style={{ padding: "12px", textAlign: "right", fontSize: "13px", fontWeight: "600", color: "#333" }}>Toplam</th>
+                          <th style={{ padding: "4px 6px", textAlign: "left", fontSize: "11px", fontWeight: "600", color: "#333", width: "15px" }}></th>
+                          <th style={{ padding: "4px 6px", textAlign: "left", fontSize: "11px", fontWeight: "600", color: "#333" }}>Taksit</th>
+                          <th style={{ padding: "4px 6px", textAlign: "right", fontSize: "11px", fontWeight: "600", color: "#333" }}>Aylık Ödeme</th>
+                          <th style={{ padding: "4px 6px", textAlign: "right", fontSize: "11px", fontWeight: "600", color: "#333" }}>Toplam</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -410,28 +424,28 @@ export default function PaymentOptions({ cartTotal }) {
                               }}
                               onClick={() => setSelectedInstallment(option.installment_count)}
                             >
-                              <td style={{ padding: "12px", textAlign: "center" }}>
+                              <td style={{ padding: "6px 8px", textAlign: "center", verticalAlign: "middle" }}>
                                 <input
                                   type="radio"
                                   name="installment"
                                   value={option.installment_count}
                                   checked={selectedInstallment === option.installment_count}
                                   onChange={() => setSelectedInstallment(option.installment_count)}
-                                  style={{ cursor: "pointer" }}
+                                  style={{ cursor: "pointer", margin: 0 }}
                                 />
                               </td>
-                              <td style={{ padding: "12px", fontSize: "14px", color: "#333" }}>
+                              <td style={{ padding: "6px 8px", fontSize: "13px", color: "#333", verticalAlign: "middle" }}>
                                 {option.installment_count === 1 ? "Tek Çekim" : `${option.installment_count} Taksit`}
                                 {option.campaign_applied && campaign && (
-                                  <span style={{ marginLeft: "6px", fontSize: "12px", color: "#3c81b5", fontWeight: "500" }}>
+                                  <span style={{ marginLeft: "4px", fontSize: "11px", color: "#3c81b5", fontWeight: "500" }}>
                                     ({campaign.campaign_type_label || campaign.name || "Kampanya"})
                                   </span>
                                 )}
                               </td>
-                              <td style={{ padding: "12px", textAlign: "right", fontSize: "14px", color: "#333" }}>
+                              <td style={{ padding: "6px 8px", textAlign: "right", fontSize: "13px", color: "#333", verticalAlign: "middle" }}>
                                 ₺{parseFloat(option.monthly_payment).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                               </td>
-                              <td style={{ padding: "12px", textAlign: "right", fontSize: "14px", color: "#333", fontWeight: "600" }}>
+                              <td style={{ padding: "6px 8px", textAlign: "right", fontSize: "13px", color: "#333", fontWeight: "600", verticalAlign: "middle" }}>
                                 ₺{parseFloat(option.total_payment).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                               </td>
                             </tr>

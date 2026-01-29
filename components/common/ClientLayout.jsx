@@ -111,7 +111,9 @@ export default function ClientLayout({ children }) {
                 try {
                     const cartData = await getCart();
                     if (cartData) {
-                        syncFromAPI(cartData);
+                        // syncFromAPI'yı direkt store'dan al (dependency'den çıkar)
+                        const { syncFromAPI: syncFn } = useCartStore.getState();
+                        syncFn(cartData);
                     }
                 } catch (error) {
                     console.error("[ClientLayout] Cart sync error:", error);
@@ -119,7 +121,8 @@ export default function ClientLayout({ children }) {
             };
             fetchCart();
         }
-    }, [isSynced, syncFromAPI]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isSynced]); // syncFromAPI'yı dependency'den çıkardık
 
     return (
         <Context>

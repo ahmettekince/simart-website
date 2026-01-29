@@ -25,6 +25,7 @@ export default function Checkout() {
       return {
         subtotal: totals.subtotal || 0,
         discount: totals.discountAmount || 0,
+        couponDiscountAmount: totals.coupon_discount_amount || 0,
         total: totals.total || 0,
       };
     }
@@ -44,6 +45,7 @@ export default function Checkout() {
     return {
       subtotal: subtotal,
       discount: discount > 0 ? discount : 0,
+      couponDiscountAmount: 0,
       total: discountedTotal,
     };
   }, [totals, items]);

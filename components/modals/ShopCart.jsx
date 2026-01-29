@@ -7,19 +7,22 @@ import Link from "next/link";
 import { useRef, useEffect, useState, useMemo } from "react";
 import { log } from "@/utils/logger";
 import CartRecommendations from "./CartRecommendations";
+import Quantity from "@/components/shopDetails/Quantity";
 
 const ORDER_NOTE_KEY = "cart_order_note";
 
 export default function ShopCart() {
-  const { items, updateQuantity, removeItem, applyCoupon } = useCartStore();
+  const { items, updateQuantity, removeItem, applyCoupon, removeCoupon } = useCartStore();
   const [couponCode, setCouponCode] = useState("");
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+  const [isRemovingCoupon, setIsRemovingCoupon] = useState(false);
   const [couponError, setCouponError] = useState("");
   const [couponSuccess, setCouponSuccess] = useState(false);
 
   // API'den gelen totals değerlerini ayrı selector'la al (infinite loop'u önlemek için)
   const totals = useCartStore((state) => state.totals);
   const applied_campaigns = useCartStore((state) => state.applied_campaigns);
+  const coupon = useCartStore((state) => state.coupon);
 
   // Totals hesaplamasını useMemo ile memoize et
   const cartTotals = useMemo(() => {
@@ -118,7 +121,7 @@ export default function ShopCart() {
 
   const handleApplyCoupon = async (e) => {
     e.preventDefault();
-    if (!couponCode.trim() || isApplyingCoupon) return;
+    if (!couponCode.trim() || isApplyingCoupon || coupon) return;
 
     setIsApplyingCoupon(true);
     setCouponError("");
@@ -140,6 +143,25 @@ export default function ShopCart() {
       log("Kupon uygulama hatası:", error);
     } finally {
       setIsApplyingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = async () => {
+    if (!coupon || isRemovingCoupon) return;
+
+    setIsRemovingCoupon(true);
+    setCouponError("");
+
+    try {
+      const success = await removeCoupon(coupon.code);
+      if (!success) {
+        setCouponError("Kupon kaldırılırken bir hata oluştu.");
+      }
+    } catch (error) {
+      setCouponError("Kupon kaldırılırken bir hata oluştu.");
+      log("Kupon kaldırma hatası:", error);
+    } finally {
+      setIsRemovingCoupon(false);
     }
   };
 
@@ -228,8 +250,9 @@ export default function ShopCart() {
                                 const rawMax =
                                   item.max_purchase_quantity ?? item.product?.max_purchase_quantity ?? item.product?.max_quantity ?? null;
                                 const parsedMax = rawMax === null || rawMax === undefined ? null : Number(rawMax);
-                                const maxQty =
-                                  parsedMax === 0 ? 999 : (Number.isFinite(parsedMax) ? parsedMax : null);
+                                // maxQuantity = 0 ise sınırsız (null), değilse o değere kadar sınırlı
+                                const maxQty = parsedMax === 0 ? null : (Number.isFinite(parsedMax) ? parsedMax : null);
+                                const minQty = item.min_purchase_quantity ?? item.product?.min_purchase_quantity ?? 1;
 
                                 return (
                                   <div key={item.id} className={`tf-mini-cart-item ${isAnyLoading ? "disabled-item" : ""}`}>
@@ -263,86 +286,22 @@ export default function ShopCart() {
                                         )}
                                       </div>
                                       <div className="tf-mini-cart-btns">
-                                        <div className={`wg-quantity small ${isAnyLoading ? "disabled" : ""}`}>
-                                          <span
-                                            className={`btn-quantity minus-btn ${item.quantity <= 1 ? "disabled" : ""}`}
-                                            onClick={() => {
-                                              if (item.quantity > 1 && !isAnyLoading) {
-                                                setQuantity(item.id, item.quantity - 1, 'decrease');
+                                        <div className={`wg-quantity small ${isAnyLoading ? "disabled" : ""}`} style={{ opacity: isAnyLoading ? 0.5 : 1, pointerEvents: isAnyLoading ? "none" : "auto" }}>
+                                          <Quantity
+                                            setQuantity={(qty) => {
+                                              if (!isAnyLoading && qty >= minQty) {
+                                                // Max kontrolü (sadece maxQty 0 değilse)
+                                                if (maxQty !== null && maxQty !== undefined && maxQty > 0 && qty > maxQty) {
+                                                  setQuantity(item.id, maxQty, 'change');
+                                                } else {
+                                                  setQuantity(item.id, qty, 'change');
+                                                }
                                               }
                                             }}
-                                            disabled={item.quantity <= 1 || isAnyLoading}
-                                            style={{
-                                              opacity: item.quantity <= 1 || isAnyLoading ? 0.5 : 1,
-                                              cursor: item.quantity <= 1 || isAnyLoading ? "not-allowed" : "pointer",
-                                              pointerEvents: item.quantity <= 1 || isAnyLoading ? "none" : "auto",
-                                              position: 'relative',
-                                              display: 'flex',
-                                              alignItems: 'center',
-                                              justifyContent: 'center'
-                                            }}
-                                          >
-                                            {isLoadingDecrease ? (
-                                              <div className="spinner-border spinner-border-sm" role="status" style={{
-                                                width: '10px',
-                                                height: '10px',
-                                                borderWidth: '1.5px',
-                                                borderColor: '#3c81b5',
-                                                borderRightColor: 'transparent'
-                                              }}>
-                                                <span className="visually-hidden">Yükleniyor...</span>
-                                              </div>
-                                            ) : (
-                                              '-'
-                                            )}
-                                          </span>
-                                          <input
-                                            type="text"
-                                            name="number"
-                                            value={item.quantity}
-                                            min={1}
-                                            max={maxQty || undefined}
-                                            onChange={(e) => {
-                                              const newValue = parseInt(e.target.value) || 1;
-                                              const bounded = maxQty ? Math.min(newValue, maxQty) : newValue;
-                                              if (bounded >= 1 && !isAnyLoading) {
-                                                setQuantity(item.id, bounded, 'change');
-                                              }
-                                            }}
-                                            disabled={isAnyLoading}
-                                            style={{ opacity: isAnyLoading ? 0.5 : 1 }}
+                                            minQuantity={minQty}
+                                            maxQuantity={maxQty}
+                                            initialValue={item.quantity}
                                           />
-                                          <span
-                                            className={`btn-quantity plus-btn ${maxQty && item.quantity >= maxQty ? "disabled" : ""}`}
-                                            onClick={() => {
-                                              if (!isAnyLoading && (!maxQty || item.quantity < maxQty)) {
-                                                setQuantity(item.id, item.quantity + 1, 'increase');
-                                              }
-                                            }}
-                                            style={{
-                                              opacity: isAnyLoading || (maxQty && item.quantity >= maxQty) ? 0.5 : 1,
-                                              cursor: isAnyLoading || (maxQty && item.quantity >= maxQty) ? "not-allowed" : "pointer",
-                                              pointerEvents: isAnyLoading || (maxQty && item.quantity >= maxQty) ? "none" : "auto",
-                                              position: 'relative',
-                                              display: 'flex',
-                                              alignItems: 'center',
-                                              justifyContent: 'center'
-                                            }}
-                                          >
-                                            {isLoadingIncrease ? (
-                                              <div className="spinner-border spinner-border-sm" role="status" style={{
-                                                width: '10px',
-                                                height: '10px',
-                                                borderWidth: '1.5px',
-                                                borderColor: '#3c81b5',
-                                                borderRightColor: 'transparent'
-                                              }}>
-                                                <span className="visually-hidden">Yükleniyor...</span>
-                                              </div>
-                                            ) : (
-                                              '+'
-                                            )}
-                                          </span>
                                         </div>
                                         <div
                                           className="tf-mini-cart-remove"
@@ -630,9 +589,32 @@ export default function ShopCart() {
                             </div>
                           )}
                           {/* Kupon İndirimi */}
-                          {cartTotals.couponDiscountAmount > 0 && (
+                          {cartTotals.couponDiscountAmount > 0 && coupon && coupon.code && (
                             <div className="tf-cart-totals-item" style={{ borderTop: 'none', borderBottom: 'none' }}>
-                              <div className="tf-cart-total-label fw-6" style={{ fontSize: '14px' }}>Kupon İndirimi</div>
+                              <div className="tf-cart-total-label fw-6" style={{ fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span>Kupon İndirimi:</span>
+                                {coupon.code && (
+                                  <span style={{ fontWeight: '600', color: '#333' }}>{coupon.code}</span>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={handleRemoveCoupon}
+                                  disabled={isRemovingCoupon}
+                                  style={{
+                                    fontSize: '12px',
+                                    color: '#dc3545',
+                                    background: 'none',
+                                    border: 'none',
+                                    cursor: isRemovingCoupon ? 'not-allowed' : 'pointer',
+                                    padding: '2px 4px',
+                                    opacity: isRemovingCoupon ? 0.5 : 1,
+                                    textDecoration: 'underline',
+                                    fontWeight: '600',
+                                  }}
+                                >
+                                  {isRemovingCoupon ? 'Kaldırılıyor...' : 'Kaldır'}
+                                </button>
+                              </div>
                               <div className="tf-cart-total-value fw-6" style={{ fontSize: '14px', color: '#0bc15c' }}>
                                 - ₺{cartTotals.couponDiscountAmount.toLocaleString("tr-TR")}
                               </div>
@@ -692,50 +674,57 @@ export default function ShopCart() {
                       })()}
                     </div>
 
-                    {/* Kupon Kodu */}
-                    <div className="coupon-box" style={{ marginTop: "15px", marginBottom: "15px" }}>
-                      <form onSubmit={handleApplyCoupon} style={{ display: "flex", gap: "8px" }}>
-                        <input
-                          type="text"
-                          placeholder="İndirim Kodu"
-                          value={couponCode}
-                          onChange={(e) => {
-                            setCouponCode(e.target.value);
-                            setCouponError("");
-                            setCouponSuccess(false);
-                          }}
-                          style={{
-                            flex: 1,
-                            padding: "10px 12px",
-                            border: couponError ? "1px solid #dc3545" : couponSuccess ? "1px solid #0bc15c" : "1px solid #e5e5e5",
-                            borderRadius: "6px",
-                            fontSize: "14px",
-                          }}
-                          disabled={isApplyingCoupon}
-                        />
-                        <button
-                          type="submit"
-                          className="tf-btn btn-sm radius-3 btn-fill btn-icon animate-hover-btn"
-                          disabled={isApplyingCoupon || !couponCode.trim()}
-                          style={{
-                            opacity: isApplyingCoupon || !couponCode.trim() ? 0.6 : 1,
-                            cursor: isApplyingCoupon || !couponCode.trim() ? "not-allowed" : "pointer",
-                          }}
-                        >
-                          {isApplyingCoupon ? "Uygulanıyor..." : "Uygula"}
-                        </button>
-                      </form>
-                      {couponError && (
-                        <div style={{ marginTop: "8px", fontSize: "12px", color: "#dc3545" }}>
-                          {couponError}
-                        </div>
-                      )}
-                      {couponSuccess && (
-                        <div style={{ marginTop: "8px", fontSize: "12px", color: "#0bc15c" }}>
-                          Kupon kodu başarıyla uygulandı!
-                        </div>
-                      )}
-                    </div>
+                    {/* Kupon Kodu - Sadece kupon yoksa göster */}
+                    {(!coupon || !coupon.code) && (
+                      <div className="coupon-box" style={{ marginTop: "15px", marginBottom: "12px" }}>
+                        <form onSubmit={handleApplyCoupon} style={{ display: "flex", gap: "8px" }}>
+                          <input
+                            type="text"
+                            placeholder="Kupon Kodu"
+                            value={couponCode}
+                            onChange={(e) => {
+                              // Boşlukları temizle ve tek kelime olarak al
+                              const value = e.target.value.replace(/\s/g, '').toUpperCase();
+                              setCouponCode(value);
+                              setCouponError("");
+                              setCouponSuccess(false);
+                            }}
+                            style={{
+                              flex: 1,
+                              padding: "6px 10px",
+                              border: couponError ? "1px solid #dc3545" : couponSuccess ? "1px solid #0bc15c" : "1px solid #e5e5e5",
+                              borderRadius: "6px",
+                              fontSize: "14px",
+                              height: "36px",
+                            }}
+                            disabled={isApplyingCoupon}
+                          />
+                          <button
+                            type="submit"
+                            className="tf-btn btn-sm radius-3 btn-fill btn-icon animate-hover-btn"
+                            disabled={isApplyingCoupon || !couponCode.trim()}
+                            style={{
+                              opacity: isApplyingCoupon || !couponCode.trim() ? 0.6 : 1,
+                              cursor: isApplyingCoupon || !couponCode.trim() ? "not-allowed" : "pointer",
+                              height: "36px",
+                              padding: "6px 12px",
+                            }}
+                          >
+                            {isApplyingCoupon ? "Uygulanıyor..." : "Uygula"}
+                          </button>
+                        </form>
+                        {couponError && (
+                          <div style={{ marginTop: "8px", fontSize: "12px", color: "#dc3545" }}>
+                            {couponError}
+                          </div>
+                        )}
+                        {couponSuccess && (
+                          <div style={{ marginTop: "8px", fontSize: "12px", color: "#0bc15c" }}>
+                            Kupon kodu başarıyla uygulandı!
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     <div className="tf-mini-cart-view-checkout">
                       <Link href={`/sepetim`} className="tf-btn btn-outline radius-3 link w-100 justify-content-center">

@@ -1,5 +1,4 @@
 "use client";
-import Image from "next/image";
 import React from "react";
 import Link from "next/link";
 import { Autoplay, Pagination } from "swiper/modules";
@@ -57,40 +56,34 @@ function BannerContent({ images }) {
     <>
       {/* Desktop Version (>= 1024px) */}
       <div className="d-none d-lg-block w-100 h-100">
-        <Image
+        <img
           src={images.desktop?.url}
           alt="Banner Desktop"
-          width={1920}
-          height={800}
           className="w-100 h-100"
           style={{ objectFit: "cover" }}
-          priority
+          loading="eager"
         />
       </div>
 
       {/* Tablet Version (768px - 1023px) */}
       <div className="d-none d-md-block d-lg-none w-100 h-100">
-        <Image
+        <img
           src={images.tablet?.url}
           alt="Banner Tablet"
-          width={1024}
-          height={600}
           className="w-100 h-100"
           style={{ objectFit: "cover" }}
-          priority
+          loading="eager"
         />
       </div>
 
       {/* Mobile Version (< 768px) */}
       <div className="d-block d-md-none w-100 mobile-banner-wrap">
-        <Image
+        <img
           src={images.mobile?.url}
           alt="Banner Mobile"
-          width={600}
-          height={800}
           className="w-100 h-auto"
           style={{ objectFit: "cover" }}
-          priority
+          loading="eager"
         />
       </div>
     </>

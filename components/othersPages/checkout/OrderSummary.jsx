@@ -1,8 +1,68 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
+import { useState, useEffect } from "react";
+import { useCartStore } from "@/stores/cartStore";
 
 export default function OrderSummary({ items, cartTotals }) {
+  const [couponCode, setCouponCode] = useState("");
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+  const [isRemovingCoupon, setIsRemovingCoupon] = useState(false);
+  const [couponError, setCouponError] = useState("");
+  const [couponSuccess, setCouponSuccess] = useState(false);
+  const { applyCoupon, removeCoupon } = useCartStore();
+  const coupon = useCartStore((state) => state.coupon);
+
+  // Debug: Kupon bilgisini kontrol et
+  useEffect(() => {
+    console.log("[OrderSummary] Coupon state changed:", coupon);
+  }, [coupon]);
+
+  const handleApplyCoupon = async (e) => {
+    e.preventDefault();
+    if (!couponCode.trim() || isApplyingCoupon || coupon) return;
+
+    setIsApplyingCoupon(true);
+    setCouponError("");
+    setCouponSuccess(false);
+
+    try {
+      const success = await applyCoupon(couponCode.trim());
+      if (success) {
+        setCouponSuccess(true);
+        setCouponCode("");
+        setTimeout(() => {
+          setCouponSuccess(false);
+        }, 3000);
+      } else {
+        setCouponError("Kupon kodu geçersiz veya kullanılamıyor.");
+      }
+    } catch (error) {
+      setCouponError("Kupon uygulanırken bir hata oluştu.");
+      console.error("Kupon uygulama hatası:", error);
+    } finally {
+      setIsApplyingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = async () => {
+    if (!coupon || isRemovingCoupon) return;
+
+    setIsRemovingCoupon(true);
+    setCouponError("");
+
+    try {
+      const success = await removeCoupon(coupon.code);
+      if (!success) {
+        setCouponError("Kupon kaldırılırken bir hata oluştu.");
+      }
+    } catch (error) {
+      setCouponError("Kupon kaldırılırken bir hata oluştu.");
+      console.error("Kupon kaldırma hatası:", error);
+    } finally {
+      setIsRemovingCoupon(false);
+    }
+  };
   return (
     <div className="tf-page-cart-footer">
       <div className="tf-cart-footer-inner">
@@ -63,12 +123,58 @@ export default function OrderSummary({ items, cartTotals }) {
               </div>
             </div>
           )}
-          <div className="coupon-box">
-            <input required type="text" placeholder="Kupon Kodu" />
-            <a href="#" className="tf-btn btn-sm radius-3 btn-fill btn-icon animate-hover-btn">
-              Uygula
-            </a>
-          </div>
+          {/* Kupon Kodu - Sadece kupon yoksa göster */}
+          {(!coupon || !coupon.code) && (
+            <div className="coupon-box">
+              <form onSubmit={handleApplyCoupon} style={{ display: "flex", gap: "8px", width: "100%" }}>
+                <input
+                  type="text"
+                  placeholder="Kupon Kodu"
+                  value={couponCode}
+                  onChange={(e) => {
+                    // Boşlukları temizle ve tek kelime olarak al
+                    const value = e.target.value.replace(/\s/g, '').toUpperCase();
+                    setCouponCode(value);
+                    setCouponError("");
+                    setCouponSuccess(false);
+                  }}
+                  style={{
+                    flex: 1,
+                    padding: "6px 10px",
+                    border: couponError ? "1px solid #dc3545" : couponSuccess ? "1px solid #0bc15c" : "1px solid #e5e5e5",
+                    borderRadius: "6px",
+                    fontSize: "14px",
+                    height: "36px",
+                  }}
+                  disabled={isApplyingCoupon}
+                />
+                <button
+                  type="submit"
+                  className="tf-btn btn-sm radius-3 btn-fill btn-icon animate-hover-btn"
+                  disabled={isApplyingCoupon || !couponCode.trim()}
+                  style={{
+                    opacity: isApplyingCoupon || !couponCode.trim() ? 0.6 : 1,
+                    cursor: isApplyingCoupon || !couponCode.trim() ? "not-allowed" : "pointer",
+                    whiteSpace: "nowrap",
+                    height: "36px",
+                    padding: "6px 12px",
+                  }}
+                >
+                  {isApplyingCoupon ? "Uygulanıyor..." : "Uygula"}
+                </button>
+              </form>
+              {couponError && (
+                <div style={{ marginTop: "8px", fontSize: "12px", color: "#dc3545" }}>
+                  {couponError}
+                </div>
+              )}
+              {couponSuccess && (
+                <div style={{ marginTop: "8px", fontSize: "12px", color: "#0bc15c" }}>
+                  Kupon kodu başarıyla uygulandı!
+                </div>
+              )}
+            </div>
+          )}
           <div className="d-flex justify-content-between line pb_10">
             <h6 className="fw-5" style={{ fontSize: "14px" }}>
               Ara Toplam
@@ -77,7 +183,38 @@ export default function OrderSummary({ items, cartTotals }) {
               ₺{cartTotals.subtotal.toLocaleString("tr-TR")}
             </h6>
           </div>
-          {cartTotals.discount > 0 && (
+          {cartTotals.couponDiscountAmount > 0 && coupon && coupon.code && (
+            <div className="d-flex justify-content-between line pb_10">
+              <h6 className="fw-5" style={{ fontSize: "14px", display: "flex", alignItems: "center", gap: "8px" }}>
+                <span>Kupon İndirimi</span>
+                {coupon.code && (
+                  <span style={{ fontWeight: "600", color: "#333" }}>({coupon.code})</span>
+                )}
+                <button
+                  type="button"
+                  onClick={handleRemoveCoupon}
+                  disabled={isRemovingCoupon}
+                  style={{
+                    fontSize: "12px",
+                    color: "#dc3545",
+                    background: "none",
+                    border: "none",
+                    cursor: isRemovingCoupon ? "not-allowed" : "pointer",
+                    padding: "2px 4px",
+                    opacity: isRemovingCoupon ? 0.5 : 1,
+                    textDecoration: "underline",
+                    fontWeight: "600",
+                  }}
+                >
+                  {isRemovingCoupon ? "Kaldırılıyor..." : "Kaldır"}
+                </button>
+              </h6>
+              <h6 className="fw-5" style={{ fontSize: "14px", color: "#0bc15c" }}>
+                -₺{cartTotals.couponDiscountAmount.toLocaleString("tr-TR")}
+              </h6>
+            </div>
+          )}
+          {cartTotals.discount > 0 && cartTotals.couponDiscountAmount === 0 && (
             <div className="d-flex justify-content-between line pb_10">
               <h6 className="fw-5" style={{ fontSize: "14px" }}>
                 İndirim

@@ -5,7 +5,7 @@
 
 import { create } from 'zustand';
 import { openCartModal } from '@/utils/openCartModal';
-import { addToCart as addToCartAPI, removeFromCart as removeFromCartAPI, decreaseCartQuantity as decreaseCartQuantityAPI, getCart, applyCoupon as applyCouponAPI } from '@/api/cart';
+import { addToCart as addToCartAPI, removeFromCart as removeFromCartAPI, decreaseCartQuantity as decreaseCartQuantityAPI, getCart, applyCoupon as applyCouponAPI, removeCoupon as removeCouponAPI } from '@/api/cart';
 import { log } from '@/utils/logger';
 
 /**
@@ -68,6 +68,7 @@ export const useCartStore = create(
         isSynced: false, // API ile senkronize mi?
         totals: null, // API'den gelen toplam bilgileri (subtotal, discount, tax, total)
         applied_campaigns: [], // Uygulanan kampanyalar
+        coupon: null, // Uygulanan kupon bilgisi
 
         // Actions
 
@@ -270,6 +271,9 @@ export const useCartStore = create(
                 return;
             }
 
+            // Debug: Kupon bilgisini logla
+            log('[CartStore] syncFromAPI - Coupon bilgisi:', apiCartData.coupon);
+
             // API'den gelen items'ı store formatına çevir
             const storeItems = apiCartData.items.map(apiItem => {
                 // coverImage direkt URL string veya null olabilir
@@ -310,6 +314,7 @@ export const useCartStore = create(
                 deviceId: apiCartData.deviceId,
                 totals: apiCartData.totals || null,
                 applied_campaigns: apiCartData.applied_campaigns || [],
+                coupon: apiCartData.coupon || null,
                 isSynced: true,
             });
         },
@@ -340,6 +345,36 @@ export const useCartStore = create(
                 }
             } catch (error) {
                 log('[CartStore] applyCoupon error:', error);
+                return false;
+            }
+        },
+
+        /**
+         * Kupon kodunu sepetten kaldır (API ile senkronize)
+         * @param {string} couponCode - Kaldırılacak kupon kodu
+         * @returns {Promise<boolean>} Başarılı mı?
+         */
+        removeCoupon: async (couponCode) => {
+            if (!couponCode || !couponCode.trim()) {
+                log('[CartStore] removeCoupon: Geçersiz kupon kodu');
+                return false;
+            }
+
+            try {
+                // API'ye istek at
+                const cartData = await removeCouponAPI(couponCode.trim());
+
+                // API başarılı döndüyse, güncel sepeti çek ve store'u güncelle
+                if (cartData) {
+                    get().syncFromAPI(cartData);
+                    log('[CartStore] removeCoupon - Store updated');
+                    return true;
+                } else {
+                    log('[CartStore] removeCoupon: API başarısız oldu');
+                    return false;
+                }
+            } catch (error) {
+                log('[CartStore] removeCoupon error:', error);
                 return false;
             }
         },

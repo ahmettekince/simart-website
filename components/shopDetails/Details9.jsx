@@ -17,23 +17,64 @@ export default function Details9({ product }) {
   const [isAdding, setIsAdding] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Trendyol tarzı animasyonlu mesajlar
+  // Icon mapping
+  const iconMap = {
+    "eye": "👁️",
+    "shopping-cart": "🛒",
+    "truck": "🚚"
+  };
+
+  // API'den gelen info_messages'ı kullan
   const announcementMessages = useMemo(() => {
-    const messages = [
-      "Geç kalma! 56 kişi bu ürünü sepetine ekledi.",
-      "Son 24 saatte 120 kişi bu ürünü satın aldı.",
-      "Stokta sadece 5 adet kaldı!",
-      "Bu ürünü 340 kişi beğendi.",
-      "Hızlı kargo ile 1-2 gün içinde kapında!",
-    ];
-    return messages;
-  }, []);
+    // product objesinde info_messages var mı kontrol et
+    const infoMessages = product?.info_messages;
+
+    if (infoMessages && Array.isArray(infoMessages) && infoMessages.length > 0) {
+      return infoMessages.map(msg => ({
+        type: msg.type || '',
+        message: msg.message || '',
+        icon: msg.icon || '',
+        shipping_date: msg.shipping_date || null
+      }));
+    }
+
+    return [];
+  }, [product?.info_messages]);
+  const paymentImages = [
+    {
+      src: "/images/credit-cards/visa.png",
+      alt: "Visa",
+      width: 48,
+      height: 30,
+    },
+    {
+      src: "/images/credit-cards/mastercard.png",
+      alt: "Mastercard",
+      width: 48,
+      height: 30,
+    },
+    {
+      src: "/images/credit-cards/troy.png",
+      alt: "Troy",
+      width: 48,
+      height: 30,
+    },
+
+  ];
 
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
-    if (announcementMessages.length <= 1) return;
+    if (!announcementMessages || announcementMessages.length <= 1) {
+      setCurrentMessageIndex(0);
+      setIsAnimating(false);
+      return;
+    }
+
+    // İlk mesajı göster
+    setCurrentMessageIndex(0);
+    setIsAnimating(false);
 
     const interval = setInterval(() => {
       setIsAnimating(true);
@@ -48,7 +89,7 @@ export default function Details9({ product }) {
     }, 4000); // Her 4 saniyede bir değiş
 
     return () => clearInterval(interval);
-  }, [announcementMessages.length]);
+  }, [announcementMessages]);
 
   // Sadece API varyasyonları varsa göster; yoksa varyasyon alanı hiç render olmasın
   const hasVariations = useMemo(() => {
@@ -100,15 +141,15 @@ export default function Details9({ product }) {
     else setCurrentVariation(null);
   }, [hasVariations, allVariations]);
 
-  // Min/Max: API ne veriyorsa onu uygula (min=min, max=max). max < min gelirse max=min.
+  // Min/Max: API ne veriyorsa onu uygula
+  // max_purchase_quantity = 0 ise sınırsız (null), değilse o değere kadar sınırlı
   const minQuantity = Number.isFinite(product?.min_purchase_quantity) ? Number(product.min_purchase_quantity) : 1;
   const rawMax =
     product?.max_purchase_quantity === null || product?.max_purchase_quantity === undefined
       ? null
       : Number(product.max_purchase_quantity);
-  const normalizedMax =
-    rawMax === 0 ? 999 : (rawMax === null || Number.isNaN(rawMax) ? null : rawMax);
-  const maxQuantity = normalizedMax === null ? null : Math.max(normalizedMax, minQuantity);
+  // 0 ise sınırsız (null), değilse o değeri kullan
+  const maxQuantity = rawMax === 0 ? null : (rawMax === null || Number.isNaN(rawMax) ? null : Math.max(rawMax, minQuantity));
   const [quantity, setQuantity] = useState(minQuantity);
 
   const existingCartItem = useMemo(() => {
@@ -173,19 +214,36 @@ export default function Details9({ product }) {
   const handleAddToCartAnimated = async () => {
     if (isAdding || showSuccess) return;
 
-    // Anasayfadaki gibi: her tık +1 (ilk eklemede min > 1 ise min kadar ekle)
-    const currentQtyInCart = existingCartItem?.quantity || 0;
-    const increment = currentQtyInCart === 0 ? Math.max(1, minQuantity) : 1;
-    const nextQty = currentQtyInCart + increment;
+    // Quantity state'inden miktarı al
+    const qtyToAdd = quantity;
 
-    if (maxQuantity !== null && maxQuantity !== undefined && nextQty > maxQuantity) {
+    // Min kontrolü
+    if (qtyToAdd < minQuantity) {
+      alert(`Minimum sipariş miktarı ${minQuantity} adettir.`);
+      return;
+    }
+
+    // Max kontrolü (sadece maxQuantity 0 değilse kontrol et, 0 ise sınırsız)
+    if (maxQuantity !== null && maxQuantity !== undefined && maxQuantity > 0 && qtyToAdd > maxQuantity) {
       alert(`Maksimum sipariş miktarı ${maxQuantity} adettir.`);
       return;
     }
 
+    // Sepetteki mevcut miktarı kontrol et (sadece maxQuantity 0 değilse kontrol et)
+    if (maxQuantity !== null && maxQuantity !== undefined && maxQuantity > 0) {
+      const currentQtyInCart = existingCartItem?.quantity || 0;
+      const totalQty = currentQtyInCart + qtyToAdd;
+
+      // Toplam miktar max'ı aşıyorsa uyar
+      if (totalQty > maxQuantity) {
+        alert(`Sepetinizde zaten ${currentQtyInCart} adet var. Toplam miktar maksimum ${maxQuantity} adeti geçemez.`);
+        return;
+      }
+    }
+
     setIsAdding(true);
     try {
-      await addItem(product, increment, false);
+      await addItem(product, qtyToAdd, false);
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 2000);
     } catch (error) {
@@ -218,23 +276,70 @@ export default function Details9({ product }) {
                   <div className="tf-product-info-title">
                     <h5>{product.title ? product.title : "Cotton jersey top"}</h5>
                   </div>
-                  <div className="tf-product-info-badges">
-                    <div className="product-status-content">
-                      <i className="icon-lightning" />
-                      <div className="announcement-messages-wrapper">
-                        {announcementMessages.map((message, idx) => {
-                          const isActive = idx === currentMessageIndex;
-                          const isNext = idx === (currentMessageIndex + 1) % announcementMessages.length;
-                          const isAnimatingOut = isActive && isAnimating;
+
+                  {/* Rating gösterimi */}
+                  {(product.rating || product.average_rating) && (product.rating > 0 || product.average_rating > 0) && (
+                    <div className="tf-product-info-rating" style={{ marginBottom: "12px", display: "flex", alignItems: "center", gap: "8px" }}>
+                      <span style={{ fontSize: "14px", fontWeight: "600" }}>{(product.rating || product.average_rating || 0).toFixed(1)}</span>
+                      <div className="stars-box" style={{ display: "flex", gap: "2px" }}>
+                        {[...Array(5)].map((_, i) => {
+                          const rating = product.rating || product.average_rating || 0;
+                          const starValue = i + 1;
+                          const fillPercentage = Math.max(0, Math.min(100, ((rating - i) * 100)));
+                          const isFilled = rating >= starValue;
+                          const isPartial = rating > i && rating < starValue;
+
                           return (
-                            <p
-                              key={idx}
-                              className={`fw-6 announcement-message ${isActive ? "active" : ""} ${isNext && isAnimating ? "next" : ""} ${isAnimatingOut ? "animating-out" : ""}`}
-                            >
-                              {message}
-                            </p>
+                            <div key={i} className="star-wrapper" style={{ position: "relative", display: "inline-block", fontSize: "14px", lineHeight: 1 }}>
+                              <i className="icon-star star-empty" style={{ color: "#ddd" }} />
+                              {isFilled ? (
+                                <i className="icon-star star-filled" style={{ position: "absolute", top: 0, left: 0, color: "#f59e0b" }} />
+                              ) : isPartial ? (
+                                <i
+                                  className="icon-star star-filled star-partial"
+                                  style={{
+                                    position: "absolute",
+                                    top: 0,
+                                    left: 0,
+                                    color: "#f59e0b",
+                                    clipPath: `inset(0 ${100 - fillPercentage}% 0 0)`
+                                  }}
+                                />
+                              ) : null}
+                            </div>
                           );
                         })}
+                      </div>
+
+                      {(product.reviews_count || product.review_count) > 0 && (
+                        <span style={{ fontSize: "13px", color: "#888" }}><b style={{ fontWeight: "600", color: "#777" }}>{product.reviews_count || product.review_count} </b> Değerlendirme </span>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="tf-product-info-badges">
+                    <div className="product-status-content">
+
+                      <div className="announcement-messages-wrapper">
+                        {announcementMessages && announcementMessages.length > 0 ? (
+                          announcementMessages.map((msg, idx) => {
+                            const isActive = idx === currentMessageIndex;
+                            const isNext = idx === (currentMessageIndex + 1) % announcementMessages.length;
+                            const isAnimatingOut = isActive && isAnimating;
+                            const icon = msg.icon ? iconMap[msg.icon] || "" : "";
+                            return (
+                              <p
+                                key={idx}
+                                className={`fw-6 announcement-message ${isActive ? "active" : ""} ${isNext && isAnimating ? "next" : ""} ${isAnimatingOut ? "animating-out" : ""}`}
+                              >
+                                {icon && <span style={{ marginRight: "6px" }}>{icon}</span>}
+                                {msg.message}
+                              </p>
+                            );
+                          })
+                        ) : (
+                          <p className="fw-6 announcement-message active">Mesaj yok</p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -243,7 +348,7 @@ export default function Details9({ product }) {
                     {originalPrice && originalPrice > finalPrice && (
                       <div className="compare-at-price">₺{originalPrice.toLocaleString("tr-TR")}</div>
                     )}
-                    {(timeBasedDiscount || product.discount_price) && originalPrice && (
+                    {/* {(timeBasedDiscount || product.discount_price) && originalPrice && (
                       <div className="badges-on-sale">
                         <span>
                           {timeBasedDiscount
@@ -252,7 +357,7 @@ export default function Details9({ product }) {
                         </span>
                         % İNDİRİM
                       </div>
-                    )}
+                    )} */}
                   </div>
 
                   {timeBasedDiscount && countdownTargetDate && (
@@ -307,6 +412,60 @@ export default function Details9({ product }) {
                       </div>
                     </div>
                   )}
+
+                  {/* Kısa Açıklama */}
+                  {product.short_description && (
+                    <>
+                      <style dangerouslySetInnerHTML={{
+                        __html: `
+                          .tf-product-info-short-description .short-description-content ul {
+                            list-style-type: disc !important;
+                            margin-left: 20px !important;
+                            margin-top: 10px !important;
+                            margin-bottom: 10px !important;
+                            padding-left: 20px !important;
+                          }
+                          .tf-product-info-short-description .short-description-content li {
+                            list-style-type: disc !important;
+                            margin-bottom: 6px !important;
+                            display: list-item !important;
+                          }
+                          .tf-product-info-short-description .short-description-content ol {
+                            list-style-type: decimal !important;
+                            margin-left: 20px !important;
+                            margin-top: 10px !important;
+                            margin-bottom: 10px !important;
+                            padding-left: 20px !important;
+                          }
+                          .tf-product-info-short-description .short-description-content ol li {
+                            list-style-type: decimal !important;
+                            display: list-item !important;
+                          }
+                          .tf-product-info-short-description .short-description-content p {
+                            margin-bottom: 10px !important;
+                          }
+                          .tf-product-info-short-description .short-description-content p:last-child {
+                            margin-bottom: 0 !important;
+                          }
+                          .tf-product-info-short-description .short-description-content strong {
+                            font-weight: 600 !important;
+                          }
+                        `
+                      }} />
+                      <div className="tf-product-info-short-description" style={{ marginTop: "24px", marginBottom: "24px", padding: "16px", backgroundColor: "#f9f9f9", borderRadius: "8px" }}>
+                        <div
+                          className="short-description-content"
+                          style={{
+                            fontSize: "14px",
+                            lineHeight: "1.6",
+                            color: "#333"
+                          }}
+                          dangerouslySetInnerHTML={{ __html: product.short_description }}
+                        />
+                      </div>
+                    </>
+                  )}
+
                   <div className="tf-product-info-buy-button">
                     <form onSubmit={(e) => e.preventDefault()} className="">
                       <div className="tf-product-buy-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
@@ -609,7 +768,7 @@ export default function Details9({ product }) {
                       </div>
                     </div>
                   </div> */}
-                  <div className="tf-product-info-trust-seal">
+                  {/* <div className="tf-product-info-trust-seal">
                     <div className="tf-product-trust-mess">
                       <i className="icon-safe" />
                       <p className="fw-6">
@@ -621,7 +780,7 @@ export default function Details9({ product }) {
                         <Image key={index} alt={image.alt} src={image.src} width={image.width} height={image.height} />
                       ))}
                     </div>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>

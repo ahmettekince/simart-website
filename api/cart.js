@@ -11,11 +11,22 @@ export async function getCart() {
             validateStatus: (status) => status === 200 || status === 404,
         });
 
+        // Response geldiğinde hangi component'ten geldiğini göster
+        const stackTrace = new Error().stack;
+        log(`[getCart] ✅ Response geldi - Status: ${response.status}`, {
+            status: response.status,
+            statusText: response.statusText,
+            stackTrace: stackTrace
+        });
+
         if (response.status === 404) {
             return null;
         }
         if (response?.data?.status === "success" && response.data.data) {
             const cartData = response.data.data;
+
+            // Debug: Kupon bilgisini logla
+            log("[API cart.js] getCart - Coupon bilgisi:", cartData.coupon);
 
             // Sadece gerekli verileri normalize et
             const normalizedCart = {
@@ -67,7 +78,7 @@ export async function getCart() {
                     totalItems: parseInt(cartData.totals?.total_items || 0),
                 },
 
-                // Coupon (şimdilik null, ileride kullanılabilir)
+                // Coupon bilgisi
                 coupon: cartData.coupon || null,
 
                 // Applied campaigns
@@ -83,13 +94,20 @@ export async function getCart() {
         // Axios error response detaylarını logla
         if (error.response) {
             // Server'dan response geldi (400, 500, vb.)
+            const stackTrace = new Error().stack;
+            console.error(`[getCart] ❌ Error Response geldi - Status: ${error.response.status}`, {
+                status: error.response.status,
+                statusText: error.response.statusText,
+                data: error.response.data,
+                url: error.config?.url,
+                stackTrace: stackTrace
+            });
             log("[API cart.js] getCart error response:", {
                 status: error.response.status,
                 statusText: error.response.statusText,
                 data: error.response.data,
                 url: error.config?.url,
             });
-            console.error("[API cart.js] Full error:", error);
         } else if (error.request) {
             // Request gönderildi ama response gelmedi
             log("[API cart.js] getCart no response:", error.request);
@@ -318,16 +336,38 @@ export async function applyCoupon(couponCode) {
     }
 
     try {
-        const response = await apiClient.post("/cart/coupon", null, {
-            params: {
-                coupon_code: couponCode,
-            }
+        // Endpoint: /cart/apply-coupon?coupon_code=...
+        const requestParams = {
+            coupon_code: couponCode,
+        };
+        
+        log("[API cart.js] applyCoupon - İstek gönderiliyor:", {
+            endpoint: "/cart/apply-coupon",
+            params: requestParams,
+            couponCode: couponCode
         });
 
-        // applyCoupon API'si başarılı döndüyse, güncel sepeti çek
+        const response = await apiClient.post("/cart/apply-coupon", null, {
+            params: requestParams
+        });
+
+        log("[API cart.js] applyCoupon - Yanıt alındı:", {
+            status: response?.status,
+            statusText: response?.statusText,
+            data: response?.data,
+            fullResponse: response
+        });
+
+        // API başarılı döndüyse, güncel sepeti çek (1 kez yenile)
         if (response?.data?.status === "success") {
+            log("[API cart.js] applyCoupon - Başarılı, sepet yenileniyor...");
             // Sepeti tekrar çek (güncel haliyle)
             const updatedCart = await getCart();
+            log("[API cart.js] applyCoupon - Sepet yenilendi:", {
+                cartId: updatedCart?.cartId,
+                itemsCount: updatedCart?.items?.length,
+                totals: updatedCart?.totals
+            });
             return updatedCart;
         }
 
@@ -340,13 +380,101 @@ export async function applyCoupon(couponCode) {
                 statusText: error.response.statusText,
                 data: error.response.data,
                 url: error.config?.url,
+                fullError: error
             });
             console.error("[API cart.js] Full error:", error);
         } else if (error.request) {
-            log("[API cart.js] applyCoupon no response:", error.request);
+            log("[API cart.js] applyCoupon no response:", {
+                request: error.request,
+                fullError: error
+            });
             console.error("[API cart.js] Request error:", error);
         } else {
-            log("[API cart.js] applyCoupon setup error:", error.message);
+            log("[API cart.js] applyCoupon setup error:", {
+                message: error.message,
+                fullError: error
+            });
+            console.error("[API cart.js] Setup error:", error);
+        }
+        return null;
+    }
+}
+
+/**
+ * Kupon kodunu sepetten kaldırır (Client-side)
+ * @param {string} couponCode - Kaldırılacak kupon kodu
+ * @returns {Promise<Object|null>} Güncel sepet verisi veya null
+ */
+export async function removeCoupon(couponCode) {
+    if (!couponCode) {
+        log("[API cart.js] removeCoupon: couponCode is required");
+        return null;
+    }
+
+    try {
+        // Endpoint: /cart/remove-coupon?coupon_code=...
+        const requestParams = {
+            coupon_code: couponCode,
+        };
+        
+        log("[API cart.js] removeCoupon - İstek gönderiliyor:", {
+            endpoint: "/cart/remove-coupon",
+            params: requestParams,
+            couponCode: couponCode
+        });
+
+        const response = await apiClient.delete("/cart/remove-coupon", {
+            params: requestParams
+        });
+
+        log("[API cart.js] removeCoupon - Yanıt alındı:", {
+            status: response?.status,
+            statusText: response?.statusText,
+            data: response?.data,
+            fullResponse: response
+        });
+
+        // API başarılı döndüyse, güncel sepeti çek (1 kez yenile)
+        // Cevap formatı: {"status": "success", "message": "Kupon kaldırıldı", "response_time": 52.75}
+        if (response?.data?.status === "success") {
+            log("[API cart.js] removeCoupon - Başarılı:", {
+                message: response?.data?.message,
+                response_time: response?.data?.response_time
+            });
+            // Sepeti tekrar çek (güncel haliyle)
+            const updatedCart = await getCart();
+            log("[API cart.js] removeCoupon - Sepet yenilendi:", {
+                cartId: updatedCart?.cartId,
+                itemsCount: updatedCart?.items?.length,
+                totals: updatedCart?.totals,
+                coupon: updatedCart?.coupon
+            });
+            return updatedCart;
+        }
+
+        log("[API cart.js] removeCoupon failed:", response?.data);
+        return null;
+    } catch (error) {
+        if (error.response) {
+            log("[API cart.js] removeCoupon error response:", {
+                status: error.response.status,
+                statusText: error.response.statusText,
+                data: error.response.data,
+                url: error.config?.url,
+                fullError: error
+            });
+            console.error("[API cart.js] Full error:", error);
+        } else if (error.request) {
+            log("[API cart.js] removeCoupon no response:", {
+                request: error.request,
+                fullError: error
+            });
+            console.error("[API cart.js] Request error:", error);
+        } else {
+            log("[API cart.js] removeCoupon setup error:", {
+                message: error.message,
+                fullError: error
+            });
             console.error("[API cart.js] Setup error:", error);
         }
         return null;

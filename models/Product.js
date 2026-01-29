@@ -323,6 +323,9 @@ export class ProductModel {
             // Tarihler
             created_at: product.created_at || null,
             updated_at: product.updated_at || null,
+            
+            // Info mesajları
+            info_messages: product.info_messages || [],
         };
     }
 

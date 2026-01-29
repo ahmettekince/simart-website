@@ -103,9 +103,26 @@ export default function ProductCardSimart({ product }) {
           {rating > 0 && (
             <div className="rating-wrap">
               <div className="stars-box">
-                {[...Array(5)].map((_, i) => (
-                  <i key={i} className={`icon-star ${i < Math.floor(rating) ? "active" : ""}`} />
-                ))}
+                {[...Array(5)].map((_, i) => {
+                  const starValue = i + 1;
+                  const fillPercentage = Math.max(0, Math.min(100, ((rating - i) * 100)));
+                  const isFilled = rating >= starValue;
+                  const isPartial = rating > i && rating < starValue;
+                  
+                  return (
+                    <div key={i} className="star-wrapper">
+                      <i className="icon-star star-empty" />
+                      {isFilled ? (
+                        <i className="icon-star star-filled" />
+                      ) : isPartial ? (
+                        <i 
+                          className="icon-star star-filled star-partial" 
+                          style={{ clipPath: `inset(0 ${100 - fillPercentage}% 0 0)` }}
+                        />
+                      ) : null}
+                    </div>
+                  );
+                })}
               </div>
               <span className="rating-num">{rating.toFixed(1)}</span>
               {reviewCount > 0 && <span className="review-num">({reviewCount})</span>}
@@ -271,12 +288,27 @@ export default function ProductCardSimart({ product }) {
           align-items: center;
           gap: 6px;
         }
-        .stars-box i {
+        .stars-box {
+          display: flex;
+          gap: 2px;
+        }
+        .star-wrapper {
+          position: relative;
+          display: inline-block;
           font-size: 12px;
+          line-height: 1;
+        }
+        .star-wrapper .star-empty {
           color: #ddd;
         }
-        .stars-box i.active {
+        .star-wrapper .star-filled {
+          position: absolute;
+          top: 0;
+          left: 0;
           color: #f59e0b;
+        }
+        .star-wrapper .star-partial {
+          clip-path: inset(0 0 0 0);
         }
         .rating-num {
           font-size: 13px;
