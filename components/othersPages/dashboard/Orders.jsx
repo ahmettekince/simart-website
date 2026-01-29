@@ -22,7 +22,7 @@ export default function Orders() {
               <td>₺200.00</td>
               <td>
                 <Link
-                  href={`/my-account-orders-details`}
+                  href={`/siparislerim-detay`}
                   className="tf-btn btn-fill animate-hover-btn rounded-0 justify-content-center"
                 >
                   <span>Görüntüleme</span>
@@ -36,7 +36,7 @@ export default function Orders() {
               <td>₺300.00</td>
               <td>
                 <Link
-                  href={`/my-account-orders-details`}
+                  href={`/siparislerim-detay`}
                   className="tf-btn btn-fill animate-hover-btn rounded-0 justify-content-center"
                 >
                   <span>Görüntüleme</span>
@@ -50,7 +50,7 @@ export default function Orders() {
               <td>₺400.00</td>
               <td>
                 <Link
-                  href={`/my-account-orders-details`}
+                  href={`/siparislerim-detay`}
                   className="tf-btn btn-fill animate-hover-btn rounded-0 justify-content-center"
                 >
                   <span>Görüntüleme</span>

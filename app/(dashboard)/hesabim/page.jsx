@@ -8,10 +8,7 @@ import { redirect } from "next/navigation";
 export const metadata = {
   title: "Hesabım - Robot Süpürge ve Akıllı Ev Sistemleri",
   description: "Şımart Teknoloji hesap yönetim paneli. Kişisel bilgilerinizi güncelleyin, siparişlerinizi görüntüleyin ve hesap ayarlarınızı yönetin.",
-  robots: {
-    index: false,
-    follow: true,
-  },
+
 };
 export default async function page() {
   const isAuthenticated = await checkAuthServer();
