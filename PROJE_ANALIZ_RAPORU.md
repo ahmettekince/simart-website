@@ -71,7 +71,7 @@ remotePatterns: [
 #### 2.3. Axios Kullanımı (`apiClient.js`)
 **Dosya:** `utils/apiClient.js`
 **Bulgu:** Next.js 13+ (App Router) ile yerleşik `fetch` API'si, önbellekleme mekanizmalarıyla daha iyi entegre olur. `axios` kullanımı ekstra bundle boyutu ekler.
-**Öneri:** Mümkünse yerleşik `fetch` fonksiyonuna geçiş yapın.
+**Durum:** Kullanıcı isteği üzerine `axios` kütüphanesi kaldırılarak yerel `fetch` API'sini kullanan, ancak mevcut kod yapısını bozmamak için `axios` arayüzünü taklit eden (wrapper) bir yapıya geçilmiştir. Bu sayede bundle boyutu küçültülmüştür.
 
 ---
 

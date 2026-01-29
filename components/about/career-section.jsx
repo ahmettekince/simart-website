@@ -85,25 +85,17 @@ export function CareerSection({ faqs = [] }) {
 
         setLoading(true)
         const formData = new FormData(e.target)
-        const data = {
-            full_name: formData.get("full_name"),
-            email: formData.get("email"),
-            phone: formData.get("phone"),
-            message: formData.get("message"),
-        }
 
-        // Dosya varsa ekle
+        // CV dosyası kontrolü
         const fileInput = formData.get("cv_file")
-        if (fileInput && fileInput instanceof File) {
-            data.cv_file = fileInput
+        if (!fileInput || !(fileInput instanceof File) || fileInput.size === 0) {
+            // Eğer dosya boşsa formData'dan sil (opsiyonel, backend'e bağlı)
+            formData.delete("cv_file")
         }
 
         try {
-            const response = await apiClient.post("/career", data, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            })
+            // FormData direkt gönderilir, Content-Type browser tarafından otomatik set edilir
+            const response = await apiClient.post("/career", formData)
 
             if (response.data.status === "success") {
                 setSuccess(true)
