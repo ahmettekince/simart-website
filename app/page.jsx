@@ -1,4 +1,4 @@
-import Features from "@/components/common/Features2";
+import Features from "@/components/common/Features";
 import Header from "@/components/headers/Header";
 import Blogs from "@/components/homes/home-electronic/Blogs";
 import Categories from "@/components/homes/home-electronic/Categories";

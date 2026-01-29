@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import Link from "next/link";
 
 export default function Login() {
   return (
@@ -49,13 +50,12 @@ export default function Login() {
                 </label>
               </div>
               <div>
-                <a
-                  href="#forgotPassword"
-                  data-bs-toggle="modal"
+                <Link
+                  href="/sifremi-unuttum"
                   className="btn-link link"
                 >
-                  Forgot your password?
-                </a>
+                  Şifremi Unuttum?
+                </Link>
               </div>
               <div className="bottom">
                 <div className="w-100">

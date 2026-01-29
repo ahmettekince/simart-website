@@ -171,15 +171,25 @@ export default function Register() {
         });
 
         setFieldErrors(parsedErrors);
-        setError(err.response?.data?.message || "Lütfen formu kontrol edin.");
+        
+        // Eğer errors dizisi boşsa (yani field-specific hata yoksa) genel mesajı göster
+        const hasFieldErrors = Object.keys(parsedErrors).length > 0;
+        if (!hasFieldErrors && err.response?.data?.message) {
+          setError(err.response.data.message);
+        } else {
+          setError(""); // Field hataları varsa genel mesajı gösterme
+        }
       } else {
-        // Genel hata mesajı
-        const errorMessage =
-          err.response?.data?.message ||
-          err.response?.data?.error ||
-          err.message ||
-          "Kayıt işlemi sırasında bir hata oluştu.";
-        setError(errorMessage);
+        // Genel hata mesajı (errors dizisi yoksa veya boşsa)
+        if (err.response?.data?.message) {
+          setError(err.response.data.message);
+        } else {
+          const errorMessage =
+            err.response?.data?.error ||
+            err.message ||
+            "Kayıt işlemi sırasında bir hata oluştu.";
+          setError(errorMessage);
+        }
       }
     } finally {
       setIsLoading(false);
@@ -240,7 +250,6 @@ export default function Register() {
                     name="first_name"
                     value={formData.first_name}
                     onChange={handleChange}
-                    required
                     style={fieldErrors.first_name ? { borderColor: "#dc3545" } : {}}
                   />
                   <label
@@ -264,7 +273,6 @@ export default function Register() {
                     name="last_name"
                     value={formData.last_name}
                     onChange={handleChange}
-                    required
                     style={fieldErrors.last_name ? { borderColor: "#dc3545" } : {}}
                   />
                   <label
@@ -290,7 +298,6 @@ export default function Register() {
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  required
                   style={fieldErrors.email ? { borderColor: "#dc3545" } : {}}
                 />
                 <label
@@ -307,7 +314,7 @@ export default function Register() {
               </div>
               <div className="tf-field style-1 mb_30">
                 <input
-                  className="tf-field-input tf-input"
+                  className={`tf-field-input tf-input ${fieldErrors.password ? "error" : ""}`}
                   placeholder=" "
                   type="password"
                   id="password"
@@ -315,7 +322,7 @@ export default function Register() {
                   value={formData.password}
                   onChange={handleChange}
                   autoComplete="new-password"
-                  required
+                  style={fieldErrors.password ? { borderColor: "#dc3545" } : {}}
                 />
                 <label
                   className="tf-field-label fw-6 text_black-2"
@@ -323,6 +330,11 @@ export default function Register() {
                 >
                   Şifre *
                 </label>
+                {fieldErrors.password && (
+                  <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                    {fieldErrors.password}
+                  </div>
+                )}
               </div>
 
               {/* Şartlar ve Koşullar */}
@@ -333,7 +345,7 @@ export default function Register() {
                     display: "flex",
                     alignItems: "flex-start",
                     gap: "8px",
-                    marginBottom: "15px",
+                    marginBottom: fieldErrors.terms_accepted ? "4px" : "15px",
                   }}
                 >
                   <input
@@ -342,7 +354,6 @@ export default function Register() {
                     className="tf-check"
                     checked={agreements.termsAccepted}
                     onChange={() => handleAgreementChange("termsAccepted")}
-                    required
                     style={{ marginTop: "4px", flexShrink: 0 }}
                   />
                   <label
@@ -362,7 +373,7 @@ export default function Register() {
                   </label>
                 </div>
                 {fieldErrors.terms_accepted && (
-                  <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "-10px", marginBottom: "10px", marginLeft: "28px" }}>
+                  <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "0px", marginBottom: "10px", marginLeft: "28px" }}>
                     {fieldErrors.terms_accepted}
                   </div>
                 )}
@@ -420,7 +431,7 @@ export default function Register() {
                 <button
                   type="submit"
                   className="tf-btn w-100 radius-3 btn-fill animate-hover-btn justify-content-center"
-                  disabled={isLoading || !agreements.termsAccepted}
+                  disabled={isLoading}
                 >
                   {isLoading ? "Kayıt yapılıyor..." : "Kayıt Ol"}
                 </button>

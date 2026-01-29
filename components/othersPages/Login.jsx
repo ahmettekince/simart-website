@@ -106,22 +106,15 @@ export default function Login() {
         // Auth state'ini güncelle
         setAuthenticated(true);
 
-        // device_id_token'ı cookie'ye kaydet (eğer varsa)
-        // Not: Proxy route'u zaten Set-Cookie header'ını forward ediyor,
-        // ama yine de client-side'da da kaydedelim (fallback)
-        if (response.data?.data?.device_id_token) {
-          document.cookie = `DEVICE_ID=${response.data.data.device_id_token}; path=/; max-age=31536000; SameSite=Lax`;
-        }
-
         // reCAPTCHA'yı resetle
         if (RECAPTCHA_SITE_KEY && window.grecaptcha && recaptchaWidgetId.current !== null) {
           window.grecaptcha.reset(recaptchaWidgetId.current);
           setRecaptchaVerified(false);
         }
 
-        // 2 saniye sonra hesabım sayfasına yönlendir
+        // 2 saniye sonra ana sayfaya yönlendir
         setTimeout(() => {
-          window.location.href = "/hesabim";
+          window.location.href = "/";
         }, 2000);
       } else {
         setError(response.data?.message || "Giriş işlemi başarısız oldu.");
@@ -187,7 +180,7 @@ export default function Login() {
             <div id="login">
               <h5 className="mb_36">Giriş Yap</h5>
               <div>
-                <form onSubmit={handleLogin}>
+                <form onSubmit={handleLogin} name="login-form" method="post">
                   {/* Başarı Mesajı */}
                   {message && (
                     <div
@@ -226,7 +219,7 @@ export default function Login() {
                       className="tf-field-input tf-input"
                       placeholder=""
                       type="email"
-                      autoComplete="email"
+                      autoComplete="username"
                       id="email"
                       name="email"
                       value={loginData.email}
@@ -259,9 +252,9 @@ export default function Login() {
                     </label>
                   </div>
                   <div className="mb_20">
-                    <a href="#recover" className="tf-btn btn-line">
+                    <Link href="/sifremi-unuttum" className="tf-btn btn-line">
                       Şifrenizi mi unuttunuz?
-                    </a>
+                    </Link>
                   </div>
 
                   {/* reCAPTCHA */}

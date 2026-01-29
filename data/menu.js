@@ -702,12 +702,12 @@ export const pages = [
         className: "menu-link-text link text_black-2",
       },
       {
-        href: "/my-account-orders",
+        href: "/siparislerim",
         text: "My order",
         className: "menu-link-text link text_black-2",
       },
       {
-        href: "/my-account-orders-details",
+        href: "/siparislerim-detay",
         text: "My order details",
         className: "menu-link-text link text_black-2",
       },

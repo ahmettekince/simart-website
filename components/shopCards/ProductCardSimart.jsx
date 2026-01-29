@@ -226,6 +226,7 @@ export default function ProductCardSimart({ product }) {
           margin-bottom: 4px;
           overflow: hidden;
           flex-shrink: 0;
+          font-weight: bold;         
         }
         .rating-slot {
           height: 20px;

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import apiClient from "@/utils/apiClient";
 import { log } from "@/utils/logger";
 import { useAuthStore } from "@/stores/authStore";
+import { openCartModal } from "@/utils/openCartModal";
 
 export default function MobileMenu({ menuItems: initialMenuItems = [] }) {
   const pathname = usePathname();
@@ -126,32 +127,66 @@ export default function MobileMenu({ menuItems: initialMenuItems = [] }) {
           </ul>
           <div className="mb-other-content">
             <div className="d-flex group-icon">
-              <Link href={`/wishlist`} className="site-nav-icon">
-                <i className="icon icon-heart" />
-                İstek Listesi
-              </Link>
-              <Link href={`/home-search`} className="site-nav-icon">
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  openCartModal();
+                }}
+                className="site-nav-icon"
+              >
+                <i className="icon icon-cart" />
+                Sepetim
+              </a>
+              <a
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  // Mobil menü modal'ını kapat
+                  if (typeof window !== "undefined") {
+                    const bootstrap = require("bootstrap");
+                    const mobileMenuOffcanvas = document.getElementById("mobileMenu");
+                    if (mobileMenuOffcanvas) {
+                      const offcanvasInstance = bootstrap.Offcanvas.getInstance(mobileMenuOffcanvas);
+                      if (offcanvasInstance) {
+                        offcanvasInstance.hide();
+                      }
+                    }
+                    // Arama modal'ını aç
+                    setTimeout(() => {
+                      const searchOffcanvas = document.getElementById("canvasSearch");
+                      if (searchOffcanvas) {
+                        const searchInstance = new bootstrap.Offcanvas(searchOffcanvas);
+                        searchInstance.show();
+                      }
+                    }, 300);
+                  }
+                }}
+                className="site-nav-icon"
+              >
                 <i className="icon icon-search" />
                 Ara
-              </Link>
+              </a>
             </div>
             <div className="mb-notice">
-              <Link href={`/contact-1`} className="text-need">
-                Need help ?
+              <Link href={`/destek`} className="text-need">
+                Yardıma mı ihtiyacınız var?
               </Link>
             </div>
-            <ul className="mb-info">
-              <li>
-                Address: 1234 Fashion Street, Suite 567, <br />
-                New York, NY 10001
-              </li>
-              <li>
-                Email: <b>info@fashionshop.com</b>
-              </li>
-              <li>
-                Phone: <b>(212) 555-1234</b>
-              </li>
-            </ul>
+            <div style={{ marginTop: "20px", marginBottom: "15px" }}>
+
+              <ul className="mb-info">
+                <li>
+                  Adres: Yeşilova Mah. 4023 Cad. <br /> Ser Tower Apt. Dış Kapı: 1 G Etimesgut/Ankara
+                </li>
+                <li>
+                  Email: <a href="mailto:destek@simart.me" style={{ color: "inherit", textDecoration: "none" }}><b>destek@simart.me</b></a>
+                </li>
+                <li>
+                  Phone: <a href="tel:+908503466126" style={{ color: "inherit", textDecoration: "none" }}><b>+90 850 346 6126</b></a>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
         <div className="mb-bottom">

@@ -11,7 +11,11 @@ import CartRecommendations from "./CartRecommendations";
 const ORDER_NOTE_KEY = "cart_order_note";
 
 export default function ShopCart() {
-  const { items, updateQuantity, removeItem } = useCartStore();
+  const { items, updateQuantity, removeItem, applyCoupon } = useCartStore();
+  const [couponCode, setCouponCode] = useState("");
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
+  const [couponError, setCouponError] = useState("");
+  const [couponSuccess, setCouponSuccess] = useState(false);
 
   // API'den gelen totals değerlerini ayrı selector'la al (infinite loop'u önlemek için)
   const totals = useCartStore((state) => state.totals);
@@ -107,6 +111,35 @@ export default function ShopCart() {
         delete newState[id];
         return newState;
       });
+    }
+  };
+
+
+
+  const handleApplyCoupon = async (e) => {
+    e.preventDefault();
+    if (!couponCode.trim() || isApplyingCoupon) return;
+
+    setIsApplyingCoupon(true);
+    setCouponError("");
+    setCouponSuccess(false);
+
+    try {
+      const success = await applyCoupon(couponCode.trim());
+      if (success) {
+        setCouponSuccess(true);
+        setCouponCode("");
+        setTimeout(() => {
+          setCouponSuccess(false);
+        }, 3000);
+      } else {
+        setCouponError("Kupon kodu geçersiz veya kullanılamıyor.");
+      }
+    } catch (error) {
+      setCouponError("Kupon uygulanırken bir hata oluştu.");
+      log("Kupon uygulama hatası:", error);
+    } finally {
+      setIsApplyingCoupon(false);
     }
   };
 
@@ -659,6 +692,50 @@ export default function ShopCart() {
                       })()}
                     </div>
 
+                    {/* Kupon Kodu */}
+                    <div className="coupon-box" style={{ marginTop: "15px", marginBottom: "15px" }}>
+                      <form onSubmit={handleApplyCoupon} style={{ display: "flex", gap: "8px" }}>
+                        <input
+                          type="text"
+                          placeholder="İndirim Kodu"
+                          value={couponCode}
+                          onChange={(e) => {
+                            setCouponCode(e.target.value);
+                            setCouponError("");
+                            setCouponSuccess(false);
+                          }}
+                          style={{
+                            flex: 1,
+                            padding: "10px 12px",
+                            border: couponError ? "1px solid #dc3545" : couponSuccess ? "1px solid #0bc15c" : "1px solid #e5e5e5",
+                            borderRadius: "6px",
+                            fontSize: "14px",
+                          }}
+                          disabled={isApplyingCoupon}
+                        />
+                        <button
+                          type="submit"
+                          className="tf-btn btn-sm radius-3 btn-fill btn-icon animate-hover-btn"
+                          disabled={isApplyingCoupon || !couponCode.trim()}
+                          style={{
+                            opacity: isApplyingCoupon || !couponCode.trim() ? 0.6 : 1,
+                            cursor: isApplyingCoupon || !couponCode.trim() ? "not-allowed" : "pointer",
+                          }}
+                        >
+                          {isApplyingCoupon ? "Uygulanıyor..." : "Uygula"}
+                        </button>
+                      </form>
+                      {couponError && (
+                        <div style={{ marginTop: "8px", fontSize: "12px", color: "#dc3545" }}>
+                          {couponError}
+                        </div>
+                      )}
+                      {couponSuccess && (
+                        <div style={{ marginTop: "8px", fontSize: "12px", color: "#0bc15c" }}>
+                          Kupon kodu başarıyla uygulandı!
+                        </div>
+                      )}
+                    </div>
 
                     <div className="tf-mini-cart-view-checkout">
                       <Link href={`/sepetim`} className="tf-btn btn-outline radius-3 link w-100 justify-content-center">

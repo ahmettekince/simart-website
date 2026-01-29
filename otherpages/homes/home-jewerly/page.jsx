@@ -1,4 +1,4 @@
-import Features from "@/components/common/Features2";
+import Features from "@/components/common/Features";
 import Footer4 from "@/components/footers/Footer4";
 import Header5 from "@/components/headers/Header5";
 import Banner from "@/components/homes/home-jewerly/Banner";

@@ -1,5 +1,5 @@
 import Announcmentbar from "@/components/common/Announcmentbar";
-import Features from "@/components/common/Features2";
+import Features from "@/components/common/Features";
 
 import Footer from "@/components/footers/Footer";
 import Header4 from "@/components/headers/Header4";

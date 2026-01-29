@@ -4,11 +4,13 @@ import { useState, useEffect } from "react";
 import apiClient from "@/utils/apiClient";
 import { log } from "@/utils/logger";
 import SearchableSelect from "@/components/common/SearchableSelect";
+import AddAddressButton from "@/components/common/AddAddressButton";
 
 export default function AccountAddress() {
   const [activeTab, setActiveTab] = useState("delivery"); // "delivery" veya "billing"
   const [activeEdit, setactiveEdit] = useState(false);
   const [activeAdd, setactiveAdd] = useState(false);
+  const [editingAddressId, setEditingAddressId] = useState(null); // Düzenlenen adresin ID'si
   const [deliveryAddresses, setDeliveryAddresses] = useState([]);
   const [billingAddresses, setBillingAddresses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -18,54 +20,38 @@ export default function AccountAddress() {
   const [selectedCityId, setSelectedCityId] = useState("");
   const [districts, setDistricts] = useState([]);
   const [selectedDistrictId, setSelectedDistrictId] = useState("");
+  const [neighborhoods, setNeighborhoods] = useState([]);
+  const [selectedNeighborhoodId, setSelectedNeighborhoodId] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState("");
+  const [saveError, setSaveError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({}); // Field bazlı hatalar
+  const [invoiceType, setInvoiceType] = useState("individual"); // "individual" veya "company"
+  const [useAsBillingAddress, setUseAsBillingAddress] = useState(false); // Bu adresi fatura adreslerimde kullan
 
-  // Teslimat adreslerini yükle
+  // Adresleri yükle
   useEffect(() => {
-    const fetchDeliveryAddresses = async () => {
+    const fetchAddresses = async () => {
       try {
-        // TODO: API endpoint'i eklenecek
-        // const response = await apiClient.get("/addresses?type=delivery");
-        // if (response.data && response.data.status === "success") {
-        //   setDeliveryAddresses(response.data.data || []);
-        // }
+        setLoading(true);
+        const response = await apiClient.get("/customer-addresses");
+        if (response.data && response.data.status === "success" && response.data.data) {
+          const allAddresses = response.data.data;
+          // Teslimat adreslerini filtrele
+          const delivery = allAddresses.filter((addr) => addr.address_type === "delivery");
+          // Fatura adreslerini filtrele
+          const billing = allAddresses.filter((addr) => addr.address_type === "invoice");
 
-        // Şimdilik mock data
-        setDeliveryAddresses([
-          {
-            id: 1,
-            title: "Ev",
-            type: "home", // "home" veya "work"
-            fullAddress: "Bahçelerüstü Mahallesi, Şehit İdris Yılmaz Caddesi 33/7 Ankara/Mamak/Saimekadın",
-            isDefault: true,
-          },
-
-        ]);
+          setDeliveryAddresses(delivery);
+          setBillingAddresses(billing);
+        }
       } catch (error) {
-        log("Teslimat adresleri yüklenirken hata:", error);
+        log("Adresler yüklenirken hata:", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchDeliveryAddresses();
-  }, []);
-
-  // Fatura adreslerini yükle
-  useEffect(() => {
-    const fetchBillingAddresses = async () => {
-      try {
-        // TODO: API endpoint'i eklenecek
-        // const response = await apiClient.get("/addresses?type=billing");
-        // if (response.data && response.data.status === "success") {
-        //   setBillingAddresses(response.data.data || []);
-        // }
-
-        // Şimdilik mock data
-        setBillingAddresses([]);
-      } catch (error) {
-        log("Fatura adresleri yüklenirken hata:", error);
-      }
-    };
-    fetchBillingAddresses();
+    fetchAddresses();
   }, []);
 
   // Şehirleri yükle
@@ -89,6 +75,8 @@ export default function AccountAddress() {
       if (!selectedCityId) {
         setDistricts([]);
         setSelectedDistrictId("");
+        setNeighborhoods([]);
+        setSelectedNeighborhoodId("");
         return;
       }
       try {
@@ -104,7 +92,216 @@ export default function AccountAddress() {
     fetchDistricts();
   }, [selectedCityId]);
 
+  // Mahalleleri yükle
+  useEffect(() => {
+    const fetchNeighborhoods = async () => {
+      if (!selectedDistrictId) {
+        setNeighborhoods([]);
+        setSelectedNeighborhoodId("");
+        return;
+      }
+      try {
+        const response = await apiClient.get(`/neighborhoods?district_id=${selectedDistrictId}`);
+        if (response.data && response.data.status === "success" && response.data.data) {
+          setNeighborhoods(response.data.data);
+        }
+      } catch (error) {
+        log("Mahalleler yüklenirken hata:", error);
+        setNeighborhoods([]);
+      }
+    };
+    fetchNeighborhoods();
+  }, [selectedDistrictId]);
+
+
   const currentAddresses = activeTab === "delivery" ? deliveryAddresses : billingAddresses;
+
+  // Adresleri yeniden yükle
+  const refetchAddresses = async () => {
+    try {
+      const response = await apiClient.get("/customer-addresses");
+      if (response.data && response.data.status === "success" && response.data.data) {
+        const allAddresses = response.data.data;
+        const delivery = allAddresses.filter((addr) => addr.address_type === "delivery");
+        const billing = allAddresses.filter((addr) => addr.address_type === "invoice");
+
+        setDeliveryAddresses(delivery);
+        setBillingAddresses(billing);
+      }
+    } catch (error) {
+      log("Adresler yeniden yüklenirken hata:", error);
+    }
+  };
+
+  // Adres detaylarını yükle (düzenleme için)
+  const loadAddressForEdit = async (addressId) => {
+    try {
+      const response = await apiClient.get(`/customer-addresses/${addressId}`);
+      if (response.data && response.data.status === "success" && response.data.data) {
+        const address = response.data.data;
+
+        // Form alanlarını doldur
+        setSelectedCityId(address.city_id?.toString() || "");
+        setSelectedDistrictId(address.district_id?.toString() || "");
+        setSelectedNeighborhoodId(address.neighborhood_id?.toString() || "");
+
+        if (address.invoice_type) {
+          setInvoiceType(address.invoice_type);
+        }
+
+        // Form input'larını doldur
+        setTimeout(() => {
+          const form = document.getElementById("formeditAddress");
+          if (form) {
+            const titleInput = form.querySelector('[name="address_title"]');
+            const firstNameInput = form.querySelector('[name="first_name"]');
+            const lastNameInput = form.querySelector('[name="last_name"]');
+            const phoneInput = form.querySelector('[name="phone"]');
+            const emailInput = form.querySelector('[name="email"]');
+            const addressDetailInput = form.querySelector('[name="address_detail"]');
+
+            if (titleInput) titleInput.value = address.title || "";
+            if (firstNameInput) firstNameInput.value = address.first_name || "";
+            if (lastNameInput) lastNameInput.value = address.last_name || "";
+            if (phoneInput) phoneInput.value = address.phone || "";
+            if (emailInput) emailInput.value = address.email || "";
+            if (addressDetailInput) addressDetailInput.value = address.address_detail || "";
+
+            if (address.invoice_type === "individual") {
+              const tcknInput = form.querySelector('[name="tckn"]');
+              if (tcknInput) tcknInput.value = address.tckn || "";
+            } else if (address.invoice_type === "company") {
+              const companyNameInput = form.querySelector('[name="company_name"]');
+              const taxOfficeInput = form.querySelector('[name="tax_office"]');
+              const taxNumberInput = form.querySelector('[name="tax_number"]');
+              if (companyNameInput) companyNameInput.value = address.company_name || "";
+              if (taxOfficeInput) taxOfficeInput.value = address.tax_office || "";
+              if (taxNumberInput) taxNumberInput.value = address.tax_number || "";
+            }
+          }
+        }, 100);
+      }
+    } catch (error) {
+      log("Adres detayları yüklenirken hata:", error);
+      setSaveError("Adres detayları yüklenirken bir hata oluştu.");
+    }
+  };
+
+  // Adres kaydetme/güncelleme fonksiyonu
+  const handleSaveAddress = async (e) => {
+    e.preventDefault();
+    setIsSaving(true);
+    setSaveMessage("");
+    setSaveError("");
+    setFieldErrors({}); // Field hatalarını temizle
+
+    const formData = new FormData(e.target);
+    const addressData = {
+      address_type: activeTab === "delivery" ? "delivery" : "invoice",
+      title: formData.get("address_title"),
+      first_name: formData.get("first_name"),
+      last_name: formData.get("last_name"),
+      phone: formData.get("phone"),
+      city_id: selectedCityId,
+      district_id: selectedDistrictId,
+      neighborhood_id: selectedNeighborhoodId,
+      address_detail: formData.get("address_detail"),
+    };
+
+    // Fatura adresi için ek alanlar
+    if (activeTab === "billing") {
+      addressData.invoice_type = invoiceType;
+
+      if (invoiceType === "individual") {
+        addressData.tckn = formData.get("tckn");
+      } else if (invoiceType === "company") {
+        addressData.company_name = formData.get("company_name");
+        addressData.tax_office = formData.get("tax_office");
+        addressData.tax_number = formData.get("tax_number");
+      }
+    }
+
+    // Teslimat adresi olarak ekleniyor ve "Bu adresi fatura adreslerimde kullan" işaretliyse
+    if (activeTab === "delivery" && useAsBillingAddress) {
+      addressData.use_invoice_address = true;
+      addressData.invoice_type = invoiceType;
+
+      if (invoiceType === "individual") {
+        const tckn = formData.get("tckn");
+        if (tckn) addressData.tckn = tckn;
+      } else if (invoiceType === "company") {
+        const companyName = formData.get("company_name");
+        const taxOffice = formData.get("tax_office");
+        const taxNumber = formData.get("tax_number");
+        if (companyName) addressData.company_name = companyName;
+        if (taxOffice) addressData.tax_office = taxOffice;
+        if (taxNumber) addressData.tax_number = taxNumber;
+      }
+    }
+
+    try {
+      let response;
+
+      // Düzenleme mi yoksa yeni ekleme mi?
+      if (editingAddressId) {
+        // PUT ile güncelleme
+        response = await apiClient.put("/customer-addresses", null, {
+          params: {
+            ...addressData,
+            id: editingAddressId,
+          },
+        });
+      } else {
+        // POST ile yeni ekleme
+        response = await apiClient.post("/customer-addresses", null, {
+          params: addressData,
+        });
+      }
+
+      if (response.data && response.data.status === "success") {
+        setSaveMessage(editingAddressId ? "Adres başarıyla güncellendi." : "Adres başarıyla kaydedildi.");
+        // Formu temizle
+        e.target.reset();
+        setSelectedCityId("");
+        setSelectedDistrictId("");
+        setSelectedNeighborhoodId("");
+        setactiveEdit(false);
+        setactiveAdd(false);
+        setEditingAddressId(null);
+        setFieldErrors({});
+        setInvoiceType("individual");
+
+        // Adresleri yeniden yükle
+        await refetchAddresses();
+
+        setTimeout(() => {
+          setSaveMessage("");
+        }, 3000);
+      } else {
+        setSaveError(response.data?.message || "Adres kaydedilirken bir hata oluştu.");
+      }
+    } catch (error) {
+      log("Adres kaydedilirken hata:", error);
+
+      // Validasyon hatalarını kontrol et
+      if (error.response?.data?.errors) {
+        setFieldErrors(error.response.data.errors);
+        setSaveError(error.response?.data?.message || "Lütfen formu kontrol edin.");
+      } else {
+        setSaveError(error.response?.data?.message || "Adres kaydedilirken bir hata oluştu.");
+      }
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  // Adres düzenleme butonuna tıklandığında
+  const handleEditAddress = async (addressId) => {
+    setEditingAddressId(addressId);
+    setactiveAdd(true);
+    setactiveEdit(false);
+    await loadAddressForEdit(addressId);
+  };
 
   return (
     <div className="my-account-content account-address">
@@ -201,55 +398,55 @@ export default function AccountAddress() {
 
         {/* Yeni Adres Butonu */}
         <div style={{ marginTop: "30px", marginBottom: "20px" }}>
-          <button
-            className="tf-btn btn-outline animate-hover-btn btn-address mb_20 new-address-btn"
-            onClick={() => setactiveEdit(true)}
-            style={{
-              backgroundColor: "#fff",
-              color: "#3c81b5",
-              border: "1px solid #3c81b5",
-              padding: "10px 20px",
-              borderRadius: "6px",
-              cursor: "pointer",
-              fontSize: "14px",
-              fontWeight: "500",
-              marginBottom: "0",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "8px",
-            }}
-          >
-            <span
-              style={{
-                width: "20px",
-                height: "20px",
-                borderRadius: "50%",
-                border: "1px solid #3c81b5",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: "16px",
-                lineHeight: "1",
-                fontWeight: "bold",
-              }}
-            >
-              +
-            </span>
-            <span>Yeni adres</span>
-          </button>
+          <AddAddressButton onClick={() => setactiveEdit(true)} />
         </div>
         <form
           className="show-form-address wd-form-address form-checkout"
           id="formnewAddress"
-          onSubmit={(e) => e.preventDefault()}
+          onSubmit={handleSaveAddress}
           style={activeEdit ? { display: "block" } : { display: "none" }}
         >
           <div className="title">Yeni Adres Ekle</div>
+
+          {/* Başarı/Hata Mesajları */}
+          {saveMessage && (
+            <div
+              style={{
+                padding: "12px 16px",
+                backgroundColor: "#d4edda",
+                border: "1px solid #c3e6cb",
+                borderRadius: "4px",
+                color: "#155724",
+                marginBottom: "20px",
+              }}
+            >
+              {saveMessage}
+            </div>
+          )}
+          {saveError && (
+            <div
+              style={{
+                padding: "12px 16px",
+                backgroundColor: "#f8d7da",
+                border: "1px solid #f5c6cb",
+                borderRadius: "4px",
+                color: "#721c24",
+                marginBottom: "20px",
+              }}
+            >
+              {saveError}
+            </div>
+          )}
 
           {/* Adres Başlığı */}
           <fieldset className="box fieldset">
             <label htmlFor="address-title">Adres Başlığı Örneğin Evim veya İş Yerim*</label>
             <input required type="text" id="address-title" name="address_title" placeholder="Örn: Evim" />
+            {fieldErrors.address_title && (
+              <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                {fieldErrors.address_title[0]}
+              </div>
+            )}
           </fieldset>
 
           {/* Ad ve Soyad */}
@@ -257,10 +454,20 @@ export default function AccountAddress() {
             <fieldset className="fieldset">
               <label htmlFor="first-name">Ad*</label>
               <input required type="text" id="first-name" name="first_name" />
+              {fieldErrors.first_name && (
+                <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                  {fieldErrors.first_name[0]}
+                </div>
+              )}
             </fieldset>
             <fieldset className="fieldset">
               <label htmlFor="last-name">Soyad*</label>
               <input required type="text" id="last-name" name="last_name" />
+              {fieldErrors.last_name && (
+                <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                  {fieldErrors.last_name[0]}
+                </div>
+              )}
             </fieldset>
           </div>
 
@@ -268,12 +475,22 @@ export default function AccountAddress() {
           <fieldset className="box fieldset">
             <label htmlFor="phone">Telefon Numarası*</label>
             <input required type="tel" id="phone" name="phone" />
+            {fieldErrors.phone && (
+              <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                {fieldErrors.phone[0]}
+              </div>
+            )}
           </fieldset>
 
           {/* E-posta */}
           <fieldset className="box fieldset">
             <label htmlFor="email">E-Posta Adresi*</label>
             <input required type="email" autoComplete="email" id="email" name="email" />
+            {fieldErrors.email && (
+              <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                {fieldErrors.email[0]}
+              </div>
+            )}
           </fieldset>
 
           {/* İl */}
@@ -292,6 +509,11 @@ export default function AccountAddress() {
               required
               searchPlaceholder="Şehir ara..."
             />
+            {fieldErrors.city_id && (
+              <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                {fieldErrors.city_id[0]}
+              </div>
+            )}
           </fieldset>
 
           {/* İlçe */}
@@ -304,12 +526,41 @@ export default function AccountAddress() {
               value={selectedDistrictId}
               onChange={(value) => {
                 setSelectedDistrictId(value);
+                setSelectedNeighborhoodId("");
               }}
               placeholder={selectedCityId ? "Seçiniz" : "Önce il seçiniz"}
               disabled={!selectedCityId}
               required
               searchPlaceholder="İlçe ara..."
             />
+            {fieldErrors.district_id && (
+              <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                {fieldErrors.district_id[0]}
+              </div>
+            )}
+          </fieldset>
+
+          {/* Mahalle */}
+          <fieldset className="box fieldset">
+            <label htmlFor="neighborhood">Mahalle*</label>
+            <SearchableSelect
+              id="neighborhood"
+              name="neighborhood"
+              options={neighborhoods}
+              value={selectedNeighborhoodId}
+              onChange={(value) => {
+                setSelectedNeighborhoodId(value);
+              }}
+              placeholder={selectedDistrictId ? "Seçiniz" : "Önce ilçe seçiniz"}
+              disabled={!selectedDistrictId}
+              required
+              searchPlaceholder="Mahalle ara..."
+            />
+            {fieldErrors.neighborhood_id && (
+              <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                {fieldErrors.neighborhood_id[0]}
+              </div>
+            )}
           </fieldset>
 
           {/* Adres Detayı */}
@@ -322,27 +573,129 @@ export default function AccountAddress() {
               placeholder="Detaylı adres bilgisi"
               required
             />
+            {fieldErrors.address_detail && (
+              <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                {fieldErrors.address_detail[0]}
+              </div>
+            )}
           </fieldset>
 
-          {/* Varsayılan Adres */}
+
+          {/* Bu adresi fatura adreslerimde kullan */}
           <fieldset className="box fieldset">
             <div className="fieldset-radio" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <input
                 type="checkbox"
-                id="check-new-address"
+                id="use-as-billing-address"
                 className="tf-check"
-                name="is_default"
+                checked={useAsBillingAddress}
+                onChange={(e) => {
+                  setUseAsBillingAddress(e.target.checked);
+                  if (!e.target.checked) {
+                    setInvoiceType("individual");
+                  }
+                }}
               />
-              <label htmlFor="check-new-address" style={{ margin: 0, lineHeight: "1.5" }}>
-                Varsayılan adres olarak ayarla.
+              <label htmlFor="use-as-billing-address" style={{ margin: 0, lineHeight: "1.5" }}>
+                Bu adresi fatura adreslerimde kullan
               </label>
             </div>
           </fieldset>
 
+          {/* Fatura Tipi Seçimi - Sadece checkbox işaretlendiğinde göster */}
+          {useAsBillingAddress && (
+            <>
+              <fieldset className="box fieldset">
+                <label className="mb_15">Fatura Türü*</label>
+                <div className="d-flex gap-20">
+                  <div className="fieldset-radio" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <input
+                      type="radio"
+                      name="invoice_type"
+                      id="invoice-individual-new"
+                      value="individual"
+                      checked={invoiceType === "individual"}
+                      onChange={(e) => setInvoiceType(e.target.value)}
+                      style={{ margin: 0, verticalAlign: "middle" }}
+                    />
+                    <label htmlFor="invoice-individual-new" style={{ margin: 0, lineHeight: "1.5" }}>
+                      Bireysel
+                    </label>
+                  </div>
+                  <div className="fieldset-radio" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <input
+                      type="radio"
+                      name="invoice_type"
+                      id="invoice-company-new"
+                      value="company"
+                      checked={invoiceType === "company"}
+                      onChange={(e) => setInvoiceType(e.target.value)}
+                      style={{ margin: 0, verticalAlign: "middle" }}
+                    />
+                    <label htmlFor="invoice-company-new" style={{ margin: 0, lineHeight: "1.5" }}>
+                      Kurumsal
+                    </label>
+                  </div>
+                </div>
+                {fieldErrors.invoice_type && (
+                  <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                    {fieldErrors.invoice_type[0]}
+                  </div>
+                )}
+              </fieldset>
+
+              {/* Bireysel Fatura Alanları */}
+              {invoiceType === "individual" && (
+                <fieldset className="box fieldset">
+                  <label htmlFor="tckn">TC Kimlik No*</label>
+                  <input required type="text" id="tckn" name="tckn" maxLength="11" />
+                  {fieldErrors.tckn && (
+                    <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                      {fieldErrors.tckn[0]}
+                    </div>
+                  )}
+                </fieldset>
+              )}
+
+              {/* Kurumsal Fatura Alanları */}
+              {invoiceType === "company" && (
+                <>
+                  <fieldset className="box fieldset">
+                    <label htmlFor="company_name">Şirket Adı*</label>
+                    <input required type="text" id="company_name" name="company_name" />
+                    {fieldErrors.company_name && (
+                      <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                        {fieldErrors.company_name[0]}
+                      </div>
+                    )}
+                  </fieldset>
+                  <fieldset className="box fieldset">
+                    <label htmlFor="tax_office">Vergi Dairesi*</label>
+                    <input required type="text" id="tax_office" name="tax_office" />
+                    {fieldErrors.tax_office && (
+                      <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                        {fieldErrors.tax_office[0]}
+                      </div>
+                    )}
+                  </fieldset>
+                  <fieldset className="box fieldset">
+                    <label htmlFor="tax_number">Vergi No*</label>
+                    <input required type="text" id="tax_number" name="tax_number" />
+                    {fieldErrors.tax_number && (
+                      <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                        {fieldErrors.tax_number[0]}
+                      </div>
+                    )}
+                  </fieldset>
+                </>
+              )}
+            </>
+          )}
+
           {/* Butonlar */}
           <div className="d-flex align-items-center justify-content-center gap-20">
-            <button type="button" className="tf-btn btn-fill animate-hover-btn">
-              Adresi Ekle
+            <button type="submit" className="tf-btn btn-fill animate-hover-btn" disabled={isSaving}>
+              {isSaving ? "Kaydediliyor..." : "Adresi Ekle"}
             </button>
             <button
               type="button"
@@ -351,6 +704,12 @@ export default function AccountAddress() {
                 setactiveEdit(false);
                 setSelectedCityId("");
                 setSelectedDistrictId("");
+                setSelectedNeighborhoodId("");
+                setSaveMessage("");
+                setSaveError("");
+                setFieldErrors({});
+                setInvoiceType("individual");
+                setUseAsBillingAddress(false);
               }}
             >
               İptal
@@ -436,6 +795,7 @@ export default function AccountAddress() {
                         alignItems: "center",
                         gap: "10px",
                         flex: 1,
+                        flexWrap: "wrap",
                       }}
                     >
                       <h6
@@ -448,24 +808,24 @@ export default function AccountAddress() {
                       >
                         {address.title}
                       </h6>
-                      {address.isDefault && (
+                      {address.invoice_type && (
                         <span
                           style={{
                             fontSize: "12px",
-                            color: "#fff",
-                            fontWeight: "600",
-                            backgroundColor: "#3c81b5",
+                            fontWeight: "500",
+                            color: address.invoice_type === "company" ? "#3c81b5" : "#666",
+                            backgroundColor: address.invoice_type === "company" ? "#e8f4f8" : "#f5f5f5",
                             padding: "4px 8px",
                             borderRadius: "4px",
                             whiteSpace: "nowrap",
                           }}
                         >
-                          Varsayılan
+                          {address.invoice_type === "company" ? "Kurumsal" : address.invoice_type === "individual" ? "Bireysel" : ""}
                         </span>
                       )}
                     </div>
                     <button
-                      onClick={() => setactiveAdd(true)}
+                      onClick={() => handleEditAddress(address.id)}
                       style={{
                         backgroundColor: "transparent",
                         border: "none",
@@ -502,11 +862,24 @@ export default function AccountAddress() {
                       flex: 1,
                     }}
                   >
-                    {address.fullAddress?.split(",").map((line, index) => (
-                      <div key={index} style={{ marginBottom: "4px" }}>
-                        {line.trim()}
+                    {/* Mahalle */}
+                    {address.neighborhood?.name && (
+                      <div style={{ marginBottom: "4px" }}>
+                        {address.neighborhood.name}
                       </div>
-                    ))}
+                    )}
+                    {/* Adres Detayı */}
+                    {address.address_detail && (
+                      <div style={{ marginBottom: "4px" }}>
+                        {address.address_detail}
+                      </div>
+                    )}
+                    {/* Şehir / İlçe */}
+                    {address.city?.name && address.district?.name && (
+                      <div style={{ marginBottom: "4px" }}>
+                        {address.city.name} / {address.district.name}
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -516,15 +889,50 @@ export default function AccountAddress() {
         <form
           className="edit-form-address wd-form-address form-checkout"
           id="formeditAddress"
-          onSubmit={(e) => e.preventDefault()}
+          onSubmit={handleSaveAddress}
           style={activeAdd ? { display: "block" } : { display: "none" }}
         >
           <div className="title">Adresi Düzenle</div>
+
+          {/* Başarı/Hata Mesajları */}
+          {saveMessage && (
+            <div
+              style={{
+                padding: "12px 16px",
+                backgroundColor: "#d4edda",
+                border: "1px solid #c3e6cb",
+                borderRadius: "4px",
+                color: "#155724",
+                marginBottom: "20px",
+              }}
+            >
+              {saveMessage}
+            </div>
+          )}
+          {saveError && (
+            <div
+              style={{
+                padding: "12px 16px",
+                backgroundColor: "#f8d7da",
+                border: "1px solid #f5c6cb",
+                borderRadius: "4px",
+                color: "#721c24",
+                marginBottom: "20px",
+              }}
+            >
+              {saveError}
+            </div>
+          )}
 
           {/* Adres Başlığı */}
           <fieldset className="box fieldset">
             <label htmlFor="edit-address-title">Adres Başlığı Örneğin Evim veya İş Yerim*</label>
             <input required type="text" id="edit-address-title" name="address_title" placeholder="Örn: Evim" />
+            {fieldErrors.address_title && (
+              <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                {fieldErrors.address_title[0]}
+              </div>
+            )}
           </fieldset>
 
           {/* Ad ve Soyad */}
@@ -532,10 +940,20 @@ export default function AccountAddress() {
             <fieldset className="fieldset">
               <label htmlFor="edit-first-name">Ad*</label>
               <input required type="text" id="edit-first-name" name="first_name" />
+              {fieldErrors.first_name && (
+                <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                  {fieldErrors.first_name[0]}
+                </div>
+              )}
             </fieldset>
             <fieldset className="fieldset">
               <label htmlFor="edit-last-name">Soyad*</label>
               <input required type="text" id="edit-last-name" name="last_name" />
+              {fieldErrors.last_name && (
+                <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                  {fieldErrors.last_name[0]}
+                </div>
+              )}
             </fieldset>
           </div>
 
@@ -543,12 +961,22 @@ export default function AccountAddress() {
           <fieldset className="box fieldset">
             <label htmlFor="edit-phone">Telefon Numarası*</label>
             <input required type="tel" id="edit-phone" name="phone" />
+            {fieldErrors.phone && (
+              <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                {fieldErrors.phone[0]}
+              </div>
+            )}
           </fieldset>
 
           {/* E-posta */}
           <fieldset className="box fieldset">
             <label htmlFor="edit-email">E-Posta Adresi*</label>
             <input required type="email" autoComplete="email" id="edit-email" name="email" />
+            {fieldErrors.email && (
+              <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                {fieldErrors.email[0]}
+              </div>
+            )}
           </fieldset>
 
           {/* İl */}
@@ -562,11 +990,17 @@ export default function AccountAddress() {
               onChange={(value) => {
                 setSelectedCityId(value);
                 setSelectedDistrictId("");
+                setSelectedNeighborhoodId("");
               }}
               placeholder="Seçiniz"
               required
               searchPlaceholder="Şehir ara..."
             />
+            {fieldErrors.city_id && (
+              <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                {fieldErrors.city_id[0]}
+              </div>
+            )}
           </fieldset>
 
           {/* İlçe */}
@@ -579,12 +1013,41 @@ export default function AccountAddress() {
               value={selectedDistrictId}
               onChange={(value) => {
                 setSelectedDistrictId(value);
+                setSelectedNeighborhoodId("");
               }}
               placeholder={selectedCityId ? "Seçiniz" : "Önce il seçiniz"}
               disabled={!selectedCityId}
               required
               searchPlaceholder="İlçe ara..."
             />
+            {fieldErrors.district_id && (
+              <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                {fieldErrors.district_id[0]}
+              </div>
+            )}
+          </fieldset>
+
+          {/* Mahalle */}
+          <fieldset className="box fieldset">
+            <label htmlFor="edit-neighborhood">Mahalle*</label>
+            <SearchableSelect
+              id="edit-neighborhood"
+              name="neighborhood"
+              options={neighborhoods}
+              value={selectedNeighborhoodId}
+              onChange={(value) => {
+                setSelectedNeighborhoodId(value);
+              }}
+              placeholder={selectedDistrictId ? "Seçiniz" : "Önce ilçe seçiniz"}
+              disabled={!selectedDistrictId}
+              required
+              searchPlaceholder="Mahalle ara..."
+            />
+            {fieldErrors.neighborhood_id && (
+              <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                {fieldErrors.neighborhood_id[0]}
+              </div>
+            )}
           </fieldset>
 
           {/* Adres Detayı */}
@@ -597,27 +1060,108 @@ export default function AccountAddress() {
               placeholder="Detaylı adres bilgisi"
               required
             />
+            {fieldErrors.address_detail && (
+              <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                {fieldErrors.address_detail[0]}
+              </div>
+            )}
           </fieldset>
 
-          {/* Varsayılan Adres */}
-          <fieldset className="box fieldset">
-            <div className="fieldset-radio" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <input
-                type="checkbox"
-                id="check-edit-address"
-                className="tf-check"
-                name="is_default"
-              />
-              <label htmlFor="check-edit-address" style={{ margin: 0, lineHeight: "1.5" }}>
-                Varsayılan adres olarak ayarla.
-              </label>
-            </div>
-          </fieldset>
+          {/* Fatura Adresi için Ek Alanlar */}
+          {activeTab === "billing" && (
+            <>
+              <fieldset className="box fieldset">
+                <label className="mb_15">Fatura Türü*</label>
+                <div className="d-flex gap-20">
+                  <div className="fieldset-radio" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <input
+                      type="radio"
+                      name="invoice_type"
+                      id="edit-invoice-individual"
+                      value="individual"
+                      checked={invoiceType === "individual"}
+                      onChange={(e) => setInvoiceType(e.target.value)}
+                      style={{ margin: 0, verticalAlign: "middle" }}
+                    />
+                    <label htmlFor="edit-invoice-individual" style={{ margin: 0, lineHeight: "1.5" }}>
+                      Bireysel
+                    </label>
+                  </div>
+                  <div className="fieldset-radio" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <input
+                      type="radio"
+                      name="invoice_type"
+                      id="edit-invoice-company"
+                      value="company"
+                      checked={invoiceType === "company"}
+                      onChange={(e) => setInvoiceType(e.target.value)}
+                      style={{ margin: 0, verticalAlign: "middle" }}
+                    />
+                    <label htmlFor="edit-invoice-company" style={{ margin: 0, lineHeight: "1.5" }}>
+                      Kurumsal
+                    </label>
+                  </div>
+                </div>
+                {fieldErrors.invoice_type && (
+                  <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                    {fieldErrors.invoice_type[0]}
+                  </div>
+                )}
+              </fieldset>
+
+              {/* Bireysel Fatura Alanları */}
+              {invoiceType === "individual" && (
+                <fieldset className="box fieldset">
+                  <label htmlFor="edit-tckn">TC Kimlik No*</label>
+                  <input required type="text" id="edit-tckn" name="tckn" maxLength="11" />
+                  {fieldErrors.tckn && (
+                    <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                      {fieldErrors.tckn[0]}
+                    </div>
+                  )}
+                </fieldset>
+              )}
+
+              {/* Kurumsal Fatura Alanları */}
+              {invoiceType === "company" && (
+                <>
+                  <fieldset className="box fieldset">
+                    <label htmlFor="edit-company_name">Şirket Adı*</label>
+                    <input required type="text" id="edit-company_name" name="company_name" />
+                    {fieldErrors.company_name && (
+                      <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                        {fieldErrors.company_name[0]}
+                      </div>
+                    )}
+                  </fieldset>
+                  <fieldset className="box fieldset">
+                    <label htmlFor="edit-tax_office">Vergi Dairesi*</label>
+                    <input required type="text" id="edit-tax_office" name="tax_office" />
+                    {fieldErrors.tax_office && (
+                      <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                        {fieldErrors.tax_office[0]}
+                      </div>
+                    )}
+                  </fieldset>
+                  <fieldset className="box fieldset">
+                    <label htmlFor="edit-tax_number">Vergi No*</label>
+                    <input required type="text" id="edit-tax_number" name="tax_number" />
+                    {fieldErrors.tax_number && (
+                      <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                        {fieldErrors.tax_number[0]}
+                      </div>
+                    )}
+                  </fieldset>
+                </>
+              )}
+            </>
+          )}
+
 
           {/* Butonlar */}
           <div className="d-flex align-items-center justify-content-center gap-20">
-            <button type="button" className="tf-btn btn-fill animate-hover-btn">
-              Adresi Güncelle
+            <button type="submit" className="tf-btn btn-fill animate-hover-btn" disabled={isSaving}>
+              {isSaving ? "Kaydediliyor..." : "Adresi Güncelle"}
             </button>
             <button
               type="button"
@@ -626,6 +1170,10 @@ export default function AccountAddress() {
                 setactiveAdd(false);
                 setSelectedCityId("");
                 setSelectedDistrictId("");
+                setSelectedNeighborhoodId("");
+                setEditingAddressId(null);
+                setFieldErrors({});
+                setInvoiceType("individual");
               }}
             >
               İptal

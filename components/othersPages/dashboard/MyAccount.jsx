@@ -7,15 +7,15 @@ export default function MyAccount() {
         <h5 className="fw-5 mb_20">Hello Themesflat</h5>
         <p>
           From your account dashboard you can view your{" "}
-          <Link className="text_primary" href={`/my-account-orders`}>
+          <Link className="text_primary" href={`/siparislerim`}>
             recent orders
           </Link>
           , manage your{" "}
-          <Link className="text_primary" href={`/my-account-edit`}>
+          <Link className="text_primary" href={`/adreslerim`}>
             shipping and billing addresses
           </Link>
           , and{" "}
-          <Link className="text_primary" href={`/my-account-edit`}>
+          <Link className="text_primary" href={`/hesabim`}>
             edit your password and account details
           </Link>
           .

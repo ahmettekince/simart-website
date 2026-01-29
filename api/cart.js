@@ -305,3 +305,50 @@ export async function getCartRecommendations() {
         return null;
     }
 }
+
+/**
+ * Kupon kodunu sepete uygular (Client-side)
+ * @param {string} couponCode - Kupon kodu
+ * @returns {Promise<Object|null>} Güncel sepet verisi veya null
+ */
+export async function applyCoupon(couponCode) {
+    if (!couponCode) {
+        log("[API cart.js] applyCoupon: couponCode is required");
+        return null;
+    }
+
+    try {
+        const response = await apiClient.post("/cart/coupon", null, {
+            params: {
+                coupon_code: couponCode,
+            }
+        });
+
+        // applyCoupon API'si başarılı döndüyse, güncel sepeti çek
+        if (response?.data?.status === "success") {
+            // Sepeti tekrar çek (güncel haliyle)
+            const updatedCart = await getCart();
+            return updatedCart;
+        }
+
+        log("[API cart.js] applyCoupon failed:", response?.data);
+        return null;
+    } catch (error) {
+        if (error.response) {
+            log("[API cart.js] applyCoupon error response:", {
+                status: error.response.status,
+                statusText: error.response.statusText,
+                data: error.response.data,
+                url: error.config?.url,
+            });
+            console.error("[API cart.js] Full error:", error);
+        } else if (error.request) {
+            log("[API cart.js] applyCoupon no response:", error.request);
+            console.error("[API cart.js] Request error:", error);
+        } else {
+            log("[API cart.js] applyCoupon setup error:", error.message);
+            console.error("[API cart.js] Setup error:", error);
+        }
+        return null;
+    }
+}

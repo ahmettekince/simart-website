@@ -31,7 +31,13 @@ export default function SearchableSelect({
   const dropdownRef = useRef(null);
   const searchInputRef = useRef(null);
 
-  const selectedOption = options.find((opt) => opt.id.toString() === value.toString());
+  // value null veya undefined ise boş string kullan
+  const safeValue = value != null ? String(value) : "";
+  
+  const selectedOption = options.find((opt) => {
+    if (!opt || opt.id == null) return false;
+    return String(opt.id) === safeValue;
+  });
   const displayText = selectedOption ? selectedOption.name : placeholder;
 
   const filteredOptions = useMemo(() => {
@@ -74,7 +80,7 @@ export default function SearchableSelect({
         type="hidden"
         name={name}
         id={id}
-        value={value}
+        value={safeValue}
         required={required}
       />
       <div
@@ -92,7 +98,7 @@ export default function SearchableSelect({
           alignItems: "center",
         }}
       >
-        <span style={{ flex: 1, color: value ? "inherit" : "#999" }}>{displayText}</span>
+        <span style={{ flex: 1, color: safeValue ? "inherit" : "#999" }}>{displayText}</span>
         <span
           style={{
             borderBottom: "1.7px solid var(--main, #333)",
@@ -167,16 +173,16 @@ export default function SearchableSelect({
                     padding: "10px 12px",
                     cursor: "pointer",
                     borderBottom: "1px solid #f0f0f0",
-                    backgroundColor: value === option.id.toString() ? "#f5f5f5" : "#fff",
+                    backgroundColor: safeValue === String(option.id) ? "#f5f5f5" : "#fff",
                     transition: "background-color 0.2s",
                   }}
                   onMouseEnter={(e) => {
-                    if (value !== option.id.toString()) {
+                    if (safeValue !== String(option.id)) {
                       e.currentTarget.style.backgroundColor = "#f9f9f9";
                     }
                   }}
                   onMouseLeave={(e) => {
-                    if (value !== option.id.toString()) {
+                    if (safeValue !== String(option.id)) {
                       e.currentTarget.style.backgroundColor = "#fff";
                     }
                   }}

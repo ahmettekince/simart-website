@@ -5,7 +5,7 @@
 
 import { create } from 'zustand';
 import { openCartModal } from '@/utils/openCartModal';
-import { addToCart as addToCartAPI, removeFromCart as removeFromCartAPI, decreaseCartQuantity as decreaseCartQuantityAPI, getCart } from '@/api/cart';
+import { addToCart as addToCartAPI, removeFromCart as removeFromCartAPI, decreaseCartQuantity as decreaseCartQuantityAPI, getCart, applyCoupon as applyCouponAPI } from '@/api/cart';
 import { log } from '@/utils/logger';
 
 /**
@@ -312,6 +312,36 @@ export const useCartStore = create(
                 applied_campaigns: apiCartData.applied_campaigns || [],
                 isSynced: true,
             });
+        },
+
+        /**
+         * Kupon kodunu sepete uygula (API ile senkronize)
+         * @param {string} couponCode - Kupon kodu
+         * @returns {Promise<boolean>} Başarılı mı?
+         */
+        applyCoupon: async (couponCode) => {
+            if (!couponCode || !couponCode.trim()) {
+                log('[CartStore] applyCoupon: Geçersiz kupon kodu');
+                return false;
+            }
+
+            try {
+                // API'ye istek at
+                const cartData = await applyCouponAPI(couponCode.trim());
+
+                // API başarılı döndüyse, güncel sepeti çek ve store'u güncelle
+                if (cartData) {
+                    get().syncFromAPI(cartData);
+                    log('[CartStore] applyCoupon - Store updated');
+                    return true;
+                } else {
+                    log('[CartStore] applyCoupon: API başarısız oldu');
+                    return false;
+                }
+            } catch (error) {
+                log('[CartStore] applyCoupon error:', error);
+                return false;
+            }
         },
     })
 );

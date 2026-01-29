@@ -7,19 +7,9 @@ import { useAuthStore } from "@/stores/authStore";
 import { getCart } from "@/api/cart";
 import HomesModal from "@/components/modals/HomesModal";
 import Context from "@/context/Context";
-import QuickView from "@/components/modals/QuickView";
-import ProductSidebar from "@/components/modals/ProductSidebar";
-import QuickAdd from "@/components/modals/QuickAdd";
-import Compare from "@/components/modals/Compare";
 import ShopCart from "@/components/modals/ShopCart";
 import AskQuestion from "@/components/modals/AskQuestion";
-import BlogSidebar from "@/components/modals/BlogSidebar";
-import ColorCompare from "@/components/modals/ColorCompare";
 import DeliveryReturn from "@/components/modals/DeliveryReturn";
-import FindSize from "@/components/modals/FindSize";
-import Login from "@/components/modals/Login";
-import Register from "@/components/modals/Register";
-import ResetPass from "@/components/modals/ResetPass";
 import SearchModal from "@/components/modals/SearchModal";
 import ToolbarBottom from "@/components/modals/ToolbarBottom";
 import ToolbarShop from "@/components/modals/ToolbarShop";
@@ -109,7 +99,7 @@ export default function ClientLayout({ children }) {
         // Her zaman LTR kullan
         document.documentElement.dir = "ltr";
         document.body.classList.remove("rtl");
-        
+
         const preloader = document.getElementById("preloader");
         if (preloader) preloader.classList.add("disabled");
     }, []);
@@ -135,19 +125,9 @@ export default function ClientLayout({ children }) {
         <Context>
             <div id="wrapper">{children}</div>
             <HomesModal />
-            <QuickView />
-            <QuickAdd />
-            <ProductSidebar />
-            <Compare />
             <ShopCart />
             <AskQuestion />
-            <BlogSidebar />
-            <ColorCompare />
             <DeliveryReturn />
-            <FindSize />
-            <Login />
-            <Register />
-            <ResetPass />
             <SearchModal />
             <ToolbarBottom />
             <ToolbarShop />

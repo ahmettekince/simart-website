@@ -66,7 +66,6 @@ export async function serverFetch(endpoint, options = {}) {
             });
 
             const duration = Date.now() - startTime;
-            log(`[serverFetch] FETCH END: ${response.status} ${url} (${duration}ms)`);
 
             // Response body'yi oku (hem başarılı hem başarısız durumlar için)
             let responseText = "";

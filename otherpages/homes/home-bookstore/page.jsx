@@ -1,4 +1,4 @@
-import Features from "@/components/common/Features2";
+import Features from "@/components/common/Features";
 import Footer2 from "@/components/footers/Footer2";
 import Header18 from "@/components/headers/Header18";
 import Topbar4 from "@/components/headers/Topbar4";

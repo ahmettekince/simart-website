@@ -318,25 +318,13 @@ export default function Details9({ product }) {
                           onClick={handleAddToCartAnimated}
                           disabled={isAdding || showSuccess}
                           className={`main-cart-btn ${showSuccess ? "success-animation" : ""}`}
-                          style={{ opacity: 1, flex: 1, minWidth: '200px' }}
                         >
                           <span className="button-text-main">
                             {showSuccess ? "Sepete Eklendi" : isAdding ? "Ekleniyor..." : "Sepete Ekle"}
                           </span>
                           {showSuccess && <span className="button-text-slide">Sepete Eklendi</span>}
                         </button>
-                        <a
-                          onClick={() => addToWishlist(product.id)}
-                          className="tf-product-btn-wishlist hover-tooltip box-icon bg_white wishlist btn-icon-action wish-action-btn"
-                          style={{ flexShrink: 0 }}
-                        >
-                          <span className={`icon icon-heart ${isAddedtoWishlist(product.id) ? "added" : ""}`} />
-                          <span className="tooltip">
-                            {" "}
-                            {isAddedtoWishlist(product.id) ? "Already Wishlisted" : "Add to Wishlist"}
-                          </span>
-                          <span className="icon icon-delete" />
-                        </a>
+
                       </div>
 
                       {/* <div className="w-100">
@@ -467,22 +455,32 @@ export default function Details9({ product }) {
 
                     .main-cart-btn {
                       height: 44px;
-                      border-radius: 999px;
+                      border-radius: 12px;
                       font-size: 13px;
                       font-weight: 600;
                       overflow: hidden;
                       display: flex;
                       align-items: center;
                       justify-content: center;
-                      padding: 0 16px;
+                      padding: 0 24px;
                       border: 1px solid var(--primary);
                       background: var(--primary);
                       color: #fff;
                       cursor: pointer;
                       position: relative;
                       transition: all 0.3s ease;
-                      flex: 1 1 auto;
-                      min-width: 0;
+                      width: auto;
+                      min-width: 200px;
+                      max-width: 250px;
+                    }
+
+                    @media (max-width: 768px) {
+                      .main-cart-btn {
+                        flex: 1;
+                        min-width: 0;
+                        max-width: none;
+                        width: 100%;
+                      }
                     }
 
                     .main-cart-btn:disabled {

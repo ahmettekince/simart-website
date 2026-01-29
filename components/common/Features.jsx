@@ -1,55 +1,44 @@
 "use client";
-import { iconBoxData } from "@/data/features";
+
+import { iconBoxes3 } from "@/data/features";
 import { Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 
-export default function Features() {
+export default function Features({ bgColor = "", titleFont = "" }) {
   return (
     <section
-      className="flat-spacing-7 flat-iconbox wow fadeInUp"
+      className={`flat-spacing-1 flat-iconbox  wow fadeInUp ${bgColor}`}
       data-wow-delay="0s"
     >
       <div className="container">
         <div className="wrap-carousel wrap-mobile">
           <Swiper
             dir="ltr"
-            slidesPerView={4}
-            spaceBetween={30}
-            breakpoints={{
-              1200: {
-                slidesPerView: 4,
-              },
-              800: {
-                slidesPerView: 3,
-              },
-              600: {
-                slidesPerView: 2,
-              },
-              0: {
-                slidesPerView: 1,
-              },
-            }}
             className="swiper tf-sw-mobile"
-            data-preview={1}
-            data-space={15}
+            breakpoints={{
+              1024: { slidesPerView: 4, spaceBetween: 30 },
+              768: { slidesPerView: 3, spaceBetween: 30 },
+              640: { slidesPerView: 2, spaceBetween: 15 },
+              0: { slidesPerView: 1, spaceBetween: 15 },
+            }}
             modules={[Pagination]}
-            pagination={{ clickable: true, el: ".spd103" }}
+            pagination={{ clickable: true, el: ".spd104" }}
           >
-            {iconBoxData.map((elm, i) => (
-              <SwiperSlide key={i} className="swiper-slide">
-                <div className="tf-icon-box style-border-line text-center">
-                  <div className="icon">
-                    <i className={elm.iconClass} />
+            {iconBoxes3.map((box, index) => (
+              <SwiperSlide key={index}>
+                <div className="tf-icon-box style-row">
+                  <div className="icon bg_white">
+                    <i className={box.iconClass} />
                   </div>
                   <div className="content">
-                    <div className="title">{elm.title}</div>
-                    <p>{elm.description}</p>
+                    <div className={`title fw-4 ${titleFont}`}>{box.title}</div>
+                    <p>{box.description}</p>
                   </div>
                 </div>
               </SwiperSlide>
             ))}
           </Swiper>
-          <div className="sw-dots style-2 sw-pagination-mb justify-content-center spd103" />
+          <div className="sw-dots style-2 sw-pagination-mb justify-content-center spd104" />
         </div>
       </div>
     </section>

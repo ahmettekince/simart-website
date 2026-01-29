@@ -85,14 +85,7 @@ export default async function Header({
                 <li className="nav-account">
                   <AccountIcon />
                 </li>
-                {/* <li className="nav-wishlist">
-                  <Link href={`/istek-listesi`} className="nav-icon-item">
-                    <i className="icon icon-heart" />
-                    <span className={`count-box ${bgColor}`}>
-                      <WishlistLength />
-                    </span>
-                  </Link>
-                </li> */}
+
                 <li className="nav-cart">
                   <a
                     href="#shoppingCart"

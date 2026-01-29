@@ -10,7 +10,7 @@ export default function AskQuestion() {
       <div className="modal-dialog modal-dialog-centered">
         <div className="modal-content">
           <div className="header">
-            <div className="demo-title">Ask a question</div>
+            <div className="demo-title">Soru Sor</div>
             <span
               className="icon-close icon-close-popup"
               data-bs-dismiss="modal"
@@ -19,7 +19,7 @@ export default function AskQuestion() {
           <div className="overflow-y-auto">
             <form onSubmit={(e) => e.preventDefault()} className="">
               <fieldset className="">
-                <label htmlFor="">Name *</label>
+                <label htmlFor="">Adınız Soyadınız *</label>
                 <input
                   type="text"
                   placeholder=""
@@ -32,7 +32,7 @@ export default function AskQuestion() {
                 />
               </fieldset>
               <fieldset className="">
-                <label htmlFor="">Email *</label>
+                <label htmlFor="">E-Posta *</label>
                 <input
                   type="email"
                   placeholder=""
@@ -46,7 +46,7 @@ export default function AskQuestion() {
                 />
               </fieldset>
               <fieldset className="">
-                <label htmlFor="">Phone number</label>
+                <label htmlFor="">Telefon Numaranız *</label>
                 <input
                   type="number"
                   placeholder=""
@@ -59,7 +59,7 @@ export default function AskQuestion() {
                 />
               </fieldset>
               <fieldset className="">
-                <label htmlFor="">Message</label>
+                <label htmlFor="">Mesajınız *</label>
                 <textarea
                   name="message"
                   rows={4}
@@ -75,7 +75,7 @@ export default function AskQuestion() {
                 type="submit"
                 className="tf-btn w-100 btn-fill justify-content-center fw-6 fs-16 flex-grow-1 animate-hover-btn"
               >
-                <span>Send</span>
+                <span>Gönder</span>
               </button>
             </form>
           </div>

@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import apiClient from "@/utils/apiClient";
 import { log } from "@/utils/logger";
+import CircularLoading from "@/components/common/CircularLoading";
 
 export default function AccountEdit() {
   const [customerData, setCustomerData] = useState({
@@ -147,9 +148,7 @@ export default function AccountEdit() {
   if (isLoading) {
     return (
       <div className="my-account-content account-edit">
-        <div style={{ textAlign: "center", padding: "40px" }}>
-          <p>Yükleniyor...</p>
-        </div>
+        <CircularLoading text="Hesap bilgileri yükleniyor..." />
       </div>
     );
   }

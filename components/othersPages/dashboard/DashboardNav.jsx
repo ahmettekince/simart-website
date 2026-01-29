@@ -7,8 +7,10 @@ import { useAuthStore } from "@/stores/authStore";
 
 const accountLinks = [
   { href: "/hesabim", label: "Hesabım" },
-  { href: "/my-account-orders", label: "Siparişlerim" },
+  { href: "/siparislerim", label: "Siparişlerim" },
   { href: "/adreslerim", label: "Adreslerim" },
+  { href: "/kupon-kodlarim", label: "Kupon Kodlarım" },
+  { href: "/paylas-simart", label: "Paylaş Şımart" },
 ];
 
 export default function DashboardNav() {
