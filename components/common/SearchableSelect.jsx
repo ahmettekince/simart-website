@@ -14,6 +14,7 @@ import { useState, useMemo, useRef, useEffect } from "react";
  * @param {string} id - Form input id
  * @param {boolean} required - Required durumu
  * @param {string} searchPlaceholder - Arama input placeholder
+ * @param {function} onOpen - Dropdown açıldığında çağrılacak fonksiyon (lazy loading için)
  */
 export default function SearchableSelect({
   options = [],
@@ -25,6 +26,7 @@ export default function SearchableSelect({
   id,
   required = false,
   searchPlaceholder = "Ara...",
+  onOpen,
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -85,7 +87,16 @@ export default function SearchableSelect({
       />
       <div
         className={`tf-select w-100 ${isOpen ? "open" : ""} ${disabled ? "disabled" : ""}`}
-        onClick={() => !disabled && setIsOpen(!isOpen)}
+        onClick={() => {
+          if (!disabled) {
+            const newIsOpen = !isOpen;
+            setIsOpen(newIsOpen);
+            // İlk açılışta onOpen callback'ini çağır (lazy loading için)
+            if (newIsOpen && onOpen && !isOpen) {
+              onOpen();
+            }
+          }
+        }}
         style={{
           cursor: disabled ? "not-allowed" : "pointer",
           padding: "8px 12px",

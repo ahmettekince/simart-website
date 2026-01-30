@@ -412,35 +412,52 @@
       flex-shrink: 0;
     }
   }
+}
 
-  form {
-    .btns-full {
-      width: 100%;
-      margin-top: 10px;
-      display: flex;
-      gap: 5px;
-      align-items: center;
-      justify-content: center;
-      height: 44px;
-      background-color: #ffc520;
-      border-radius: 3px;
-      font-weight: 500;
-      color: rgb(37, 59, 128);
+// Global out-of-stock buton stili (tüm sayfalarda geçerli)
+.main-cart-btn.out-of-stock {
+  background: #dc2626 !important;
+  border-color: #dc2626 !important;
+}
 
-      &:hover {
-        background-color: #f6b600;
-      }
-    }
+.main-cart-btn.out-of-stock:disabled {
+  background: #dc2626 !important;
+  border-color: #dc2626 !important;
+  opacity: 1 !important;
 
-    .payment-more-option {
-      width: 100%;
-      margin-top: 10px;
-      text-decoration: underline;
-      color: rgb(134, 134, 134);
-      text-align: center;
-    }
+  .tf-product-btn-wishlist {
+    flex-shrink: 0;
   }
 }
+
+form {
+  .btns-full {
+    width: 100%;
+    margin-top: 10px;
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    justify-content: center;
+    height: 44px;
+    background-color: #ffc520;
+    border-radius: 3px;
+    font-weight: 500;
+    color: rgb(37, 59, 128);
+
+    &:hover {
+      background-color: #f6b600;
+    }
+  }
+
+  .payment-more-option {
+    width: 100%;
+    margin-top: 10px;
+    text-decoration: underline;
+    color: rgb(134, 134, 134);
+    text-align: center;
+  }
+}
+
 
 .btns-sold-out {
   opacity: 0.3;
@@ -1286,6 +1303,20 @@
     font-weight: 600;
     line-height: 26px;
     color: var(--main);
+  }
+
+  // Spinner'ları gizle (yukarı/aşağı ok işaretleri)
+  .quantity-input-no-spinner {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+      -webkit-appearance: none !important;
+      appearance: none !important;
+      margin: 0 !important;
+      display: none !important;
+    }
   }
 
   .btn-quantity {
@@ -2721,6 +2752,11 @@
     display: flex;
     gap: 12px;
     align-items: center;
+  }
+
+  .tf-sticky-atc-btns .main-cart-btn {
+    flex: 1;
+    min-width: 0;
   }
 
   .tf-btn {

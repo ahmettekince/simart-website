@@ -2,11 +2,10 @@ import Footer from "@/components/footers/Footer";
 import Header from "@/components/headers/Header";
 import Details9 from "@/components/shopDetails/Details9";
 import Products from "@/components/shopDetails/Products";
-import RecentProducts from "@/components/shopDetails/RecentProducts";
 import ShopDetailsTab from "@/components/shopDetails/ShopDetailsTab";
 import React from "react";
 import Link from "next/link";
-import { getProductBySlug } from "@/api/products";
+import { getProductBySlug, getProductsByCategory } from "@/api/products";
 import { notFound } from "next/navigation";
 import { productSchema } from "@/lib/schema";
 
@@ -14,7 +13,7 @@ import { productSchema } from "@/lib/schema";
  * Dinamik metadata oluşturma
  */
 export async function generateMetadata({ params }) {
-    const { kategori, urun } = await params;
+  const { kategori, urun } = await params;
 
   if (!urun) {
     return {
@@ -23,18 +22,18 @@ export async function generateMetadata({ params }) {
     };
   }
 
-    const product = await getProductBySlug(urun);
-    if (!product) {
-        return {
-            title: "Ürün Bulunamadı - Şımart Teknoloji",
-            description: "Aradığınız ürün bulunamadı.",
-        };
-    }
+  const product = await getProductBySlug(urun);
+  if (!product) {
+    return {
+      title: "Ürün Bulunamadı - Şımart Teknoloji",
+      description: "Aradığınız ürün bulunamadı.",
+    };
+  }
 
-    const productName = product.name || product.title || "Ürün";
+  const productName = product.name || product.title || "Ürün";
   const productDescription =
     product.description || `${productName} ürün detayları, özellikleri ve kullanıcı yorumları.`;
-  
+
   // gallery_images içindeki objelerden url çıkar
   const normalizeImages = (images) => {
     if (!images || !Array.isArray(images)) return [];
@@ -49,15 +48,15 @@ export async function generateMetadata({ params }) {
     product.images || product.gallery_images || (product.image ? [product.image] : [])
   );
 
-    return {
-        title: `${productName} - Şımart Teknoloji`,
+  return {
+    title: `${productName} - Şımart Teknoloji`,
     description: productDescription,
     openGraph: {
       title: productName,
       description: productDescription,
       images: productImages.length > 0 ? productImages : [],
     },
-    };
+  };
 }
 
 export default async function page({ params }) {
@@ -74,14 +73,25 @@ export default async function page({ params }) {
     notFound();
   }
 
+  // Kategoriye ait ürünleri çek (açık olan ürünü filtrelemek için)
+  const categorySlug = product.primary_category?.slug || product.categories?.[0]?.slug;
+  let categoryProducts = [];
+  if (categorySlug) {
+    const allCategoryProducts = await getProductsByCategory(categorySlug);
+    // Açık olan ürünü listeden çıkar
+    categoryProducts = allCategoryProducts
+      .filter((p) => p.id !== product.id && p.slug !== product.slug)
+      .slice(0, 8); // Maksimum 8 ürün
+  }
+
   const productName = product.name || product.title || "Ürün";
   const productDescription =
     product.description || `${productName} ürün detayları, özellikleri ve kullanıcı yorumları.`;
-  
+
   // Kategori adını bul (primary_category veya categories[0] veya slug'dan)
-  const categoryName = 
-    product.primary_category?.name || 
-    product.categories?.[0]?.name || 
+  const categoryName =
+    product.primary_category?.name ||
+    product.categories?.[0]?.name ||
     kategori;
 
   // gallery_images içindeki objelerden url çıkar
@@ -146,8 +156,7 @@ export default async function page({ params }) {
       </div>
       <Details9 product={product} />
       <ShopDetailsTab />
-      <Products />
-      <RecentProducts />
+      {categoryProducts.length > 0 && <Products products={categoryProducts} />}
     </>
   );
 }

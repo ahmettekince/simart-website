@@ -1,9 +1,9 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
 import { log } from "@/utils/logger";
 import apiClient from "@/utils/apiClient";
 
-export default function PaymentOptions({ cartTotal }) {
+const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
   // Kart bilgileri state'leri
   const [cardNumber, setCardNumber] = useState("");
   const [cardHolderName, setCardHolderName] = useState("");
@@ -79,6 +79,26 @@ export default function PaymentOptions({ cartTotal }) {
 
     return () => clearTimeout(timeoutId);
   }, [cardNumber, cartTotal]);
+
+  // Parent component'ten form verilerini almak için expose et
+  useImperativeHandle(ref, () => ({
+    getPaymentData: () => {
+      // Yıl formatını 2 haneli yap (örn: 2032 -> "32")
+      let formattedYear = expiryYear;
+      if (expiryYear && expiryYear.length === 4) {
+        formattedYear = expiryYear.substring(2);
+      }
+      
+      return {
+        card_holder_name: cardHolderName,
+        card_number: cardNumber.replace(/\s/g, ""), // Boşlukları temizle
+        expiry_month: expiryMonth,
+        expiry_year: formattedYear,
+        cvv: cvv,
+        installment_count: selectedInstallment,
+      };
+    },
+  }));
 
   return (
     <div style={{ marginTop: "30px", paddingTop: "30px", borderTop: "1px solid #e5e5e5" }}>
@@ -461,4 +481,6 @@ export default function PaymentOptions({ cartTotal }) {
       </div>
     </div>
   );
-}
+});
+
+export default PaymentOptions;

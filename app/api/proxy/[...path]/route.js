@@ -14,22 +14,47 @@ async function handleRequest(request, params, method) {
     const userAgent = process.env.USER_AGENT || "";
     const securityKey = process.env.SECURITY_KEY || "";
 
+    // GET istekleri için query parametrelerini URL'e ekle
+    // POST ve diğer istekler için query parametrelerini body'ye taşı
     const searchParams = new URL(request.url).searchParams;
-    const queryString = searchParams.toString();
-    const finalUrl = queryString ? `${targetUrl}?${queryString}` : targetUrl;
+    let finalUrl = targetUrl;
+    let body;
+    let bodyStr = "null";
 
     try {
-        let body;
-        let bodyStr = "null";
-
-        if (method !== "GET" && method !== "DELETE") {
+        if (method === "GET") {
+            // GET istekleri için query parametrelerini URL'e ekle
+            const queryString = searchParams.toString();
+            finalUrl = queryString ? `${targetUrl}?${queryString}` : targetUrl;
+        } else {
+            // POST ve diğer istekler için query parametrelerini body'ye ekle
             try {
                 const clonedRequest = request.clone();
                 body = await clonedRequest.json();
+                
+                // Query parametrelerini body'ye ekle (varsa)
+                if (searchParams.toString()) {
+                    const queryParams = {};
+                    searchParams.forEach((value, key) => {
+                        queryParams[key] = value;
+                    });
+                    // Body ile birleştir (body öncelikli)
+                    body = { ...queryParams, ...body };
+                }
+                
                 bodyStr = JSON.stringify(body);
             } catch (e) {
-                body = undefined;
-                bodyStr = "null";
+                // Body parse edilemezse, query parametrelerini body olarak kullan
+                if (searchParams.toString()) {
+                    body = {};
+                    searchParams.forEach((value, key) => {
+                        body[key] = value;
+                    });
+                    bodyStr = JSON.stringify(body);
+                } else {
+                    body = undefined;
+                    bodyStr = "null";
+                }
             }
         }
 

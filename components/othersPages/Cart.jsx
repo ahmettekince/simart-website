@@ -236,6 +236,13 @@ export default function Cart() {
                                             const bounded = maxQty ? Math.min(newValue, maxQty) : newValue;
                                             setQuantity(item.id, bounded);
                                           }}
+                                          onBlur={(e) => {
+                                            const newValue = parseInt(e.target.value) || 1;
+                                            const bounded = maxQty ? Math.min(newValue, maxQty) : Math.max(newValue, 1);
+                                            if (bounded !== item.quantity) {
+                                              setQuantity(item.id, bounded);
+                                            }
+                                          }}
                                         />
                                         <span
                                           className={`btn-quantity plus-btn ${maxQty && item.quantity >= maxQty ? "disabled" : ""}`}

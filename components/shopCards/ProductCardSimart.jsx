@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useContextElement } from "@/context/Context";
 import { useCartStore } from "@/stores/cartStore";
 import ProductImageSwiper from "@/components/common/ProductImageSwiper";
+import { getProductButtonState } from "@/utils/productStock";
 
 export default function ProductCardSimart({ product }) {
   const context = useContextElement();
@@ -52,29 +53,7 @@ export default function ProductCardSimart({ product }) {
   const categorySlug = getCategorySlug();
 
   // -- Buton Metin Mantığı --
-  const isInStock = product.is_in_stock || false;
-  const unlimitedStock = product.unlimited_stock || false;
-  const isPreOrder = product.is_pre_order || false;
-  const stockQuantity = product.stock_quantity || 0;
-
-  let buttonText = "Sepete Ekle";
-  let buttonDisabled = false;
-
-  // Stok durumuna göre buton metni (sepette olsa bile "Sepete Ekle" yazacak)
-  if (isInStock) {
-    if (unlimitedStock) {
-      buttonText = "Sepete Ekle";
-    } else {
-      buttonText = `Son ${stockQuantity} ürün`;
-    }
-  } else {
-    if (isPreOrder) {
-      buttonText = "Ön Sipariş Ver";
-    } else {
-      buttonText = "Stokta Yok";
-      buttonDisabled = true;
-    }
-  }
+  const { buttonText, buttonDisabled } = getProductButtonState(product);
 
   return (
     <div className="product-card-simart">
@@ -108,15 +87,15 @@ export default function ProductCardSimart({ product }) {
                   const fillPercentage = Math.max(0, Math.min(100, ((rating - i) * 100)));
                   const isFilled = rating >= starValue;
                   const isPartial = rating > i && rating < starValue;
-                  
+
                   return (
                     <div key={i} className="star-wrapper">
                       <i className="icon-star star-empty" />
                       {isFilled ? (
                         <i className="icon-star star-filled" />
                       ) : isPartial ? (
-                        <i 
-                          className="icon-star star-filled star-partial" 
+                        <i
+                          className="icon-star star-filled star-partial"
                           style={{ clipPath: `inset(0 ${100 - fillPercentage}% 0 0)` }}
                         />
                       ) : null}
@@ -155,7 +134,7 @@ export default function ProductCardSimart({ product }) {
                 }
               }}
               disabled={buttonDisabled || isAdding || showSuccess}
-              className={`main-cart-btn ${showSuccess ? "success-animation" : ""}`}
+              className={`main-cart-btn ${showSuccess ? "success-animation" : ""} ${buttonText === "Stokta Yok" ? "out-of-stock" : ""}`}
               style={{ opacity: 1 }}
             >
               <span className="button-text-main">
@@ -214,6 +193,7 @@ export default function ProductCardSimart({ product }) {
                     flex-direction: column;
                     height: 100%;
           min-height: 400px;
+                    width: 100%;
                     background: #fff;
                     border: 1px solid #e0e0e0;
                     border-radius: 12px;
@@ -270,6 +250,7 @@ export default function ProductCardSimart({ product }) {
           flex: 1;
           min-width: 0;
           display: flex;
+          width: 100%;
         }
 
                 /* Metin Stilleri */
@@ -355,6 +336,17 @@ export default function ProductCardSimart({ product }) {
         .main-cart-btn:disabled {
           opacity: 1 !important;
           cursor: not-allowed;
+        }
+
+        .main-cart-btn.out-of-stock {
+          background: #dc2626 !important;
+          border-color: #dc2626 !important;
+        }
+
+        .main-cart-btn.out-of-stock:disabled {
+          background: #dc2626 !important;
+          border-color: #dc2626 !important;
+          opacity: 1 !important;
         }
 
         .main-cart-btn .button-text-main,

@@ -1,57 +1,70 @@
 "use client";
 
-import { products1 } from "@/data/products";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { ProductCard } from "../../otherpagesinveriler/shopCards/ProductCard";
-import { Navigation, Pagination } from "swiper/modules";
+import { Navigation } from "swiper/modules";
+import React from "react";
+import ProductCardSimart from "@/components/shopCards/ProductCardSimart";
 
-export default function Products() {
+export default function Products({ products = [] }) {
+  const displayProducts = Array.isArray(products) ? products : [];
+
+  // Ürünler yoksa render etme
+  if (!displayProducts || displayProducts.length === 0) {
+    return null;
+  }
+
   return (
-    <section className="flat-spacing-1 pt_0">
+    <section className="flat-spacing-19">
       <div className="container">
-        <div className="flat-title">
-          <span className="title">People Also Bought</span>
+        <div className="flat-title flex-row justify-content-between px-0">
+          <span className="title wow fadeInUp" data-wow-delay="0s">
+            Diğer Ürünler
+          </span>
+          <div className="box-sw-navigation">
+            <div className="nav-sw square nav-next-slider nav-next-sell-1 snbp161">
+              <span className="icon icon-arrow1-left" />
+            </div>
+            <div className="nav-sw square nav-prev-slider nav-prev-sell-1 snbn161">
+              <span className="icon icon-arrow1-right" />
+            </div>
+          </div>
         </div>
         <div className="hover-sw-nav hover-sw-2">
-          <Swiper
-            dir="ltr"
-            className="swiper tf-sw-product-sell wrap-sw-over"
-            slidesPerView={4} // Equivalent to data-preview={4}
-            spaceBetween={30} // Equivalent to data-space-lg={30}
-            breakpoints={{
-              1024: {
-                slidesPerView: 4, // Equivalent to data-tablet={3}
-              },
-              640: {
-                slidesPerView: 3, // Equivalent to data-tablet={3}
-              },
-              0: {
-                slidesPerView: 2, // Equivalent to data-mobile={2}
-                spaceBetween: 15, // Equivalent to data-space-md={15}
-              },
-            }}
-            modules={[Navigation, Pagination]}
-            navigation={{
-              prevEl: ".snbp3070",
-              nextEl: ".snbn3070",
-            }}
-            pagination={{ clickable: true, el: ".spd307" }}
-          >
-            {products1.slice(0, 8).map((product, i) => (
-              <SwiperSlide key={i} className="swiper-slide">
-                <ProductCard product={product} />
-              </SwiperSlide>
-            ))}
-          </Swiper>
-          <div className="nav-sw nav-next-slider nav-next-product box-icon w_46 round snbp3070">
-            <span className="icon icon-arrow-left" />
+          <div className="swiper tf-sw-product-sell-1 wrap-sw-over">
+            <Swiper
+              dir="ltr"
+              slidesPerView={4}
+              spaceBetween={30}
+              breakpoints={{
+                1100: { slidesPerView: 4 },
+                768: { slidesPerView: 3 },
+                640: { slidesPerView: 2 },
+                0: { slidesPerView: 2 },
+              }}
+              className="swiper-wrapper"
+              modules={[Navigation]}
+              navigation={{
+                prevEl: ".snbp161",
+                nextEl: ".snbn161",
+              }}
+            >
+              {displayProducts.map((product, index) => (
+                <SwiperSlide className="swiper-slide height-auto" key={product.id || index}>
+                  <ProductCardSimart product={product} />
+                </SwiperSlide>
+              ))}
+            </Swiper>
           </div>
-          <div className="nav-sw nav-prev-slider nav-prev-product box-icon w_46 round snbn3070">
-            <span className="icon icon-arrow-right" />
-          </div>
-          <div className="sw-dots style-2 sw-pagination-product justify-content-center spd307" />
         </div>
       </div>
+      <style jsx global>{`
+        .tf-sw-product-sell-1 .swiper-slide {
+          height: auto;
+        }
+        .tf-sw-product-sell-1 .main-cart-btn {
+          width: 100%;
+        }
+      `}</style>
     </section>
   );
 }

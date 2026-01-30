@@ -3,7 +3,7 @@ import { useCartStore } from "@/stores/cartStore";
 import { useAuthStore } from "@/stores/authStore";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { log } from "@/utils/logger";
 import apiClient from "@/utils/apiClient";
 import SearchableSelect from "@/components/common/SearchableSelect";
@@ -64,6 +64,8 @@ export default function Checkout() {
 
   // Şehir ve ilçe state'leri
   const [cities, setCities] = useState([]);
+  const [citiesLoaded, setCitiesLoaded] = useState(false); // Şehirler yüklendi mi?
+  const [isLoadingCities, setIsLoadingCities] = useState(false); // Şehirler yükleniyor mu?
   const [selectedCityId, setSelectedCityId] = useState("");
   const [districts, setDistricts] = useState([]);
   const [selectedDistrictId, setSelectedDistrictId] = useState("");
@@ -77,24 +79,34 @@ export default function Checkout() {
   const [billingNeighborhoods, setBillingNeighborhoods] = useState([]);
   const [selectedBillingNeighborhoodId, setSelectedBillingNeighborhoodId] = useState("");
   const [taxOffices, setTaxOffices] = useState([]);
+  const [taxOfficesLoaded, setTaxOfficesLoaded] = useState(false); // Vergi daireleri yüklendi mi?
+  const [isLoadingTaxOffices, setIsLoadingTaxOffices] = useState(false); // Vergi daireleri yükleniyor mu?
   const [selectedTaxOfficeId, setSelectedTaxOfficeId] = useState("");
   const [isSavingAddress, setIsSavingAddress] = useState(false);
+  const paymentOptionsRef = useRef(null);
+  const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
+  const [orderErrors, setOrderErrors] = useState({}); // Field bazlı hatalar
+  const [orderErrorMessage, setOrderErrorMessage] = useState(""); // Genel hata mesajı
+  const [lastPostRequest, setLastPostRequest] = useState(null); // Son POST isteği bilgisi
+  const [lastPostResponse, setLastPostResponse] = useState(null); // Son POST response bilgisi
 
-
-  // Şehirleri yükle
-  useEffect(() => {
-    const fetchCities = async () => {
-      try {
-        const response = await apiClient.get("/cities");
-        if (response.data && response.data.status === "success" && response.data.data) {
-          setCities(response.data.data);
-        }
-      } catch (error) {
-        log("Şehirler yüklenirken hata:", error);
+  // Şehirleri lazy load ile yükle (sadece ilk açılışta)
+  const fetchCities = async () => {
+    if (citiesLoaded || isLoadingCities) return; // Zaten yüklendiyse veya yükleniyorsa tekrar yükleme
+    
+    setIsLoadingCities(true);
+    try {
+      const response = await apiClient.post("/cities", {});
+      if (response.data && response.data.status === "success" && response.data.data) {
+        setCities(response.data.data);
+        setCitiesLoaded(true);
       }
-    };
-    fetchCities();
-  }, []);
+    } catch (error) {
+      log("Şehirler yüklenirken hata:", error);
+    } finally {
+      setIsLoadingCities(false);
+    }
+  };
 
   // İlçeleri yükle (teslimat)
   useEffect(() => {
@@ -107,7 +119,7 @@ export default function Checkout() {
         return;
       }
       try {
-        const response = await apiClient.get(`/districts?city_id=${selectedCityId}`);
+        const response = await apiClient.post("/districts", { city_id: selectedCityId });
         if (response.data && response.data.status === "success" && response.data.data) {
           setDistricts(response.data.data);
         }
@@ -128,7 +140,7 @@ export default function Checkout() {
         return;
       }
       try {
-        const response = await apiClient.get(`/neighborhoods?district_id=${selectedDistrictId}`);
+        const response = await apiClient.post("/neighborhoods", { district_id: selectedDistrictId });
         if (response.data && response.data.status === "success" && response.data.data) {
           setNeighborhoods(response.data.data);
         }
@@ -151,7 +163,7 @@ export default function Checkout() {
         return;
       }
       try {
-        const response = await apiClient.get(`/districts?city_id=${selectedBillingCityId}`);
+        const response = await apiClient.post("/districts", { city_id: selectedBillingCityId });
         if (response.data && response.data.status === "success" && response.data.data) {
           setBillingDistricts(response.data.data);
         }
@@ -172,7 +184,7 @@ export default function Checkout() {
         return;
       }
       try {
-        const response = await apiClient.get(`/neighborhoods?district_id=${selectedBillingDistrictId}`);
+        const response = await apiClient.post("/neighborhoods", { district_id: selectedBillingDistrictId });
         if (response.data && response.data.status === "success" && response.data.data) {
           setBillingNeighborhoods(response.data.data);
         }
@@ -184,21 +196,24 @@ export default function Checkout() {
     fetchBillingNeighborhoods();
   }, [selectedBillingDistrictId]);
 
-  // Vergi dairelerini yükle
-  useEffect(() => {
-    const fetchTaxOffices = async () => {
-      try {
-        const response = await apiClient.get("/tax-offices");
-        if (response.data && response.data.status === "success" && response.data.data) {
-          setTaxOffices(response.data.data);
-        }
-      } catch (error) {
-        log("Vergi daireleri yüklenirken hata:", error);
-        setTaxOffices([]);
+  // Vergi dairelerini lazy load ile yükle (sadece ilk açılışta)
+  const fetchTaxOffices = async () => {
+    if (taxOfficesLoaded || isLoadingTaxOffices) return; // Zaten yüklendiyse veya yükleniyorsa tekrar yükleme
+    
+    setIsLoadingTaxOffices(true);
+    try {
+      const response = await apiClient.post("/tax-offices", {});
+      if (response.data && response.data.status === "success" && response.data.data) {
+        setTaxOffices(response.data.data);
+        setTaxOfficesLoaded(true);
       }
-    };
-    fetchTaxOffices();
-  }, []);
+    } catch (error) {
+      log("Vergi daireleri yüklenirken hata:", error);
+      setTaxOffices([]);
+    } finally {
+      setIsLoadingTaxOffices(false);
+    }
+  };
 
   // Giriş yapmış kullanıcılar için kayıtlı adresleri yükle
   useEffect(() => {
@@ -412,12 +427,193 @@ export default function Checkout() {
       setIsSavingAddress(false);
     }
   };
+
+  // Sipariş gönderme fonksiyonu
+  const handleSubmitOrder = async () => {
+    // Hataları temizle
+    setOrderErrors({});
+    setOrderErrorMessage("");
+
+    // Sadece auth true ise çalışsın
+    if (!isAuthenticated) {
+      log("[Checkout] Kullanıcı giriş yapmamış, sipariş gönderilemez");
+      setOrderErrorMessage("Sipariş vermek için lütfen giriş yapın.");
+      return;
+    }
+
+    // Form validasyonları
+    if (!selectedDeliveryAddressId) {
+      setOrderErrors({ delivery_address_id: ["Lütfen teslimat adresi seçin."] });
+      return;
+    }
+
+    if (!sameBillingAddress && !selectedBillingAddressId) {
+      setOrderErrors({ invoice_address_id: ["Lütfen fatura adresi seçin."] });
+      return;
+    }
+
+    // Şartlar ve koşullar checkbox kontrolü
+    const termsCheckbox = document.getElementById("check-agree");
+    if (!termsCheckbox || !termsCheckbox.checked) {
+      setOrderErrors({ terms_accepted: ["Lütfen şartları ve koşulları kabul edin."] });
+      return;
+    }
+
+    // PaymentOptions'tan kart bilgilerini al
+    if (!paymentOptionsRef.current) {
+      setOrderErrorMessage("Ödeme bilgileri eksik.");
+      return;
+    }
+
+    const paymentData = paymentOptionsRef.current.getPaymentData();
+
+    // Kart bilgileri validasyonu
+    if (!paymentData.card_holder_name || !paymentData.card_number || !paymentData.expiry_month || !paymentData.expiry_year || !paymentData.cvv) {
+      setOrderErrorMessage("Lütfen tüm kart bilgilerini doldurun.");
+      return;
+    }
+
+    // PaymentOptions'taki şartlar checkbox kontrolü
+    const paymentTermsCheckbox = document.querySelector('.payment-checkbox');
+    if (!paymentTermsCheckbox || !paymentTermsCheckbox.checked) {
+      setOrderErrors({ uzak_satis_sozlesmesi_accepted: ["Lütfen gizlilik politikası ve şartları kabul edin."] });
+      return;
+    }
+
+    setIsSubmittingOrder(true);
+
+    try {
+      const requestBody = {
+        delivery_address_id: selectedDeliveryAddressId,
+        invoice_address_id: sameBillingAddress ? selectedDeliveryAddressId : selectedBillingAddressId,
+        card_holder_name: paymentData.card_holder_name,
+        card_number: paymentData.card_number,
+        expiry_month: paymentData.expiry_month,
+        expiry_year: paymentData.expiry_year,
+        cvv: paymentData.cvv,
+        installment_count: paymentData.installment_count,
+        uzak_satis_sozlesmesi_accepted: true,
+        ...(orderNote && orderNote.trim() && { order_note: orderNote.trim() }),
+      };
+
+      // Konsola yazdır (güvenlik için hassas bilgileri gizle)
+      const safeRequestBody = {
+        ...requestBody,
+        card_number: requestBody.card_number ? `${requestBody.card_number.substring(0, 4)}****${requestBody.card_number.substring(requestBody.card_number.length - 4)}` : '',
+        cvv: '***',
+      };
+      const requestInfo = {
+        url: "/checkout/validate",
+        method: "POST",
+        body: safeRequestBody,
+        timestamp: new Date().toISOString(),
+      };
+      
+      console.log("🚀 POST İsteği Gönderiliyor:", requestInfo);
+      console.log("📦 Tam Request Body (gizli):", requestBody);
+      
+      // Sayfada göstermek için state'e kaydet
+      setLastPostRequest(requestInfo);
+
+      log("[Checkout] Sipariş gönderiliyor:", requestBody);
+
+      const response = await apiClient.post("/checkout/validate", requestBody);
+      
+      const responseInfo = {
+        status: response.status,
+        data: response.data,
+        timestamp: new Date().toISOString(),
+      };
+      
+      console.log("✅ POST İsteği Başarılı:", responseInfo);
+      
+      // Sayfada göstermek için state'e kaydet
+      setLastPostResponse(responseInfo);
+
+      log("[Checkout] Sipariş yanıtı:", response.data);
+
+      if (response.data && response.data.status === "success") {
+        setOrderErrorMessage("");
+        setOrderErrors({});
+        
+        // payment_html varsa yeni sayfada göster
+        if (response.data.data && response.data.data.payment_html) {
+          const html = response.data.data.payment_html;
+          log("[Checkout] Payment HTML alındı, yeni sayfada açılıyor");
+          
+          // Yeni sayfa aç ve HTML'i yaz
+          const win = window.open('', '_self'); // Aynı sekme, popup yok
+          win.document.open();
+          win.document.write(html);
+          win.document.close();
+        } else {
+          // payment_html yoksa başarı sayfasına yönlendir
+          window.location.href = "/odeme-basarili";
+        }
+      } else {
+        // API'den gelen hataları parse et
+        if (response.data?.errors) {
+          const errors = {};
+          Object.keys(response.data.errors).forEach((key) => {
+            if (Array.isArray(response.data.errors[key]) && response.data.errors[key].length > 0) {
+              errors[key] = response.data.errors[key];
+            }
+          });
+          setOrderErrors(errors);
+        }
+        setOrderErrorMessage(response.data?.message || "Sipariş oluşturulurken bir hata oluştu.");
+      }
+    } catch (error) {
+      log("[Checkout] Sipariş gönderme hatası:", error);
+      
+      // Hata response'unu da kaydet
+      if (error.response) {
+        const errorResponseInfo = {
+          status: error.response.status,
+          data: error.response.data,
+          timestamp: new Date().toISOString(),
+        };
+        console.log("❌ POST İsteği Hatası:", errorResponseInfo);
+        setLastPostResponse(errorResponseInfo);
+      } else {
+        console.log("❌ POST İsteği Hatası (Network/Diğer):", error);
+        setLastPostResponse({
+          status: "ERROR",
+          data: { message: error.message || "Bilinmeyen hata" },
+          timestamp: new Date().toISOString(),
+        });
+      }
+      
+      // API'den gelen hataları parse et
+      if (error.response?.data?.errors) {
+        const errors = {};
+        Object.keys(error.response.data.errors).forEach((key) => {
+          if (Array.isArray(error.response.data.errors[key]) && error.response.data.errors[key].length > 0) {
+            errors[key] = error.response.data.errors[key];
+          }
+        });
+        setOrderErrors(errors);
+      }
+      
+      const errorMessage = error.response?.data?.message || "Sipariş oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.";
+      setOrderErrorMessage(errorMessage);
+    } finally {
+      setIsSubmittingOrder(false);
+    }
+  };
+
   return (
     <section className="flat-spacing-11">
       <div className="container">
         <div className="tf-page-cart-wrap layout-2">
           <div className="tf-page-cart-item">
             <h5 className="fw-5 mb_20">1 - Teslimat Adresi</h5>
+            
+            {orderErrors.delivery_address_id && (
+              <div style={{ marginBottom: "15px", padding: "12px", backgroundColor: "#fee", border: "1px solid #fcc", borderRadius: "6px", fontSize: "14px", color: "#c33" }}>
+                {orderErrors.delivery_address_id[0]}
+              </div>
+            )}
 
             {/* Adresler yükleniyor */}
             {isAuthenticated && isLoadingAddresses && (
@@ -616,7 +812,8 @@ export default function Checkout() {
                       setSelectedDistrictId("");
                       setSelectedNeighborhoodId("");
                     }}
-                    placeholder="Seçiniz"
+                    onOpen={fetchCities}
+                    placeholder={isLoadingCities ? "Yükleniyor..." : "Seçiniz"}
                     required
                     searchPlaceholder="Şehir ara..."
                   />
@@ -834,7 +1031,8 @@ export default function Checkout() {
                             onChange={(value) => {
                               setSelectedTaxOfficeId(value);
                             }}
-                            placeholder="Seçiniz"
+                            onOpen={fetchTaxOffices}
+                            placeholder={isLoadingTaxOffices ? "Yükleniyor..." : "Seçiniz"}
                             required
                             searchPlaceholder="Vergi dairesi ara..."
                           />
@@ -851,6 +1049,12 @@ export default function Checkout() {
             {!sameBillingAddress && selectedDeliveryAddressId !== null && (
               <>
                 <h5 className="fw-5 mb_20 mt_40">2 - Fatura Adresi</h5>
+                
+                {orderErrors.invoice_address_id && (
+                  <div style={{ marginBottom: "15px", padding: "12px", backgroundColor: "#fee", border: "1px solid #fcc", borderRadius: "6px", fontSize: "14px", color: "#c33" }}>
+                    {orderErrors.invoice_address_id[0]}
+                  </div>
+                )}
 
                 {/* Adresler yükleniyor */}
                 {isAuthenticated && isLoadingAddresses && (
@@ -1161,7 +1365,8 @@ export default function Checkout() {
                             onChange={(value) => {
                               setSelectedTaxOfficeId(value);
                             }}
-                            placeholder="Seçiniz"
+                            onOpen={fetchTaxOffices}
+                            placeholder={isLoadingTaxOffices ? "Yükleniyor..." : "Seçiniz"}
                             required
                             searchPlaceholder="Vergi dairesi ara..."
                           />
@@ -1204,20 +1409,101 @@ export default function Checkout() {
               Kargonuzun size sorunsuz şekilde ulaşabilmesi için bilgilerinizi eksiksiz girdiğinizden emin olun.
             </p>
 
-            {/* Sipariş Notu Formu */}
-            <form onSubmit={(e) => e.preventDefault()} className="form-checkout" id="checkout-form">
-              <fieldset className="box fieldset">
-                <label htmlFor="note">Sipariş notu (isteğe bağlı )</label>
-                <textarea id="note" value={orderNote} onChange={(e) => handleOrderNoteChange(e.target.value)} />
-              </fieldset>
-            </form>
-
             {/* Ödeme Bilgileri - Sadece teslimat ve fatura adresi seçildiyse göster */}
             {selectedDeliveryAddressId !== null && (sameBillingAddress || selectedBillingAddressId !== null) && (
-              <PaymentOptions cartTotal={cartTotals.total} />
+              <>
+                <PaymentOptions ref={paymentOptionsRef} cartTotal={cartTotals.total} />
+                {orderErrors.uzak_satis_sozlesmesi_accepted && (
+                  <div style={{ marginTop: "15px", padding: "12px", backgroundColor: "#fee", border: "1px solid #fcc", borderRadius: "6px", fontSize: "14px", color: "#c33" }}>
+                    {orderErrors.uzak_satis_sozlesmesi_accepted[0]}
+                  </div>
+                )}
+              </>
+            )}
+            
+            {/* POST İsteği Debug Paneli */}
+            {(lastPostRequest || lastPostResponse) && (
+              <div style={{ 
+                marginTop: "20px", 
+                padding: "15px", 
+                backgroundColor: "#f8f9fa", 
+                border: "1px solid #dee2e6", 
+                borderRadius: "8px",
+                fontSize: "12px",
+                fontFamily: "monospace"
+              }}>
+                {lastPostRequest && (
+                  <div style={{ marginBottom: "20px" }}>
+                    <div style={{ fontWeight: "bold", marginBottom: "10px", color: "#495057" }}>
+                      🚀 POST İsteği:
+                    </div>
+                    <div style={{ marginBottom: "5px" }}>
+                      <strong>URL:</strong> {lastPostRequest.url}
+                    </div>
+                    <div style={{ marginBottom: "5px" }}>
+                      <strong>Method:</strong> {lastPostRequest.method}
+                    </div>
+                    <div style={{ marginBottom: "5px" }}>
+                      <strong>Timestamp:</strong> {new Date(lastPostRequest.timestamp).toLocaleString("tr-TR")}
+                    </div>
+                    <div style={{ marginTop: "10px" }}>
+                      <strong>Body:</strong>
+                      <pre style={{ 
+                        marginTop: "5px", 
+                        padding: "10px", 
+                        backgroundColor: "#fff", 
+                        border: "1px solid #dee2e6", 
+                        borderRadius: "4px",
+                        overflow: "auto",
+                        maxHeight: "200px",
+                        fontSize: "11px"
+                      }}>
+                        {JSON.stringify(lastPostRequest.body, null, 2)}
+                      </pre>
+                    </div>
+                  </div>
+                )}
+                
+                {lastPostResponse && (
+                  <div>
+                    <div style={{ fontWeight: "bold", marginBottom: "10px", color: lastPostResponse.status === 200 ? "#28a745" : "#dc3545" }}>
+                      {lastPostResponse.status === 200 ? "✅ POST Response:" : "❌ POST Response:"}
+                    </div>
+                    <div style={{ marginBottom: "5px" }}>
+                      <strong>Status:</strong> <span style={{ color: lastPostResponse.status === 200 ? "#28a745" : "#dc3545" }}>{lastPostResponse.status}</span>
+                    </div>
+                    <div style={{ marginBottom: "5px" }}>
+                      <strong>Timestamp:</strong> {new Date(lastPostResponse.timestamp).toLocaleString("tr-TR")}
+                    </div>
+                    <div style={{ marginTop: "10px" }}>
+                      <strong>Data:</strong>
+                      <pre style={{ 
+                        marginTop: "5px", 
+                        padding: "10px", 
+                        backgroundColor: "#fff", 
+                        border: "1px solid #dee2e6", 
+                        borderRadius: "4px",
+                        overflow: "auto",
+                        maxHeight: "300px",
+                        fontSize: "11px"
+                      }}>
+                        {JSON.stringify(lastPostResponse.data, null, 2)}
+                      </pre>
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
           </div>
-          <OrderSummary items={items} cartTotals={cartTotals} />
+          <OrderSummary 
+            items={items} 
+            cartTotals={cartTotals} 
+            onSubmitOrder={handleSubmitOrder}
+            isSubmitting={isSubmittingOrder}
+            orderErrors={orderErrors}
+            orderErrorMessage={orderErrorMessage}
+            onOrderNoteChange={handleOrderNoteChange}
+          />
         </div>
       </div>
     </section>

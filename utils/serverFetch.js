@@ -1,4 +1,3 @@
-import { cookies } from "next/headers";
 import crypto from "crypto";
 import { log } from "./logger";
 
@@ -24,9 +23,17 @@ export async function serverFetch(endpoint, options = {}) {
         const timestamp = Math.floor(Date.now() / 1000);
 
         // Body content for signing
-        let bodyStr = "null";
+        let bodyStr = "{}";
         if (options.body) {
-            bodyStr = typeof options.body === "string" ? options.body : JSON.stringify(options.body);
+            if (typeof options.body === "string") {
+                bodyStr = options.body;
+            } else if (typeof options.body === "object" && options.body !== null) {
+                if (Object.keys(options.body).length === 0) {
+                    bodyStr = "{}";
+                } else {
+                    bodyStr = JSON.stringify(options.body);
+                }
+            }
         }
 
         const dataToSign = `${timestamp}|${bodyStr}`;
@@ -55,15 +62,35 @@ export async function serverFetch(endpoint, options = {}) {
 
         if (attempt === 1) {
             log(`[serverFetch] FETCH START: ${method} ${url}`);
+            log(`[serverFetch] Options Body:`, JSON.stringify(options.body));
+            log(`[serverFetch] Body String: ${bodyStr}`);
         } else {
             log(`[serverFetch] RETRY ${attempt}/${retries}: ${method} ${url}`);
         }
 
         try {
-            const response = await fetch(url, {
-                ...options,
+            // Fetch options'ı hazırla
+            const fetchOptions = {
+                method,
                 headers,
-            });
+            };
+            
+            // POST/PUT/PATCH/DELETE için body gönder
+            if (method !== "GET" && method !== "HEAD") {
+                fetchOptions.body = bodyStr;
+            }
+            
+            // next, cache, retries gibi Next.js özel option'larını kaldır
+            // Ama signal gibi fetch option'larını koru
+            if (options.signal) {
+                fetchOptions.signal = options.signal;
+            }
+            
+            if (attempt === 1) {
+                log(`[serverFetch] Fetch Options Body: ${fetchOptions.body || "undefined"}`);
+            }
+
+            const response = await fetch(url, fetchOptions);
 
             const duration = Date.now() - startTime;
 

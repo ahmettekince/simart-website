@@ -6,14 +6,24 @@ import { log } from "@/utils/logger";
  * @returns {Promise<Array>} Menu items array'i
  */
 export async function getMenus() {
-    const response = await serverFetch("/menus?type=header-menu", { 
-        next: { revalidate: 10 } 
+    const response = await serverFetch("/menus", {
+        method: "POST",
+        next: { revalidate: 3600 }, // 1 saat cache
+        body: { type: "header-menu" },
     });
-    
+
+    // API POST ile çalışıyor ve direkt menüleri döndürüyor
     if (response?.status === "success") {
-        return response.data?.items || [];
+        // API direkt menü array'ini döndürüyor
+        if (Array.isArray(response.data)) {
+            return response.data;
+        }
+        // Veya data.items içinde olabilir
+        if (response.data?.items && Array.isArray(response.data.items)) {
+            return response.data.items;
+        }
     }
-    
+
     log("[API menus.js] getMenus failed:", response);
     return [];
 }
@@ -29,8 +39,10 @@ export async function getMenuByType(menuType) {
         return null;
     }
 
-    const response = await serverFetch(`/menus?type=${menuType}`, { 
-        next: { revalidate: 10 } 
+    const response = await serverFetch("/menus", {
+        method: "POST",
+        body: { type: menuType },
+        next: { revalidate: 3600 }
     });
 
     if (response?.status === "success" && response.data) {
@@ -54,11 +66,11 @@ export async function getFooterMenus() {
 
     // Menüleri array olarak döndür (slug field'ı ile birlikte)
     const menus = [];
-    
+
     if (yardimMenu?.slug && yardimMenu?.items?.length > 0) {
         menus.push(yardimMenu);
     }
-    
+
     if (hakkimizdaMenu?.slug && hakkimizdaMenu?.items?.length > 0) {
         menus.push(hakkimizdaMenu);
     }

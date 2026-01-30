@@ -153,7 +153,8 @@ export async function getCollections() {
  */
 export async function getTopbar() {
     const response = await serverFetch("/topbars", {
-        next: { revalidate: 10 }
+        method: "GET",
+        next: { revalidate: 3600 } // 1 saat cache
     });
 
     if (response?.status === "success") {

@@ -134,11 +134,9 @@ export async function addToCart(productSlug, quantity = 1) {
     }
 
     try {
-        const response = await apiClient.post("/cart/items", null, {
-            params: {
-                product_slug: productSlug,
-                quantity: quantity,
-            }
+        const response = await apiClient.post("/cart/items", {
+            product_slug: productSlug,
+            quantity: quantity,
         });
 
         // addToCart API'si sadece success mesajı döndürüyor, cart data'sı yok
@@ -173,22 +171,19 @@ export async function addToCart(productSlug, quantity = 1) {
 
 /**
  * Sepetten ürün miktarını azaltır (Client-side)
+ * Her çağrıda 1 adet azaltır
  * @param {string} productSlug - Ürün slug'ı (örn: "katya-u")
- * @param {number} quantity - Azaltılacak miktar (varsayılan: 1)
  * @returns {Promise<Object|null>} Güncel sepet verisi veya null
  */
-export async function decreaseCartQuantity(productSlug, quantity = 1) {
+export async function decreaseCartQuantity(productSlug) {
     if (!productSlug) {
         log("[API cart.js] decreaseCartQuantity: productSlug is required");
         return null;
     }
 
     try {
-        const response = await apiClient.post("/cart-minus/items", null, {
-            params: {
-                product_slug: productSlug,
-                quantity: quantity,
-            }
+        const response = await apiClient.post("/cart-minus/items", {
+            product_slug: productSlug,
         });
 
         // decreaseCartQuantity API'si sadece success mesajı ve quantity döndürüyor
@@ -222,6 +217,59 @@ export async function decreaseCartQuantity(productSlug, quantity = 1) {
 }
 
 /**
+ * Sepetteki ürün miktarını direkt günceller (Client-side)
+ * @param {string} productSlug - Ürün slug'ı (örn: "katya-u")
+ * @param {number} quantity - Yeni miktar
+ * @returns {Promise<Object|null>} Güncel sepet verisi veya null
+ */
+export async function updateCartQuantity(productSlug, quantity) {
+    if (!productSlug) {
+        log("[API cart.js] updateCartQuantity: productSlug is required");
+        return null;
+    }
+
+    if (quantity === undefined || quantity === null || quantity < 1) {
+        log("[API cart.js] updateCartQuantity: quantity must be at least 1");
+        return null;
+    }
+
+    try {
+        const response = await apiClient.put("/cart/items", {
+            product_slug: productSlug,
+            quantity: quantity,
+        });
+
+        // updateCartQuantity API'si sadece success mesajı döndürüyor, cart data'sı yok
+        // Bu yüzden başarılı olduğunda cart'ı tekrar çekiyoruz
+        if (response?.data?.status === "success") {
+            // Sepeti tekrar çek (güncel haliyle)
+            const updatedCart = await getCart();
+            return updatedCart;
+        }
+
+        log("[API cart.js] updateCartQuantity failed:", response?.data);
+        return null;
+    } catch (error) {
+        if (error.response) {
+            log("[API cart.js] updateCartQuantity error response:", {
+                status: error.response.status,
+                statusText: error.response.statusText,
+                data: error.response.data,
+                url: error.config?.url,
+            });
+            console.error("[API cart.js] Full error:", error);
+        } else if (error.request) {
+            log("[API cart.js] updateCartQuantity no response:", error.request);
+            console.error("[API cart.js] Request error:", error);
+        } else {
+            log("[API cart.js] updateCartQuantity setup error:", error.message);
+            console.error("[API cart.js] Setup error:", error);
+        }
+        return null;
+    }
+}
+
+/**
  * Sepetten ürün kaldırır (Client-side)
  * @param {string} productSlug - Ürün slug'ı (örn: "katya-u")
  * @returns {Promise<Object|null>} Güncel sepet verisi veya null
@@ -234,7 +282,7 @@ export async function removeFromCart(productSlug) {
 
     try {
         const response = await apiClient.delete("/cart/items", {
-            params: {
+            data: {
                 product_slug: productSlug,
             }
         });
@@ -336,19 +384,13 @@ export async function applyCoupon(couponCode) {
     }
 
     try {
-        // Endpoint: /cart/apply-coupon?coupon_code=...
-        const requestParams = {
-            coupon_code: couponCode,
-        };
-        
         log("[API cart.js] applyCoupon - İstek gönderiliyor:", {
             endpoint: "/cart/apply-coupon",
-            params: requestParams,
             couponCode: couponCode
         });
 
-        const response = await apiClient.post("/cart/apply-coupon", null, {
-            params: requestParams
+        const response = await apiClient.post("/cart/apply-coupon", {
+            coupon_code: couponCode,
         });
 
         log("[API cart.js] applyCoupon - Yanıt alındı:", {
@@ -412,19 +454,15 @@ export async function removeCoupon(couponCode) {
     }
 
     try {
-        // Endpoint: /cart/remove-coupon?coupon_code=...
-        const requestParams = {
-            coupon_code: couponCode,
-        };
-        
         log("[API cart.js] removeCoupon - İstek gönderiliyor:", {
             endpoint: "/cart/remove-coupon",
-            params: requestParams,
             couponCode: couponCode
         });
 
         const response = await apiClient.delete("/cart/remove-coupon", {
-            params: requestParams
+            data: {
+                coupon_code: couponCode,
+            }
         });
 
         log("[API cart.js] removeCoupon - Yanıt alındı:", {

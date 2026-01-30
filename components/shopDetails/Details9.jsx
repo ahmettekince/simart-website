@@ -10,6 +10,7 @@ import StickyItem from "./StickyItem";
 import Quantity from "./Quantity";
 import { useContextElement } from "@/context/Context";
 import { useCartStore } from "@/stores/cartStore";
+import { getProductButtonState } from "@/utils/productStock";
 export default function Details9({ product }) {
   const [currentColor, setCurrentColor] = useState(colors[0]);
   const { addItem } = useCartStore();
@@ -211,6 +212,11 @@ export default function Details9({ product }) {
     isAddedtoWishlist,
   } = useContextElement();
 
+  // Stok durumuna göre buton metni ve durumu
+  const buttonState = useMemo(() => {
+    return getProductButtonState(product);
+  }, [product]);
+
   const handleAddToCartAnimated = async () => {
     if (isAdding || showSuccess) return;
 
@@ -277,8 +283,8 @@ export default function Details9({ product }) {
                     <h5>{product.title ? product.title : "Cotton jersey top"}</h5>
                   </div>
 
-                  {/* Rating gösterimi */}
-                  {(product.rating || product.average_rating) && (product.rating > 0 || product.average_rating > 0) && (
+                  {/* Rating gösterimi - Sadece yorum varsa göster */}
+                  {((product.reviews_count || product.review_count) > 0) && (product.rating || product.average_rating) && (product.rating > 0 || product.average_rating > 0) && (
                     <div className="tf-product-info-rating" style={{ marginBottom: "12px", display: "flex", alignItems: "center", gap: "8px" }}>
                       <span style={{ fontSize: "14px", fontWeight: "600" }}>{(product.rating || product.average_rating || 0).toFixed(1)}</span>
                       <div className="stars-box" style={{ display: "flex", gap: "2px" }}>
@@ -470,16 +476,16 @@ export default function Details9({ product }) {
                     <form onSubmit={(e) => e.preventDefault()} className="">
                       <div className="tf-product-buy-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                         <div className="tf-product-info-quantity" style={{ margin: 0 }}>
-                          <Quantity setQuantity={setQuantity} minQuantity={minQuantity} maxQuantity={maxQuantity} />
+                          <Quantity setQuantity={setQuantity} minQuantity={minQuantity} maxQuantity={maxQuantity} disabled={buttonState.buttonDisabled} />
                         </div>
                         <button
                           type="button"
                           onClick={handleAddToCartAnimated}
-                          disabled={isAdding || showSuccess}
-                          className={`main-cart-btn ${showSuccess ? "success-animation" : ""}`}
+                          disabled={isAdding || showSuccess || buttonState.buttonDisabled}
+                          className={`main-cart-btn ${showSuccess ? "success-animation" : ""} ${buttonState.buttonText === "Stokta Yok" ? "out-of-stock" : ""}`}
                         >
                           <span className="button-text-main">
-                            {showSuccess ? "Sepete Eklendi" : isAdding ? "Ekleniyor..." : "Sepete Ekle"}
+                            {showSuccess ? "Sepete Eklendi" : isAdding ? "Ekleniyor..." : buttonState.buttonText}
                           </span>
                           {showSuccess && <span className="button-text-slide">Sepete Eklendi</span>}
                         </button>
@@ -612,7 +618,7 @@ export default function Details9({ product }) {
                       padding: 0;
                     }
 
-                    .main-cart-btn {
+                    .tf-product-info-buy-button .main-cart-btn {
                       height: 44px;
                       border-radius: 12px;
                       font-size: 13px;
@@ -628,27 +634,16 @@ export default function Details9({ product }) {
                       cursor: pointer;
                       position: relative;
                       transition: all 0.3s ease;
-                      width: auto;
-                      min-width: 200px;
-                      max-width: 250px;
+                      flex: 1;
                     }
 
-                    @media (max-width: 768px) {
-                      .main-cart-btn {
-                        flex: 1;
-                        min-width: 0;
-                        max-width: none;
-                        width: 100%;
-                      }
-                    }
-
-                    .main-cart-btn:disabled {
+                    .tf-product-info-buy-button .main-cart-btn:disabled {
                       opacity: 1 !important;
                       cursor: not-allowed;
                     }
 
-                    .main-cart-btn .button-text-main,
-                    .main-cart-btn .button-text-slide {
+                    .tf-product-info-buy-button .main-cart-btn .button-text-main,
+                    .tf-product-info-buy-button .main-cart-btn .button-text-slide {
                       width: 100%;
                       text-align: center;
                       white-space: nowrap;
@@ -656,19 +651,19 @@ export default function Details9({ product }) {
                       text-overflow: ellipsis;
                     }
 
-                    .main-cart-btn.success-animation {
+                    .tf-product-info-buy-button .main-cart-btn.success-animation {
                       background: #10b981;
                       border-color: #10b981;
                       overflow: hidden;
                     }
 
-                    .main-cart-btn.success-animation .button-text-main {
+                    .tf-product-info-buy-button .main-cart-btn.success-animation .button-text-main {
                       opacity: 0;
                       transform: translateY(100%);
                       transition: opacity 0.2s, transform 0.2s;
                     }
 
-                    .main-cart-btn.success-animation .button-text-slide {
+                    .tf-product-info-buy-button .main-cart-btn.success-animation .button-text-slide {
                       position: absolute;
                       inset: 0;
                       display: flex;
@@ -743,51 +738,21 @@ export default function Details9({ product }) {
                       <div className="text fw-6">Paylaş</div>
                     </a>
                   </div>
-                  {/* <div className="tf-product-info-delivery-return">
-                    <div className="row">
-                      <div className="col-xl-6 col-12">
-                        <div className="tf-product-delivery">
-                          <div className="icon">
-                            <i className="icon-delivery-time" />
-                          </div>
-                          <p>
-                            Teslimat süresi: <span className="fw-7">3-6 gün</span>
-                          </p>
-                        </div>
-                      </div>
-                      <div className="col-xl-6 col-12">
-                        <div className="tf-product-delivery mb-0">
-                          <div className="icon">
-                            <i className="icon-return-order" />
-                          </div>
-                          <p>
-                            <span className="fw-7">2</span> yıl garanti ve <span className="fw-7">48</span> saatte
-                            Teknik Servis Garantisi
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div> */}
-                  {/* <div className="tf-product-info-trust-seal">
-                    <div className="tf-product-trust-mess">
-                      <i className="icon-safe" />
-                      <p className="fw-6">
-                        Güvenli <br /> Ödeme
-                      </p>
-                    </div>
-                    <div className="tf-payment">
-                      {paymentImages.map((image, index) => (
-                        <Image key={index} alt={image.alt} src={image.src} width={image.width} height={image.height} />
-                      ))}
-                    </div>
-                  </div> */}
+
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <StickyItem />
+      <StickyItem 
+        product={product}
+        quantity={quantity}
+        setQuantity={setQuantity}
+        minQuantity={minQuantity}
+        maxQuantity={maxQuantity}
+        soldOut={buttonState.buttonDisabled && buttonState.buttonText === "Stokta Yok"}
+      />
     </section>
   );
 }

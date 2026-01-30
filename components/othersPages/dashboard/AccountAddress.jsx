@@ -58,7 +58,7 @@ export default function AccountAddress() {
   useEffect(() => {
     const fetchCities = async () => {
       try {
-        const response = await apiClient.get("/cities");
+        const response = await apiClient.post("/cities", {});
         if (response.data && response.data.status === "success" && response.data.data) {
           setCities(response.data.data);
         }
@@ -80,7 +80,7 @@ export default function AccountAddress() {
         return;
       }
       try {
-        const response = await apiClient.get(`/districts?city_id=${selectedCityId}`);
+        const response = await apiClient.post("/districts", { city_id: selectedCityId });
         if (response.data && response.data.status === "success" && response.data.data) {
           setDistricts(response.data.data);
         }
@@ -101,7 +101,7 @@ export default function AccountAddress() {
         return;
       }
       try {
-        const response = await apiClient.get(`/neighborhoods?district_id=${selectedDistrictId}`);
+        const response = await apiClient.post("/neighborhoods", { district_id: selectedDistrictId });
         if (response.data && response.data.status === "success" && response.data.data) {
           setNeighborhoods(response.data.data);
         }

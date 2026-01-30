@@ -4,14 +4,57 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useCartStore } from "@/stores/cartStore";
 
-export default function OrderSummary({ items, cartTotals }) {
+const ORDER_NOTE_KEY = "cart_order_note";
+
+export default function OrderSummary({ items, cartTotals, onSubmitOrder, isSubmitting = false, orderErrors = {}, orderErrorMessage = "", onOrderNoteChange }) {
   const [couponCode, setCouponCode] = useState("");
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   const [isRemovingCoupon, setIsRemovingCoupon] = useState(false);
   const [couponError, setCouponError] = useState("");
   const [couponSuccess, setCouponSuccess] = useState(false);
+  const [showOrderNote, setShowOrderNote] = useState(false);
+  const [orderNote, setOrderNote] = useState("");
   const { applyCoupon, removeCoupon } = useCartStore();
   const coupon = useCartStore((state) => state.coupon);
+
+  // Sayfa yüklendiğinde localStorage'dan sipariş notunu oku
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedNote = localStorage.getItem(ORDER_NOTE_KEY);
+      if (savedNote) {
+        setOrderNote(savedNote);
+        setShowOrderNote(true);
+        if (onOrderNoteChange) {
+          onOrderNoteChange(savedNote);
+        }
+      }
+    }
+  }, [onOrderNoteChange]);
+
+  // Sipariş notu değiştiğinde parent component'e bildir ve localStorage'a kaydet
+  const handleOrderNoteChange = (value) => {
+    setOrderNote(value);
+    if (onOrderNoteChange) {
+      onOrderNoteChange(value);
+    }
+    if (typeof window !== "undefined") {
+      if (value && value.trim()) {
+        localStorage.setItem(ORDER_NOTE_KEY, value);
+      } else {
+        localStorage.removeItem(ORDER_NOTE_KEY);
+      }
+    }
+  };
+
+  // Checkbox değiştiğinde
+  const handleShowOrderNoteChange = (e) => {
+    const checked = e.target.checked;
+    setShowOrderNote(checked);
+    if (!checked) {
+      // Checkbox kapatıldığında notu temizle
+      handleOrderNoteChange("");
+    }
+  };
 
   // Debug: Kupon bilgisini kontrol et
   useEffect(() => {
@@ -126,7 +169,7 @@ export default function OrderSummary({ items, cartTotals }) {
           {/* Kupon Kodu - Sadece kupon yoksa göster */}
           {(!coupon || !coupon.code) && (
             <div className="coupon-box">
-              <form onSubmit={handleApplyCoupon} style={{ display: "flex", gap: "8px", width: "100%" }}>
+              <div style={{ display: "flex", gap: "8px", width: "100%" }}>
                 <input
                   type="text"
                   placeholder="Kupon Kodu"
@@ -137,6 +180,13 @@ export default function OrderSummary({ items, cartTotals }) {
                     setCouponCode(value);
                     setCouponError("");
                     setCouponSuccess(false);
+                  }}
+                  onKeyDown={(e) => {
+                    // Enter tuşuna basıldığında kuponu uygula
+                    if (e.key === "Enter" && couponCode.trim() && !isApplyingCoupon) {
+                      e.preventDefault();
+                      handleApplyCoupon(e);
+                    }
                   }}
                   style={{
                     flex: 1,
@@ -149,7 +199,8 @@ export default function OrderSummary({ items, cartTotals }) {
                   disabled={isApplyingCoupon}
                 />
                 <button
-                  type="submit"
+                  type="button"
+                  onClick={handleApplyCoupon}
                   className="tf-btn btn-sm radius-3 btn-fill btn-icon animate-hover-btn"
                   disabled={isApplyingCoupon || !couponCode.trim()}
                   style={{
@@ -162,7 +213,7 @@ export default function OrderSummary({ items, cartTotals }) {
                 >
                   {isApplyingCoupon ? "Uygulanıyor..." : "Uygula"}
                 </button>
-              </form>
+              </div>
               {couponError && (
                 <div style={{ marginTop: "8px", fontSize: "12px", color: "#dc3545" }}>
                   {couponError}
@@ -228,6 +279,41 @@ export default function OrderSummary({ items, cartTotals }) {
             <h6 className="fw-5">Toplam</h6>
             <h6 className="total fw-5">₺{cartTotals.total.toLocaleString("tr-TR")}</h6>
           </div>
+          {/* Sipariş Notu - Checkbox ile kontrol edilebilir */}
+          <div style={{ marginTop: "20px", paddingTop: "20px", borderTop: "1px solid #e5e5e5" }}>
+            <div className="box-checkbox fieldset-radio mb_20">
+              <input 
+                type="checkbox" 
+                id="show-order-note" 
+                className="tf-check" 
+                checked={showOrderNote}
+                onChange={handleShowOrderNoteChange}
+              />
+              <label htmlFor="show-order-note" className="text_black-2">
+                Sipariş notu eklemek istiyorum (isteğe bağlı)
+              </label>
+            </div>
+            {showOrderNote && (
+              <div style={{ marginTop: "10px" }}>
+                <textarea
+                  id="order-note"
+                  value={orderNote}
+                  onChange={(e) => handleOrderNoteChange(e.target.value)}
+                  placeholder="Siparişinizle ilgili özel bir notunuz varsa buraya yazabilirsiniz..."
+                  style={{
+                    width: "100%",
+                    minHeight: "80px",
+                    padding: "10px",
+                    border: "1px solid #e5e5e5",
+                    borderRadius: "6px",
+                    fontSize: "14px",
+                    fontFamily: "inherit",
+                    resize: "vertical",
+                  }}
+                />
+              </div>
+            )}
+          </div>
           <div className="wd-check-payment" style={{ marginTop: "30px", paddingTop: "30px", borderTop: "1px solid #e5e5e5" }}>
             <p className="text_black-2 mb_20">
               Kişisel verileriniz siparişinizi işlemek için kullanılacak, bu web sitesinde deneyiminizi
@@ -238,10 +324,44 @@ export default function OrderSummary({ items, cartTotals }) {
               <label htmlFor="check-agree" className="text_black-2">
                 <Link href={`/terms-conditions`}>Şartları ve Koşulları</Link> kabul ediyorum
               </label>
+              {orderErrors.terms_accepted && (
+                <div style={{ marginTop: "8px", fontSize: "12px", color: "#dc3545" }}>
+                  {orderErrors.terms_accepted[0]}
+                </div>
+              )}
             </div>
+            {orderErrors.uzak_satis_sozlesmesi_accepted && (
+              <div style={{ marginTop: "-15px", marginBottom: "15px", fontSize: "12px", color: "#dc3545" }}>
+                {orderErrors.uzak_satis_sozlesmesi_accepted[0]}
+              </div>
+            )}
+            {orderErrorMessage && (
+              <div style={{ marginTop: "15px", marginBottom: "15px", padding: "12px", backgroundColor: "#fee", border: "1px solid #fcc", borderRadius: "6px", fontSize: "14px", color: "#c33" }}>
+                {orderErrorMessage}
+              </div>
+            )}
+            {orderErrors.delivery_address_id && (
+              <div style={{ marginTop: "15px", marginBottom: "15px", padding: "12px", backgroundColor: "#fee", border: "1px solid #fcc", borderRadius: "6px", fontSize: "14px", color: "#c33" }}>
+                {orderErrors.delivery_address_id[0]}
+              </div>
+            )}
+            {orderErrors.invoice_address_id && (
+              <div style={{ marginTop: "15px", marginBottom: "15px", padding: "12px", backgroundColor: "#fee", border: "1px solid #fcc", borderRadius: "6px", fontSize: "14px", color: "#c33" }}>
+                {orderErrors.invoice_address_id[0]}
+              </div>
+            )}
           </div>
-          <button className="tf-btn radius-3 btn-fill btn-icon animate-hover-btn justify-content-center">
-            Sipariş Ver
+          <button 
+            type="button"
+            onClick={onSubmitOrder}
+            disabled={isSubmitting}
+            className="tf-btn radius-3 btn-fill btn-icon animate-hover-btn justify-content-center"
+            style={{
+              opacity: isSubmitting ? 0.6 : 1,
+              cursor: isSubmitting ? "not-allowed" : "pointer",
+            }}
+          >
+            {isSubmitting ? "Gönderiliyor..." : "Sipariş Ver"}
           </button>
         </form>
       </div>

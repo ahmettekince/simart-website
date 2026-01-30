@@ -33,7 +33,7 @@ export default function MobileMenu({ menuItems: initialMenuItems = [] }) {
     if (initialMenuItems.length === 0) {
       const fetchMenu = async () => {
         try {
-          const response = await apiClient.get("/menus?type=header-menu");
+          const response = await apiClient.post("/menus", { type: "header-menu" });
           if (response.data?.status === "success" && Array.isArray(response.data.data?.items)) {
             setMenuItems(response.data.data.items);
           } else {

@@ -91,12 +91,10 @@ export default function Login() {
     }
 
     try {
-      // Query parametreleri ile POST isteği gönder
-      const response = await apiClient.post("/customer/login", null, {
-        params: {
-          email: loginData.email,
-          password: loginData.password,
-        },
+      // Body ile POST isteği gönder
+      const response = await apiClient.post("/customer/login", {
+        email: loginData.email,
+        password: loginData.password,
       });
 
       if (response.data?.status === "success") {
