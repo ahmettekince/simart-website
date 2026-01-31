@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import Image from "next/image";
+import { decodeHtmlEntities } from "@/utils/stripHtml";
 
 const SORT_OPTIONS = [
   { value: "default", label: "Varsayılan" },
@@ -409,7 +410,7 @@ export default function ShopDetailsTab({ product }) {
                 {product?.description && (
                   <div
                     className="product-description-text"
-                    dangerouslySetInnerHTML={{ __html: product.description }}
+                    dangerouslySetInnerHTML={{ __html: decodeHtmlEntities(product.description) }}
                   />
                 )}
               </div>
