@@ -24,7 +24,7 @@ export default function AccountEdit() {
   useEffect(() => {
     const fetchCustomerData = async () => {
       try {
-        const response = await apiClient.post("/customer/me", {});
+        const response = await apiClient.get("/customer/me");
         if (response.data?.status === "success" && response.data?.data?.customer) {
           const customer = response.data.data.customer;
           setCustomerData({

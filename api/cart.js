@@ -373,6 +373,28 @@ export async function getCartRecommendations() {
 }
 
 /**
+ * Sepeti tamamen temizler (Client-side)
+ * @returns {Promise<boolean>} Başarılı mı?
+ */
+export async function clearCart() {
+    try {
+        log("[API cart.js] clearCart - İstek gönderiliyor: DELETE /cart");
+        const response = await apiClient.delete("/cart");
+
+        if (response?.data?.status === "success") {
+            log("[API cart.js] clearCart - Başarılı");
+            return true;
+        }
+
+        log("[API cart.js] clearCart failed:", response?.data);
+        return false;
+    } catch (error) {
+        log("[API cart.js] clearCart error:", error.message);
+        return false;
+    }
+}
+
+/**
  * Kupon kodunu sepete uygular (Client-side)
  * @param {string} couponCode - Kupon kodu
  * @returns {Promise<Object|null>} Güncel sepet verisi veya null
@@ -417,6 +439,9 @@ export async function applyCoupon(couponCode) {
         return null;
     } catch (error) {
         if (error.response) {
+            // 400 gibi hata durumlarında dönen cevabı direkt consola bas
+            console.log("❌ Kupon Uygulama Hatası (400/500):", error.response.data);
+            
             log("[API cart.js] applyCoupon error response:", {
                 status: error.response.status,
                 statusText: error.response.statusText,

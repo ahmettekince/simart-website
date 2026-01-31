@@ -8,6 +8,7 @@ import { useRef, useEffect, useState, useMemo } from "react";
 import { log } from "@/utils/logger";
 import CartRecommendations from "./CartRecommendations";
 import Quantity from "@/components/shopDetails/Quantity";
+import { calculateCartTotals } from "@/utils/cartTotals";
 
 const ORDER_NOTE_KEY = "cart_order_note";
 
@@ -26,45 +27,7 @@ export default function ShopCart() {
 
   // Totals hesaplamasını useMemo ile memoize et
   const cartTotals = useMemo(() => {
-    if (totals && totals.total !== null && totals.total !== undefined) {
-      // API'den gelen totals kullan
-      const subtotal = totals.subtotal || 0;
-      const customDiscountAmount = totals.custom_discount_amount || 0;
-      const campaignDiscountAmount = totals.campaign_discount_amount || 0;
-      const couponDiscountAmount = totals.coupon_discount_amount || 0;
-      const discount = totals.discountAmount || totals.discount_amount || 0;
-      const total = totals.total || 0;
-
-      return {
-        subtotal,
-        customDiscountAmount,
-        campaignDiscountAmount,
-        couponDiscountAmount,
-        discount,
-        total,
-        hasAnyDiscount: customDiscountAmount > 0 || campaignDiscountAmount > 0 || couponDiscountAmount > 0 || discount > 0
-      };
-    }
-    // Fallback: local hesaplama (API'den totals gelmemişse)
-    const subtotal = items.reduce((total, item) => {
-      const itemPrice = item.price || 0;
-      return total + itemPrice * item.quantity;
-    }, 0);
-
-    const discountedTotal = items.reduce((total, item) => {
-      const itemPrice = item.discount_price || item.price || 0;
-      return total + itemPrice * item.quantity;
-    }, 0);
-
-    const discount = subtotal - discountedTotal;
-
-    return {
-      subtotal: subtotal,
-      customDiscountAmount: 0,
-      discount: discount > 0 ? discount : 0,
-      total: discountedTotal,
-      hasAnyDiscount: discount > 0
-    };
+    return calculateCartTotals(totals, items);
   }, [totals, items]);
 
   // Hangi ürünün hangi action'da loading olduğunu takip et: { itemId: 'increase' | 'decrease' | 'remove' | null }
@@ -139,6 +102,10 @@ export default function ShopCart() {
         setCouponError("Kupon kodu geçersiz veya kullanılamıyor.");
       }
     } catch (error) {
+      // 400/500 hatası durumunda dönen detayı consola bas
+      if (error.response) {
+        console.log("❌ ShopCart Kupon Hatası Detayı:", error.response.data);
+      }
       setCouponError("Kupon uygulanırken bir hata oluştu.");
       log("Kupon uygulama hatası:", error);
     } finally {
@@ -165,12 +132,128 @@ export default function ShopCart() {
     }
   };
 
+  const [isClearingCart, setIsClearingCart] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+
+  const handleClearCart = async () => {
+    if (isClearingCart || items.length === 0) return;
+    setShowClearConfirm(true);
+  };
+
+  const confirmClearCart = async () => {
+    setShowClearConfirm(false);
+    setIsClearingCart(true);
+    try {
+      const { clearCart: clearFn } = useCartStore.getState();
+      await clearFn();
+    } catch (error) {
+      console.error("Sepet temizleme hatası:", error);
+    } finally {
+      setIsClearingCart(false);
+    }
+  };
+
   return (
     <div className="modal fullRight fade modal-shopping-cart" id="shoppingCart">
+      {/* Ekranın Ortasında Onay Dialogu */}
+      {showClearConfirm && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100vw',
+          height: '100vh',
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10000,
+          backdropFilter: 'blur(2px)',
+        }}>
+          <div style={{
+            width: '90%',
+            maxWidth: '320px',
+            backgroundColor: '#fff',
+            borderRadius: '16px',
+            padding: '30px 25px',
+            textAlign: 'center',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+            animation: 'fadeInScale 0.2s ease-out'
+          }}>
+            <style>{`
+              @keyframes fadeInScale {
+                from { opacity: 0; transform: scale(0.9); }
+                to { opacity: 1; transform: scale(1); }
+              }
+            `}</style>
+            <div style={{ fontSize: '18px', marginBottom: '10px', color: '#333', fontWeight: '700' }}>
+              Sepeti Boşalt?
+            </div>
+            <div style={{ fontSize: '14px', marginBottom: '25px', color: '#666', lineHeight: '1.5' }}>
+              Sepetinizdeki tüm ürünleri silmek istediğinize emin misiniz?
+            </div>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={confirmClearCart}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  backgroundColor: '#dc3545',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '10px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#bb2d3b'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#dc3545'}
+              >
+                Evet, Sil
+              </button>
+              <button
+                onClick={() => setShowClearConfirm(false)}
+                style={{
+                  flex: 1,
+                  padding: '12px',
+                  backgroundColor: '#f5f5f5',
+                  color: '#333',
+                  border: 'none',
+                  borderRadius: '10px',
+                  fontSize: '14px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+              >
+                Vazgeç
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="modal-dialog">
         <div className="modal-content">
           <div className="header">
-            <div className="title fw-5">Sepet</div>
+            <div className="title fw-5">
+              Sepet
+              {items.length > 0 && (
+                <span
+                  onClick={handleClearCart}
+                  style={{
+                    fontSize: '12px',
+                    color: isClearingCart ? '#ccc' : '#dc3545',
+                    textDecoration: 'underline',
+                    cursor: isClearingCart ? 'not-allowed' : 'pointer',
+                    marginLeft: '15px',
+                    fontWeight: '400'
+                  }}
+                >
+                  {isClearingCart ? 'Temizleniyor...' : 'Sepeti Temizle'}
+                </span>
+              )}
+            </div>
             <span className="icon-close icon-close-popup" data-bs-dismiss="modal" />
           </div>
           <div className="wrap">
@@ -694,7 +777,7 @@ export default function ShopCart() {
                               padding: "6px 10px",
                               border: couponError ? "1px solid #dc3545" : couponSuccess ? "1px solid #0bc15c" : "1px solid #e5e5e5",
                               borderRadius: "6px",
-                              fontSize: "14px",
+                              fontSize: "16px",
                               height: "36px",
                             }}
                             disabled={isApplyingCoupon}

@@ -221,29 +221,34 @@ export default function Details9({ product }) {
     if (isAdding || showSuccess) return;
 
     // Quantity state'inden miktarı al
-    const qtyToAdd = quantity;
+    let qtyToAdd = quantity;
 
-    // Min kontrolü
+    // Min/Max kontrolü (alert vermeden sessizce sınırla)
     if (qtyToAdd < minQuantity) {
-      alert(`Minimum sipariş miktarı ${minQuantity} adettir.`);
-      return;
+      qtyToAdd = minQuantity;
+    }
+    
+    // Global max veya ürün max'ı hangisi küçükse ona göre sınırla
+    const GLOBAL_MAX = 999;
+    const effectiveMaxLimit = maxQuantity === null || maxQuantity === 0 ? GLOBAL_MAX : Math.min(maxQuantity, GLOBAL_MAX);
+    
+    if (qtyToAdd > effectiveMaxLimit) {
+      qtyToAdd = effectiveMaxLimit;
     }
 
-    // Max kontrolü (sadece maxQuantity 0 değilse kontrol et, 0 ise sınırsız)
-    if (maxQuantity !== null && maxQuantity !== undefined && maxQuantity > 0 && qtyToAdd > maxQuantity) {
-      alert(`Maksimum sipariş miktarı ${maxQuantity} adettir.`);
-      return;
-    }
-
-    // Sepetteki mevcut miktarı kontrol et (sadece maxQuantity 0 değilse kontrol et)
-    if (maxQuantity !== null && maxQuantity !== undefined && maxQuantity > 0) {
+    // Sepetteki mevcut miktarı kontrol et
+    if (effectiveMaxLimit > 0) {
       const currentQtyInCart = existingCartItem?.quantity || 0;
-      const totalQty = currentQtyInCart + qtyToAdd;
-
-      // Toplam miktar max'ı aşıyorsa uyar
-      if (totalQty > maxQuantity) {
-        alert(`Sepetinizde zaten ${currentQtyInCart} adet var. Toplam miktar maksimum ${maxQuantity} adeti geçemez.`);
+      
+      // Eğer zaten sınırdaysa ekleme yapma
+      if (currentQtyInCart >= effectiveMaxLimit) {
+        // Belki burada buton metnini "Maksimum Miktar" gibi bir şeye çevirebilirsin ama şimdilik sessizce durduruyoruz
         return;
+      }
+
+      // Toplam miktar max'ı aşıyorsa, sadece max'a tamamlayacak kadar ekle
+      if (currentQtyInCart + qtyToAdd > effectiveMaxLimit) {
+        qtyToAdd = effectiveMaxLimit - currentQtyInCart;
       }
     }
 
@@ -284,12 +289,12 @@ export default function Details9({ product }) {
                   </div>
 
                   {/* Rating gösterimi - Sadece yorum varsa göster */}
-                  {((product.reviews_count || product.review_count) > 0) && (product.rating || product.average_rating) && (product.rating > 0 || product.average_rating > 0) && (
+                  {((product.reviews?.count || product.reviews_count || product.review_count) > 0) && (product.reviews?.average_rating || product.rating || product.average_rating) && (product.reviews?.average_rating > 0 || product.rating > 0 || product.average_rating > 0) && (
                     <div className="tf-product-info-rating" style={{ marginBottom: "12px", display: "flex", alignItems: "center", gap: "8px" }}>
-                      <span style={{ fontSize: "14px", fontWeight: "600" }}>{(product.rating || product.average_rating || 0).toFixed(1)}</span>
+                      <span style={{ fontSize: "14px", fontWeight: "600" }}>{(product.reviews?.average_rating || product.rating || product.average_rating || 0).toFixed(1)}</span>
                       <div className="stars-box" style={{ display: "flex", gap: "2px" }}>
                         {[...Array(5)].map((_, i) => {
-                          const rating = product.rating || product.average_rating || 0;
+                          const rating = product.reviews?.average_rating || product.rating || product.average_rating || 0;
                           const starValue = i + 1;
                           const fillPercentage = Math.max(0, Math.min(100, ((rating - i) * 100)));
                           const isFilled = rating >= starValue;
@@ -317,8 +322,8 @@ export default function Details9({ product }) {
                         })}
                       </div>
 
-                      {(product.reviews_count || product.review_count) > 0 && (
-                        <span style={{ fontSize: "13px", color: "#888" }}><b style={{ fontWeight: "600", color: "#777" }}>{product.reviews_count || product.review_count} </b> Değerlendirme </span>
+                      {(product.reviews?.count || product.reviews_count || product.review_count) > 0 && (
+                        <span style={{ fontSize: "13px", color: "#888" }}><b style={{ fontWeight: "600", color: "#777" }}>{product.reviews?.count || product.reviews_count || product.review_count} </b> Değerlendirme </span>
                       )}
                     </div>
                   )}

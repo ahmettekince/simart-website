@@ -4,9 +4,28 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useCartStore } from "@/stores/cartStore";
 
-const ORDER_NOTE_KEY = "cart_order_note";
+const GIFT_NOTE_KEY = "cart_gift_note";
 
-export default function OrderSummary({ items, cartTotals, onSubmitOrder, isSubmitting = false, orderErrors = {}, orderErrorMessage = "", onOrderNoteChange }) {
+export default function OrderSummary({ 
+  items, 
+  cartTotals, 
+  onSubmitOrder, 
+  isSubmitting = false, 
+  orderErrors = {}, 
+  orderErrorMessage = "", 
+  onOrderNoteChange, 
+  onGiftNoteChange, 
+  onShowOrderNoteChange, 
+  onShowGiftNoteChange,
+  // Sözleşme onayı
+  acceptedAgreements,
+  onAcceptedAgreementsChange,
+  buttonText = "Sipariş Ver",
+  showNotes = true,
+  showAgreements = true,
+  showProductList = true,
+  title = "Sipariş Bilgileri"
+}) {
   const [couponCode, setCouponCode] = useState("");
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   const [isRemovingCoupon, setIsRemovingCoupon] = useState(false);
@@ -14,35 +33,33 @@ export default function OrderSummary({ items, cartTotals, onSubmitOrder, isSubmi
   const [couponSuccess, setCouponSuccess] = useState(false);
   const [showOrderNote, setShowOrderNote] = useState(false);
   const [orderNote, setOrderNote] = useState("");
+  const [showGiftNote, setShowGiftNote] = useState(false);
+  const [giftNote, setGiftNote] = useState("");
   const { applyCoupon, removeCoupon } = useCartStore();
   const coupon = useCartStore((state) => state.coupon);
 
-  // Sayfa yüklendiğinde localStorage'dan sipariş notunu oku
+  // Sayfa yüklendiğinde localStorage'dan hediye notunu oku (sipariş notu localStorage'dan okunmayacak)
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const savedNote = localStorage.getItem(ORDER_NOTE_KEY);
-      if (savedNote) {
-        setOrderNote(savedNote);
-        setShowOrderNote(true);
-        if (onOrderNoteChange) {
-          onOrderNoteChange(savedNote);
+      const savedGiftNote = localStorage.getItem(GIFT_NOTE_KEY);
+      if (savedGiftNote) {
+        setGiftNote(savedGiftNote);
+        setShowGiftNote(true);
+        if (onGiftNoteChange) {
+          onGiftNoteChange(savedGiftNote);
+        }
+        if (onShowGiftNoteChange) {
+          onShowGiftNoteChange(true);
         }
       }
     }
-  }, [onOrderNoteChange]);
+  }, [onGiftNoteChange, onShowGiftNoteChange]);
 
-  // Sipariş notu değiştiğinde parent component'e bildir ve localStorage'a kaydet
+  // Sipariş notu değiştiğinde parent component'e bildir (localStorage'a kaydetme)
   const handleOrderNoteChange = (value) => {
     setOrderNote(value);
     if (onOrderNoteChange) {
       onOrderNoteChange(value);
-    }
-    if (typeof window !== "undefined") {
-      if (value && value.trim()) {
-        localStorage.setItem(ORDER_NOTE_KEY, value);
-      } else {
-        localStorage.removeItem(ORDER_NOTE_KEY);
-      }
     }
   };
 
@@ -50,9 +67,42 @@ export default function OrderSummary({ items, cartTotals, onSubmitOrder, isSubmi
   const handleShowOrderNoteChange = (e) => {
     const checked = e.target.checked;
     setShowOrderNote(checked);
+    // Parent component'e checkbox durumunu bildir
+    if (onShowOrderNoteChange) {
+      onShowOrderNoteChange(checked);
+    }
     if (!checked) {
       // Checkbox kapatıldığında notu temizle
       handleOrderNoteChange("");
+    }
+  };
+
+  // Hediye notu değiştiğinde parent component'e bildir ve localStorage'a kaydet
+  const handleGiftNoteChange = (value) => {
+    setGiftNote(value);
+    if (onGiftNoteChange) {
+      onGiftNoteChange(value);
+    }
+    if (typeof window !== "undefined") {
+      if (value && value.trim()) {
+        localStorage.setItem(GIFT_NOTE_KEY, value);
+      } else {
+        localStorage.removeItem(GIFT_NOTE_KEY);
+      }
+    }
+  };
+
+  // Hediye notu checkbox değiştiğinde
+  const handleShowGiftNoteChange = (e) => {
+    const checked = e.target.checked;
+    setShowGiftNote(checked);
+    // Parent component'e checkbox durumunu bildir
+    if (onShowGiftNoteChange) {
+      onShowGiftNoteChange(checked);
+    }
+    if (!checked) {
+      // Checkbox kapatıldığında notu temizle
+      handleGiftNoteChange("");
     }
   };
 
@@ -109,48 +159,50 @@ export default function OrderSummary({ items, cartTotals, onSubmitOrder, isSubmi
   return (
     <div className="tf-page-cart-footer">
       <div className="tf-cart-footer-inner">
-        <h5 className="fw-5 mb_20">Sipariş Bilgileri</h5>
+        <h5 className="fw-5 mb_20">{title}</h5>
         <form onSubmit={(e) => e.preventDefault()} className="tf-page-cart-checkout widget-wrap-checkout">
-          <ul className="wrap-checkout-product">
-            {items.map((item, i) => {
-              // Kategori slug'ını al
-              const categorySlug =
-                item.product?.categories?.[0]?.slug || item.product?.primary_category?.slug || "urunler";
-              const productSlug = item.slug || item.id;
-              const productUrl = `/magaza/${categorySlug}/${productSlug}`;
+          {showProductList && (
+            <ul className="wrap-checkout-product">
+              {items.map((item, i) => {
+                // Kategori slug'ını al
+                const categorySlug =
+                  item.product?.categories?.[0]?.slug || item.product?.primary_category?.slug || "urunler";
+                const productSlug = item.slug || item.id;
+                const productUrl = `/magaza/${categorySlug}/${productSlug}`;
 
-              // Görsel URL'i al
-              const imageUrl =
-                item.image ||
-                item.product?.cover_image?.url ||
-                item.product?.images?.[0] ||
-                "/images/placeholder.jpg";
+                // Görsel URL'i al
+                const imageUrl =
+                  item.image ||
+                  item.product?.cover_image?.url ||
+                  item.product?.images?.[0] ||
+                  "/images/placeholder.jpg";
 
-              // Fiyat hesapla (indirimli fiyat varsa onu kullan)
-              const itemPrice = item.discount_price || item.price || 0;
-              const itemTotal = itemPrice * item.quantity;
+                // Fiyat hesapla (indirimli fiyat varsa onu kullan)
+                const itemPrice = item.discount_price || item.price || 0;
+                const itemTotal = itemPrice * item.quantity;
 
-              return (
-                <li key={i} className="checkout-product-item">
-                  <figure className="img-product">
-                    <Link href={productUrl}>
-                      <Image alt={item.name || "Ürün"} src={imageUrl} width={720} height={1005} />
-                    </Link>
-                    <span className="quantity">{item.quantity}</span>
-                  </figure>
-                  <div className="content">
-                    <div className="info">
-                      <Link href={productUrl} className="name">
-                        {item.name}
+                return (
+                  <li key={i} className="checkout-product-item">
+                    <figure className="img-product">
+                      <Link href={productUrl}>
+                        <Image alt={item.name || "Ürün"} src={imageUrl} width={720} height={1005} />
                       </Link>
+                      <span className="quantity">{item.quantity}</span>
+                    </figure>
+                    <div className="content">
+                      <div className="info">
+                        <Link href={productUrl} className="name">
+                          {item.name}
+                        </Link>
+                      </div>
+                      <span className="price">₺{itemTotal.toLocaleString("tr-TR")}</span>
                     </div>
-                    <span className="price">₺{itemTotal.toLocaleString("tr-TR")}</span>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-          {!items.length && (
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+          {!items.length && showProductList && (
             <div className="container">
               <div className="row align-items-center mt-5 mb-5">
                 <div className="col-12 fs-18">Sepetiniz boş</div>
@@ -226,110 +278,176 @@ export default function OrderSummary({ items, cartTotals, onSubmitOrder, isSubmi
               )}
             </div>
           )}
-          <div className="d-flex justify-content-between line pb_10">
-            <h6 className="fw-5" style={{ fontSize: "14px" }}>
-              Ara Toplam
-            </h6>
-            <h6 className="fw-5" style={{ fontSize: "14px" }}>
-              ₺{cartTotals.subtotal.toLocaleString("tr-TR")}
-            </h6>
-          </div>
-          {cartTotals.couponDiscountAmount > 0 && coupon && coupon.code && (
-            <div className="d-flex justify-content-between line pb_10">
-              <h6 className="fw-5" style={{ fontSize: "14px", display: "flex", alignItems: "center", gap: "8px" }}>
-                <span>Kupon İndirimi</span>
-                {coupon.code && (
-                  <span style={{ fontWeight: "600", color: "#333" }}>({coupon.code})</span>
-                )}
-                <button
-                  type="button"
-                  onClick={handleRemoveCoupon}
-                  disabled={isRemovingCoupon}
-                  style={{
-                    fontSize: "12px",
-                    color: "#dc3545",
-                    background: "none",
-                    border: "none",
-                    cursor: isRemovingCoupon ? "not-allowed" : "pointer",
-                    padding: "2px 4px",
-                    opacity: isRemovingCoupon ? 0.5 : 1,
-                    textDecoration: "underline",
-                    fontWeight: "600",
-                  }}
-                >
-                  {isRemovingCoupon ? "Kaldırılıyor..." : "Kaldır"}
-                </button>
-              </h6>
-              <h6 className="fw-5" style={{ fontSize: "14px", color: "#0bc15c" }}>
-                -₺{cartTotals.couponDiscountAmount.toLocaleString("tr-TR")}
-              </h6>
-            </div>
-          )}
-          {cartTotals.discount > 0 && cartTotals.couponDiscountAmount === 0 && (
-            <div className="d-flex justify-content-between line pb_10">
-              <h6 className="fw-5" style={{ fontSize: "14px" }}>
-                İndirim
-              </h6>
-              <h6 className="fw-5" style={{ fontSize: "14px" }}>
-                -₺{cartTotals.discount.toLocaleString("tr-TR")}
-              </h6>
-            </div>
-          )}
-          <div className="d-flex justify-content-between line pb_20">
-            <h6 className="fw-5">Toplam</h6>
-            <h6 className="total fw-5">₺{cartTotals.total.toLocaleString("tr-TR")}</h6>
-          </div>
-          {/* Sipariş Notu - Checkbox ile kontrol edilebilir */}
-          <div style={{ marginTop: "20px", paddingTop: "20px", borderTop: "1px solid #e5e5e5" }}>
-            <div className="box-checkbox fieldset-radio mb_20">
-              <input 
-                type="checkbox" 
-                id="show-order-note" 
-                className="tf-check" 
-                checked={showOrderNote}
-                onChange={handleShowOrderNoteChange}
-              />
-              <label htmlFor="show-order-note" className="text_black-2">
-                Sipariş notu eklemek istiyorum (isteğe bağlı)
-              </label>
-            </div>
-            {showOrderNote && (
-              <div style={{ marginTop: "10px" }}>
-                <textarea
-                  id="order-note"
-                  value={orderNote}
-                  onChange={(e) => handleOrderNoteChange(e.target.value)}
-                  placeholder="Siparişinizle ilgili özel bir notunuz varsa buraya yazabilirsiniz..."
-                  style={{
-                    width: "100%",
-                    minHeight: "80px",
-                    padding: "10px",
-                    border: "1px solid #e5e5e5",
-                    borderRadius: "6px",
-                    fontSize: "14px",
-                    fontFamily: "inherit",
-                    resize: "vertical",
-                  }}
-                />
+          {/* Fiyatlar Container - Cart modal'daki gibi gap kullanarak spacing */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            {/* Ara Toplam - Sadece indirim varsa göster */}
+            {cartTotals.subtotal > 0 && cartTotals.hasAnyDiscount && (
+              <div className="d-flex justify-content-between">
+                <h6 className="fw-5" style={{ fontSize: "14px" }}>
+                  Ara Toplam
+                </h6>
+                <h6 className="fw-5" style={{ fontSize: "14px" }}>
+                  ₺{cartTotals.subtotal.toLocaleString("tr-TR")}
+                </h6>
+              </div>
+            )}
+
+            {/* İndirimler Section - Sadece indirim varsa göster */}
+            {cartTotals.customDiscountAmount > 0 && (
+              <div className="d-flex justify-content-between">
+                <h6 className="fw-5" style={{ fontSize: "14px" }}>
+                  Size Özel İndirim
+                </h6>
+                <h6 className="fw-5" style={{ fontSize: "14px", color: "#0bc15c" }}>
+                  -₺{cartTotals.customDiscountAmount.toLocaleString("tr-TR")}
+                </h6>
+              </div>
+            )}
+            {cartTotals.campaignDiscountAmount > 0 && (
+              <div className="d-flex justify-content-between">
+                <h6 className="fw-5" style={{ fontSize: "14px" }}>
+                  Kampanya İndirimi
+                </h6>
+                <h6 className="fw-5" style={{ fontSize: "14px", color: "#0bc15c" }}>
+                  -₺{cartTotals.campaignDiscountAmount.toLocaleString("tr-TR")}
+                </h6>
+              </div>
+            )}
+            {cartTotals.couponDiscountAmount > 0 && coupon && coupon.code && (
+              <div className="d-flex justify-content-between">
+                <h6 className="fw-5" style={{ fontSize: "14px", display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span>Kupon İndirimi:</span>
+                  {coupon.code && (
+                    <span style={{ fontWeight: "600", color: "#333" }}>{coupon.code}</span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleRemoveCoupon}
+                    disabled={isRemovingCoupon}
+                    style={{
+                      fontSize: "12px",
+                      color: "#dc3545",
+                      background: "none",
+                      border: "none",
+                      cursor: isRemovingCoupon ? "not-allowed" : "pointer",
+                      padding: "2px 4px",
+                      opacity: isRemovingCoupon ? 0.5 : 1,
+                      textDecoration: "underline",
+                      fontWeight: "600",
+                    }}
+                  >
+                    {isRemovingCoupon ? "Kaldırılıyor..." : "Kaldır"}
+                  </button>
+                </h6>
+                <h6 className="fw-5" style={{ fontSize: "14px", color: "#0bc15c" }}>
+                  -₺{cartTotals.couponDiscountAmount.toLocaleString("tr-TR")}
+                </h6>
               </div>
             )}
           </div>
-          <div className="wd-check-payment" style={{ marginTop: "30px", paddingTop: "30px", borderTop: "1px solid #e5e5e5" }}>
-            <p className="text_black-2 mb_20">
-              Kişisel verileriniz siparişinizi işlemek için kullanılacak, bu web sitesinde deneyiminizi
-              desteklemek ve diğer amaçlar için kullanılacaktır.
-            </p>
-            <div className="box-checkbox fieldset-radio mb_20">
-              <input required type="checkbox" id="check-agree" className="tf-check" />
-              <label htmlFor="check-agree" className="text_black-2">
-                <Link href={`/terms-conditions`}>Şartları ve Koşulları</Link> kabul ediyorum
-              </label>
-              {orderErrors.terms_accepted && (
-                <div style={{ marginTop: "8px", fontSize: "12px", color: "#dc3545" }}>
-                  {orderErrors.terms_accepted[0]}
+
+          <div className="d-flex justify-content-between" style={{ borderTop: "1px solid #e5e5e5", paddingTop: "10px", marginTop: "10px" }}>
+            <h6 className="fw-5" style={{ fontSize: "18px" }}>Toplam</h6>
+            <h6 className="total fw-5" style={{ fontSize: "18px" }}>₺{cartTotals.total.toLocaleString("tr-TR")}</h6>
+          </div>
+          {/* Sipariş Notu - Checkbox ile kontrol edilebilir */}
+
+          {showNotes && (
+            <>
+              <div className="box-checkbox fieldset-radio " style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <input
+                  type="checkbox"
+                  id="show-order-note"
+                  className="tf-check"
+                  checked={showOrderNote}
+                  onChange={handleShowOrderNoteChange}
+                  style={{ flexShrink: 0 }}
+                />
+                <label htmlFor="show-order-note" className="text_black-2" >
+                  Sipariş notu eklemek istiyorum (isteğe bağlı)
+                </label>
+              </div>
+              {showOrderNote && (
+                <div>
+                  <textarea
+                    id="order-note"
+                    value={orderNote}
+                    onChange={(e) => handleOrderNoteChange(e.target.value)}
+                    placeholder="Siparişinizle ilgili özel bir notunuz varsa buraya yazabilirsiniz..."
+                    style={{
+                      width: "100%",
+                      minHeight: "80px",
+                      padding: "10px",
+                      border: "1px solid #e5e5e5",
+                      borderRadius: "6px",
+                      fontSize: "14px",
+                      fontFamily: "inherit",
+                      resize: "vertical",
+                    }}
+                  />
                 </div>
               )}
-            </div>
+
+              {/* Hediye Notu - Checkbox ile kontrol edilebilir */}
+
+              <div className="box-checkbox fieldset-radio" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <input
+                  type="checkbox"
+                  id="show-gift-note"
+                  className="tf-check"
+                  checked={showGiftNote}
+                  onChange={handleShowGiftNoteChange}
+                  style={{ flexShrink: 0 }}
+                />
+                <label htmlFor="show-gift-note" className="text_black-2" style={{ margin: 0, padding: 0 }}>
+                  Hediye notu eklemek istiyorum (isteğe bağlı)
+                </label>
+              </div>
+              {showGiftNote && (
+                <div>
+                  <textarea
+                    id="gift-note"
+                    value={giftNote}
+                    onChange={(e) => handleGiftNoteChange(e.target.value)}
+                    placeholder="Hediye paketi için özel bir notunuz varsa buraya yazabilirsiniz..."
+                    style={{
+                      width: "100%",
+                      minHeight: "40px",
+                      padding: "10px",
+                      border: "1px solid #e5e5e5",
+                      borderRadius: "6px",
+                      fontSize: "14px",
+                      fontFamily: "inherit",
+                      resize: "vertical",
+                    }}
+                  />
+                </div>
+              )}
+            </>
+          )}
+          <div className="wd-check-payment" style={{ marginTop: "30px", paddingTop: "30px", borderTop: "1px solid #e5e5e5" }}>
+            {showAgreements && (
+              <div className="box-checkbox fieldset-radio mb_20">
+                <input 
+                  type="checkbox" 
+                  id="check-agreements" 
+                  className="tf-check" 
+                  checked={acceptedAgreements}
+                  onChange={(e) => onAcceptedAgreementsChange(e.target.checked)}
+                />
+                <label htmlFor="check-agreements" className="text_black-2">
+                  <Link href="/gizlilik-politikasi" target="_blank" style={{ textDecoration: "underline" }}>Gizlilik Politikasını</Link>,{" "}
+                  <Link href="/sartlar-ve-kosullar" target="_blank" style={{ textDecoration: "underline" }}>Şartlar ve Koşulları</Link> ve{" "}
+                  <Link href="/iade-politikasi" target="_blank" style={{ textDecoration: "underline" }}>İade ve Geri Ödeme Politikasını</Link> okudum, kabul ediyorum.
+                </label>
+                {orderErrors.agreements_accepted && (
+                  <div style={{ marginTop: "8px", fontSize: "12px", color: "#dc3545" }}>
+                    {orderErrors.agreements_accepted[0]}
+                  </div>
+                )}
+              </div>
+            )}
+
             {orderErrors.uzak_satis_sozlesmesi_accepted && (
               <div style={{ marginTop: "-15px", marginBottom: "15px", fontSize: "12px", color: "#dc3545" }}>
                 {orderErrors.uzak_satis_sozlesmesi_accepted[0]}
@@ -350,8 +468,18 @@ export default function OrderSummary({ items, cartTotals, onSubmitOrder, isSubmi
                 {orderErrors.invoice_address_id[0]}
               </div>
             )}
+            {orderErrors.card_holder_name && (
+              <div style={{ marginTop: "15px", marginBottom: "15px", padding: "12px", backgroundColor: "#fee", border: "1px solid #fcc", borderRadius: "6px", fontSize: "14px", color: "#c33" }}>
+                {orderErrors.card_holder_name[0]}
+              </div>
+            )}
+            {orderErrors.card_number && (
+              <div style={{ marginTop: "15px", marginBottom: "15px", padding: "12px", backgroundColor: "#fee", border: "1px solid #fcc", borderRadius: "6px", fontSize: "14px", color: "#c33" }}>
+                {orderErrors.card_number[0]}
+              </div>
+            )}
           </div>
-          <button 
+          <button
             type="button"
             onClick={onSubmitOrder}
             disabled={isSubmitting}
@@ -361,10 +489,10 @@ export default function OrderSummary({ items, cartTotals, onSubmitOrder, isSubmi
               cursor: isSubmitting ? "not-allowed" : "pointer",
             }}
           >
-            {isSubmitting ? "Gönderiliyor..." : "Sipariş Ver"}
+            {isSubmitting ? "Gönderiliyor..." : buttonText}
           </button>
         </form>
-      </div>
-    </div>
+      </div >
+    </div >
   );
 }

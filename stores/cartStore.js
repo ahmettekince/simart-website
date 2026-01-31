@@ -5,7 +5,7 @@
 
 import { create } from 'zustand';
 import { openCartModal } from '@/utils/openCartModal';
-import { addToCart as addToCartAPI, removeFromCart as removeFromCartAPI, decreaseCartQuantity as decreaseCartQuantityAPI, updateCartQuantity as updateCartQuantityAPI, getCart, applyCoupon as applyCouponAPI, removeCoupon as removeCouponAPI } from '@/api/cart';
+import { addToCart as addToCartAPI, removeFromCart as removeFromCartAPI, decreaseCartQuantity as decreaseCartQuantityAPI, updateCartQuantity as updateCartQuantityAPI, getCart, applyCoupon as applyCouponAPI, removeCoupon as removeCouponAPI, clearCart as clearCartAPI } from '@/api/cart';
 import { log } from '@/utils/logger';
 
 /**
@@ -233,19 +233,39 @@ export const useCartStore = create(
         },
 
         /**
-         * Sepeti tamamen temizle
+         * Sepeti tamamen temizle (API ile senkronize)
          */
-        clearCart: () => {
-            set({
-                items: [],
-                cartId: null,
-                deviceId: null,
-                totals: null,
-                isSynced: false
-            });
-            // Sipariş notunu localStorage'dan da temizle
-            if (typeof window !== 'undefined') {
-                localStorage.removeItem('cart_order_note');
+        clearCart: async () => {
+            try {
+                // API'ye istek at
+                const success = await clearCartAPI();
+                
+                if (success) {
+                    set({
+                        items: [],
+                        cartId: null,
+                        deviceId: null,
+                        totals: null,
+                        applied_campaigns: [],
+                        coupon: null,
+                        isSynced: true
+                    });
+                    
+                    // Sipariş notunu localStorage'dan da temizle
+                    if (typeof window !== 'undefined') {
+                        localStorage.removeItem('cart_order_note');
+                        localStorage.removeItem('cart_gift_note');
+                    }
+                    
+                    log('[CartStore] clearCart - Store cleared and synced with API');
+                    return true;
+                }
+                
+                log('[CartStore] clearCart - API failed');
+                return false;
+            } catch (error) {
+                log('[CartStore] clearCart error:', error);
+                return false;
             }
         },
 

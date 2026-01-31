@@ -2,11 +2,11 @@
 import { faqs1 } from "@/data/faqs";
 import React, { useEffect, useRef, useState } from "react";
 
-export default function Accordion({ faqs = faqs1 }) {
+export default function Accordion({ faqs = faqs1, initialIndex = -1 }) {
   const parentRefs = useRef([]);
   const questionRefs = useRef([]);
   const answerRefs = useRef([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(initialIndex);
   useEffect(() => {
     questionRefs.current.forEach((el) => {
       el.classList.remove("active");
@@ -54,7 +54,7 @@ export default function Accordion({ faqs = faqs1 }) {
             style={{ display: "block" }}
             ref={(el) => (answerRefs.current[index] = el)}
           >
-            <p>{toggle.content}</p>
+            <div dangerouslySetInnerHTML={{ __html: toggle.content }} />
           </div>
         </div>
       ))}

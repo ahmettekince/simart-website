@@ -99,7 +99,13 @@ export default function Login() {
 
       if (response.data?.status === "success") {
         // Başarı mesajını göster
-        setMessage(response.data?.message || "Giriş başarılı.");
+        setMessage(response.data?.message || "Giriş başarılı. Yönlendiriliyorsunuz...");
+
+        // Tema loader'ını aktif et (tam sayfa loading için)
+        const preloader = document.getElementById("preloader");
+        if (preloader) {
+          preloader.classList.remove("disabled");
+        }
 
         // Auth state'ini güncelle
         setAuthenticated(true);
@@ -110,10 +116,8 @@ export default function Login() {
           setRecaptchaVerified(false);
         }
 
-        // 2 saniye sonra ana sayfaya yönlendir
-        setTimeout(() => {
-          window.location.href = "/";
-        }, 2000);
+        // Hemen yönlendir (loader zaten görünüyor)
+        window.location.href = "/";
       } else {
         setError(response.data?.message || "Giriş işlemi başarısız oldu.");
       }

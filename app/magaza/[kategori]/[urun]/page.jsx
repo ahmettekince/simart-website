@@ -155,7 +155,7 @@ export default async function page({ params }) {
         </div>
       </div>
       <Details9 product={product} />
-      <ShopDetailsTab />
+      <ShopDetailsTab product={product} />
       {categoryProducts.length > 0 && <Products products={categoryProducts} />}
     </>
   );

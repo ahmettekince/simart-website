@@ -3,14 +3,17 @@
 import { useState, useEffect } from "react";
 import apiClient from "@/utils/apiClient";
 import { log } from "@/utils/logger";
+import { getCities, getDistricts, getNeighborhoods } from "@/api/locations";
 import SearchableSelect from "@/components/common/SearchableSelect";
 import AddAddressButton from "@/components/common/AddAddressButton";
+import PhoneInput from "@/components/common/PhoneInput";
 
 export default function AccountAddress() {
   const [activeTab, setActiveTab] = useState("delivery"); // "delivery" veya "billing"
   const [activeEdit, setactiveEdit] = useState(false);
   const [activeAdd, setactiveAdd] = useState(false);
   const [editingAddressId, setEditingAddressId] = useState(null); // Düzenlenen adresin ID'si
+  const [editingAddress, setEditingAddress] = useState(null); // Düzenlenen adresin verisi
   const [deliveryAddresses, setDeliveryAddresses] = useState([]);
   const [billingAddresses, setBillingAddresses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -58,10 +61,8 @@ export default function AccountAddress() {
   useEffect(() => {
     const fetchCities = async () => {
       try {
-        const response = await apiClient.post("/cities", {});
-        if (response.data && response.data.status === "success" && response.data.data) {
-          setCities(response.data.data);
-        }
+        const citiesData = await getCities();
+        setCities(citiesData);
       } catch (error) {
         log("Şehirler yüklenirken hata:", error);
       }
@@ -80,10 +81,8 @@ export default function AccountAddress() {
         return;
       }
       try {
-        const response = await apiClient.post("/districts", { city_id: selectedCityId });
-        if (response.data && response.data.status === "success" && response.data.data) {
-          setDistricts(response.data.data);
-        }
+        const districtsData = await getDistricts(selectedCityId);
+        setDistricts(districtsData);
       } catch (error) {
         log("İlçeler yüklenirken hata:", error);
         setDistricts([]);
@@ -101,10 +100,8 @@ export default function AccountAddress() {
         return;
       }
       try {
-        const response = await apiClient.post("/neighborhoods", { district_id: selectedDistrictId });
-        if (response.data && response.data.status === "success" && response.data.data) {
-          setNeighborhoods(response.data.data);
-        }
+        const neighborhoodsData = await getNeighborhoods(selectedDistrictId);
+        setNeighborhoods(neighborhoodsData);
       } catch (error) {
         log("Mahalleler yüklenirken hata:", error);
         setNeighborhoods([]);
@@ -139,6 +136,7 @@ export default function AccountAddress() {
       const response = await apiClient.get(`/customer-addresses/${addressId}`);
       if (response.data && response.data.status === "success" && response.data.data) {
         const address = response.data.data;
+        setEditingAddress(address); // Adres verisini state'e kaydet
 
         // Form alanlarını doldur
         setSelectedCityId(address.city_id?.toString() || "");
@@ -156,15 +154,11 @@ export default function AccountAddress() {
             const titleInput = form.querySelector('[name="address_title"]');
             const firstNameInput = form.querySelector('[name="first_name"]');
             const lastNameInput = form.querySelector('[name="last_name"]');
-            const phoneInput = form.querySelector('[name="phone"]');
-            const emailInput = form.querySelector('[name="email"]');
             const addressDetailInput = form.querySelector('[name="address_detail"]');
 
             if (titleInput) titleInput.value = address.title || "";
             if (firstNameInput) firstNameInput.value = address.first_name || "";
             if (lastNameInput) lastNameInput.value = address.last_name || "";
-            if (phoneInput) phoneInput.value = address.phone || "";
-            if (emailInput) emailInput.value = address.email || "";
             if (addressDetailInput) addressDetailInput.value = address.address_detail || "";
 
             if (address.invoice_type === "individual") {
@@ -266,6 +260,7 @@ export default function AccountAddress() {
         setSelectedDistrictId("");
         setSelectedNeighborhoodId("");
         setactiveEdit(false);
+        setEditingAddress(null);
         setactiveAdd(false);
         setEditingAddressId(null);
         setFieldErrors({});
@@ -300,6 +295,7 @@ export default function AccountAddress() {
     setEditingAddressId(addressId);
     setactiveAdd(true);
     setactiveEdit(false);
+    setEditingAddress(null);
     await loadAddressForEdit(addressId);
   };
 
@@ -345,6 +341,7 @@ export default function AccountAddress() {
             onClick={() => {
               setActiveTab("delivery");
               setactiveEdit(false);
+              setEditingAddress(null);
               setactiveAdd(false);
             }}
             style={{
@@ -372,6 +369,7 @@ export default function AccountAddress() {
             onClick={() => {
               setActiveTab("billing");
               setactiveEdit(false);
+              setEditingAddress(null);
               setactiveAdd(false);
             }}
             style={{
@@ -449,8 +447,8 @@ export default function AccountAddress() {
             )}
           </fieldset>
 
-          {/* Ad ve Soyad */}
-          <div className="box grid-2">
+          {/* Ad, Soyad ve Telefon */}
+          <div className="box grid-3" style={{ gap: "15px" }}>
             <fieldset className="fieldset">
               <label htmlFor="first-name">Ad*</label>
               <input required type="text" id="first-name" name="first_name" />
@@ -469,99 +467,87 @@ export default function AccountAddress() {
                 </div>
               )}
             </fieldset>
+            <fieldset className="fieldset">
+              <label htmlFor="phone">Telefon Numarası*</label>
+              <PhoneInput required id="phone" name="phone" />
+              {fieldErrors.phone && (
+                <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                  {fieldErrors.phone[0]}
+                </div>
+              )}
+            </fieldset>
           </div>
 
-          {/* Telefon */}
-          <fieldset className="box fieldset">
-            <label htmlFor="phone">Telefon Numarası*</label>
-            <input required type="tel" id="phone" name="phone" />
-            {fieldErrors.phone && (
-              <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
-                {fieldErrors.phone[0]}
-              </div>
-            )}
-          </fieldset>
 
-          {/* E-posta */}
-          <fieldset className="box fieldset">
-            <label htmlFor="email">E-Posta Adresi*</label>
-            <input required type="email" autoComplete="email" id="email" name="email" />
-            {fieldErrors.email && (
-              <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
-                {fieldErrors.email[0]}
-              </div>
-            )}
-          </fieldset>
+          {/* İl, İlçe ve Mahalle */}
+          <div className="box grid-3" style={{ gap: "15px" }}>
+            <fieldset className="fieldset">
+              <label htmlFor="city">İl*</label>
+              <SearchableSelect
+                id="city"
+                name="city"
+                options={cities}
+                value={selectedCityId}
+                onChange={(value) => {
+                  setSelectedCityId(value);
+                  setSelectedDistrictId("");
+                }}
+                placeholder="Seçiniz"
+                required
+                searchPlaceholder="Şehir ara..."
+              />
+              {fieldErrors.city_id && (
+                <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                  {fieldErrors.city_id[0]}
+                </div>
+              )}
+            </fieldset>
 
-          {/* İl */}
-          <fieldset className="box fieldset">
-            <label htmlFor="city">İl*</label>
-            <SearchableSelect
-              id="city"
-              name="city"
-              options={cities}
-              value={selectedCityId}
-              onChange={(value) => {
-                setSelectedCityId(value);
-                setSelectedDistrictId("");
-              }}
-              placeholder="Seçiniz"
-              required
-              searchPlaceholder="Şehir ara..."
-            />
-            {fieldErrors.city_id && (
-              <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
-                {fieldErrors.city_id[0]}
-              </div>
-            )}
-          </fieldset>
+            <fieldset className="fieldset">
+              <label htmlFor="district">İlçe*</label>
+              <SearchableSelect
+                id="district"
+                name="district"
+                options={districts}
+                value={selectedDistrictId}
+                onChange={(value) => {
+                  setSelectedDistrictId(value);
+                  setSelectedNeighborhoodId("");
+                }}
+                placeholder={selectedCityId ? "Seçiniz" : "Önce il seçiniz"}
+                disabled={!selectedCityId}
+                required
+                searchPlaceholder="İlçe ara..."
+              />
+              {fieldErrors.district_id && (
+                <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                  {fieldErrors.district_id[0]}
+                </div>
+              )}
+            </fieldset>
 
-          {/* İlçe */}
-          <fieldset className="box fieldset">
-            <label htmlFor="district">İlçe*</label>
-            <SearchableSelect
-              id="district"
-              name="district"
-              options={districts}
-              value={selectedDistrictId}
-              onChange={(value) => {
-                setSelectedDistrictId(value);
-                setSelectedNeighborhoodId("");
-              }}
-              placeholder={selectedCityId ? "Seçiniz" : "Önce il seçiniz"}
-              disabled={!selectedCityId}
-              required
-              searchPlaceholder="İlçe ara..."
-            />
-            {fieldErrors.district_id && (
-              <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
-                {fieldErrors.district_id[0]}
-              </div>
-            )}
-          </fieldset>
-
-          {/* Mahalle */}
-          <fieldset className="box fieldset">
-            <label htmlFor="neighborhood">Mahalle*</label>
-            <SearchableSelect
-              id="neighborhood"
-              name="neighborhood"
-              options={neighborhoods}
-              value={selectedNeighborhoodId}
-              onChange={(value) => {
-                setSelectedNeighborhoodId(value);
-              }}
-              placeholder={selectedDistrictId ? "Seçiniz" : "Önce ilçe seçiniz"}
-              disabled={!selectedDistrictId}
-              required
-              searchPlaceholder="Mahalle ara..."
-            />
-            {fieldErrors.neighborhood_id && (
-              <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
-                {fieldErrors.neighborhood_id[0]}
-              </div>
-            )}
-          </fieldset>
+            <fieldset className="fieldset">
+              <label htmlFor="neighborhood">Mahalle*</label>
+              <SearchableSelect
+                id="neighborhood"
+                name="neighborhood"
+                options={neighborhoods}
+                value={selectedNeighborhoodId}
+                onChange={(value) => {
+                  setSelectedNeighborhoodId(value);
+                }}
+                placeholder={selectedDistrictId ? "Seçiniz" : "Önce ilçe seçiniz"}
+                disabled={!selectedDistrictId}
+                required
+                searchPlaceholder="Mahalle ara..."
+              />
+              {fieldErrors.neighborhood_id && (
+                <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                  {fieldErrors.neighborhood_id[0]}
+                </div>
+              )}
+            </fieldset>
+          </div>
 
           {/* Adres Detayı */}
           <fieldset className="box fieldset">
@@ -702,6 +688,7 @@ export default function AccountAddress() {
               className="tf-btn btn-fill animate-hover-btn btn-hide-address"
               onClick={() => {
                 setactiveEdit(false);
+                setEditingAddress(null);
                 setSelectedCityId("");
                 setSelectedDistrictId("");
                 setSelectedNeighborhoodId("");
@@ -935,8 +922,8 @@ export default function AccountAddress() {
             )}
           </fieldset>
 
-          {/* Ad ve Soyad */}
-          <div className="box grid-2">
+          {/* Ad, Soyad ve Telefon */}
+          <div className="box grid-3" style={{ gap: "15px" }}>
             <fieldset className="fieldset">
               <label htmlFor="edit-first-name">Ad*</label>
               <input required type="text" id="edit-first-name" name="first_name" />
@@ -955,100 +942,88 @@ export default function AccountAddress() {
                 </div>
               )}
             </fieldset>
+            <fieldset className="fieldset">
+              <label htmlFor="edit-phone">Telefon Numarası*</label>
+              <PhoneInput required id="edit-phone" name="phone" value={editingAddress?.phone || ""} />
+              {fieldErrors.phone && (
+                <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                  {fieldErrors.phone[0]}
+                </div>
+              )}
+            </fieldset>
           </div>
 
-          {/* Telefon */}
-          <fieldset className="box fieldset">
-            <label htmlFor="edit-phone">Telefon Numarası*</label>
-            <input required type="tel" id="edit-phone" name="phone" />
-            {fieldErrors.phone && (
-              <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
-                {fieldErrors.phone[0]}
-              </div>
-            )}
-          </fieldset>
 
-          {/* E-posta */}
-          <fieldset className="box fieldset">
-            <label htmlFor="edit-email">E-Posta Adresi*</label>
-            <input required type="email" autoComplete="email" id="edit-email" name="email" />
-            {fieldErrors.email && (
-              <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
-                {fieldErrors.email[0]}
-              </div>
-            )}
-          </fieldset>
+          {/* İl, İlçe ve Mahalle */}
+          <div className="box grid-3" style={{ gap: "15px" }}>
+            <fieldset className="fieldset">
+              <label htmlFor="edit-city">İl*</label>
+              <SearchableSelect
+                id="edit-city"
+                name="city"
+                options={cities}
+                value={selectedCityId}
+                onChange={(value) => {
+                  setSelectedCityId(value);
+                  setSelectedDistrictId("");
+                  setSelectedNeighborhoodId("");
+                }}
+                placeholder="Seçiniz"
+                required
+                searchPlaceholder="Şehir ara..."
+              />
+              {fieldErrors.city_id && (
+                <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                  {fieldErrors.city_id[0]}
+                </div>
+              )}
+            </fieldset>
 
-          {/* İl */}
-          <fieldset className="box fieldset">
-            <label htmlFor="edit-city">İl*</label>
-            <SearchableSelect
-              id="edit-city"
-              name="city"
-              options={cities}
-              value={selectedCityId}
-              onChange={(value) => {
-                setSelectedCityId(value);
-                setSelectedDistrictId("");
-                setSelectedNeighborhoodId("");
-              }}
-              placeholder="Seçiniz"
-              required
-              searchPlaceholder="Şehir ara..."
-            />
-            {fieldErrors.city_id && (
-              <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
-                {fieldErrors.city_id[0]}
-              </div>
-            )}
-          </fieldset>
+            <fieldset className="fieldset">
+              <label htmlFor="edit-district">İlçe*</label>
+              <SearchableSelect
+                id="edit-district"
+                name="district"
+                options={districts}
+                value={selectedDistrictId}
+                onChange={(value) => {
+                  setSelectedDistrictId(value);
+                  setSelectedNeighborhoodId("");
+                }}
+                placeholder={selectedCityId ? "Seçiniz" : "Önce il seçiniz"}
+                disabled={!selectedCityId}
+                required
+                searchPlaceholder="İlçe ara..."
+              />
+              {fieldErrors.district_id && (
+                <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                  {fieldErrors.district_id[0]}
+                </div>
+              )}
+            </fieldset>
 
-          {/* İlçe */}
-          <fieldset className="box fieldset">
-            <label htmlFor="edit-district">İlçe*</label>
-            <SearchableSelect
-              id="edit-district"
-              name="district"
-              options={districts}
-              value={selectedDistrictId}
-              onChange={(value) => {
-                setSelectedDistrictId(value);
-                setSelectedNeighborhoodId("");
-              }}
-              placeholder={selectedCityId ? "Seçiniz" : "Önce il seçiniz"}
-              disabled={!selectedCityId}
-              required
-              searchPlaceholder="İlçe ara..."
-            />
-            {fieldErrors.district_id && (
-              <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
-                {fieldErrors.district_id[0]}
-              </div>
-            )}
-          </fieldset>
-
-          {/* Mahalle */}
-          <fieldset className="box fieldset">
-            <label htmlFor="edit-neighborhood">Mahalle*</label>
-            <SearchableSelect
-              id="edit-neighborhood"
-              name="neighborhood"
-              options={neighborhoods}
-              value={selectedNeighborhoodId}
-              onChange={(value) => {
-                setSelectedNeighborhoodId(value);
-              }}
-              placeholder={selectedDistrictId ? "Seçiniz" : "Önce ilçe seçiniz"}
-              disabled={!selectedDistrictId}
-              required
-              searchPlaceholder="Mahalle ara..."
-            />
-            {fieldErrors.neighborhood_id && (
-              <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
-                {fieldErrors.neighborhood_id[0]}
-              </div>
-            )}
-          </fieldset>
+            <fieldset className="fieldset">
+              <label htmlFor="edit-neighborhood">Mahalle*</label>
+              <SearchableSelect
+                id="edit-neighborhood"
+                name="neighborhood"
+                options={neighborhoods}
+                value={selectedNeighborhoodId}
+                onChange={(value) => {
+                  setSelectedNeighborhoodId(value);
+                }}
+                placeholder={selectedDistrictId ? "Seçiniz" : "Önce ilçe seçiniz"}
+                disabled={!selectedDistrictId}
+                required
+                searchPlaceholder="Mahalle ara..."
+              />
+              {fieldErrors.neighborhood_id && (
+                <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                  {fieldErrors.neighborhood_id[0]}
+                </div>
+              )}
+            </fieldset>
+          </div>
 
           {/* Adres Detayı */}
           <fieldset className="box fieldset">
@@ -1172,6 +1147,7 @@ export default function AccountAddress() {
                 setSelectedDistrictId("");
                 setSelectedNeighborhoodId("");
                 setEditingAddressId(null);
+                setEditingAddress(null);
                 setFieldErrors({});
                 setInvoiceType("individual");
               }}

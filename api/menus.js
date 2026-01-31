@@ -6,25 +6,19 @@ import { log } from "@/utils/logger";
  * @returns {Promise<Array>} Menu items array'i
  */
 export async function getMenus() {
-    const response = await serverFetch("/menus", {
-        method: "POST",
-        next: { revalidate: 3600 }, // 1 saat cache
-        body: { type: "header-menu" },
-    });
+    const data = await getMenuByType("header-menu");
 
-    // API POST ile çalışıyor ve direkt menüleri döndürüyor
-    if (response?.status === "success") {
-        // API direkt menü array'ini döndürüyor
-        if (Array.isArray(response.data)) {
-            return response.data;
+    if (data) {
+        // API direkt menü array'ini döndürüyor olabilir
+        if (Array.isArray(data)) {
+            return data;
         }
         // Veya data.items içinde olabilir
-        if (response.data?.items && Array.isArray(response.data.items)) {
-            return response.data.items;
+        if (data.items && Array.isArray(data.items)) {
+            return data.items;
         }
     }
 
-    log("[API menus.js] getMenus failed:", response);
     return [];
 }
 

@@ -6,13 +6,16 @@ import Link from "next/link";
 import { useEffect, useState, useMemo, useRef } from "react";
 import { log } from "@/utils/logger";
 import apiClient from "@/utils/apiClient";
+import { getCities, getDistricts, getNeighborhoods } from "@/api/locations";
 import SearchableSelect from "@/components/common/SearchableSelect";
 import AddAddressButton from "@/components/common/AddAddressButton";
 import PaymentOptions from "@/components/othersPages/checkout/PaymentOptions";
 import OrderSummary from "@/components/othersPages/checkout/OrderSummary";
 import CircularLoading from "@/components/common/CircularLoading";
+import PhoneInput from "@/components/common/PhoneInput";
+import { calculateCartTotals } from "@/utils/cartTotals";
+import CheckoutFAQs from "@/components/othersPages/checkout/CheckoutFAQs";
 
-const ORDER_NOTE_KEY = "cart_order_note";
 
 export default function Checkout() {
   const { items } = useCartStore();
@@ -21,39 +24,17 @@ export default function Checkout() {
   const totals = useCartStore((state) => state.totals);
 
   const cartTotals = useMemo(() => {
-    if (totals && totals.total !== null && totals.total !== undefined) {
-      return {
-        subtotal: totals.subtotal || 0,
-        discount: totals.discountAmount || 0,
-        couponDiscountAmount: totals.coupon_discount_amount || 0,
-        total: totals.total || 0,
-      };
-    }
-    // Fallback: local hesaplama
-    const subtotal = items.reduce((total, item) => {
-      const itemPrice = item.price || 0;
-      return total + itemPrice * item.quantity;
-    }, 0);
-
-    const discountedTotal = items.reduce((total, item) => {
-      const itemPrice = item.discount_price || item.price || 0;
-      return total + itemPrice * item.quantity;
-    }, 0);
-
-    const discount = subtotal - discountedTotal;
-
-    return {
-      subtotal: subtotal,
-      discount: discount > 0 ? discount : 0,
-      couponDiscountAmount: 0,
-      total: discountedTotal,
-    };
+    return calculateCartTotals(totals, items);
   }, [totals, items]);
 
   const [orderNote, setOrderNote] = useState("");
+  const [giftNote, setGiftNote] = useState("");
+
+  const [showOrderNote, setShowOrderNote] = useState(false);
+  const [showGiftNote, setShowGiftNote] = useState(false);
   const [sameBillingAddress, setSameBillingAddress] = useState(false); // Teslimat ve fatura adresi aynı mı?
   const [invoiceType, setInvoiceType] = useState("individual"); // "individual" veya "corporate"
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const { isAuthenticated, isInitialized } = useAuthStore();
   const [savedDeliveryAddresses, setSavedDeliveryAddresses] = useState([]); // Kayıtlı teslimat adresleri
   const [savedBillingAddresses, setSavedBillingAddresses] = useState([]); // Kayıtlı fatura adresleri
   const [isLoadingAddresses, setIsLoadingAddresses] = useState(true); // Adresler yükleniyor mu?
@@ -82,6 +63,8 @@ export default function Checkout() {
   const [taxOfficesLoaded, setTaxOfficesLoaded] = useState(false); // Vergi daireleri yüklendi mi?
   const [isLoadingTaxOffices, setIsLoadingTaxOffices] = useState(false); // Vergi daireleri yükleniyor mu?
   const [selectedTaxOfficeId, setSelectedTaxOfficeId] = useState("");
+  const [useAsBillingAddress, setUseAsBillingAddress] = useState(false); // Bu adresi fatura adreslerimde kullan
+  const [acceptedAgreements, setAcceptedAgreements] = useState(false);
   const [isSavingAddress, setIsSavingAddress] = useState(false);
   const paymentOptionsRef = useRef(null);
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
@@ -93,12 +76,12 @@ export default function Checkout() {
   // Şehirleri lazy load ile yükle (sadece ilk açılışta)
   const fetchCities = async () => {
     if (citiesLoaded || isLoadingCities) return; // Zaten yüklendiyse veya yükleniyorsa tekrar yükleme
-    
+
     setIsLoadingCities(true);
     try {
-      const response = await apiClient.post("/cities", {});
-      if (response.data && response.data.status === "success" && response.data.data) {
-        setCities(response.data.data);
+      const citiesData = await getCities();
+      if (citiesData && citiesData.length > 0) {
+        setCities(citiesData);
         setCitiesLoaded(true);
       }
     } catch (error) {
@@ -119,10 +102,8 @@ export default function Checkout() {
         return;
       }
       try {
-        const response = await apiClient.post("/districts", { city_id: selectedCityId });
-        if (response.data && response.data.status === "success" && response.data.data) {
-          setDistricts(response.data.data);
-        }
+        const districtsData = await getDistricts(selectedCityId);
+        setDistricts(districtsData);
       } catch (error) {
         log("İlçeler yüklenirken hata:", error);
         setDistricts([]);
@@ -140,10 +121,8 @@ export default function Checkout() {
         return;
       }
       try {
-        const response = await apiClient.post("/neighborhoods", { district_id: selectedDistrictId });
-        if (response.data && response.data.status === "success" && response.data.data) {
-          setNeighborhoods(response.data.data);
-        }
+        const neighborhoodsData = await getNeighborhoods(selectedDistrictId);
+        setNeighborhoods(neighborhoodsData);
       } catch (error) {
         log("Mahalleler yüklenirken hata:", error);
         setNeighborhoods([]);
@@ -163,10 +142,8 @@ export default function Checkout() {
         return;
       }
       try {
-        const response = await apiClient.post("/districts", { city_id: selectedBillingCityId });
-        if (response.data && response.data.status === "success" && response.data.data) {
-          setBillingDistricts(response.data.data);
-        }
+        const districtsData = await getDistricts(selectedBillingCityId);
+        setBillingDistricts(districtsData);
       } catch (error) {
         log("Fatura ilçeleri yüklenirken hata:", error);
         setBillingDistricts([]);
@@ -184,10 +161,8 @@ export default function Checkout() {
         return;
       }
       try {
-        const response = await apiClient.post("/neighborhoods", { district_id: selectedBillingDistrictId });
-        if (response.data && response.data.status === "success" && response.data.data) {
-          setBillingNeighborhoods(response.data.data);
-        }
+        const neighborhoodsData = await getNeighborhoods(selectedBillingDistrictId);
+        setBillingNeighborhoods(neighborhoodsData);
       } catch (error) {
         log("Fatura mahalleleri yüklenirken hata:", error);
         setBillingNeighborhoods([]);
@@ -199,10 +174,10 @@ export default function Checkout() {
   // Vergi dairelerini lazy load ile yükle (sadece ilk açılışta)
   const fetchTaxOffices = async () => {
     if (taxOfficesLoaded || isLoadingTaxOffices) return; // Zaten yüklendiyse veya yükleniyorsa tekrar yükleme
-    
+
     setIsLoadingTaxOffices(true);
     try {
-      const response = await apiClient.post("/tax-offices", {});
+      const response = await apiClient.get("/tax-offices");
       if (response.data && response.data.status === "success" && response.data.data) {
         setTaxOffices(response.data.data);
         setTaxOfficesLoaded(true);
@@ -282,26 +257,25 @@ export default function Checkout() {
     }
   }, [sameBillingAddress, selectedBillingAddressId, savedBillingAddresses]);
 
-  // Sayfa yüklendiğinde localStorage'dan sipariş notunu oku
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedNote = localStorage.getItem(ORDER_NOTE_KEY);
-      if (savedNote) {
-        setOrderNote(savedNote);
-      }
-    }
-  }, []);
 
-  // Sipariş notu değiştiğinde localStorage'a kaydet
+  // Sipariş notu değiştiğinde (localStorage'a kaydetme)
   const handleOrderNoteChange = (value) => {
     setOrderNote(value);
-    if (typeof window !== "undefined") {
-      if (value && value.trim()) {
-        localStorage.setItem(ORDER_NOTE_KEY, value);
-      } else {
-        localStorage.removeItem(ORDER_NOTE_KEY);
-      }
-    }
+  };
+
+  // Hediye notu değiştiğinde
+  const handleGiftNoteChange = (value) => {
+    setGiftNote(value);
+  };
+
+  // Sipariş notu checkbox durumu değiştiğinde
+  const handleShowOrderNoteChange = (value) => {
+    setShowOrderNote(value);
+  };
+
+  // Hediye notu checkbox durumu değiştiğinde
+  const handleShowGiftNoteChange = (value) => {
+    setShowGiftNote(value);
   };
 
 
@@ -325,7 +299,6 @@ export default function Checkout() {
     }
   };
 
-  // Teslimat adresi kaydetme fonksiyonu
   const handleSaveDeliveryAddress = async (e) => {
     e.preventDefault();
     setIsSavingAddress(true);
@@ -337,12 +310,25 @@ export default function Checkout() {
       first_name: formData.get("delivery[first_name]"),
       last_name: formData.get("delivery[last_name]"),
       phone: formData.get("delivery[phone]"),
-      email: formData.get("delivery[email]"),
       city_id: selectedCityId,
       district_id: selectedDistrictId,
       neighborhood_id: selectedNeighborhoodId,
       address_detail: formData.get("delivery[address_detail]"),
     };
+
+    // Fatura adresi olarak da kaydedilecekse
+    if (useAsBillingAddress) {
+      addressData.use_invoice_address = true;
+      addressData.invoice_type = invoiceType === "corporate" ? "company" : "individual";
+
+      if (invoiceType === "individual") {
+        addressData.tckn = formData.get("delivery_tc_identity");
+      } else if (invoiceType === "corporate") {
+        addressData.company_name = formData.get("delivery_company_name");
+        addressData.tax_office_id = selectedTaxOfficeId;
+        addressData.tax_number = formData.get("delivery_tax_number");
+      }
+    }
 
     try {
       const response = await apiClient.post("/customer-addresses", null, {
@@ -354,6 +340,7 @@ export default function Checkout() {
         await refetchAddresses();
         // Formu kapat ve seçili adresi ayarla
         setShowDeliveryAddressForm(false);
+        setUseAsBillingAddress(false);
         if (response.data.data && response.data.data.id) {
           setSelectedDeliveryAddressId(response.data.data.id);
         }
@@ -362,10 +349,12 @@ export default function Checkout() {
         setSelectedCityId("");
         setSelectedDistrictId("");
         setSelectedNeighborhoodId("");
+        setSelectedTaxOfficeId("");
       }
     } catch (error) {
       log("Teslimat adresi kaydedilirken hata:", error);
-      alert("Adres kaydedilirken bir hata oluştu. Lütfen tekrar deneyin.");
+      // Hata durumunda alert yerine state üzerinden hata gösterimi yapılabilir
+      setOrderErrorMessage("Adres kaydedilirken bir hata oluştu. Lütfen bilgilerinizi kontrol edip tekrar deneyin.");
     } finally {
       setIsSavingAddress(false);
     }
@@ -383,7 +372,6 @@ export default function Checkout() {
       first_name: formData.get("billing[first_name]"),
       last_name: formData.get("billing[last_name]"),
       phone: formData.get("billing[phone]"),
-      email: formData.get("billing[email]"),
       city_id: selectedBillingCityId,
       district_id: selectedBillingDistrictId,
       neighborhood_id: selectedBillingNeighborhoodId,
@@ -422,7 +410,7 @@ export default function Checkout() {
       }
     } catch (error) {
       log("Fatura adresi kaydedilirken hata:", error);
-      alert("Adres kaydedilirken bir hata oluştu. Lütfen tekrar deneyin.");
+      setOrderErrorMessage("Fatura adresi kaydedilirken bir hata oluştu. Lütfen bilgilerinizi kontrol edip tekrar deneyin.");
     } finally {
       setIsSavingAddress(false);
     }
@@ -452,10 +440,9 @@ export default function Checkout() {
       return;
     }
 
-    // Şartlar ve koşullar checkbox kontrolü
-    const termsCheckbox = document.getElementById("check-agree");
-    if (!termsCheckbox || !termsCheckbox.checked) {
-      setOrderErrors({ terms_accepted: ["Lütfen şartları ve koşulları kabul edin."] });
+    // Sözleşme onay kontrolü
+    if (!acceptedAgreements) {
+      setOrderErrors({ agreements_accepted: ["Lütfen sözleşmeleri okuyup onaylayın."] });
       return;
     }
 
@@ -473,13 +460,6 @@ export default function Checkout() {
       return;
     }
 
-    // PaymentOptions'taki şartlar checkbox kontrolü
-    const paymentTermsCheckbox = document.querySelector('.payment-checkbox');
-    if (!paymentTermsCheckbox || !paymentTermsCheckbox.checked) {
-      setOrderErrors({ uzak_satis_sozlesmesi_accepted: ["Lütfen gizlilik politikası ve şartları kabul edin."] });
-      return;
-    }
-
     setIsSubmittingOrder(true);
 
     try {
@@ -493,7 +473,11 @@ export default function Checkout() {
         cvv: paymentData.cvv,
         installment_count: paymentData.installment_count,
         uzak_satis_sozlesmesi_accepted: true,
-        ...(orderNote && orderNote.trim() && { order_note: orderNote.trim() }),
+        agreements_accepted: true,
+        // Sipariş notu: checkbox işaretli VE dolu ise gönder
+        ...(showOrderNote && orderNote && orderNote.trim() && { notes: orderNote.trim() }),
+        // Hediye notu: checkbox işaretli VE dolu ise gönder
+        ...(showGiftNote && giftNote && giftNote.trim() && { gift_note: giftNote.trim() }),
       };
 
       // Konsola yazdır (güvenlik için hassas bilgileri gizle)
@@ -508,25 +492,25 @@ export default function Checkout() {
         body: safeRequestBody,
         timestamp: new Date().toISOString(),
       };
-      
+
       console.log("🚀 POST İsteği Gönderiliyor:", requestInfo);
       console.log("📦 Tam Request Body (gizli):", requestBody);
-      
+
       // Sayfada göstermek için state'e kaydet
       setLastPostRequest(requestInfo);
 
       log("[Checkout] Sipariş gönderiliyor:", requestBody);
 
       const response = await apiClient.post("/checkout/validate", requestBody);
-      
+
       const responseInfo = {
         status: response.status,
         data: response.data,
         timestamp: new Date().toISOString(),
       };
-      
+
       console.log("✅ POST İsteği Başarılı:", responseInfo);
-      
+
       // Sayfada göstermek için state'e kaydet
       setLastPostResponse(responseInfo);
 
@@ -535,12 +519,12 @@ export default function Checkout() {
       if (response.data && response.data.status === "success") {
         setOrderErrorMessage("");
         setOrderErrors({});
-        
+
         // payment_html varsa yeni sayfada göster
         if (response.data.data && response.data.data.payment_html) {
           const html = response.data.data.payment_html;
           log("[Checkout] Payment HTML alındı, yeni sayfada açılıyor");
-          
+
           // Yeni sayfa aç ve HTML'i yaz
           const win = window.open('', '_self'); // Aynı sekme, popup yok
           win.document.open();
@@ -565,7 +549,7 @@ export default function Checkout() {
       }
     } catch (error) {
       log("[Checkout] Sipariş gönderme hatası:", error);
-      
+
       // Hata response'unu da kaydet
       if (error.response) {
         const errorResponseInfo = {
@@ -583,7 +567,7 @@ export default function Checkout() {
           timestamp: new Date().toISOString(),
         });
       }
-      
+
       // API'den gelen hataları parse et
       if (error.response?.data?.errors) {
         const errors = {};
@@ -594,7 +578,7 @@ export default function Checkout() {
         });
         setOrderErrors(errors);
       }
-      
+
       const errorMessage = error.response?.data?.message || "Sipariş oluşturulurken bir hata oluştu. Lütfen tekrar deneyin.";
       setOrderErrorMessage(errorMessage);
     } finally {
@@ -608,168 +592,173 @@ export default function Checkout() {
         <div className="tf-page-cart-wrap layout-2">
           <div className="tf-page-cart-item">
             <h5 className="fw-5 mb_20">1 - Teslimat Adresi</h5>
-            
-            {orderErrors.delivery_address_id && (
-              <div style={{ marginBottom: "15px", padding: "12px", backgroundColor: "#fee", border: "1px solid #fcc", borderRadius: "6px", fontSize: "14px", color: "#c33" }}>
-                {orderErrors.delivery_address_id[0]}
-              </div>
-            )}
 
-            {/* Adresler yükleniyor */}
-            {isAuthenticated && isLoadingAddresses && (
-              <CircularLoading text="Adresler yükleniyor..." />
-            )}
-
-            {/* Giriş yapmış kullanıcılar için teslimat adresi seçimi */}
-            {isAuthenticated && !isLoadingAddresses && savedDeliveryAddresses.length > 0 && !showDeliveryAddressForm && (
+            {/* Auth durumu yüklenene kadar bekle */}
+            {!isInitialized ? (
+              <CircularLoading text="Kullanıcı durumu kontrol ediliyor..." />
+            ) : (
               <>
-                <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
-                  <label htmlFor="delivery-address-select">Teslimat Adresi Seçiniz*</label>
-                  <SearchableSelect
-                    id="delivery-address-select"
-                    name="delivery-address-select"
-                    options={savedDeliveryAddresses.map((address) => {
-                      const parts = [address.title || "Adres"];
-
-                      // Invoice type ibaresi ekle
-                      if (address.invoice_type) {
-                        parts.push(address.invoice_type === "company" ? "Kurumsal" : "Bireysel");
-                      }
-
-                      // Adres detayları ekle (şehir, ilçe)
-                      let cityDistrict = "";
-                      if (address.city?.name && address.district?.name) {
-                        cityDistrict = `${address.city.name} / ${address.district.name}`;
-                      } else if (address.city?.name) {
-                        cityDistrict = address.city.name;
-                      }
-
-                      // Mahalle ekle (yer varsa) - mahalleden önce "-" yok, direkt ekleniyor
-                      if (address.neighborhood?.name) {
-                        cityDistrict = cityDistrict ? `${cityDistrict} ${address.neighborhood.name}` : address.neighborhood.name;
-                      }
-
-                      if (cityDistrict) {
-                        parts.push(cityDistrict);
-                      }
-
-                      return {
-                        id: address.id,
-                        name: parts.join(" - "),
-                      };
-                    })}
-                    value={selectedDeliveryAddressId}
-                    onChange={(value) => setSelectedDeliveryAddressId(value ? Number(value) : null)}
-                    placeholder="Teslimat adresi seçiniz"
-                    required
-                    searchPlaceholder="Adres ara..."
-                  />
-                </fieldset>
-
-                {/* Seçilen Teslimat Adresi Kartı */}
-                {selectedDeliveryAddressId !== null && (
-                  <div
-                    className="address-card"
-                    style={{
-                      backgroundColor: "#fff",
-                      border: "1px solid #e5e5e5",
-                      borderRadius: "8px",
-                      padding: "20px",
-                      marginBottom: "20px",
-                    }}
-                  >
-                    {(() => {
-                      const selectedAddress = savedDeliveryAddresses.find(
-                        (addr) => addr.id === selectedDeliveryAddressId
-                      );
-                      if (!selectedAddress) return null;
-                      return (
-                        <>
-                          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "15px", flexWrap: "wrap" }}>
-                            <h6
-                              style={{
-                                fontSize: "16px",
-                                fontWeight: "600",
-                                color: "#333",
-                                margin: 0,
-                              }}
-                            >
-                              {selectedAddress.title}
-                            </h6>
-                            {selectedAddress.invoice_type && (
-                              <span
-                                style={{
-                                  fontSize: "12px",
-                                  fontWeight: "500",
-                                  color: selectedAddress.invoice_type === "company" ? "#3c81b5" : "#666",
-                                  backgroundColor: selectedAddress.invoice_type === "company" ? "#e8f4f8" : "#f5f5f5",
-                                  padding: "4px 8px",
-                                  borderRadius: "4px",
-                                  whiteSpace: "nowrap",
-                                }}
-                              >
-                                {selectedAddress.invoice_type === "company" ? "Kurumsal" : selectedAddress.invoice_type === "individual" ? "Bireysel" : ""}
-                              </span>
-                            )}
-                          </div>
-                          <div
-                            style={{
-                              fontSize: "14px",
-                              color: "#666",
-                              lineHeight: "1.6",
-                            }}
-                          >
-                            {selectedAddress.neighborhood?.name && (
-                              <div style={{ marginBottom: "4px" }}>{selectedAddress.neighborhood.name}</div>
-                            )}
-                            {selectedAddress.address_detail && (
-                              <div style={{ marginBottom: "4px" }}>{selectedAddress.address_detail}</div>
-                            )}
-                            {selectedAddress.city?.name && selectedAddress.district?.name && (
-                              <div style={{ marginBottom: "4px" }}>
-                                {selectedAddress.city.name} / {selectedAddress.district.name}
-                              </div>
-                            )}
-                            {/* Fatura Bilgileri */}
-                            {selectedAddress.invoice_type === "individual" && selectedAddress.tckn && (
-                              <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: "1px solid #e5e5e5" }}>
-                                <div style={{ fontSize: "13px", fontWeight: "600", color: "#333", marginBottom: "4px" }}>Fatura Bilgileri:</div>
-                                <div style={{ fontSize: "13px", color: "#666" }}>T.C. Kimlik No: {selectedAddress.tckn}</div>
-                              </div>
-                            )}
-                            {selectedAddress.invoice_type === "company" && (
-                              <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: "1px solid #e5e5e5" }}>
-                                <div style={{ fontSize: "13px", fontWeight: "600", color: "#333", marginBottom: "4px" }}>Fatura Bilgileri:</div>
-                                {selectedAddress.company_name && (
-                                  <div style={{ fontSize: "13px", color: "#666", marginBottom: "2px" }}>Firma Adı: {selectedAddress.company_name}</div>
-                                )}
-                                {selectedAddress.tax_number && (
-                                  <div style={{ fontSize: "13px", color: "#666", marginBottom: "2px" }}>Vergi No: {selectedAddress.tax_number}</div>
-                                )}
-                                {selectedAddress.tax_office?.name && (
-                                  <div style={{ fontSize: "13px", color: "#666" }}>Vergi Dairesi: {selectedAddress.tax_office.name}</div>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        </>
-                      );
-                    })()}
+                {orderErrors.delivery_address_id && (
+                  <div style={{ marginBottom: "15px", padding: "12px", backgroundColor: "#fee", border: "1px solid #fcc", borderRadius: "6px", fontSize: "14px", color: "#c33" }}>
+                    {orderErrors.delivery_address_id[0]}
                   </div>
                 )}
 
-                {/* Yeni Adres Butonu */}
-                <div style={{ marginBottom: "20px" }}>
-                  <AddAddressButton
-                    onClick={() => {
-                      setShowDeliveryAddressForm(true);
-                      setSelectedDeliveryAddressId(null);
-                    }}
-                    text="Yeni Teslimat Adresi Ekle"
-                  />
-                </div>
-              </>
-            )}
+                {/* Adresler yükleniyor */}
+                {isAuthenticated && isLoadingAddresses && (
+                  <CircularLoading text="Adresler yükleniyor..." />
+                )}
+
+                {/* Giriş yapmış kullanıcılar için teslimat adresi seçimi */}
+                {isAuthenticated && !isLoadingAddresses && savedDeliveryAddresses.length > 0 && !showDeliveryAddressForm && (
+                  <>
+                    <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
+                      <label htmlFor="delivery-address-select">Teslimat Adresi Seçiniz*</label>
+                      <SearchableSelect
+                        id="delivery-address-select"
+                        name="delivery-address-select"
+                        options={savedDeliveryAddresses.map((address) => {
+                          const parts = [address.title || "Adres"];
+
+                          // Invoice type ibaresi ekle
+                          if (address.invoice_type) {
+                            parts.push(address.invoice_type === "company" ? "Kurumsal" : "Bireysel");
+                          }
+
+                          // Adres detayları ekle (şehir, ilçe)
+                          let cityDistrict = "";
+                          if (address.city?.name && address.district?.name) {
+                            cityDistrict = `${address.city.name} / ${address.district.name}`;
+                          } else if (address.city?.name) {
+                            cityDistrict = address.city.name;
+                          }
+
+                          // Mahalle ekle (yer varsa) - mahalleden önce "-" yok, direkt ekleniyor
+                          if (address.neighborhood?.name) {
+                            cityDistrict = cityDistrict ? `${cityDistrict} ${address.neighborhood.name}` : address.neighborhood.name;
+                          }
+
+                          if (cityDistrict) {
+                            parts.push(cityDistrict);
+                          }
+
+                          return {
+                            id: address.id,
+                            name: parts.join(" - "),
+                          };
+                        })}
+                        value={selectedDeliveryAddressId}
+                        onChange={(value) => setSelectedDeliveryAddressId(value ? Number(value) : null)}
+                        placeholder="Teslimat adresi seçiniz"
+                        required
+                        searchPlaceholder="Adres ara..."
+                      />
+                    </fieldset>
+
+                    {/* Seçilen Teslimat Adresi Kartı */}
+                    {selectedDeliveryAddressId !== null && (
+                      <div
+                        className="address-card"
+                        style={{
+                          backgroundColor: "#fff",
+                          border: "1px solid #e5e5e5",
+                          borderRadius: "8px",
+                          padding: "20px",
+                          marginBottom: "20px",
+                        }}
+                      >
+                        {(() => {
+                          const selectedAddress = savedDeliveryAddresses.find(
+                            (addr) => addr.id === selectedDeliveryAddressId
+                          );
+                          if (!selectedAddress) return null;
+                          return (
+                            <>
+                              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "15px", flexWrap: "wrap" }}>
+                                <h6
+                                  style={{
+                                    fontSize: "16px",
+                                    fontWeight: "600",
+                                    color: "#333",
+                                    margin: 0,
+                                  }}
+                                >
+                                  {selectedAddress.title}
+                                </h6>
+                                {selectedAddress.invoice_type && (
+                                  <span
+                                    style={{
+                                      fontSize: "12px",
+                                      fontWeight: "500",
+                                      color: selectedAddress.invoice_type === "company" ? "#3c81b5" : "#666",
+                                      backgroundColor: selectedAddress.invoice_type === "company" ? "#e8f4f8" : "#f5f5f5",
+                                      padding: "4px 8px",
+                                      borderRadius: "4px",
+                                      whiteSpace: "nowrap",
+                                    }}
+                                  >
+                                    {selectedAddress.invoice_type === "company" ? "Kurumsal" : selectedAddress.invoice_type === "individual" ? "Bireysel" : ""}
+                                  </span>
+                                )}
+                              </div>
+                              <div
+                                style={{
+                                  fontSize: "14px",
+                                  color: "#666",
+                                  lineHeight: "1.6",
+                                }}
+                              >
+                                {selectedAddress.neighborhood?.name && (
+                                  <div style={{ marginBottom: "4px" }}>{selectedAddress.neighborhood.name}</div>
+                                )}
+                                {selectedAddress.address_detail && (
+                                  <div style={{ marginBottom: "4px" }}>{selectedAddress.address_detail}</div>
+                                )}
+                                {selectedAddress.city?.name && selectedAddress.district?.name && (
+                                  <div style={{ marginBottom: "4px" }}>
+                                    {selectedAddress.city.name} / {selectedAddress.district.name}
+                                  </div>
+                                )}
+                                {/* Fatura Bilgileri */}
+                                {selectedAddress.invoice_type === "individual" && selectedAddress.tckn && (
+                                  <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: "1px solid #e5e5e5" }}>
+                                    <div style={{ fontSize: "13px", fontWeight: "600", color: "#333", marginBottom: "4px" }}>Fatura Bilgileri:</div>
+                                    <div style={{ fontSize: "13px", color: "#666" }}>T.C. Kimlik No: {selectedAddress.tckn}</div>
+                                  </div>
+                                )}
+                                {selectedAddress.invoice_type === "company" && (
+                                  <div style={{ marginTop: "10px", paddingTop: "10px", borderTop: "1px solid #e5e5e5" }}>
+                                    <div style={{ fontSize: "13px", fontWeight: "600", color: "#333", marginBottom: "4px" }}>Fatura Bilgileri:</div>
+                                    {selectedAddress.company_name && (
+                                      <div style={{ fontSize: "13px", color: "#666", marginBottom: "2px" }}>Firma Adı: {selectedAddress.company_name}</div>
+                                    )}
+                                    {selectedAddress.tax_number && (
+                                      <div style={{ fontSize: "13px", color: "#666", marginBottom: "2px" }}>Vergi No: {selectedAddress.tax_number}</div>
+                                    )}
+                                    {selectedAddress.tax_office?.name && (
+                                      <div style={{ fontSize: "13px", color: "#666" }}>Vergi Dairesi: {selectedAddress.tax_office.name}</div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </>
+                          );
+                        })()}
+                      </div>
+                    )}
+
+                    {/* Yeni Adres Butonu */}
+                    <div style={{ marginBottom: "20px" }}>
+                      <AddAddressButton
+                        onClick={() => {
+                          setShowDeliveryAddressForm(true);
+                          setSelectedDeliveryAddressId(null);
+                        }}
+                        text="Yeni Teslimat Adresi Ekle"
+                      />
+                    </div>
+                  </>
+                )}
 
             {/* Teslimat Adresi Formu - Kayıtlı adres yoksa veya "Yeni Adres Ekle" tıklandıysa göster */}
             {(!isAuthenticated || (!isLoadingAddresses && savedDeliveryAddresses.length === 0) || showDeliveryAddressForm) && (
@@ -779,7 +768,7 @@ export default function Checkout() {
                   <input required type="text" id="address-title" name="address_title" placeholder="Örn: Evim" />
                 </fieldset>
 
-                <div className="box grid-2" style={{ marginBottom: "20px" }}>
+                <div className="box grid-3" style={{ marginBottom: "20px", gap: "15px" }}>
                   <fieldset className="fieldset">
                     <label htmlFor="first-name">Ad</label>
                     <input required type="text" id="first-name" name="delivery[first_name]" />
@@ -788,71 +777,67 @@ export default function Checkout() {
                     <label htmlFor="last-name">Soyad</label>
                     <input required type="text" id="last-name" name="delivery[last_name]" />
                   </fieldset>
+                  <fieldset className="fieldset">
+                    <label htmlFor="phone">Telefon Numarası</label>
+                    <PhoneInput required id="phone" name="delivery[phone]" />
+                  </fieldset>
                 </div>
 
-                <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
-                  <label htmlFor="phone">Telefon Numarası</label>
-                  <input required type="tel" id="phone" name="delivery[phone]" />
-                </fieldset>
+                <div className="box grid-3" style={{ marginBottom: "20px", gap: "15px" }}>
+                  <fieldset className="fieldset">
+                    <label htmlFor="city">İl</label>
+                    <SearchableSelect
+                      id="city"
+                      name="delivery[city]"
+                      options={cities}
+                      value={selectedCityId}
+                      onChange={(value) => {
+                        setSelectedCityId(value);
+                        setSelectedDistrictId("");
+                        setSelectedNeighborhoodId("");
+                      }}
+                      onOpen={fetchCities}
+                      placeholder={isLoadingCities ? "Yükleniyor..." : "Seçiniz"}
+                      required
+                      searchPlaceholder="Şehir ara..."
+                    />
+                  </fieldset>
 
-                <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
-                  <label htmlFor="email">E-Posta Adresi</label>
-                  <input required type="email" autoComplete="abc@xyz.com" id="email" name="delivery[email]" />
-                </fieldset>
+                  <fieldset className="fieldset">
+                    <label htmlFor="district">İlçe</label>
+                    <SearchableSelect
+                      id="district"
+                      name="delivery[district]"
+                      options={districts}
+                      value={selectedDistrictId}
+                      onChange={(value) => {
+                        setSelectedDistrictId(value);
+                        setSelectedNeighborhoodId("");
+                      }}
+                      placeholder={selectedCityId ? "Seçiniz" : "Önce il seçiniz"}
+                      disabled={!selectedCityId}
+                      required
+                      searchPlaceholder="İlçe ara..."
+                    />
+                  </fieldset>
 
-                <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
-                  <label htmlFor="city">İl</label>
-                  <SearchableSelect
-                    id="city"
-                    name="delivery[city]"
-                    options={cities}
-                    value={selectedCityId}
-                    onChange={(value) => {
-                      setSelectedCityId(value);
-                      setSelectedDistrictId("");
-                      setSelectedNeighborhoodId("");
-                    }}
-                    onOpen={fetchCities}
-                    placeholder={isLoadingCities ? "Yükleniyor..." : "Seçiniz"}
-                    required
-                    searchPlaceholder="Şehir ara..."
-                  />
-                </fieldset>
-
-                <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
-                  <label htmlFor="district">İlçe</label>
-                  <SearchableSelect
-                    id="district"
-                    name="delivery[district]"
-                    options={districts}
-                    value={selectedDistrictId}
-                    onChange={(value) => {
-                      setSelectedDistrictId(value);
-                      setSelectedNeighborhoodId("");
-                    }}
-                    placeholder={selectedCityId ? "Seçiniz" : "Önce il seçiniz"}
-                    disabled={!selectedCityId}
-                    required
-                    searchPlaceholder="İlçe ara..."
-                  />
-                </fieldset>
-
-                <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
-                  <label htmlFor="neighborhood">Mahalle*</label>
-                  <SearchableSelect
-                    id="neighborhood"
-                    name="delivery[neighborhood]"
-                    options={neighborhoods}
-                    value={selectedNeighborhoodId}
-                    onChange={(value) => {
-                      setSelectedNeighborhoodId(value);
-                    }}
-                    placeholder={selectedDistrictId ? "Seçiniz" : "Önce ilçe seçiniz"}
-                    disabled={!selectedDistrictId}
-                    required
-                    searchPlaceholder="Mahalle ara..."
-                  />
-                </fieldset>
+                  <fieldset className="fieldset">
+                    <label htmlFor="neighborhood">Mahalle*</label>
+                    <SearchableSelect
+                      id="neighborhood"
+                      name="delivery[neighborhood]"
+                      options={neighborhoods}
+                      value={selectedNeighborhoodId}
+                      onChange={(value) => {
+                        setSelectedNeighborhoodId(value);
+                      }}
+                      placeholder={selectedDistrictId ? "Seçiniz" : "Önce ilçe seçiniz"}
+                      disabled={!selectedDistrictId}
+                      required
+                      searchPlaceholder="Mahalle ara..."
+                    />
+                  </fieldset>
+                </div>
 
                 <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
                   <label htmlFor="address-detail">Adres Detayı</label>
@@ -864,6 +849,105 @@ export default function Checkout() {
                     required
                   />
                 </fieldset>
+
+                {/* Bu adresi fatura adreslerimde kullan */}
+                <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
+                  <div className="fieldset-radio" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <input
+                      type="checkbox"
+                      id="use-as-billing-address-delivery"
+                      className="tf-check"
+                      checked={useAsBillingAddress}
+                      onChange={(e) => {
+                        setUseAsBillingAddress(e.target.checked);
+                        if (e.target.checked) {
+                          setInvoiceType("individual");
+                        }
+                      }}
+                    />
+                    <label htmlFor="use-as-billing-address-delivery" style={{ margin: 0, lineHeight: "1.5" }}>
+                      Bu adresi fatura adreslerimde kullan
+                    </label>
+                  </div>
+                </fieldset>
+
+                {/* Fatura Tipi Seçimi - Sadece checkbox işaretlendiğinde göster */}
+                {useAsBillingAddress && (
+                  <div style={{ marginBottom: "20px", padding: "15px", backgroundColor: "#f9f9f9", borderRadius: "8px", border: "1px solid #eee" }}>
+                    <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
+                      <label className="mb_15">Fatura Türü*</label>
+                      <div className="d-flex gap-20">
+                        <div className="fieldset-radio" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <input
+                            type="radio"
+                            name="delivery_invoice_type"
+                            id="delivery-invoice-individual"
+                            value="individual"
+                            checked={invoiceType === "individual"}
+                            onChange={(e) => setInvoiceType(e.target.value)}
+                            style={{ margin: 0, verticalAlign: "middle" }}
+                          />
+                          <label htmlFor="delivery-invoice-individual" style={{ margin: 0, lineHeight: "1.5" }}>
+                            Bireysel
+                          </label>
+                        </div>
+                        <div className="fieldset-radio" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <input
+                            type="radio"
+                            name="delivery_invoice_type"
+                            id="delivery-invoice-corporate"
+                            value="corporate"
+                            checked={invoiceType === "corporate"}
+                            onChange={(e) => setInvoiceType(e.target.value)}
+                            style={{ margin: 0, verticalAlign: "middle" }}
+                          />
+                          <label htmlFor="delivery-invoice-corporate" style={{ margin: 0, lineHeight: "1.5" }}>
+                            Kurumsal
+                          </label>
+                        </div>
+                      </div>
+                    </fieldset>
+
+                    {/* Bireysel Fatura Alanları */}
+                    {invoiceType === "individual" && (
+                      <fieldset className="box fieldset">
+                        <label htmlFor="delivery_tc_identity">TC Kimlik No*</label>
+                        <input required type="text" id="delivery_tc_identity" name="delivery_tc_identity" maxLength="11" pattern="[0-9]{11}" />
+                      </fieldset>
+                    )}
+
+                    {/* Kurumsal Fatura Alanları */}
+                    {invoiceType === "corporate" && (
+                      <>
+                        <fieldset className="box fieldset" style={{ marginBottom: "15px" }}>
+                          <label htmlFor="delivery_company_name">Şirket Adı*</label>
+                          <input required type="text" id="delivery_company_name" name="delivery_company_name" />
+                        </fieldset>
+                        <fieldset className="box fieldset" style={{ marginBottom: "15px" }}>
+                          <label htmlFor="delivery_tax_office">Vergi Dairesi Seçiniz*</label>
+                          <SearchableSelect
+                            id="delivery_tax_office"
+                            name="delivery_tax_office"
+                            options={taxOffices.map((office) => ({
+                              id: office.id,
+                              name: office.name,
+                            }))}
+                            value={selectedTaxOfficeId}
+                            onChange={(value) => setSelectedTaxOfficeId(value)}
+                            onOpen={fetchTaxOffices}
+                            placeholder={isLoadingTaxOffices ? "Yükleniyor..." : "Seçiniz"}
+                            required
+                            searchPlaceholder="Vergi dairesi ara..."
+                          />
+                        </fieldset>
+                        <fieldset className="box fieldset">
+                          <label htmlFor="delivery_tax_number">Vergi No*</label>
+                          <input required type="text" id="delivery_tax_number" name="delivery_tax_number" />
+                        </fieldset>
+                      </>
+                    )}
+                  </div>
+                )}
 
                 {/* Form Butonları */}
                 <div className="d-flex align-items-center justify-content-center gap-20" style={{ marginTop: "20px" }}>
@@ -1049,7 +1133,7 @@ export default function Checkout() {
             {!sameBillingAddress && selectedDeliveryAddressId !== null && (
               <>
                 <h5 className="fw-5 mb_20 mt_40">2 - Fatura Adresi</h5>
-                
+
                 {orderErrors.invoice_address_id && (
                   <div style={{ marginBottom: "15px", padding: "12px", backgroundColor: "#fee", border: "1px solid #fcc", borderRadius: "6px", fontSize: "14px", color: "#c33" }}>
                     {orderErrors.invoice_address_id[0]}
@@ -1216,7 +1300,7 @@ export default function Checkout() {
                 {(!isAuthenticated || (!isLoadingAddresses && savedBillingAddresses.length === 0) || showBillingAddressForm) && (
                   <form onSubmit={handleSaveBillingAddress} className="form-checkout" style={{ marginTop: "20px" }}>
                     {/* Fatura Adresi Formu */}
-                    <div className="box grid-2" style={{ marginBottom: "20px" }}>
+                    <div className="box grid-3" style={{ marginBottom: "20px", gap: "15px" }}>
                       <fieldset className="fieldset">
                         <label htmlFor="billing-first-name">Ad</label>
                         <input required type="text" id="billing-first-name" name="billing[first_name]" />
@@ -1225,69 +1309,65 @@ export default function Checkout() {
                         <label htmlFor="billing-last-name">Soyad</label>
                         <input required type="text" id="billing-last-name" name="billing[last_name]" />
                       </fieldset>
+                      <fieldset className="fieldset">
+                        <label htmlFor="billing-phone">Telefon Numarası</label>
+                        <PhoneInput required id="billing-phone" name="billing[phone]" />
+                      </fieldset>
                     </div>
 
-                    <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
-                      <label htmlFor="billing-phone">Telefon Numarası</label>
-                      <input required type="tel" id="billing-phone" name="billing[phone]" />
-                    </fieldset>
+                    <div className="box grid-3" style={{ marginBottom: "20px", gap: "15px" }}>
+                      <fieldset className="fieldset">
+                        <label htmlFor="billing-city">İl</label>
+                        <SearchableSelect
+                          id="billing-city"
+                          name="billing[city]"
+                          options={cities}
+                          value={selectedBillingCityId}
+                          onChange={(value) => {
+                            setSelectedBillingCityId(value);
+                            setSelectedBillingDistrictId("");
+                          }}
+                          placeholder="Seçiniz"
+                          required
+                          searchPlaceholder="Şehir ara..."
+                        />
+                      </fieldset>
 
-                    <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
-                      <label htmlFor="billing-email">E-Posta Adresi</label>
-                      <input required type="email" autoComplete="abc@xyz.com" id="billing-email" name="billing[email]" />
-                    </fieldset>
+                      <fieldset className="fieldset">
+                        <label htmlFor="billing-district">İlçe</label>
+                        <SearchableSelect
+                          id="billing-district"
+                          name="billing[district]"
+                          options={billingDistricts}
+                          value={selectedBillingDistrictId}
+                          onChange={(value) => {
+                            setSelectedBillingDistrictId(value);
+                            setSelectedBillingNeighborhoodId("");
+                          }}
+                          placeholder={selectedBillingCityId ? "Seçiniz" : "Önce il seçiniz"}
+                          disabled={!selectedBillingCityId}
+                          required
+                          searchPlaceholder="İlçe ara..."
+                        />
+                      </fieldset>
 
-                    <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
-                      <label htmlFor="billing-city">İl</label>
-                      <SearchableSelect
-                        id="billing-city"
-                        name="billing[city]"
-                        options={cities}
-                        value={selectedBillingCityId}
-                        onChange={(value) => {
-                          setSelectedBillingCityId(value);
-                          setSelectedBillingDistrictId("");
-                        }}
-                        placeholder="Seçiniz"
-                        required
-                        searchPlaceholder="Şehir ara..."
-                      />
-                    </fieldset>
-
-                    <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
-                      <label htmlFor="billing-district">İlçe</label>
-                      <SearchableSelect
-                        id="billing-district"
-                        name="billing[district]"
-                        options={billingDistricts}
-                        value={selectedBillingDistrictId}
-                        onChange={(value) => {
-                          setSelectedBillingDistrictId(value);
-                          setSelectedBillingNeighborhoodId("");
-                        }}
-                        placeholder={selectedBillingCityId ? "Seçiniz" : "Önce il seçiniz"}
-                        disabled={!selectedBillingCityId}
-                        required
-                        searchPlaceholder="İlçe ara..."
-                      />
-                    </fieldset>
-
-                    <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
-                      <label htmlFor="billing-neighborhood">Mahalle*</label>
-                      <SearchableSelect
-                        id="billing-neighborhood"
-                        name="billing[neighborhood]"
-                        options={billingNeighborhoods}
-                        value={selectedBillingNeighborhoodId}
-                        onChange={(value) => {
-                          setSelectedBillingNeighborhoodId(value);
-                        }}
-                        placeholder={selectedBillingDistrictId ? "Seçiniz" : "Önce ilçe seçiniz"}
-                        disabled={!selectedBillingDistrictId}
-                        required
-                        searchPlaceholder="Mahalle ara..."
-                      />
-                    </fieldset>
+                      <fieldset className="fieldset">
+                        <label htmlFor="billing-neighborhood">Mahalle*</label>
+                        <SearchableSelect
+                          id="billing-neighborhood"
+                          name="billing[neighborhood]"
+                          options={billingNeighborhoods}
+                          value={selectedBillingNeighborhoodId}
+                          onChange={(value) => {
+                            setSelectedBillingNeighborhoodId(value);
+                          }}
+                          placeholder={selectedBillingDistrictId ? "Seçiniz" : "Önce ilçe seçiniz"}
+                          disabled={!selectedBillingDistrictId}
+                          required
+                          searchPlaceholder="Mahalle ara..."
+                        />
+                      </fieldset>
+                    </div>
 
                     <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
                       <label htmlFor="billing-address-detail">Adres Detayı</label>
@@ -1413,21 +1493,18 @@ export default function Checkout() {
             {selectedDeliveryAddressId !== null && (sameBillingAddress || selectedBillingAddressId !== null) && (
               <>
                 <PaymentOptions ref={paymentOptionsRef} cartTotal={cartTotals.total} />
-                {orderErrors.uzak_satis_sozlesmesi_accepted && (
-                  <div style={{ marginTop: "15px", padding: "12px", backgroundColor: "#fee", border: "1px solid #fcc", borderRadius: "6px", fontSize: "14px", color: "#c33" }}>
-                    {orderErrors.uzak_satis_sozlesmesi_accepted[0]}
-                  </div>
-                )}
+                
+                <CheckoutFAQs />
               </>
             )}
-            
+
             {/* POST İsteği Debug Paneli */}
             {(lastPostRequest || lastPostResponse) && (
-              <div style={{ 
-                marginTop: "20px", 
-                padding: "15px", 
-                backgroundColor: "#f8f9fa", 
-                border: "1px solid #dee2e6", 
+              <div style={{
+                marginTop: "20px",
+                padding: "15px",
+                backgroundColor: "#f8f9fa",
+                border: "1px solid #dee2e6",
                 borderRadius: "8px",
                 fontSize: "12px",
                 fontFamily: "monospace"
@@ -1448,11 +1525,11 @@ export default function Checkout() {
                     </div>
                     <div style={{ marginTop: "10px" }}>
                       <strong>Body:</strong>
-                      <pre style={{ 
-                        marginTop: "5px", 
-                        padding: "10px", 
-                        backgroundColor: "#fff", 
-                        border: "1px solid #dee2e6", 
+                      <pre style={{
+                        marginTop: "5px",
+                        padding: "10px",
+                        backgroundColor: "#fff",
+                        border: "1px solid #dee2e6",
                         borderRadius: "4px",
                         overflow: "auto",
                         maxHeight: "200px",
@@ -1463,7 +1540,7 @@ export default function Checkout() {
                     </div>
                   </div>
                 )}
-                
+
                 {lastPostResponse && (
                   <div>
                     <div style={{ fontWeight: "bold", marginBottom: "10px", color: lastPostResponse.status === 200 ? "#28a745" : "#dc3545" }}>
@@ -1477,11 +1554,11 @@ export default function Checkout() {
                     </div>
                     <div style={{ marginTop: "10px" }}>
                       <strong>Data:</strong>
-                      <pre style={{ 
-                        marginTop: "5px", 
-                        padding: "10px", 
-                        backgroundColor: "#fff", 
-                        border: "1px solid #dee2e6", 
+                      <pre style={{
+                        marginTop: "5px",
+                        padding: "10px",
+                        backgroundColor: "#fff",
+                        border: "1px solid #dee2e6",
                         borderRadius: "4px",
                         overflow: "auto",
                         maxHeight: "300px",
@@ -1494,15 +1571,23 @@ export default function Checkout() {
                 )}
               </div>
             )}
+              </>
+            )}
           </div>
-          <OrderSummary 
-            items={items} 
-            cartTotals={cartTotals} 
+          <OrderSummary
+            items={items}
+            cartTotals={cartTotals}
             onSubmitOrder={handleSubmitOrder}
             isSubmitting={isSubmittingOrder}
             orderErrors={orderErrors}
             orderErrorMessage={orderErrorMessage}
             onOrderNoteChange={handleOrderNoteChange}
+            onGiftNoteChange={handleGiftNoteChange}
+            onShowOrderNoteChange={handleShowOrderNoteChange}
+            onShowGiftNoteChange={handleShowGiftNoteChange}
+            // Sözleşme onayı
+            acceptedAgreements={acceptedAgreements}
+            onAcceptedAgreementsChange={setAcceptedAgreements}
           />
         </div>
       </div>

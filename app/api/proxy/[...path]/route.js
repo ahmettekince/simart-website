@@ -97,6 +97,17 @@ async function handleRequest(request, params, method) {
             validateStatus: () => true, // Tüm status kodlarını kabul et (Set-Cookie header'larını almak için)
         });
 
+        // Backend'den gelen yanıt 200 değilse (400, 404, 500 vb.) terminale detaylı log bas
+        if (response.status !== 200) {
+            console.log(`\n--- [Proxy API Error] ---`);
+            console.log(`Path: ${path}`);
+            console.log(`Method: ${method}`);
+            console.log(`Status: ${response.status}`);
+            console.log(`Target URL: ${targetUrl}`);
+            console.log(`Response Data:`, JSON.stringify(response.data, null, 2));
+            console.log(`-------------------------\n`);
+        }
+
         // Backend'den gelen Set-Cookie header'larını NextResponse'a aktar
         const nextResponse = NextResponse.json(response.data, { status: response.status });
         

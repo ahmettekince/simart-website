@@ -3,9 +3,13 @@
 import { useEffect, useState, useRef } from "react";
 
 export default function Quantity({ setQuantity = (value) => { }, minQuantity = 1, maxQuantity = null, initialValue = null, disabled = false }) {
+  // Global maksimum limit
+  const GLOBAL_MAX = 999;
+
   // maxQuantity = 0 ise sınırsız (null), değilse o değere kadar sınırlı
   const parsedMax = maxQuantity === null || maxQuantity === undefined ? null : Number(maxQuantity);
-  const effectiveMax = parsedMax === 0 ? null : (Number.isFinite(parsedMax) ? parsedMax : null);
+  let effectiveMax = parsedMax === 0 || parsedMax === null ? GLOBAL_MAX : Math.min(parsedMax, GLOBAL_MAX);
+  
   // initialValue varsa onu kullan, yoksa minQuantity kullan
   const [count, setCount] = useState(initialValue !== null && initialValue !== undefined ? initialValue : minQuantity);
 
@@ -61,21 +65,25 @@ export default function Quantity({ setQuantity = (value) => { }, minQuantity = 1
 
   const handleIncrease = () => {
     if (disabled) return;
-    const newCount = count + 1;
-    // effectiveMax null ise sınırsız, değilse kontrol et
-    if (effectiveMax === null || effectiveMax === undefined || newCount <= effectiveMax) {
+    
+    const currentCount = Number(count) || 0;
+    const newCount = currentCount + 1;
+    
+    if (newCount <= effectiveMax) {
       const finalValue = updateCount(newCount);
-      setQuantity(finalValue); // setQuantity'yi direkt çağır
+      setQuantity(finalValue);
     }
   };
 
   const handleInputChange = (e) => {
     if (disabled) return;
     isUserInputRef.current = true; // Kullanıcı input'a dokundu
-    const inputValue = e.target.value;
+    
+    // Sadece rakamlara izin ver (regex ile temizle)
+    const inputValue = e.target.value.replace(/\D/g, "");
 
     // Boş değer ise boş bırak (kullanıcı yazarken kontrol yapma)
-    if (inputValue === "" || inputValue === null || inputValue === undefined) {
+    if (inputValue === "") {
       setCount("");
       return;
     }
@@ -83,14 +91,14 @@ export default function Quantity({ setQuantity = (value) => { }, minQuantity = 1
     // Sadece sayı karakterlerine izin ver
     const numValue = parseInt(inputValue, 10);
 
-    // Geçerli bir sayı değilse veya 0'dan küçükse boş bırak (kullanıcı yazmaya devam edebilsin)
+    // 0 veya geçersiz ise boş bırak
     if (isNaN(numValue) || numValue < 1) {
       setCount("");
       return;
     }
 
     // Max kontrolü - eğer max'tan fazlaysa max'a çek ve hemen API'ye istek at
-    if (effectiveMax !== null && effectiveMax !== undefined && effectiveMax > 0 && numValue > effectiveMax) {
+    if (numValue > effectiveMax) {
       const finalValue = effectiveMax;
       setCount(finalValue);
       setQuantity(finalValue); // Hemen API'ye istek at
@@ -125,9 +133,9 @@ export default function Quantity({ setQuantity = (value) => { }, minQuantity = 1
       return;
     }
 
-    // Max kontrolü (sadece maxQuantity 0 değilse)
+    // Max kontrolü
     let finalValue = numValue;
-    if (effectiveMax !== null && effectiveMax !== undefined && effectiveMax > 0 && numValue > effectiveMax) {
+    if (numValue > effectiveMax) {
       finalValue = effectiveMax;
       setCount(finalValue);
     } else {
@@ -139,22 +147,27 @@ export default function Quantity({ setQuantity = (value) => { }, minQuantity = 1
     isUserInputRef.current = false; // Reset flag
   };
 
+  const isMinusDisabled = disabled || count === "" || Number(count) <= minQuantity;
+  const isPlusDisabled = disabled || count === "" || Number(count) >= effectiveMax;
+
   return (
     <div className="wg-quantity">
       <span
-        className={`btn-quantity minus-btn ${disabled || (count === "" || count === null || count === undefined || count <= minQuantity) ? "disabled" : ""}`}
+        className={`btn-quantity minus-btn ${isMinusDisabled ? "disabled" : ""}`}
         onClick={handleDecrease}
         style={{
-          opacity: disabled || (count === "" || count === null || count === undefined || count <= minQuantity) ? 0.5 : 1,
-          cursor: disabled || (count === "" || count === null || count === undefined || count <= minQuantity) ? "not-allowed" : "pointer",
+          opacity: isMinusDisabled ? 0.5 : 1,
+          cursor: isMinusDisabled ? "not-allowed" : "pointer",
         }}
       >
         -
       </span>
       <input
         min={minQuantity}
-        max={effectiveMax || undefined}
-        type="number"
+        max={effectiveMax}
+        type="text"
+        inputMode="numeric"
+        pattern="[0-9]*"
         onChange={handleInputChange}
         onBlur={handleInputBlur}
         name="number"
@@ -162,24 +175,21 @@ export default function Quantity({ setQuantity = (value) => { }, minQuantity = 1
         disabled={disabled}
         style={{
           textAlign: "center",
-          WebkitAppearance: "textfield",
-          MozAppearance: "textfield",
           opacity: disabled ? 0.5 : 1,
           cursor: disabled ? "not-allowed" : "text",
         }}
         className="quantity-input-no-spinner"
       />
       <span
-        className={`btn-quantity plus-btn ${disabled || (effectiveMax !== null && effectiveMax !== undefined && effectiveMax > 0 && count >= effectiveMax) ? "disabled" : ""}`}
+        className={`btn-quantity plus-btn ${isPlusDisabled ? "disabled" : ""}`}
         onClick={handleIncrease}
         style={{
-          opacity: disabled || (effectiveMax !== null && effectiveMax !== undefined && effectiveMax > 0 && count >= effectiveMax) ? 0.5 : 1,
-          cursor: disabled || (effectiveMax !== null && effectiveMax !== undefined && effectiveMax > 0 && count >= effectiveMax) ? "not-allowed" : "pointer",
+          opacity: isPlusDisabled ? 0.5 : 1,
+          cursor: isPlusDisabled ? "not-allowed" : "pointer",
         }}
       >
         +
       </span>
     </div>
-
   );
 }

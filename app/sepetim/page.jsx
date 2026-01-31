@@ -13,7 +13,6 @@ export default function page() {
     <>
       <Header />
       <Cart />
-      <Testimonials />
       <RecentProducts />
     </>
   );

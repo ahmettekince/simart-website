@@ -25,8 +25,8 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
       // Kart numarasından boşlukları temizle
       const cleanCardNumber = cardNumber.replace(/\s/g, "");
 
-      // İlk 6 haneyi kontrol et
-      if (cleanCardNumber.length >= 6) {
+      // Sadece tam 6 hane olduğunda istek at (6'dan fazla olduğunda istek atma)
+      if (cleanCardNumber.length === 6) {
         const bin = cleanCardNumber.substring(0, 6);
         const amount = cartTotal.toFixed(2);
 
@@ -62,7 +62,7 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
         } finally {
           setIsLoadingInstallments(false);
         }
-      } else {
+      } else if (cleanCardNumber.length < 6) {
         // 6 haneden az ise taksit seçeneklerini temizle
         setInstallmentOptions([]);
         setPaymentType(null);
@@ -70,6 +70,7 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
         setCampaign(null);
         setSelectedInstallment(1);
       }
+      // 6'dan fazla hane varsa hiçbir şey yapma (zaten BIN aynı, tekrar istek atmaya gerek yok)
     };
 
     // Debounce için timeout kullan
@@ -88,7 +89,7 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
       if (expiryYear && expiryYear.length === 4) {
         formattedYear = expiryYear.substring(2);
       }
-      
+
       return {
         card_holder_name: cardHolderName,
         card_number: cardNumber.replace(/\s/g, ""), // Boşlukları temizle
@@ -142,14 +143,6 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
                 gap: 20px !important;
               }
             }
-            .payment-checkbox::before {
-              content: none !important;
-              display: none !important;
-            }
-            .payment-checkbox:checked::before {
-              content: none !important;
-              display: none !important;
-            }
           `
         }} />
         {/* Sol Sütun - Kart Formu */}
@@ -164,7 +157,10 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
               name="card-holder"
               placeholder="AD SOYAD"
               value={cardHolderName}
-              onChange={(e) => setCardHolderName(e.target.value.toUpperCase())}
+              onChange={(e) => {
+                const value = e.target.value.replace(/\d/g, "");
+                setCardHolderName(value.toUpperCase());
+              }}
               style={{
                 width: "100%",
                 padding: "12px 15px",
@@ -197,7 +193,7 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
               placeholder="1234 5678 9012 3456"
               value={cardNumber}
               onChange={(e) => {
-                let value = e.target.value.replace(/\s/g, "");
+                let value = e.target.value.replace(/\D/g, "");
                 if (value.length <= 16) {
                   value = value.match(/.{1,4}/g)?.join(" ") || value;
                   setCardNumber(value);
@@ -344,28 +340,6 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
               />
             </div>
           </fieldset>
-
-          {/* Şartlar ve Koşullar */}
-          <div style={{ marginTop: "20px" }}>
-            <label style={{ display: "flex", alignItems: "flex-start", gap: "10px", cursor: "pointer", fontSize: "13px", color: "#666", lineHeight: "1.5" }}>
-              <input
-                type="checkbox"
-                required
-                style={{ 
-                  marginTop: "3px", 
-                  cursor: "pointer", 
-                  flexShrink: 0,
-                  width: "16px",
-                  height: "16px",
-                  minWidth: "16px"
-                }}
-                className="payment-checkbox"
-              />
-              <span>
-                Gizlilik Politikasını, Şartlar ve Koşulları ve İade ve Geri Ödeme Politikası okudum, kabul ediyorum.
-              </span>
-            </label>
-          </div>
         </div>
 
         {/* Sağ Sütun - Taksit Seçenekleri */}
