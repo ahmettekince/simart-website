@@ -11,14 +11,6 @@ export async function getCart() {
             validateStatus: (status) => status === 200 || status === 404,
         });
 
-        // Response geldiğinde hangi component'ten geldiğini göster
-        const stackTrace = new Error().stack;
-        log(`[getCart] ✅ Response geldi - Status: ${response.status}`, {
-            status: response.status,
-            statusText: response.statusText,
-            stackTrace: stackTrace
-        });
-
         if (response.status === 404) {
             return null;
         }
@@ -93,15 +85,6 @@ export async function getCart() {
     } catch (error) {
         // Axios error response detaylarını logla
         if (error.response) {
-            // Server'dan response geldi (400, 500, vb.)
-            const stackTrace = new Error().stack;
-            console.error(`[getCart] ❌ Error Response geldi - Status: ${error.response.status}`, {
-                status: error.response.status,
-                statusText: error.response.statusText,
-                data: error.response.data,
-                url: error.config?.url,
-                stackTrace: stackTrace
-            });
             log("[API cart.js] getCart error response:", {
                 status: error.response.status,
                 statusText: error.response.statusText,

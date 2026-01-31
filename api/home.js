@@ -27,8 +27,10 @@ export async function getCategories() {
  */
 export async function getBanners() {
     try {
-        // Banner için retry
-        const response = await serverFetch("/banners?type=slider", {
+        // Banner için retry - POST ile body'de type gönder
+        const response = await serverFetch("/banners", {
+            method: "POST",
+            body: { type: "slider" },
             cache: "no-store",
             retries: 2, // Banner için 2 retry
         });
@@ -70,7 +72,9 @@ export async function getBanners() {
  */
 export async function getCollectionBanner() {
     try {
-        const response = await serverFetch("/banners?type=collectionbanner", {
+        const response = await serverFetch("/banners", {
+            method: "POST",
+            body: { type: "collectionbanner" },
             next: { revalidate: 0 }
         });
 
@@ -112,7 +116,9 @@ export async function getCollectionBanner() {
  */
 export async function getCollections() {
     try {
-        const response = await serverFetch("/banners?type=collections", {
+        const response = await serverFetch("/banners", {
+            method: "POST",
+            body: { type: "collections" },
             next: { revalidate: 0 }
         });
 

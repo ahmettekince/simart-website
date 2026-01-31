@@ -194,6 +194,7 @@ export default function Slider5({
           style={{ touchAction: "pan-y" }}
           spaceBetween={10}
           slidesPerView={1}
+          autoHeight={true}
           navigation={{
             nextEl: ".swiper-button-next",
             prevEl: ".swiper-button-prev",

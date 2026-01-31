@@ -285,3 +285,44 @@
     width: 100% !important;
   }
 }
+
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Alt fotolar (thumbnailler) - sabit 1:1 oran, tutarlı boyut */
+.thumbs-slider .tf-product-media-thumbs {
+  .swiper-slide {
+    aspect-ratio: 1;
+    overflow: hidden;
+    height: auto !important;
+    flex-shrink: 0;
+
+    .item {
+      aspect-ratio: 1;
+      overflow: hidden;
+      position: relative;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+  }
+}
+
+@media (max-width: 1149px) {
+  .thumbs-slider .tf-product-media-thumbs .swiper-slide {
+    width: 72px !important;
+    min-width: 72px;
+  }
+}

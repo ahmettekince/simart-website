@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import { decodeHtmlEntities } from "@/utils/stripHtml";
 
@@ -15,6 +15,20 @@ export default function ShopDetailsTab({ product }) {
   const [currentTab, setCurrentTab] = useState(1);
   const [filterRating, setFilterRating] = useState(null);
   const [sortOrder, setSortOrder] = useState("default");
+  const [previewImage, setPreviewImage] = useState(null);
+
+  useEffect(() => {
+    if (!previewImage) return;
+    const handleEscape = (e) => {
+      if (e.key === "Escape") setPreviewImage(null);
+    };
+    document.addEventListener("keydown", handleEscape);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", handleEscape);
+      document.body.style.overflow = "";
+    };
+  }, [previewImage]);
 
   const reviewCount = product?.reviews?.count || product?.reviews_count || product?.review_count || 0;
 
@@ -160,27 +174,38 @@ export default function ShopDetailsTab({ product }) {
                       <div className="tf-product-reviews">
                         {/* Sıralama dropdown + Yıldız filtreleri */}
                         <div className="d-flex flex-wrap justify-content-between align-items-center mb_20" style={{ gap: "16px" }}>
-                          <div className="d-flex flex-wrap align-items-center" style={{ gap: "10px" }}>
+                          <div
+                            className="d-flex flex-nowrap align-items-center hide-scrollbar"
+                            style={{
+                              gap: "8px",
+                              overflowX: "auto",
+                              overflowY: "hidden",
+                              minWidth: 0,
+                              flex: "1 1 0",
+                              WebkitOverflowScrolling: "touch",
+                            }}
+                          >
                           <button
                             type="button"
                             onClick={() => setFilterRating(null)}
                             style={{
-                              padding: "8px 14px",
+                              padding: "6px 11px",
                               borderRadius: "999px",
                               border: filterRating === null ? "2px solid #f59e0b" : "1px solid #ddd",
                               background: "#fff",
                               color: filterRating === null ? "#b45309" : "#666",
                               cursor: "pointer",
-                              fontSize: "14px",
+                              fontSize: "12px",
                               fontWeight: "500",
                               display: "flex",
                               alignItems: "center",
-                              gap: "6px",
+                              gap: "4px",
+                              flexShrink: 0,
                             }}
                           >
                             <span>Tümü</span>
                             <span>({reviewCount})</span>
-                            {filterRating === null && <i className="icon-check" style={{ color: "#f59e0b", fontSize: "12px" }} />}
+                            {filterRating === null && <i className="icon-check" style={{ color: "#f59e0b", fontSize: "10px" }} />}
                           </button>
                           {[5, 4, 3, 2, 1].map((star) =>
                             ratingCounts[star] > 0 ? (
@@ -189,27 +214,28 @@ export default function ShopDetailsTab({ product }) {
                                 type="button"
                                 onClick={() => setFilterRating(filterRating === star ? null : star)}
                                 style={{
-                                  padding: "8px 14px",
+                                  padding: "6px 11px",
                                   borderRadius: "999px",
                                   border: filterRating === star ? "2px solid #f59e0b" : "1px solid #ddd",
                                   background: "#fff",
                                   color: filterRating === star ? "#b45309" : "#333",
                                   cursor: "pointer",
-                                  fontSize: "14px",
+                                  fontSize: "12px",
                                   fontWeight: "500",
                                   display: "flex",
                                   alignItems: "center",
-                                  gap: "6px",
+                                  gap: "4px",
+                                  flexShrink: 0,
                                 }}
                               >
-                                <i className="icon-star star-filled" style={{ color: "#f59e0b", fontSize: "14px" }} />
+                                <i className="icon-star star-filled" style={{ color: "#f59e0b", fontSize: "12px" }} />
                                 <span>{star}</span>
                                 <span>{ratingLabels[star]}</span>
                                 <span>({ratingCounts[star]})</span>
                                 {filterRating === star ? (
-                                  <i className="icon-check" style={{ color: "#f59e0b", fontSize: "12px" }} />
+                                  <i className="icon-check" style={{ color: "#f59e0b", fontSize: "10px" }} />
                                 ) : (
-                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#999" }}>
+                                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#999" }}>
                                     <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
                                   </svg>
                                 )}
@@ -217,23 +243,24 @@ export default function ShopDetailsTab({ product }) {
                             ) : null
                           )}
                           </div>
-                          <div>
+                          <div style={{ flexShrink: 0 }}>
                             <select
                               value={sortOrder}
                               onChange={(e) => setSortOrder(e.target.value)}
                               style={{
-                                padding: "8px 32px 8px 14px",
-                                borderRadius: "8px",
+                                padding: "6px 26px 6px 10px",
+                                borderRadius: "6px",
                                 border: "1px solid #ddd",
                                 background: "#fff",
                                 color: "#333",
-                                fontSize: "14px",
+                                fontSize: "12px",
                                 fontWeight: "500",
                                 cursor: "pointer",
                                 appearance: "none",
-                                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E")`,
+                                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 8L1 3h10z'/%3E%3C/svg%3E")`,
                                 backgroundRepeat: "no-repeat",
-                                backgroundPosition: "right 12px center",
+                                backgroundPosition: "right 8px center",
+                                maxWidth: "100px",
                               }}
                             >
                               {SORT_OPTIONS.map((opt) => (
@@ -296,20 +323,45 @@ export default function ShopDetailsTab({ product }) {
                               </p>
                             </div>
                             {review.images?.length > 0 && (
-                              <div className="review-images d-flex flex-nowrap gap-10" style={{ overflowX: "auto", paddingBottom: "4px" }}>
-                                {review.images.map((img) => (
-                                  <div key={img.id} className="review-image-wrapper" style={{ borderRadius: "8px", overflow: "hidden", border: "1px solid #eee", flexShrink: 0 }}>
-                                    <Image
-                                      src={img.thumbnail_url || img.url}
-                                      alt="Yorum görseli"
-                                      width={80}
-                                      height={80}
-                                      style={{ objectFit: "cover", cursor: "pointer" }}
-                                      className="hover-zoom"
-                                      unoptimized
-                                    />
-                                  </div>
-                                ))}
+                              <div className="review-images d-flex flex-nowrap gap-10 hide-scrollbar" style={{ overflowX: "auto", paddingBottom: "4px" }}>
+                                {review.images.map((img, imgIdx) => {
+                                  const imgUrl = img.url || img.thumbnail_url;
+                                  const thumbUrl = img.thumbnail_url || img.url;
+                                  const allUrls = review.images.map((i) => i.url || i.thumbnail_url);
+                                  return (
+                                    <button
+                                      key={img.id}
+                                      type="button"
+                                      onClick={() =>
+                                        setPreviewImage({
+                                          url: imgUrl,
+                                          urls: allUrls,
+                                          index: imgIdx,
+                                        })
+                                      }
+                                      className="review-image-wrapper"
+                                      style={{
+                                        borderRadius: "8px",
+                                        overflow: "hidden",
+                                        border: "1px solid #eee",
+                                        flexShrink: 0,
+                                        cursor: "pointer",
+                                        padding: 0,
+                                        background: "none",
+                                      }}
+                                    >
+                                      <Image
+                                        src={thumbUrl}
+                                        alt="Yorum görseli"
+                                        width={80}
+                                        height={80}
+                                        style={{ objectFit: "cover", display: "block" }}
+                                        className="hover-zoom"
+                                        unoptimized
+                                      />
+                                    </button>
+                                  );
+                                })}
                               </div>
                             )}
                           </div>
@@ -404,7 +456,7 @@ export default function ShopDetailsTab({ product }) {
       {/* Açıklama Fotoğrafları Bölümü - Widgets Tab Altında ve Section Olarak */}
       {currentTab == 1 && (
         <section className="pl_35 pr_35">
-          <div className="container">
+          <div className="container-fluid">
             <div className="row">
               <div className="col-12" >
                 {product?.description && (
@@ -417,6 +469,117 @@ export default function ShopDetailsTab({ product }) {
             </div>
           </div>
         </section>
+      )}
+
+      {/* Yorum fotoğrafı preview lightbox */}
+      {previewImage && (
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => setPreviewImage(null)}
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 9999,
+            background: "rgba(0,0,0,0.9)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+          }}
+        >
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setPreviewImage(null);
+            }}
+            style={{
+              position: "absolute",
+              top: 12,
+              right: 12,
+              width: 32,
+              height: 32,
+              borderRadius: "50%",
+              border: "none",
+              background: "rgba(255,255,255,0.2)",
+              color: "#fff",
+              fontSize: 18,
+              cursor: "pointer",
+              lineHeight: 1,
+              zIndex: 10,
+            }}
+          >
+            ×
+          </button>
+          {previewImage.urls?.length > 1 && (
+            <>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const prevIdx = previewImage.index <= 0 ? previewImage.urls.length - 1 : previewImage.index - 1;
+                  setPreviewImage((p) => ({ ...p, url: p.urls[prevIdx], index: prevIdx }));
+                }}
+                style={{
+                  position: "absolute",
+                  left: 12,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  width: 36,
+                  height: 36,
+                  borderRadius: "50%",
+                  border: "none",
+                  background: "rgba(255,255,255,0.2)",
+                  color: "#fff",
+                  fontSize: 18,
+                  cursor: "pointer",
+                  zIndex: 10,
+                }}
+              >
+                ‹
+              </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const nextIdx = previewImage.index >= previewImage.urls.length - 1 ? 0 : previewImage.index + 1;
+                  setPreviewImage((p) => ({ ...p, url: p.urls[nextIdx], index: nextIdx }));
+                }}
+                style={{
+                  position: "absolute",
+                  right: 12,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  width: 36,
+                  height: 36,
+                  borderRadius: "50%",
+                  border: "none",
+                  background: "rgba(255,255,255,0.2)",
+                  color: "#fff",
+                  fontSize: 18,
+                  cursor: "pointer",
+                  zIndex: 10,
+                }}
+              >
+                ›
+              </button>
+            </>
+          )}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={previewImage.url}
+            alt="Yorum görseli"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: "90%",
+              maxHeight: "90vh",
+              objectFit: "contain",
+              position: "relative",
+              zIndex: 1,
+            }}
+          />
+        </div>
       )}
     </>
   );
