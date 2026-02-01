@@ -455,7 +455,7 @@ export default function ShopDetailsTab({ product }) {
 
       {/* Açıklama Fotoğrafları Bölümü - Widgets Tab Altında ve Section Olarak */}
       {currentTab == 1 && (
-        <section className="pl_35 pr_35">
+        <section className="" style={{ overflowX: "hidden" }}>
           <div className="container-fluid">
             <div className="row">
               <div className="col-12" >

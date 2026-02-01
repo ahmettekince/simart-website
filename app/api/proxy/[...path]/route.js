@@ -114,13 +114,7 @@ async function handleRequest(request, params, method) {
         // Set-Cookie header'larını kontrol et ve ekle
         // Axios response headers'ında Set-Cookie'ler lowercase 'set-cookie' olarak gelir ve array olabilir
         const setCookieHeaders = response.headers['set-cookie'];
-        
-        // Debug: Sadece Set-Cookie header'larını logla
-        if (process.env.NODE_ENV === 'development') {
-            if (setCookieHeaders) {
-                console.log('[Proxy] Set-Cookie:', setCookieHeaders);
-            }
-        }
+
         if (setCookieHeaders && Array.isArray(setCookieHeaders)) {
             setCookieHeaders.forEach(cookie => {
                 // Cookie string'ini parse et ve NextResponse'a ekle

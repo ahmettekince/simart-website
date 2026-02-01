@@ -91,23 +91,18 @@ export const useCartStore = create(
             }
 
             try {
-                // API'ye istek at
+                // API'ye istek at (addToCart zaten getCart çağırıp cartData döndürüyor)
                 const cartData = await addToCartAPI(productSlug, quantity);
 
-                // API başarılı döndüyse, güncel sepeti çek ve store'u güncelle
                 if (cartData) {
-                    const updatedCart = await getCart();
-                    if (updatedCart) {
-                        get().syncFromAPI(updatedCart);
-                        log('[CartStore] addItem - Store updated');
+                    get().syncFromAPI(cartData);
+                    log('[CartStore] addItem - Store updated');
 
-                        // Modal açılması gerekiyorsa
-                        if (openModal) {
-                            if (typeof window !== 'undefined') {
-                                setTimeout(() => {
-                                    openCartModal();
-                                }, 100);
-                            }
+                    if (openModal) {
+                        if (typeof window !== 'undefined') {
+                            setTimeout(() => {
+                                openCartModal();
+                            }, 100);
                         }
                     }
                 } else {

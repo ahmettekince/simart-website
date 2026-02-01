@@ -159,12 +159,15 @@ export default function Slider5({
         className="swiper tf-product-media-thumbs other-image-zoom"
         onSwiper={setThumbsSwiper}
         modules={[Thumbs]}
+        allowTouchMove={true}
         breakpoints={{
           0: {
             direction: "horizontal",
+            slidesPerView: "auto",
           },
           1150: {
             direction: "vertical",
+            slidesPerView: 7.1,
           },
         }}
       >
