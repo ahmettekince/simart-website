@@ -19,6 +19,7 @@ export default function Cart() {
 
   const [isClearingCart, setIsClearingCart] = React.useState(false);
   const [showClearConfirm, setShowClearConfirm] = React.useState(false);
+  const [loadingQuantityFor, setLoadingQuantityFor] = React.useState(null);
 
   // Totals hesaplamasını useMemo ile memoize et
   const cartTotals = useMemo(() => {
@@ -48,10 +49,13 @@ export default function Cart() {
 
   const setItemQuantity = async (id, quantity) => {
     if (quantity >= 1) {
+      setLoadingQuantityFor(id);
       try {
         await updateQuantity(id, quantity);
       } catch (error) {
         console.error("Miktar güncelleme hatası:", error);
+      } finally {
+        setLoadingQuantityFor(null);
       }
     }
   };
@@ -176,7 +180,7 @@ export default function Cart() {
                                   </td>
                                   <td className="tf-cart-item_quantity" cart-data-title="Miktar">
                                     <div className="cart-quantity">
-                                      <Quantity setQuantity={(qty) => setItemQuantity(item.id, qty)} initialValue={item.quantity} minQuantity={1} maxQuantity={maxQty} />
+                                      <Quantity isLoading={loadingQuantityFor === item.id} setQuantity={(qty) => setItemQuantity(item.id, qty)} initialValue={item.quantity} minQuantity={1} maxQuantity={maxQty} />
                                       {item.applied_campaign_ids?.length > 0 && applied_campaigns && (
                                         <div style={{ marginTop: '8px' }}>
                                           {item.applied_campaign_ids.map((campaignId) => {

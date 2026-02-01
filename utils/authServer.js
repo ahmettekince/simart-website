@@ -38,7 +38,7 @@ export async function checkAuthServer() {
         decrypted += decipher.final('utf8');
         
         const isAuthenticated = decrypted === 'true';
-        // console.log(`[Server Auth] isAuthenticated: ${isAuthenticated}`);
+        console.log(`[Server Auth] isAuthenticated: ${isAuthenticated}`);
         return isAuthenticated;
     } catch (e) {
         // console.error("Server Auth check error:", e);

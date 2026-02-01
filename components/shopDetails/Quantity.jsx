@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 
-export default function Quantity({ setQuantity = (value) => { }, minQuantity = 1, maxQuantity = null, initialValue = null, disabled = false }) {
+export default function Quantity({ setQuantity = (value) => { }, minQuantity = 1, maxQuantity = null, initialValue = null, disabled = false, isLoading = false }) {
   // Global maksimum limit
   const GLOBAL_MAX = 999;
 
@@ -51,7 +51,7 @@ export default function Quantity({ setQuantity = (value) => { }, minQuantity = 1
   };
 
   const handleDecrease = () => {
-    if (disabled) return;
+    if (disabled || isLoading) return;
     // Minimum 1 kontrolü - 1'den küçük olamaz
     if (count <= minQuantity) {
       return;
@@ -64,7 +64,7 @@ export default function Quantity({ setQuantity = (value) => { }, minQuantity = 1
   };
 
   const handleIncrease = () => {
-    if (disabled) return;
+    if (disabled || isLoading) return;
     
     const currentCount = Number(count) || 0;
     const newCount = currentCount + 1;
@@ -76,7 +76,7 @@ export default function Quantity({ setQuantity = (value) => { }, minQuantity = 1
   };
 
   const handleInputChange = (e) => {
-    if (disabled) return;
+    if (disabled || isLoading) return;
     isUserInputRef.current = true; // Kullanıcı input'a dokundu
     
     // Sadece rakamlara izin ver (regex ile temizle)
@@ -110,6 +110,7 @@ export default function Quantity({ setQuantity = (value) => { }, minQuantity = 1
   };
 
   const handleInputBlur = (e) => {
+    if (isLoading) return;
     // Input'tan çıkıldığında min/max kontrolü yap
     const inputValue = e.target.value;
 
@@ -147,11 +148,41 @@ export default function Quantity({ setQuantity = (value) => { }, minQuantity = 1
     isUserInputRef.current = false; // Reset flag
   };
 
-  const isMinusDisabled = disabled || count === "" || Number(count) <= minQuantity;
-  const isPlusDisabled = disabled || count === "" || Number(count) >= effectiveMax;
+  const isMinusDisabled = disabled || isLoading || count === "" || Number(count) <= minQuantity;
+  const isPlusDisabled = disabled || isLoading || count === "" || Number(count) >= effectiveMax;
 
   return (
-    <div className="wg-quantity">
+    <div className="wg-quantity" style={{ position: "relative" }}>
+      {isLoading && (
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "6px",
+            backgroundColor: "rgba(255,255,255,0.9)",
+            borderRadius: "inherit",
+            zIndex: 5,
+          }}
+        >
+          <div
+            className="spinner-border"
+            role="status"
+            style={{
+              width: "16px",
+              height: "16px",
+              borderWidth: "2px",
+              borderColor: "var(--primary, #1c355e)",
+              borderRightColor: "transparent",
+            }}
+          >
+            <span className="visually-hidden">Yükleniyor...</span>
+          </div>
+          <span style={{ fontSize: "11px", color: "#666", fontWeight: "500" }}>Yükleniyor</span>
+        </div>
+      )}
       <span
         className={`btn-quantity minus-btn ${isMinusDisabled ? "disabled" : ""}`}
         onClick={handleDecrease}

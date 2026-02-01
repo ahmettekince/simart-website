@@ -12,7 +12,7 @@ import { getCartRecommendations } from "@/api/cart";
  * Cart modal içinde "Şunları da beğenebilirsiniz" alanı.
  * Sepette ürün yoksa API'den önerileri çeker, varsa props'tan gelen ürünleri gösterir.
  */
-export default function CartRecommendations({ title = "Şunları da beğenebilirsiniz", products = [], maxItems = 10, showWhenEmpty = false }) {
+export default function CartRecommendations({ title = "İlginizi çekebilecekler", products = [], maxItems = 10, showWhenEmpty = false }) {
   const { items } = useCartStore();
   const [apiRecommendations, setApiRecommendations] = useState([]);
   const [loading, setLoading] = useState(false);

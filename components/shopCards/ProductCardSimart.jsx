@@ -110,8 +110,8 @@ export default function ProductCardSimart({ product }) {
         </div>
 
         <div className="price-slot">
-          {oldPrice && <span className="price-old">₺{oldPrice.toLocaleString("tr-TR")}</span>}
           <span className="price-new fw-bold">₺{finalPrice.toLocaleString("tr-TR")}</span>
+          {oldPrice && <span className="price-old">₺{oldPrice.toLocaleString("tr-TR")}</span>}
         </div>
 
         <div className="button-row">
@@ -303,7 +303,7 @@ export default function ProductCardSimart({ product }) {
           font-size: 13px;
           text-decoration: line-through;
           color: #999;
-          margin-right: 8px;
+          margin-left: 8px;
         }
         .price-new {
           font-size: 16px;

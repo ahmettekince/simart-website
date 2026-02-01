@@ -1,3 +1,16 @@
+/* Abone Olun input - font size 24px */
+.footer-newsletter .form-newsletter .subscribe-email,
+.footer-newsletter .subscribe-content input {
+  font-size: 16px !important;
+}
+
+/* Giriş Yap ve Kayıt Ol inputları - font size 16px */
+.form-sign-in .tf-field-input,
+.tf-login-wrap .tf-field-input,
+.form-register-wrap .tf-field-input {
+  font-size: 16px !important;
+}
+
 /* CSS for circular zoom pane */
 .zoom-magnifier-containing .drift-zoom-pane {
   border-radius: 50%;
@@ -300,16 +313,16 @@
   }
 }
 
-/* Alt fotolar (thumbnailler) - sabit 1:1 oran, tutarlı boyut */
+/* Alt fotolar (thumbnailler) - 4:3 oran */
 .thumbs-slider .tf-product-media-thumbs {
   .swiper-slide {
-    aspect-ratio: 1;
+    aspect-ratio: 3 / 4;
     overflow: hidden;
     height: auto !important;
     flex-shrink: 0;
 
     .item {
-      aspect-ratio: 1;
+      aspect-ratio: 3 / 4;
       overflow: hidden;
       position: relative;
       width: 100%;

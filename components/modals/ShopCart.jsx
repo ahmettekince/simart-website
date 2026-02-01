@@ -369,8 +369,9 @@ export default function ShopCart() {
                                         )}
                                       </div>
                                       <div className="tf-mini-cart-btns">
-                                        <div className={`wg-quantity small ${isAnyLoading ? "disabled" : ""}`} style={{ opacity: isAnyLoading ? 0.5 : 1, pointerEvents: isAnyLoading ? "none" : "auto" }}>
+                                        <div className={`wg-quantity small ${isAnyLoading ? "disabled" : ""}`} style={{ pointerEvents: isAnyLoading ? "none" : "auto" }}>
                                           <Quantity
+                                            isLoading={isAnyLoading}
                                             setQuantity={(qty) => {
                                               if (!isAnyLoading && qty >= minQty) {
                                                 // Max kontrolü (sadece maxQty 0 değilse)

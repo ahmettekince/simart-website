@@ -226,16 +226,18 @@ export default function Slider1ZoomOuter({
         dir="ltr"
         direction="vertical"
         spaceBetween={10}
-        slidesPerView={6}
+        slidesPerView={5}
         className="tf-product-media-thumbs other-image-zoom"
         onSwiper={setThumbsSwiper}
         modules={[Thumbs]}
+        allowTouchMove={true}
         breakpoints={{
           0: {
             direction: "horizontal",
           },
           1150: {
             direction: "vertical",
+            slidesPerView: 5,
           },
         }}
       >
