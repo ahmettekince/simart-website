@@ -588,6 +588,16 @@ export default function Checkout() {
 
   return (
     <section className="flat-spacing-11">
+      {/* Mobil sepet tutarı bar - sadece mobilde görünür */}
+      <div className="checkout-mobile-cart-bar">
+        <div className="checkout-mobile-cart-bar-row">
+          <span className="checkout-mobile-cart-bar-label">Sepet tutarı</span>
+          <div className="checkout-mobile-cart-bar-right">
+            <span className="checkout-mobile-cart-bar-price">₺{cartTotals.total.toLocaleString("tr-TR")}</span>
+            <span className="checkout-mobile-cart-bar-kdv">KDV dahil</span>
+          </div>
+        </div>
+      </div>
       <div className="container">
         <div className="tf-page-cart-wrap layout-2">
           <div className="tf-page-cart-item">
@@ -768,7 +778,7 @@ export default function Checkout() {
                   <input required type="text" id="address-title" name="address_title" placeholder="Örn: Evim" />
                 </fieldset>
 
-                <div className="box grid-3" style={{ marginBottom: "20px", gap: "15px" }}>
+                <div className="box grid-2" style={{ marginBottom: "20px", gap: "15px" }}>
                   <fieldset className="fieldset">
                     <label htmlFor="first-name">Ad</label>
                     <input required type="text" id="first-name" name="delivery[first_name]" />
@@ -777,13 +787,13 @@ export default function Checkout() {
                     <label htmlFor="last-name">Soyad</label>
                     <input required type="text" id="last-name" name="delivery[last_name]" />
                   </fieldset>
-                  <fieldset className="fieldset">
-                    <label htmlFor="phone">Telefon Numarası</label>
-                    <PhoneInput required id="phone" name="delivery[phone]" />
-                  </fieldset>
                 </div>
+                <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
+                  <label htmlFor="phone">Telefon</label>
+                  <PhoneInput required id="phone" name="delivery[phone]" />
+                </fieldset>
 
-                <div className="box grid-3" style={{ marginBottom: "20px", gap: "15px" }}>
+                <div className="box grid-2" style={{ marginBottom: "20px", gap: "15px" }}>
                   <fieldset className="fieldset">
                     <label htmlFor="city">İl</label>
                     <SearchableSelect
@@ -820,24 +830,24 @@ export default function Checkout() {
                       searchPlaceholder="İlçe ara..."
                     />
                   </fieldset>
-
-                  <fieldset className="fieldset">
-                    <label htmlFor="neighborhood">Mahalle*</label>
-                    <SearchableSelect
-                      id="neighborhood"
-                      name="delivery[neighborhood]"
-                      options={neighborhoods}
-                      value={selectedNeighborhoodId}
-                      onChange={(value) => {
-                        setSelectedNeighborhoodId(value);
-                      }}
-                      placeholder={selectedDistrictId ? "Seçiniz" : "Önce ilçe seçiniz"}
-                      disabled={!selectedDistrictId}
-                      required
-                      searchPlaceholder="Mahalle ara..."
-                    />
-                  </fieldset>
                 </div>
+
+                <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
+                  <label htmlFor="neighborhood">Mahalle*</label>
+                  <SearchableSelect
+                    id="neighborhood"
+                    name="delivery[neighborhood]"
+                    options={neighborhoods}
+                    value={selectedNeighborhoodId}
+                    onChange={(value) => {
+                      setSelectedNeighborhoodId(value);
+                    }}
+                    placeholder={selectedDistrictId ? "Seçiniz" : "Önce ilçe seçiniz"}
+                    disabled={!selectedDistrictId}
+                    required
+                    searchPlaceholder="Mahalle ara..."
+                  />
+                </fieldset>
 
                 <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
                   <label htmlFor="address-detail">Adres Detayı</label>
@@ -1300,7 +1310,7 @@ export default function Checkout() {
                 {(!isAuthenticated || (!isLoadingAddresses && savedBillingAddresses.length === 0) || showBillingAddressForm) && (
                   <form onSubmit={handleSaveBillingAddress} className="form-checkout" style={{ marginTop: "20px" }}>
                     {/* Fatura Adresi Formu */}
-                    <div className="box grid-3" style={{ marginBottom: "20px", gap: "15px" }}>
+                    <div className="box grid-2" style={{ marginBottom: "20px", gap: "15px" }}>
                       <fieldset className="fieldset">
                         <label htmlFor="billing-first-name">Ad</label>
                         <input required type="text" id="billing-first-name" name="billing[first_name]" />
@@ -1309,13 +1319,13 @@ export default function Checkout() {
                         <label htmlFor="billing-last-name">Soyad</label>
                         <input required type="text" id="billing-last-name" name="billing[last_name]" />
                       </fieldset>
-                      <fieldset className="fieldset">
-                        <label htmlFor="billing-phone">Telefon Numarası</label>
-                        <PhoneInput required id="billing-phone" name="billing[phone]" />
-                      </fieldset>
                     </div>
+                    <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
+                      <label htmlFor="billing-phone">Telefon</label>
+                      <PhoneInput required id="billing-phone" name="billing[phone]" />
+                    </fieldset>
 
-                    <div className="box grid-3" style={{ marginBottom: "20px", gap: "15px" }}>
+                    <div className="box grid-2" style={{ marginBottom: "20px", gap: "15px" }}>
                       <fieldset className="fieldset">
                         <label htmlFor="billing-city">İl</label>
                         <SearchableSelect
@@ -1350,24 +1360,24 @@ export default function Checkout() {
                           searchPlaceholder="İlçe ara..."
                         />
                       </fieldset>
-
-                      <fieldset className="fieldset">
-                        <label htmlFor="billing-neighborhood">Mahalle*</label>
-                        <SearchableSelect
-                          id="billing-neighborhood"
-                          name="billing[neighborhood]"
-                          options={billingNeighborhoods}
-                          value={selectedBillingNeighborhoodId}
-                          onChange={(value) => {
-                            setSelectedBillingNeighborhoodId(value);
-                          }}
-                          placeholder={selectedBillingDistrictId ? "Seçiniz" : "Önce ilçe seçiniz"}
-                          disabled={!selectedBillingDistrictId}
-                          required
-                          searchPlaceholder="Mahalle ara..."
-                        />
-                      </fieldset>
                     </div>
+
+                    <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
+                      <label htmlFor="billing-neighborhood">Mahalle*</label>
+                      <SearchableSelect
+                        id="billing-neighborhood"
+                        name="billing[neighborhood]"
+                        options={billingNeighborhoods}
+                        value={selectedBillingNeighborhoodId}
+                        onChange={(value) => {
+                          setSelectedBillingNeighborhoodId(value);
+                        }}
+                        placeholder={selectedBillingDistrictId ? "Seçiniz" : "Önce ilçe seçiniz"}
+                        disabled={!selectedBillingDistrictId}
+                        required
+                        searchPlaceholder="Mahalle ara..."
+                      />
+                    </fieldset>
 
                     <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
                       <label htmlFor="billing-address-detail">Adres Detayı</label>

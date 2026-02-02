@@ -2,14 +2,14 @@ import "../public/scss/main.scss";
 import "photoswipe/dist/photoswipe.css";
 import "rc-slider/assets/index.css";
 import ClientLayout from "@/components/common/ClientLayout";
-import Topbar from "@/components/headers/Topbar";
 
 import { SpeedInsights } from "@vercel/speed-insights/next"
 
 //Api İstekleri
 import { getTopbar } from "@/api/home";
 import { getFooterMenus } from "@/api/menus";
-import Footer from "@/components/footers/Footer";
+import ConditionalFooter from "@/components/common/ConditionalFooter";
+import ConditionalTopbar from "@/components/common/ConditionalTopbar";
 import { siteConfig } from "@/config/site";
 
 export const metadata = {
@@ -38,11 +38,11 @@ export default async function RootLayout({ children }) {
             <div className="spinner"></div>
           </div>
         </div>
-        <Topbar data={topbarData.data} isActive={topbarData.isActive} />
+        <ConditionalTopbar data={topbarData.data} isActive={topbarData.isActive} />
         <ClientLayout>
           {children}
         </ClientLayout>
-        <Footer footerMenus={footerMenus} />
+        <ConditionalFooter footerMenus={footerMenus} />
       </body>
     </html>
   );

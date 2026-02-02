@@ -293,7 +293,7 @@ export default function Footer({ bgColor = "", footerMenus = null }) {
             <div className="row">
               <div className="col-12">
                 <div className="footer-bottom-wrap d-flex gap-20 flex-wrap justify-content-between align-items-center">
-                  <div className="footer-menu_item">© 2020 Şımart Teknoloji. Tüm Hakları Saklıdır.</div>
+                  <div className="footer-menu_item">© 2020-2026 Şımart Teknoloji. Tüm Hakları Saklıdır.</div>
                   <div className="tf-payment">
                     {paymentImages.map((image, index) => (
                       <Image key={index} src={image.src} width={image.width} height={image.height} alt={image.alt} />

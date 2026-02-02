@@ -2,25 +2,30 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Pagination } from "swiper/modules";
+import { Autoplay, Pagination } from "swiper/modules";
 
 export default function CategoriesClient({ categories }) {
   return (
     <div className="sw-pagination-wrapper">
       <Swiper
         dir="ltr"
-        slidesPerView={4}
-        spaceBetween={30}
+        slidesPerView={6}
+        spaceBetween={16}
         breakpoints={{
-          1200: { slidesPerView: 4 },
-          992: { slidesPerView: 4 },
-          768: { slidesPerView: 3 },
-          0: { slidesPerView: 1 },
+          1200: { slidesPerView: 6 },
+          992: { slidesPerView: 5 },
+          768: { slidesPerView: 4 },
+          480: { slidesPerView: 3 },
+          0: { slidesPerView: 2 },
         }}
-        loop={false}
-        autoplay={false}
+        loop={categories.length > 1}
+        autoplay={{
+          delay: 3000,
+          disableOnInteraction: false,
+        }}
+        speed={600}
         className="tf-sw-collection"
-        modules={[Pagination]}
+        modules={[Pagination, Autoplay]}
         pagination={{ clickable: true, el: ".spd159" }}
       >
         {categories.map((item, index) => (
@@ -39,9 +44,6 @@ export default function CategoriesClient({ categories }) {
                 <div className="collection-content">
                   <div className="top">
                     <h5 className="heading fw-5">{item.name}</h5>
-                    <p className="subheading">
-                      <span>{item.product_count || 0} Ürün</span>
-                    </p>
                   </div>
                   <div className="bottom">
                     <button className="tf-btn collection-title hover-icon btn-light rounded-full">

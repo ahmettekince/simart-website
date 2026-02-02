@@ -364,7 +364,7 @@ html:not([dir="rtl"]) .noUi-horizontal .noUi-handle {
     margin-bottom: 26px;
     .facet-title {
         @include mixin.flex(center, space-between);
-        padding-bottom: 25px;
+        padding-bottom: 10px;
         font-size: 16px;
         line-height: 24px;
         cursor: pointer;
@@ -397,9 +397,7 @@ html:not([dir="rtl"]) .noUi-horizontal .noUi-handle {
                 color: var(--primary);
             }
         }
-        &:not(:first-child) {
-            margin-top: 10px;
-        }
+        
     }
     .list-item {
         .label {

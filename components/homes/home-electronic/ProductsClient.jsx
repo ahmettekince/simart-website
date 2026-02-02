@@ -12,7 +12,7 @@ export default function ProductsClient({ products = [] }) {
             <div className="container">
                 <div className="flat-title flex-row justify-content-between px-0">
                     <span className="title wow fadeInUp" data-wow-delay="0s">
-                        Çok Satanlar
+                        İlginizi çekebilecekler
                     </span>
                     <div className="box-sw-navigation">
                         <div className="nav-sw square nav-next-slider nav-next-sell-1 snbp161">

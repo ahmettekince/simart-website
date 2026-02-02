@@ -33,7 +33,7 @@ export default function ShopFilter({ setProducts, products = products1, categori
         <header className="canvas-header">
           <span className="icon-close icon-close-popup" data-bs-dismiss="offcanvas" aria-label="Close" />
         </header>
-        <div className="canvas-body">
+        <div className="canvas-body"  style={{ paddingBottom: "0px !important"}}>
           <div className="widget-facet wd-categories">
             <div
               className="facet-title"

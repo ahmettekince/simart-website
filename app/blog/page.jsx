@@ -1,5 +1,4 @@
 import BlogGrid from "@/components/blogs/BlogGrid";
-import Footer from "@/components/footers/Footer";
 import Header from "@/components/headers/Header";
 import React from "react";
 import Link from "next/link";
@@ -53,7 +52,6 @@ export default async function page() {
       </div>
 
       <BlogGrid blogs={blogs} />
-      <Footer />
     </>
   );
 }

@@ -468,7 +468,7 @@ export default function AccountAddress() {
               )}
             </fieldset>
             <fieldset className="fieldset">
-              <label htmlFor="phone">Telefon Numarası*</label>
+              <label htmlFor="phone">Telefon*</label>
               <PhoneInput required id="phone" name="phone" />
               {fieldErrors.phone && (
                 <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
@@ -943,7 +943,7 @@ export default function AccountAddress() {
               )}
             </fieldset>
             <fieldset className="fieldset">
-              <label htmlFor="edit-phone">Telefon Numarası*</label>
+              <label htmlFor="edit-phone">Telefon *</label>
               <PhoneInput required id="edit-phone" name="phone" value={editingAddress?.phone || ""} />
               {fieldErrors.phone && (
                 <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>

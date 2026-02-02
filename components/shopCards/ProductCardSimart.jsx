@@ -110,7 +110,9 @@ export default function ProductCardSimart({ product }) {
         </div>
 
         <div className="price-slot">
-          <span className="price-new fw-bold">₺{finalPrice.toLocaleString("tr-TR")}</span>
+          <span className={`price-new fw-bold ${oldPrice ? "price-discount" : "price-normal"}`}>
+            ₺{finalPrice.toLocaleString("tr-TR")}
+          </span>
           {oldPrice && <span className="price-old">₺{oldPrice.toLocaleString("tr-TR")}</span>}
         </div>
 
@@ -307,7 +309,12 @@ export default function ProductCardSimart({ product }) {
         }
         .price-new {
           font-size: 16px;
-          color: #000;
+        }
+        .price-new.price-normal {
+          color: #3c81b5;
+        }
+        .price-new.price-discount {
+          color: #0bc15c;
         }
 
                 /* Butonlar (Tema renkleri kullanılıyor) */

@@ -16,6 +16,8 @@ import ToolbarShop from "@/components/modals/ToolbarShop";
 import NewsletterModal from "@/components/modals/NewsletterModal";
 import ShareModal from "@/components/modals/ShareModal";
 import ScrollTop from "@/components/common/ScrollTop";
+import WhatsappButton from "@/components/common/WhatsappButton";
+import CookieConsentBanner from "@/components/common/CookieConsentBanner";
 
 export default function ClientLayout({ children }) {
     const pathname = usePathname();
@@ -149,6 +151,10 @@ export default function ClientLayout({ children }) {
             <NewsletterModal />
             <ShareModal />
             <ScrollTop />
+            <div className="whatsapp-floating-btn">
+                <WhatsappButton />
+            </div>
+            <CookieConsentBanner />
         </Context>
     );
 }

@@ -5,7 +5,7 @@
 
 import { create } from 'zustand';
 import { openCartModal } from '@/utils/openCartModal';
-import { addToCart as addToCartAPI, removeFromCart as removeFromCartAPI, decreaseCartQuantity as decreaseCartQuantityAPI, updateCartQuantity as updateCartQuantityAPI, getCart, applyCoupon as applyCouponAPI, removeCoupon as removeCouponAPI, clearCart as clearCartAPI } from '@/api/cart';
+import { addToCart as addToCartAPI, removeFromCart as removeFromCartAPI, updateCartQuantity as updateCartQuantityAPI, applyCoupon as applyCouponAPI, removeCoupon as removeCouponAPI, clearCart as clearCartAPI } from '@/api/cart';
 import { log } from '@/utils/logger';
 
 /**
@@ -150,18 +150,13 @@ export const useCartStore = create(
             }
 
             try {
-                // Direkt quantity güncelleme için PUT metodu kullan
-                const result = await updateCartQuantityAPI(slug, quantity);
-                if (!result) {
-                    log('[CartStore] updateQuantity: updateCartQuantity API başarısız oldu');
-                    return;
-                }
-
-                // API başarılı olduysa, güncel sepeti çek ve store'u güncelle
-                const updatedCart = await getCart();
-                if (updatedCart) {
-                    get().syncFromAPI(updatedCart);
+                // Direkt quantity güncelleme için PUT metodu kullan (updateCartQuantityAPI zaten getCart çağırıp cartData döndürüyor - tek getCart garantisi)
+                const cartData = await updateCartQuantityAPI(slug, quantity);
+                if (cartData) {
+                    get().syncFromAPI(cartData);
                     log('[CartStore] updateQuantity - Store updated');
+                } else {
+                    log('[CartStore] updateQuantity: updateCartQuantity API başarısız oldu');
                 }
             } catch (error) {
                 log('[CartStore] updateQuantity error:', error);
@@ -191,16 +186,12 @@ export const useCartStore = create(
             }
 
             try {
-                // API'ye istek at
+                // API'ye istek at (removeFromCartAPI zaten getCart çağırıp cartData döndürüyor - tek getCart garantisi)
                 const cartData = await removeFromCartAPI(slug);
 
-                // API başarılı döndüyse, güncel sepeti çek ve store'u güncelle
                 if (cartData) {
-                    const updatedCart = await getCart();
-                    if (updatedCart) {
-                        get().syncFromAPI(updatedCart);
-                        log('[CartStore] removeItem - Store updated');
-                    }
+                    get().syncFromAPI(cartData);
+                    log('[CartStore] removeItem - Store updated');
                 } else {
                     log('[CartStore] removeItem: API başarısız oldu');
                 }

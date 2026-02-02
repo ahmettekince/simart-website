@@ -1,4 +1,3 @@
-import Testimonials from "@/components/common/Testimonials";
 import Header from "@/components/headers/Header";
 import Cart from "@/components/othersPages/Cart";
 import RecentProducts from "@/components/shopDetails/RecentProducts";

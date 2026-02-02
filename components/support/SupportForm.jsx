@@ -1,18 +1,11 @@
 "use client";
 import { socialLinksWithBorder } from "@/data/socials";
 import Link from "next/link";
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import apiClient from "@/utils/apiClient";
 import { siteConfig } from "@/config/site";
-
-// Mock ürün verileri - ileride API'den çekilecek
-const mockProducts = [
-  { id: 1, name: "Katya Z Akıllı Robot Süpürge" },
-  { id: 2, name: "Robot Süpürge Model X" },
-  { id: 3, name: "Akıllı Ev Sistemi Pro" },
-  { id: 4, name: "IoT Sensör Paketi" },
-  { id: 5, name: "Akıllı Termostat" },
-];
+import SearchableSelect from "@/components/common/SearchableSelect";
+import PhoneInput from "@/components/common/PhoneInput";
 
 export default function SupportForm() {
   const formRef = useRef();
@@ -21,6 +14,34 @@ export default function SupportForm() {
 
   const [loading, setLoading] = useState(false);
   const [apiMessage, setApiMessage] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [products, setProducts] = useState([]);
+  const [selectedProductId, setSelectedProductId] = useState("");
+  const [productsLoading, setProductsLoading] = useState(false);
+  const [phone, setPhone] = useState("");
+
+  // Ürünleri API'den çek
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setProductsLoading(true);
+        const response = await apiClient.get("/products");
+        if (response.data?.status === "success" && response.data?.data) {
+          const items = Array.isArray(response.data.data) ? response.data.data : response.data.data?.items || [];
+          const options = items.map((p) => ({
+            id: p.id,
+            name: p.name || p.title || `Ürün #${p.id}`,
+          }));
+          setProducts(options);
+        }
+      } catch (error) {
+        console.error("Ürünler yüklenirken hata:", error);
+      } finally {
+        setProductsLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
 
   const handleShowMessage = () => {
     setShowMessage(true);
@@ -32,6 +53,7 @@ export default function SupportForm() {
   const sendMail = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setFieldErrors({});
     const formData = new FormData(e.target);
     const data = {
       full_name: formData.get("full_name"),
@@ -47,24 +69,28 @@ export default function SupportForm() {
       if (response.data.status === "success") {
         setSuccess(true);
         setApiMessage("Mesajınız başarıyla gönderildi.");
+        setSelectedProductId("");
+        setPhone("");
+        setFieldErrors({});
         e.target.reset();
       } else {
-        // API status: "error" but HTTP 200
+        // API status: "error" but HTTP 200 - validasyon hatası
         setSuccess(false);
         setApiMessage(response.data.message || "Bir hata oluştu.");
+        setFieldErrors(response.data.errors || {});
       }
     } catch (error) {
-      // Axios non-200 responses (like 429 Too Many Requests)
+      // Axios non-200 responses (422 validasyon vb.)
       setSuccess(false);
       const errorMessage = error.response?.data?.message || "Bir hata oluştu. Lütfen tekrar deneyin.";
       setApiMessage(errorMessage);
+      setFieldErrors(error.response?.data?.errors || {});
 
-      // We don't want to log this as a "system error" if it's just a 429 rate limit
       if (error.response?.status !== 429) {
         console.error("Contact Form Error:", error);
       }
     } finally {
-      setLoading(false); 
+      setLoading(false);
       handleShowMessage();
     }
   };
@@ -80,6 +106,9 @@ export default function SupportForm() {
                 <div className="d-flex gap-15 mb_15">
                   <fieldset className="w-100">
                     <input type="text" name="full_name" id="name" required placeholder="İsim Soyisim *" />
+                    {fieldErrors.full_name && (
+                      <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>{fieldErrors.full_name[0]}</div>
+                    )}
                   </fieldset>
                   <fieldset className="w-100">
                     <input
@@ -90,51 +119,63 @@ export default function SupportForm() {
                       required
                       placeholder="E-Posta *"
                     />
+                    {fieldErrors.email && (
+                      <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>{fieldErrors.email[0]}</div>
+                    )}
                   </fieldset>
                 </div>
                 <div className="mb_15">
                   <fieldset className="w-100">
-                    <input type="text" name="phone" id="phone" required placeholder="Telefon Numaranız *" />
-                  </fieldset>
-                </div>
-                <div className="mb_15">
-                  <fieldset className="w-100">
-                    <select
-                      name="product_id"
-                      id="product_id"
+                    <PhoneInput
+                      name="phone"
+                      id="phone"
+                      value={phone}
+                      onChange={setPhone}
                       required
-                      className="w-100"
-                      style={{
-                        padding: "12px 15px",
-                        border: "1px solid #e0e0e0",
-                        borderRadius: "8px",
-                        fontSize: "14px",
-                        backgroundColor: "#fff",
-                        cursor: "pointer",
-                      }}
-                    >
-                      <option value="">Ürün Seçiniz *</option>
-                      {mockProducts.map((product) => (
-                        <option key={product.id} value={product.id}>
-                          {product.name}
-                        </option>
-                      ))}
-                    </select>
+                      placeholder="+90 5XX XXX XX XX"
+                    />
+                    {fieldErrors.phone && (
+                      <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>{fieldErrors.phone[0]}</div>
+                    )}
                   </fieldset>
                 </div>
                 <div className="mb_15">
-                  <textarea
-                    placeholder="Mesajınız *"
-                    name="message"
-                    id="message"
-                    required
-                    cols={30}
-                    rows={10}
-                    defaultValue={""}
-                  />
+                  <fieldset className="w-100">
+                    <SearchableSelect
+                      id="product_id"
+                      name="product_id"
+                      options={products}
+                      value={selectedProductId}
+                      onChange={(value) => setSelectedProductId(value || "")}
+                      placeholder={productsLoading ? "Yükleniyor..." : "Ürün Seçiniz *"}
+                      required
+                      searchPlaceholder="Ürün ara..."
+                    />
+                    {fieldErrors.product_id && (
+                      <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>{fieldErrors.product_id[0]}</div>
+                    )}
+                  </fieldset>
+                </div>
+                <div className="mb_15">
+                  <fieldset className="w-100">
+                    <textarea
+                      placeholder="Mesajınız *"
+                      name="message"
+                      id="message"
+                      required
+                      cols={30}
+                      rows={10}
+                      defaultValue={""}
+                    />
+                    {fieldErrors.message && (
+                      <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>{fieldErrors.message[0]}</div>
+                    )}
+                  </fieldset>
                 </div>
                 <div className={`tfSubscribeMsg ${showMessage ? "active" : ""}`}>
-                  <p style={{ color: success ? "rgb(52, 168, 83)" : "red" }}>{apiMessage}</p>
+                  {Object.keys(fieldErrors).length === 0 && (
+                    <p style={{ color: success ? "rgb(52, 168, 83)" : "red" }}>{apiMessage}</p>
+                  )}
                 </div>
                 <div className="send-wrap">
                   <button

@@ -1,0 +1,15 @@
+"use client";
+
+import { usePathname } from "next/navigation";
+import Footer from "@/components/footers/Footer";
+
+const HIDE_FOOTER_PATHS = ["/sepetim", "/odeme"];
+
+export default function ConditionalFooter({ footerMenus }) {
+    const pathname = usePathname();
+    const hideFooter = HIDE_FOOTER_PATHS.some((path) => pathname === path);
+
+    if (hideFooter) return null;
+
+    return <Footer footerMenus={footerMenus} />;
+}
