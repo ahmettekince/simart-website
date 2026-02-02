@@ -1,7 +1,7 @@
 "use client";
 import { options } from "@/data/singleProductOptions";
 import Image from "next/image";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import Quantity from "./Quantity";
 import { products4 } from "@/data/products";
 import { useContextElement } from "@/context/Context";
@@ -87,6 +87,22 @@ export default function StickyItem({
   const productImage = getImageUrl();
   const buttonState = product ? getProductButtonState(product) : { buttonText: "Sepete Ekle", buttonDisabled: false };
 
+  const finalPrice = useMemo(() => {
+    if (!product) return displayProduct?.price || 0;
+    const tbd = product.time_based_discounts?.find((d) => d.remaining_minutes != null);
+    if (tbd?.discounted_price != null) return tbd.discounted_price;
+    return product.discount_price ?? product.price ?? 0;
+  }, [product, displayProduct]);
+  const originalPrice = useMemo(() => {
+    if (!product) return null;
+    const tbd = product.time_based_discounts?.find((d) => d.remaining_minutes != null);
+    if (tbd?.discounted_price != null) return product.price || product.discount_price || null;
+    if (product.discount_price) return product.price || null;
+    return null;
+  }, [product]);
+  const totalPrice = finalPrice * quantity;
+  const totalOriginalPrice = originalPrice ? originalPrice * quantity : null;
+
   const handleAddToCart = async () => {
     if (isAdding || showSuccess || buttonState.buttonDisabled) return;
     setIsAdding(true);
@@ -109,33 +125,26 @@ export default function StickyItem({
     <div className={`tf-sticky-btn-atc ${isVisible ? "show" : ""}`} ref={stickyRef}>
       <div className="container">
         <div className="tf-height-observer w-100 d-flex align-items-center">
-          <div className="tf-sticky-atc-product d-flex align-items-center">
-            <div className="tf-sticky-atc-img">
-              <Image
-                className="lazyloaded"
-                data-src={productImage}
-                alt={productName}
-                src={productImage}
-                width={770}
-                height={1075}
-                style={{ objectFit: "cover" }}
-              />
-            </div>
-            <div className="tf-sticky-atc-title fw-5 d-xl-block d-none">
-              {productName}
-            </div>
+          <div className="tf-sticky-atc-price-wrap">
+            <span className="price-on-sale">₺{Number(totalPrice).toLocaleString("tr-TR")}</span>
+            {totalOriginalPrice != null && totalOriginalPrice > totalPrice && (
+              <span className="compare-at-price">₺{Number(totalOriginalPrice).toLocaleString("tr-TR")}</span>
+            )}
           </div>
+          <div className="tf-sticky-atc-spacer" />
           <div className="tf-sticky-atc-infos">
             <form onSubmit={(e) => e.preventDefault()} className="">
               <div className="tf-sticky-atc-btns">
-                <div className="tf-product-info-quantity">
-                  <Quantity
-                    setQuantity={setQuantity}
-                    minQuantity={minQuantity}
-                    maxQuantity={maxQuantity}
-                    initialValue={quantity}
-                    disabled={buttonState.buttonDisabled}
-                  />
+                <div className="tf-sticky-atc-qty-wrap">
+                  <div className="tf-product-info-quantity">
+                    <Quantity
+                      setQuantity={setQuantity}
+                      minQuantity={minQuantity}
+                      maxQuantity={maxQuantity}
+                      initialValue={quantity}
+                      disabled={buttonState.buttonDisabled}
+                    />
+                  </div>
                 </div>
                 {soldOut || buttonState.buttonDisabled ? (
                   <button
@@ -164,11 +173,36 @@ export default function StickyItem({
         </div>
       </div>
       <style jsx>{`
+        .tf-sticky-atc-price-wrap {
+          display: flex;
+          flex-direction: column;
+          gap: 2px;
+          flex-shrink: 0;
+        }
+        .tf-sticky-atc-spacer {
+          flex: 1;
+          min-width: 50px;
+        }
+        .tf-sticky-atc-price-wrap .price-on-sale {
+          font-size: 18px;
+          font-weight: 700;
+          color: var(--primary, #1c355e);
+        }
+        .tf-sticky-atc-price-wrap .compare-at-price {
+          font-size: 14px;
+          color: rgba(0, 0, 0, 0.55);
+          text-decoration: line-through;
+        }
         .tf-sticky-atc-btns {
           display: flex;
           gap: 12px;
           align-items: center;
           width: 100%;
+        }
+        .tf-sticky-atc-btns .tf-sticky-atc-qty-wrap {
+          width: 88px;
+          flex-shrink: 0;
+          min-width: 88px;
         }
         .tf-sticky-atc-btns .tf-product-info-quantity {
           flex-shrink: 0;

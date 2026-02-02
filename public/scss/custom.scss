@@ -433,3 +433,32 @@
     font-size: 14px;
   }
 }
+
+/* Ürün detay sayfasında scroll-to-top butonu sticky bar üstünde */
+body.product-detail-page .progress-wrap {
+  bottom: 130px;
+}
+
+/* Sticky bar quantity - wrapper sabit 88px, içerideki wg-quantity küçülsün (global override) */
+.tf-sticky-btn-atc .tf-sticky-atc-qty-wrap {
+  width: 88px !important;
+  min-width: 88px !important;
+  max-width: 88px !important;
+  overflow: hidden;
+}
+.tf-sticky-btn-atc .tf-sticky-atc-qty-wrap .wg-quantity {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 36px !important;
+  border-radius: 8px;
+  .btn-quantity {
+    width: 26px !important;
+    height: 36px !important;
+    font-size: 18px;
+  }
+  input {
+    width: 28px !important;
+    height: 36px !important;
+    font-size: 14px;
+  }
+}

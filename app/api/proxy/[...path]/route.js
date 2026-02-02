@@ -11,7 +11,6 @@ async function handleRequest(request, params, method) {
     const targetUrl = `${BACKEND_URL}/${path}`;
 
     const apiKey = process.env.API_KEY || "";
-    const userAgent = process.env.USER_AGENT || "";
     const securityKey = process.env.SECURITY_KEY || "";
 
     // GET istekleri için query parametrelerini URL'e ekle
@@ -31,7 +30,7 @@ async function handleRequest(request, params, method) {
             try {
                 const clonedRequest = request.clone();
                 body = await clonedRequest.json();
-                
+
                 // Query parametrelerini body'ye ekle (varsa)
                 if (searchParams.toString()) {
                     const queryParams = {};
@@ -41,7 +40,7 @@ async function handleRequest(request, params, method) {
                     // Body ile birleştir (body öncelikli)
                     body = { ...queryParams, ...body };
                 }
-                
+
                 bodyStr = JSON.stringify(body);
             } catch (e) {
                 // Body parse edilemezse, query parametrelerini body olarak kullan
@@ -84,7 +83,6 @@ async function handleRequest(request, params, method) {
             url: finalUrl,
             headers: {
                 "X-API-Key": apiKey,
-                "User-Agent": userAgent,
                 "Content-Type": "application/json",
                 "X-Signature": signature,
                 "X-Timestamp": timestamp.toString(),
@@ -110,10 +108,26 @@ async function handleRequest(request, params, method) {
 
         // Backend'den gelen Set-Cookie header'larını NextResponse'a aktar
         const nextResponse = NextResponse.json(response.data, { status: response.status });
-        
+
         // Set-Cookie header'larını kontrol et ve ekle
         // Axios response headers'ında Set-Cookie'ler lowercase 'set-cookie' olarak gelir ve array olabilir
         const setCookieHeaders = response.headers['set-cookie'];
+
+        // Auth debug: Login/customer isteklerinde Set-Cookie logla
+        const isDev = process.env.NODE_ENV === "development";
+        if (isDev && (path.includes("login") || path.includes("customer"))) {
+            console.log(`\n--- [Proxy Auth Debug] Path: ${path} ---`);
+            console.log("[Proxy Auth Debug] Backend Set-Cookie var mı:", !!setCookieHeaders);
+            if (setCookieHeaders) {
+                const arr = Array.isArray(setCookieHeaders) ? setCookieHeaders : [setCookieHeaders];
+                arr.forEach((c, i) => {
+                    const name = c.split('=')[0]?.trim();
+                    const hasToken = name === '_token';
+                    console.log(`[Proxy Auth Debug] Cookie ${i + 1}: ${name} ${hasToken ? "(TOKEN!)" : ""}`);
+                });
+            }
+            console.log("---\n");
+        }
 
         if (setCookieHeaders && Array.isArray(setCookieHeaders)) {
             setCookieHeaders.forEach(cookie => {
@@ -123,7 +137,7 @@ async function handleRequest(request, params, method) {
                 const [nameValue] = cookieParts;
                 const [name, ...valueParts] = nameValue.split('=');
                 const value = valueParts.join('='); // Eğer value'da = varsa
-                
+
                 // Cookie options'ları parse et
                 const options = {};
                 cookieParts.slice(1).forEach(part => {
@@ -145,11 +159,11 @@ async function handleRequest(request, params, method) {
                         options.secure = true;
                     }
                 });
-                
+
                 // Default değerler
                 if (!options.path) options.path = '/';
                 if (!options.sameSite) options.sameSite = 'lax';
-                
+
                 nextResponse.cookies.set(name.trim(), value, options);
             });
         } else if (setCookieHeaders) {
@@ -158,7 +172,7 @@ async function handleRequest(request, params, method) {
             const [nameValue] = cookieParts;
             const [name, ...valueParts] = nameValue.split('=');
             const value = valueParts.join('=');
-            
+
             const options = {};
             cookieParts.slice(1).forEach(part => {
                 const trimmed = part.trim();
@@ -177,13 +191,13 @@ async function handleRequest(request, params, method) {
                     options.secure = true;
                 }
             });
-            
+
             if (!options.path) options.path = '/';
             if (!options.sameSite) options.sameSite = 'lax';
-            
+
             nextResponse.cookies.set(name.trim(), value, options);
         }
-        
+
         return nextResponse;
     } catch (error) {
         console.error("Proxy Error:", {

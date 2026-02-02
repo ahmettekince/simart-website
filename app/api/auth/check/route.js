@@ -1,21 +1,32 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import crypto from "crypto";
+import { log } from "@/utils/logger";
 
 export async function GET() {
+    const isDev = process.env.NODE_ENV === "development";
     try {
         const cookieStore = await cookies();
         const encryptedToken = cookieStore.get('_token')?.value;
         const secretKey = process.env.TOKEN_SEC_KEY;
 
-        if (!encryptedToken || !secretKey) {
-            return NextResponse.json({ isAuthenticated: false });
+        if (isDev) {
+            log("[Auth Check] ---");
+            log("[Auth Check] _token var mı:", !!encryptedToken);
+            log("[Auth Check] _token uzunluk:", encryptedToken?.length ?? 0);
+            log("[Auth Check] TOKEN_SEC_KEY var mı:", !!secretKey);
+            log("[Auth Check] Tüm cookie isimleri:", cookieStore.getAll().map(c => c.name).join(", ") || "(boş)");
+        }
 
+        if (!encryptedToken || !secretKey) {
+            if (isDev) log("[Auth Check] SONUÇ: isAuthenticated=false (token veya secret yok)");
+            return NextResponse.json({ isAuthenticated: false });
         }
 
         // Şifre çözme işlemi (Node.js tarafında crypto modülü ile)
         const decoded = Buffer.from(encryptedToken, 'base64');
         if (decoded.length < 28) {
+            if (isDev) log("[Auth Check] SONUÇ: isAuthenticated=false (base64 decode sonrası buffer < 28 byte)");
             return NextResponse.json({ isAuthenticated: false });
         }
 
@@ -37,8 +48,14 @@ export async function GET() {
 
         const isAuthenticated = decrypted === 'true';
 
+        if (isDev) {
+            log("[Auth Check] Çözülen değer:", JSON.stringify(decrypted));
+            log("[Auth Check] SONUÇ: isAuthenticated=", isAuthenticated);
+        }
+
         return NextResponse.json({ isAuthenticated });
     } catch (e) {
+        if (isDev) log("[Auth Check] HATA:", e.message, e.stack);
         console.error("Auth check error:", e);
         return NextResponse.json({ isAuthenticated: false }, { status: 500 });
     }

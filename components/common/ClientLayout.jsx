@@ -104,6 +104,18 @@ export default function ClientLayout({ children }) {
         if (preloader) preloader.classList.add("disabled");
     }, []);
 
+    // Ürün detay sayfasında body class (scroll-to-top butonu sticky bar üstünde olsun)
+    useEffect(() => {
+        const parts = pathname.split("/").filter(Boolean);
+        const isProductDetail = pathname.startsWith("/magaza") && parts.length === 3;
+        if (isProductDetail) {
+            document.body.classList.add("product-detail-page");
+        } else {
+            document.body.classList.remove("product-detail-page");
+        }
+        return () => document.body.classList.remove("product-detail-page");
+    }, [pathname]);
+
     // Cart'ı API'den sync et (sadece ilk yüklemede)
     useEffect(() => {
         if (typeof window !== "undefined" && !isSynced) {

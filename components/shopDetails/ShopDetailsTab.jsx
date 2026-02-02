@@ -19,13 +19,26 @@ export default function ShopDetailsTab({ product }) {
 
   useEffect(() => {
     if (!previewImage) return;
-    const handleEscape = (e) => {
-      if (e.key === "Escape") setPreviewImage(null);
+    const handleKeydown = (e) => {
+      if (e.key === "Escape") {
+        setPreviewImage(null);
+        return;
+      }
+      if (previewImage.urls?.length <= 1) return;
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        const prevIdx = previewImage.index <= 0 ? previewImage.urls.length - 1 : previewImage.index - 1;
+        setPreviewImage((p) => ({ ...p, url: p.urls[prevIdx], index: prevIdx }));
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        const nextIdx = previewImage.index >= previewImage.urls.length - 1 ? 0 : previewImage.index + 1;
+        setPreviewImage((p) => ({ ...p, url: p.urls[nextIdx], index: nextIdx }));
+      }
     };
-    document.addEventListener("keydown", handleEscape);
+    document.addEventListener("keydown", handleKeydown);
     document.body.style.overflow = "hidden";
     return () => {
-      document.removeEventListener("keydown", handleEscape);
+      document.removeEventListener("keydown", handleKeydown);
       document.body.style.overflow = "";
     };
   }, [previewImage]);
