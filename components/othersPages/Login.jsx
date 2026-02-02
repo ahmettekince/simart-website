@@ -296,7 +296,7 @@ export default function Login() {
             </div>
           </div>
           <div className="tf-login-content">
-            <h5 className="mb_36">Yeni Misiniz?</h5>
+            {/* <h5 className="mb_36">Hesabınız yok mu?</h5> */}
             <p className="mb_20">
               Şımart Teknoloji'ye kayıt olun ve erken satış erişimine, yeni gelenler, trendler ve promosyonlara erişin.
             </p>

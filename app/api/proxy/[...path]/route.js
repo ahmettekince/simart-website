@@ -77,6 +77,7 @@ async function handleRequest(request, params, method) {
             }
         });
         const cookieHeader = cookieHeaders.join('; ');
+        const userAgent = request.headers.get('user-agent') || request.headers.get('User-Agent');
 
         const response = await axios({
             method,
@@ -86,6 +87,7 @@ async function handleRequest(request, params, method) {
                 "Content-Type": "application/json",
                 "X-Signature": signature,
                 "X-Timestamp": timestamp.toString(),
+                ...(userAgent && { "User-Agent": userAgent }),
                 ...(cookieHeader && { "Cookie": cookieHeader }),
                 ...(deviceId && { "X-Device-ID": deviceId }),
             },
