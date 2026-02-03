@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import { decodeHtmlEntities } from "@/utils/stripHtml";
+import Accordion from "@/components/common/Accordion";
 
 const SORT_OPTIONS = [
   { value: "default", label: "Varsayılan" },
@@ -16,6 +17,7 @@ export default function ShopDetailsTab({ product }) {
   const [filterRating, setFilterRating] = useState(null);
   const [sortOrder, setSortOrder] = useState("default");
   const [previewImage, setPreviewImage] = useState(null);
+  const [specCategoryIndex, setSpecCategoryIndex] = useState(0);
 
   useEffect(() => {
     if (!previewImage) return;
@@ -78,14 +80,46 @@ export default function ShopDetailsTab({ product }) {
 
   const ratingLabels = { 5: "Çok İyi", 4: "İyi", 3: "Orta", 2: "Kötü", 1: "Çok Kötü" };
 
+  // API: faq_data[] -> { question, answer } -> Accordion: { title, content }
+  const faqList = useMemo(() => {
+    const raw = product?.faq_data || [];
+    if (!Array.isArray(raw)) return [];
+    return raw.map((item) => ({
+      title: item.question ?? item.title ?? "",
+      content: item.answer ?? item.content ?? "",
+    })).filter((f) => f.title || f.content);
+  }, [product?.faq_data]);
+
+  const hasFaq = faqList.length > 0;
+
+  const techSpecs = product?.technical_specifications || [];
+  const hasTechSpecs = Array.isArray(techSpecs) && techSpecs.length > 0;
+
+  // Sıra: Açıklama, Yorumlar, (varsa) Teknik, (varsa) SSS, Kargo, İade.
+  const tabIds = [
+    "desc",
+    "reviews",
+    ...(hasTechSpecs ? ["tech"] : []),
+    ...(hasFaq ? ["faq"] : []),
+    "kargo",
+    "return",
+  ];
   const tabs = [
     { title: "Açıklama", active: true },
     { title: reviewCount > 0 ? `Yorumlar (${reviewCount})` : "Yorumlar", active: false },
+    ...(hasTechSpecs ? [{ title: "Teknik Özellikler", active: false }] : []),
+    ...(hasFaq ? [{ title: "Sıkça Sorulan Sorular", active: false }] : []),
     { title: "Kargo", active: false },
     { title: "İade Politikası", active: false },
   ];
 
-  const descriptionImagesWidth = "container-fluid";
+  const indexOf = (id) => { const i = tabIds.indexOf(id); return i >= 0 ? i + 1 : null; };
+  const techSpecsTabIndex = indexOf("tech");
+  const faqTabIndex = indexOf("faq");
+  const kargoTabIndex = indexOf("kargo");
+  const returnTabIndex = indexOf("return");
+
+  const descriptionContainerClass = product?.description_layout === "full" ? "container-fluid" : "container";
 
   return (
     <>
@@ -198,63 +232,63 @@ export default function ShopDetailsTab({ product }) {
                               WebkitOverflowScrolling: "touch",
                             }}
                           >
-                          <button
-                            type="button"
-                            onClick={() => setFilterRating(null)}
-                            style={{
-                              padding: "6px 11px",
-                              borderRadius: "999px",
-                              border: filterRating === null ? "2px solid #f59e0b" : "1px solid #ddd",
-                              background: "#fff",
-                              color: filterRating === null ? "#b45309" : "#666",
-                              cursor: "pointer",
-                              fontSize: "12px",
-                              fontWeight: "500",
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "4px",
-                              flexShrink: 0,
-                            }}
-                          >
-                            <span>Tümü</span>
-                            <span>({reviewCount})</span>
-                            {filterRating === null && <i className="icon-check" style={{ color: "#f59e0b", fontSize: "10px" }} />}
-                          </button>
-                          {[5, 4, 3, 2, 1].map((star) =>
-                            ratingCounts[star] > 0 ? (
-                              <button
-                                key={star}
-                                type="button"
-                                onClick={() => setFilterRating(filterRating === star ? null : star)}
-                                style={{
-                                  padding: "6px 11px",
-                                  borderRadius: "999px",
-                                  border: filterRating === star ? "2px solid #f59e0b" : "1px solid #ddd",
-                                  background: "#fff",
-                                  color: filterRating === star ? "#b45309" : "#333",
-                                  cursor: "pointer",
-                                  fontSize: "12px",
-                                  fontWeight: "500",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: "4px",
-                                  flexShrink: 0,
-                                }}
-                              >
-                                <i className="icon-star star-filled" style={{ color: "#f59e0b", fontSize: "12px" }} />
-                                <span>{star}</span>
-                                <span>{ratingLabels[star]}</span>
-                                <span>({ratingCounts[star]})</span>
-                                {filterRating === star ? (
-                                  <i className="icon-check" style={{ color: "#f59e0b", fontSize: "10px" }} />
-                                ) : (
-                                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#999" }}>
-                                    <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-                                  </svg>
-                                )}
-                              </button>
-                            ) : null
-                          )}
+                            <button
+                              type="button"
+                              onClick={() => setFilterRating(null)}
+                              style={{
+                                padding: "6px 11px",
+                                borderRadius: "999px",
+                                border: filterRating === null ? "2px solid #f59e0b" : "1px solid #ddd",
+                                background: "#fff",
+                                color: filterRating === null ? "#b45309" : "#666",
+                                cursor: "pointer",
+                                fontSize: "12px",
+                                fontWeight: "500",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "4px",
+                                flexShrink: 0,
+                              }}
+                            >
+                              <span>Tümü</span>
+                              <span>({reviewCount})</span>
+                              {filterRating === null && <i className="icon-check" style={{ color: "#f59e0b", fontSize: "10px" }} />}
+                            </button>
+                            {[5, 4, 3, 2, 1].map((star) =>
+                              ratingCounts[star] > 0 ? (
+                                <button
+                                  key={star}
+                                  type="button"
+                                  onClick={() => setFilterRating(filterRating === star ? null : star)}
+                                  style={{
+                                    padding: "6px 11px",
+                                    borderRadius: "999px",
+                                    border: filterRating === star ? "2px solid #f59e0b" : "1px solid #ddd",
+                                    background: "#fff",
+                                    color: filterRating === star ? "#b45309" : "#333",
+                                    cursor: "pointer",
+                                    fontSize: "12px",
+                                    fontWeight: "500",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "4px",
+                                    flexShrink: 0,
+                                  }}
+                                >
+                                  <i className="icon-star star-filled" style={{ color: "#f59e0b", fontSize: "12px" }} />
+                                  <span>{star}</span>
+                                  <span>{ratingLabels[star]}</span>
+                                  <span>({ratingCounts[star]})</span>
+                                  {filterRating === star ? (
+                                    <i className="icon-check" style={{ color: "#f59e0b", fontSize: "10px" }} />
+                                  ) : (
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#999" }}>
+                                      <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                                    </svg>
+                                  )}
+                                </button>
+                              ) : null
+                            )}
                           </div>
                           <div style={{ flexShrink: 0 }}>
                             <select
@@ -289,96 +323,101 @@ export default function ShopDetailsTab({ product }) {
                             {filterRating ? `${filterRating} yıldıza ait yorum bulunamadı.` : "Yorum bulunamadı."}
                           </div>
                         ) : (
-                        sortedReviews.map((review) => (
-                          <div key={review.id} className="review-item mb_30 pb_30" style={{ paddingBottom: "10px", borderBottom: "1px solid #f2f2f2" }}>
-                            <div className="d-flex justify-content-between align-items-center mb_15">
-                              <div className="review-user-info">
-                                <div className="fw-6 fs-16 mb_5">{review.user_name}</div>
-                                <div className="d-flex gap-5 align-items-center">
-                                  <div className="review-rating d-flex" style={{ gap: "2px" }}>
-                                    {[...Array(5)].map((_, i) => {
-                                      const starValue = i + 1;
-                                      const rating = review.rating || 0;
-                                      const isFilled = rating >= starValue;
-                                      const isPartial = rating > i && rating < starValue;
-                                      const fillPercentage = Math.max(0, Math.min(100, ((rating - i) * 100)));
+                          sortedReviews.map((review) => (
+                            <div key={review.id} className="review-item mb_30 pb_30" style={{ paddingBottom: "10px", borderBottom: "1px solid #f2f2f2" }}>
+                              <div className="d-flex justify-content-between align-items-center mb_15">
+                                <div className="review-user-info">
+                                  <div className="fw-6 fs-16 mb_5">{review.user_name}</div>
+                                  <div className="d-flex gap-5 align-items-center">
+                                    <div className="review-rating d-flex" style={{ gap: "2px" }}>
+                                      {[...Array(5)].map((_, i) => {
+                                        const starValue = i + 1;
+                                        const rating = review.rating || 0;
+                                        const isFilled = rating >= starValue;
+                                        const isPartial = rating > i && rating < starValue;
+                                        const fillPercentage = Math.max(0, Math.min(100, ((rating - i) * 100)));
 
-                                      return (
-                                        <div key={i} className="star-wrapper" style={{ position: "relative", display: "inline-block", fontSize: "14px", lineHeight: 1 }}>
-                                          <i className="icon-star star-empty" style={{ color: "#ddd" }} />
-                                          {isFilled ? (
-                                            <i className="icon-star star-filled" style={{ position: "absolute", top: 0, left: 0, color: "#f59e0b" }} />
-                                          ) : isPartial ? (
-                                            <i
-                                              className="icon-star star-filled star-partial"
-                                              style={{
-                                                position: "absolute",
-                                                top: 0,
-                                                left: 0,
-                                                color: "#f59e0b",
-                                                clipPath: `inset(0 ${100 - fillPercentage}% 0 0)`
-                                              }}
-                                            />
-                                          ) : null}
-                                        </div>
-                                      );
-                                    })}
+                                        return (
+                                          <div key={i} className="star-wrapper" style={{ position: "relative", display: "inline-block", fontSize: "14px", lineHeight: 1 }}>
+                                            <i className="icon-star star-empty" style={{ color: "#ddd" }} />
+                                            {isFilled ? (
+                                              <i className="icon-star star-filled" style={{ position: "absolute", top: 0, left: 0, color: "#f59e0b" }} />
+                                            ) : isPartial ? (
+                                              <i
+                                                className="icon-star star-filled star-partial"
+                                                style={{
+                                                  position: "absolute",
+                                                  top: 0,
+                                                  left: 0,
+                                                  color: "#f59e0b",
+                                                  clipPath: `inset(0 ${100 - fillPercentage}% 0 0)`
+                                                }}
+                                              />
+                                            ) : null}
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                    <span className="text-muted fs-12 ms_10">
+                                      {new Date(review.created_at).toLocaleDateString("tr-TR")}
+                                    </span>
                                   </div>
-                                  <span className="text-muted fs-12 ms_10">
-                                    {new Date(review.created_at).toLocaleDateString("tr-TR")}
-                                  </span>
                                 </div>
                               </div>
-                            </div>
-                            <div className="review-comment mb_20">
-                              <p className="fs-14 text_black-2" style={{ lineHeight: "1.6" }}>
-                                {review.comment}
-                              </p>
-                            </div>
-                            {review.images?.length > 0 && (
-                              <div className="review-images d-flex flex-nowrap gap-10 hide-scrollbar" style={{ overflowX: "auto", paddingBottom: "4px" }}>
-                                {review.images.map((img, imgIdx) => {
-                                  const imgUrl = img.url || img.thumbnail_url;
-                                  const thumbUrl = img.thumbnail_url || img.url;
-                                  const allUrls = review.images.map((i) => i.url || i.thumbnail_url);
-                                  return (
-                                    <button
-                                      key={img.id}
-                                      type="button"
-                                      onClick={() =>
-                                        setPreviewImage({
-                                          url: imgUrl,
-                                          urls: allUrls,
-                                          index: imgIdx,
-                                        })
-                                      }
-                                      className="review-image-wrapper"
-                                      style={{
-                                        borderRadius: "8px",
-                                        overflow: "hidden",
-                                        border: "1px solid #eee",
-                                        flexShrink: 0,
-                                        cursor: "pointer",
-                                        padding: 0,
-                                        background: "none",
-                                      }}
-                                    >
-                                      <Image
-                                        src={thumbUrl}
-                                        alt="Yorum görseli"
-                                        width={80}
-                                        height={80}
-                                        style={{ objectFit: "cover", display: "block" }}
-                                        className="hover-zoom"
-                                        unoptimized
-                                      />
-                                    </button>
-                                  );
-                                })}
+                              <div className="review-comment mb_10">
+                                <p className="fs-14 text_black-2" style={{ lineHeight: "1.6" }}>
+                                  {review.comment}
+                                </p>
                               </div>
-                            )}
-                          </div>
-                        ))
+                              {product?.bundle_items?.length > 0 && (review.product_name || review.product_title) && (
+                                <div className="review-product-ref fs-12 text-muted mb_15" style={{ fontStyle: "italic" }}>
+                                  (Bu yorum <strong>{review.product_name || review.product_title}</strong> ürününe aittir.)
+                                </div>
+                              )}
+                              {review.images?.length > 0 && (
+                                <div className="review-images d-flex flex-nowrap gap-10 hide-scrollbar" style={{ overflowX: "auto", paddingBottom: "4px" }}>
+                                  {review.images.map((img, imgIdx) => {
+                                    const imgUrl = img.url || img.thumbnail_url;
+                                    const thumbUrl = img.thumbnail_url || img.url;
+                                    const allUrls = review.images.map((i) => i.url || i.thumbnail_url);
+                                    return (
+                                      <button
+                                        key={img.id}
+                                        type="button"
+                                        onClick={() =>
+                                          setPreviewImage({
+                                            url: imgUrl,
+                                            urls: allUrls,
+                                            index: imgIdx,
+                                          })
+                                        }
+                                        className="review-image-wrapper"
+                                        style={{
+                                          borderRadius: "8px",
+                                          overflow: "hidden",
+                                          border: "1px solid #eee",
+                                          flexShrink: 0,
+                                          cursor: "pointer",
+                                          padding: 0,
+                                          background: "none",
+                                        }}
+                                      >
+                                        <Image
+                                          src={thumbUrl}
+                                          alt="Yorum görseli"
+                                          width={80}
+                                          height={80}
+                                          style={{ objectFit: "cover", display: "block" }}
+                                          className="hover-zoom"
+                                          unoptimized
+                                        />
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
+                          ))
                         )}
                       </div>
                     ) : (
@@ -389,8 +428,7 @@ export default function ShopDetailsTab({ product }) {
                     )}
                   </div>
                   <div
-                    className={`widget-content-inner ${currentTab == 3 ? "active" : ""
-                      } `}
+                    className={`widget-content-inner ${currentTab === kargoTabIndex ? "active" : ""}`}
                   >
                     <div className="tf-page-privacy-policy">
                       <div className="title">
@@ -448,8 +486,7 @@ export default function ShopDetailsTab({ product }) {
                     </div>
                   </div>
                   <div
-                    className={`widget-content-inner ${currentTab == 4 ? "active" : ""
-                      } `}
+                    className={`widget-content-inner ${currentTab === returnTabIndex ? "active" : ""}`}
                   >
                     <ul className="d-flex justify-content-center mb_18">
 
@@ -459,6 +496,59 @@ export default function ShopDetailsTab({ product }) {
                       Grms/mt
                     </p>
                   </div>
+                  {hasFaq && (
+                    <div
+                      className={`widget-content-inner ${currentTab === faqTabIndex ? "active" : ""}`}
+                    >
+                      <div className="flat-accordion style-default has-btns-arrow">
+                        <Accordion faqs={faqList} initialIndex={-1} />
+                      </div>
+                    </div>
+                  )}
+                  {hasTechSpecs && (
+                    <div
+                      className={`widget-content-inner ${currentTab === techSpecsTabIndex ? "active" : ""}`}
+                    >
+                      <div className="tf-technical-specs">
+                        <div className="tf-technical-specs-tabs d-flex flex-wrap gap-2 mb-4">
+                          {techSpecs.map((group, i) => (
+                            <button
+                              key={i}
+                              type="button"
+                              onClick={() => setSpecCategoryIndex(i)}
+                              className={`tf-btn btn-outline rounded ${specCategoryIndex === i ? "active" : ""}`}
+                              style={{
+                                padding: "8px 16px",
+                                fontSize: "14px",
+                                borderWidth: "2px",
+                                borderColor: specCategoryIndex === i ? "var(--primary, #3c81b5)" : "#ddd",
+                                color: specCategoryIndex === i ? "var(--primary, #3c81b5)" : "#333",
+                                background: specCategoryIndex === i ? "rgba(60, 129, 181, 0.08)" : "transparent",
+                              }}
+                            >
+                              {group.title || `Özellikler ${i + 1}`}
+                            </button>
+                          ))}
+                        </div>
+                        <div className="tf-technical-specs-content">
+                          {techSpecs[specCategoryIndex] && (
+                            <div className="tf-spec-table-wrap">
+                              <table className="tf-spec-table table table-borderless mb-0">
+                                <tbody>
+                                  {(techSpecs[specCategoryIndex].specs || []).map((row, ri) => (
+                                    <tr key={ri} className={ri % 2 === 0 ? "tf-spec-row-even" : "tf-spec-row-odd"}>
+                                      <td className="tf-spec-name text-secondary py-3 pe-3">{row.name}</td>
+                                      <td className="tf-spec-value fw-6 py-3">{row.value}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -469,7 +559,7 @@ export default function ShopDetailsTab({ product }) {
       {/* Açıklama Fotoğrafları Bölümü - Widgets Tab Altında ve Section Olarak */}
       {currentTab == 1 && (
         <section className="" style={{ overflowX: "hidden" }}>
-          <div className="container-fluid">
+          <div className={descriptionContainerClass}>
             <div className="row">
               <div className="col-12" >
                 {product?.description && (

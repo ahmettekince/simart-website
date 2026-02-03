@@ -136,6 +136,18 @@ input[type="checkbox"]:checked,
   border-width: 1px;
 }
 
+/* Hero slider: dot nav orta renk #3c81b5, gölge beyaz */
+.slider-home-2 .wrap-pagination .sw-dots.sw-pagination-slider .swiper-pagination-bullet {
+  &::before {
+    background-color: #3c81b5;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
+  }
+  &.swiper-pagination-bullet-active::before {
+    background-color: #3c81b5;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 1);
+  }
+}
+
 .brand-item-v2.hover-opacity img {
   transition: 0.3s;
 
@@ -795,4 +807,144 @@ body.product-detail-page .progress-wrap {
 /* Sipariş özeti arka plan rengi */
 .odeme-page-layout .tf-page-cart-checkout {
   background-color: #f5f5f5 !important;
+}
+
+/* Bundle ürün fiyatları - detay sayfası gibi küçük, yeşil/gri */
+.tf-product-bundle-wrap .tf-product-bundle-price {
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.tf-product-bundle-wrap .tf-product-bundle-price .price,
+.tf-product-bundle-wrap .tf-product-bundle-price .price-on-sale {
+  color: #0bc15c;
+  font-weight: 600;
+}
+
+.tf-product-bundle-wrap .tf-product-bundle-price .compare-at-price {
+  color: #6b7280;
+  font-size: 12px;
+  text-decoration: line-through;
+  font-weight: 500;
+}
+
+.tf-product-bundle-wrap .tf-bundle-total .price-on-sale {
+  color: #0bc15c;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.tf-product-bundle-wrap .tf-bundle-total .compare-at-price {
+  color: #6b7280;
+  font-size: 13px;
+  text-decoration: line-through;
+  font-weight: 500;
+}
+
+/* Ürün detay WhatsApp butonu - ikon yeşil */
+.tf-product-info-extra-link .tf-whatsapp-icon svg {
+  color: #25d366;
+}
+
+/* Ürün detay extra linkler - tek satırda, WhatsApp ortada, Paylaş sadece ikon */
+.tf-product-info-extra-link {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.tf-product-info-extra-link .tf-product-extra-icon {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.tf-product-info-extra-link .tf-extra-icon-only .text {
+  display: none;
+}
+
+/* Kategori swiper kartları - başlık ve İncele butonu ortada */
+.tf-sw-collection .collection-item-v2 .collection-content .top,
+.tf-sw-collection .collection-item-v2 .collection-content .bottom {
+  text-align: center;
+}
+
+.tf-sw-collection .collection-item-v2 .collection-content .bottom .tf-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+
+
+/* Kategoriler: dot nav her ekranda kategorilerin altında ortada (desktop/tablet dahil) */
+.categories-pagination-wrapper {
+  .box-sw-navigation {
+    position: static !important;
+    right: auto;
+    top: auto;
+    width: 100%;
+    display: flex !important;
+    justify-content: center;
+    margin-top: 16px;
+
+    .sw-dots {
+      margin-top: 0;
+    }
+  }
+}
+
+/* Hero: Görsel gelmeden önce alan rezerve (layout shift önleme) */
+.tf-hero-min-height .wrap-slider,
+.tf-hero-min-height .swiper-slide {
+  min-height: clamp(280px, 45vw, 520px);
+}
+
+.tf-hero-min-height .swiper-wrapper {
+  align-items: stretch;
+}
+
+.tf-hero-min-height .swiper-slide>div {
+  min-height: inherit;
+}
+
+/* Header scroll hide: ClientLayout body class ile (hydration uyumlu, inline style yok) */
+body.header-scroll-hide #header,
+body.header-scroll-hide header.header-default {
+  top: -185px !important;
+}
+
+/* Teknik Özellikler tab: başlık + kategoriler + özellik tablosu */
+.tf-technical-specs-tabs .tf-btn.active {
+  font-weight: 600;
+}
+.tf-spec-table-wrap {
+  border: 1px solid #eee;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.tf-spec-table {
+  width: 100%;
+  .tf-spec-name {
+    width: 50%;
+    max-width: 320px;
+    font-size: 14px;
+  }
+  .tf-spec-value {
+    font-size: 14px;
+    color: #1a1a1a;
+  }
+  .tf-spec-row-even td {
+    background-color: #f8f9fa;
+  }
+  .tf-spec-row-odd td {
+    background-color: #fff;
+  }
+  tr:not(:last-child) td {
+    border-bottom: 1px solid #eee;
+  }
+  td {
+    padding: 12px 16px !important;
+    vertical-align: middle;
+  }
 }

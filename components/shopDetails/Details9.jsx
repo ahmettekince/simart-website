@@ -12,6 +12,8 @@ import Quantity from "./Quantity";
 import { useContextElement } from "@/context/Context";
 import { useCartStore } from "@/stores/cartStore";
 import { getProductButtonState } from "@/utils/productStock";
+import { siteConfig } from "@/config/site";
+
 export default function Details9({ product }) {
   const [currentColor, setCurrentColor] = useState(colors[0]);
   const { addItem } = useCartStore();
@@ -42,27 +44,7 @@ export default function Details9({ product }) {
 
     return [];
   }, [product?.info_messages]);
-  const paymentImages = [
-    {
-      src: "/images/credit-cards/visa.png",
-      alt: "Visa",
-      width: 48,
-      height: 30,
-    },
-    {
-      src: "/images/credit-cards/mastercard.png",
-      alt: "Mastercard",
-      width: 48,
-      height: 30,
-    },
-    {
-      src: "/images/credit-cards/troy.png",
-      alt: "Troy",
-      width: 48,
-      height: 30,
-    },
 
-  ];
 
   const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -228,11 +210,11 @@ export default function Details9({ product }) {
     if (qtyToAdd < minQuantity) {
       qtyToAdd = minQuantity;
     }
-    
+
     // Global max veya ürün max'ı hangisi küçükse ona göre sınırla
     const GLOBAL_MAX = 999;
     const effectiveMaxLimit = maxQuantity === null || maxQuantity === 0 ? GLOBAL_MAX : Math.min(maxQuantity, GLOBAL_MAX);
-    
+
     if (qtyToAdd > effectiveMaxLimit) {
       qtyToAdd = effectiveMaxLimit;
     }
@@ -240,7 +222,7 @@ export default function Details9({ product }) {
     // Sepetteki mevcut miktarı kontrol et
     if (effectiveMaxLimit > 0) {
       const currentQtyInCart = existingCartItem?.quantity || 0;
-      
+
       // Eğer zaten sınırdaysa ekleme yapma
       if (currentQtyInCart >= effectiveMaxLimit) {
         // Belki burada buton metnini "Maksimum Miktar" gibi bir şeye çevirebilirsin ama şimdilik sessizce durduruyoruz
@@ -290,41 +272,48 @@ export default function Details9({ product }) {
                   </div>
 
                   {/* Rating gösterimi - Sadece yorum varsa göster */}
-                  {((product.reviews?.count || product.reviews_count || product.review_count) > 0) && (product.reviews?.average_rating || product.rating || product.average_rating) && (product.reviews?.average_rating > 0 || product.rating > 0 || product.average_rating > 0) && (
-                    <div className="tf-product-info-rating" style={{ marginBottom: "12px", display: "flex", alignItems: "center", gap: "8px" }}>
-                      <span style={{ fontSize: "14px", fontWeight: "600" }}>{(product.reviews?.average_rating || product.rating || product.average_rating || 0).toFixed(1)}</span>
-                      <div className="stars-box" style={{ display: "flex", gap: "2px" }}>
-                        {[...Array(5)].map((_, i) => {
-                          const rating = product.reviews?.average_rating || product.rating || product.average_rating || 0;
-                          const starValue = i + 1;
-                          const fillPercentage = Math.max(0, Math.min(100, ((rating - i) * 100)));
-                          const isFilled = rating >= starValue;
-                          const isPartial = rating > i && rating < starValue;
+                  {(product.reviews?.count > 1) && (product.reviews?.average_rating) && (product.reviews?.average_rating > 0 || product.rating > 0 || product.average_rating > 0) && (
+                    <div className="tf-product-info-rating" style={{ marginBottom: "12px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <span style={{ fontSize: "14px", fontWeight: "600" }}>{(product.reviews?.average_rating || product.rating || product.average_rating || 0).toFixed(1)}</span>
+                        <div className="stars-box" style={{ display: "flex", gap: "2px" }}>
+                          {[...Array(5)].map((_, i) => {
+                            const rating = product.reviews?.average_rating || product.rating || product.average_rating || 0;
+                            const starValue = i + 1;
+                            const fillPercentage = Math.max(0, Math.min(100, ((rating - i) * 100)));
+                            const isFilled = rating >= starValue;
+                            const isPartial = rating > i && rating < starValue;
 
-                          return (
-                            <div key={i} className="star-wrapper" style={{ position: "relative", display: "inline-block", fontSize: "14px", lineHeight: 1 }}>
-                              <i className="icon-star star-empty" style={{ color: "#ddd" }} />
-                              {isFilled ? (
-                                <i className="icon-star star-filled" style={{ position: "absolute", top: 0, left: 0, color: "#f59e0b" }} />
-                              ) : isPartial ? (
-                                <i
-                                  className="icon-star star-filled star-partial"
-                                  style={{
-                                    position: "absolute",
-                                    top: 0,
-                                    left: 0,
-                                    color: "#f59e0b",
-                                    clipPath: `inset(0 ${100 - fillPercentage}% 0 0)`
-                                  }}
-                                />
-                              ) : null}
-                            </div>
-                          );
-                        })}
+                            return (
+                              <div key={i} className="star-wrapper" style={{ position: "relative", display: "inline-block", fontSize: "14px", lineHeight: 1 }}>
+                                <i className="icon-star star-empty" style={{ color: "#ddd" }} />
+                                {isFilled ? (
+                                  <i className="icon-star star-filled" style={{ position: "absolute", top: 0, left: 0, color: "#f59e0b" }} />
+                                ) : isPartial ? (
+                                  <i
+                                    className="icon-star star-filled star-partial"
+                                    style={{
+                                      position: "absolute",
+                                      top: 0,
+                                      left: 0,
+                                      color: "#f59e0b",
+                                      clipPath: `inset(0 ${100 - fillPercentage}% 0 0)`
+                                    }}
+                                  />
+                                ) : null}
+                              </div>
+                            );
+                          })}
+                        </div>
+
+                        {(product.reviews?.count || product.reviews_count || product.review_count) > 0 && (
+                          <span style={{ fontSize: "13px", color: "#888" }}><b style={{ fontWeight: "600", color: "#777" }}>{product.reviews?.count || product.reviews_count || product.review_count} </b> Değerlendirme </span>
+                        )}
                       </div>
-
-                      {(product.reviews?.count || product.reviews_count || product.review_count) > 0 && (
-                        <span style={{ fontSize: "13px", color: "#888" }}><b style={{ fontWeight: "600", color: "#777" }}>{product.reviews?.count || product.reviews_count || product.review_count} </b> Değerlendirme </span>
+                      {product.bundle_items && Array.isArray(product.bundle_items) && product.bundle_items.length > 0 && (
+                        <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "6px" }}>
+                          (Bu puan paketteki ürünlerin ortalama puanıdır.)
+                        </div>
                       )}
                     </div>
                   )}
@@ -737,13 +726,116 @@ export default function Details9({ product }) {
                       </div>
                       <div className="text fw-6">Teslimat &amp; İade</div>
                     </a>
-                    <a href="#share_social" data-bs-toggle="modal" className="tf-product-extra-icon">
+                    <a
+                      href={`https://api.whatsapp.com/send?phone=${(siteConfig?.contact?.phone?.whatsapp?.tel || "905526428208").replace(/\D/g, "")}&text=${encodeURIComponent(
+                        `${product?.name || product?.title || "Ürün"} hakkında bilgi almak istiyorum.`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="tf-product-extra-icon"
+                      aria-label="WhatsApp ile soru sor"
+                    >
+                      <div className="icon tf-whatsapp-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+                        </svg>
+                      </div>
+                      <div className="text fw-6">WhatsApp</div>
+                    </a>
+                    <a href="#share_social" data-bs-toggle="modal" className="tf-product-extra-icon tf-extra-icon-only" title="Paylaş" aria-label="Paylaş">
                       <div className="icon">
                         <i className="icon-share" />
                       </div>
-                      <div className="text fw-6">Paylaş</div>
                     </a>
                   </div>
+
+                  {/* Bundle ürünleri - Pairs well with */}
+                  {product.bundle_items &&
+                    Array.isArray(product.bundle_items) &&
+                    product.bundle_items.length > 0 && (
+                      <div className="tf-product-bundle-wrap">
+                        <div className="title">Paket içerisindeki ürünler</div>
+                        <div className="tf-product-form-bundle">
+                          <div className="tf-bundle-products">
+                            {product.bundle_items.map((item, i) => {
+                              const categorySlug =
+                                item.categories?.[0]?.slug || "";
+                              const productUrl = `/magaza/${categorySlug}/${item.slug}`;
+                              const imgUrl =
+                                item.cover_image?.url ||
+                                item.cover_image?.thumbnail_url ||
+                                "/images/products/placeholder.jpg";
+                              const displayPrice = item.bundle_discount_price
+                                ? item.bundle_discount_price
+                                : item.normal_price;
+                              return (
+                                <div
+                                  key={item.product_id}
+                                  className={`tf-bundle-product-item item-has-checkox check ${i < product.bundle_items.length - 1 ? "pb_15 line mb_15" : ""}`}
+                                >
+                                  <div className="tf-product-bundle-image">
+                                    <Link
+                                      className="radius-10 overflow-hidden"
+                                      href={productUrl}
+                                    >
+                                      <Image
+                                        alt={item.product_name}
+                                        src={imgUrl}
+                                        width={713}
+                                        height={891}
+                                        unoptimized={
+                                          imgUrl.startsWith("http")
+                                        }
+                                      />
+                                    </Link>
+                                  </div>
+                                  <div className="tf-product-bundle-infos">
+                                    <span className="tf-product-bundle-title">
+                                      {item.product_name}
+                                      {item.quantity > 1 && (
+                                        <span className="text-muted ms-1">
+                                          x{item.quantity}
+                                        </span>
+                                      )}
+                                    </span>
+                                    <div className="tf-product-bundle-price">
+                                      {item.bundle_discount_price != null &&
+                                        item.bundle_discount_price !==
+                                        item.normal_price ? (
+                                        <>
+                                          <div className="price price-on-sale">
+                                            {typeof item.bundle_discount_price ===
+                                              "number"
+                                              ? `₺${item.bundle_discount_price.toLocaleString("tr-TR")}`
+                                              : item.bundle_discount_price}
+                                          </div>
+                                          <div className="compare-at-price">
+                                            ₺
+                                            {typeof item.normal_price ===
+                                              "number"
+                                              ? item.normal_price.toLocaleString(
+                                                "tr-TR"
+                                              )
+                                              : item.normal_price}
+                                          </div>
+                                        </>
+                                      ) : (
+                                        <div className="price">
+                                          {typeof displayPrice === "number"
+                                            ? `₺${displayPrice.toLocaleString("tr-TR")}`
+                                            : displayPrice}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+
+                        </div>
+                      </div>
+                    )}
 
                 </div>
               </div>
@@ -751,7 +843,7 @@ export default function Details9({ product }) {
           </div>
         </div>
       </div>
-      <StickyItem 
+      <StickyItem
         product={product}
         quantity={quantity}
         setQuantity={setQuantity}

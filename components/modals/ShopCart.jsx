@@ -261,14 +261,9 @@ export default function ShopCart() {
                                           <Quantity
                                             isLoading={isAnyLoading}
                                             setQuantity={(qty) => {
-                                              if (!isAnyLoading && qty >= minQty) {
-                                                // Max kontrolü (sadece maxQty 0 değilse)
-                                                if (maxQty !== null && maxQty !== undefined && maxQty > 0 && qty > maxQty) {
-                                                  setQuantity(item.id, maxQty, 'change');
-                                                } else {
-                                                  setQuantity(item.id, qty, 'change');
-                                                }
-                                              }
+                                              if (isAnyLoading) return;
+                                              const clamped = maxQty != null && maxQty > 0 ? Math.min(Math.max(Number(qty) || 0, minQty), maxQty) : Math.max(Number(qty) || 0, minQty);
+                                              if (clamped >= minQty) setQuantity(item.id, clamped, 'change');
                                             }}
                                             minQuantity={minQty}
                                             maxQuantity={maxQty}

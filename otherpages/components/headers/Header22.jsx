@@ -187,7 +187,7 @@ export default function Header22() {
                         <div className="image">
                           <Image
                             alt=""
-                            src="/images/shop/cate/cate1.jpg"
+                            src="/images/collections/collection-1.jpg"
                             width={40}
                             height={48}
                           />
@@ -203,7 +203,7 @@ export default function Header22() {
                         <div className="image">
                           <Image
                             alt=""
-                            src="/images/shop/cate/cate2.jpg"
+                            src="/images/collections/collection-1.jpg"
                             width={40}
                             height={48}
                           />
@@ -219,7 +219,7 @@ export default function Header22() {
                         <div className="image">
                           <Image
                             alt=""
-                            src="/images/shop/cate/cate3.jpg"
+                            src="/images/collections/collection-1.jpg"
                             width={40}
                             height={43}
                           />
@@ -235,7 +235,7 @@ export default function Header22() {
                         <div className="image">
                           <Image
                             alt=""
-                            src="/images/shop/cate/cate4.png"
+                            src="/images/collections/collection-1.jpg"
                             width={40}
                             height={48}
                           />
@@ -254,7 +254,7 @@ export default function Header22() {
                         <div className="image">
                           <Image
                             alt=""
-                            src="/images/shop/cate/cate5.jpg"
+                            src="/images/collections/collection-1.jpg"
                             width={40}
                             height={48}
                           />
@@ -275,7 +275,7 @@ export default function Header22() {
                               <div className="image">
                                 <Image
                                   alt=""
-                                  src="/images/shop/cate/cate6.jpg"
+                                  src="/images/collections/collection-1.jpg"
                                   width={40}
                                   height={49}
                                 />
@@ -293,7 +293,7 @@ export default function Header22() {
                                     <div className="image">
                                       <Image
                                         alt=""
-                                        src="/images/shop/cate/cate1.jpg"
+                                        src="/images/collections/collection-1.jpg"
                                         width={40}
                                         height={48}
                                       />
@@ -309,7 +309,7 @@ export default function Header22() {
                                     <div className="image">
                                       <Image
                                         alt=""
-                                        src="/images/shop/cate/cate8.jpg"
+                                        src="/images/collections/collection-1.jpg"
                                         width={40}
                                         height={48}
                                       />
@@ -331,7 +331,7 @@ export default function Header22() {
                               <div className="image">
                                 <Image
                                   alt=""
-                                  src="/images/shop/cate/cate9.jpg"
+                                  src="/images/collections/collection-1.jpg"
                                   width={40}
                                   height={49}
                                 />
@@ -349,7 +349,7 @@ export default function Header22() {
                                     <div className="image">
                                       <Image
                                         alt=""
-                                        src="/images/shop/cate/cate4.png"
+                                        src="/images/collections/collection-1.jpg"
                                         width={40}
                                         height={48}
                                       />
@@ -365,7 +365,7 @@ export default function Header22() {
                                     <div className="image">
                                       <Image
                                         alt=""
-                                        src="/images/shop/cate/cate7.jpg"
+                                        src="/images/collections/collection-1.jpg"
                                         width={40}
                                         height={41}
                                       />
@@ -390,7 +390,7 @@ export default function Header22() {
                         <div className="image">
                           <Image
                             alt=""
-                            src="/images/shop/cate/cate6.jpg"
+                            src="/images/collections/collection-1.jpg"
                             width={40}
                             height={49}
                           />
@@ -408,7 +408,7 @@ export default function Header22() {
                               <div className="image">
                                 <Image
                                   alt=""
-                                  src="/images/shop/cate/cate1.jpg"
+                                  src="/images/collections/collection-1.jpg"
                                   width={40}
                                   height={48}
                                 />
@@ -424,7 +424,7 @@ export default function Header22() {
                               <div className="image">
                                 <Image
                                   alt=""
-                                  src="/images/shop/cate/cate8.jpg"
+                                  src="/images/collections/collection-1.jpg"
                                   width={40}
                                   height={48}
                                 />
@@ -443,7 +443,7 @@ export default function Header22() {
                         <div className="image">
                           <Image
                             alt=""
-                            src="/images/shop/cate/cate7.jpg"
+                            src="/images/collections/collection-1.jpg"
                             width={40}
                             height={41}
                           />
@@ -459,7 +459,7 @@ export default function Header22() {
                         <div className="image">
                           <Image
                             alt=""
-                            src="/images/shop/cate/cate8.jpg"
+                            src="/images/collections/collection-1.jpg"
                             width={40}
                             height={48}
                           />
@@ -478,7 +478,7 @@ export default function Header22() {
                         <div className="image">
                           <Image
                             alt=""
-                            src="/images/shop/cate/cate9.jpg"
+                            src="/images/collections/collection-1.jpg"
                             width={40}
                             height={49}
                           />
@@ -496,7 +496,7 @@ export default function Header22() {
                               <div className="image">
                                 <Image
                                   alt=""
-                                  src="/images/shop/cate/cate4.png"
+                                  src="/images/collections/collection-1.jpg"
                                   width={40}
                                   height={48}
                                 />
@@ -512,7 +512,7 @@ export default function Header22() {
                               <div className="image">
                                 <Image
                                   alt=""
-                                  src="/images/shop/cate/cate7.jpg"
+                                  src="/images/collections/collection-1.jpg"
                                   width={40}
                                   height={41}
                                 />

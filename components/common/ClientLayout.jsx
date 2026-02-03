@@ -65,15 +65,14 @@ export default function ClientLayout({ children }) {
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
+    // Header scroll: inline style yerine body class kullan (hydration mismatch önlemi)
     useEffect(() => {
-        const header = document.querySelector("header");
-        if (header) {
-            if (scrollDirection === "up") {
-                header.style.top = "0px";
-            } else {
-                header.style.top = "-185px";
-            }
+        if (scrollDirection === "up") {
+            document.body.classList.remove("header-scroll-hide");
+        } else {
+            document.body.classList.add("header-scroll-hide");
         }
+        return () => document.body.classList.remove("header-scroll-hide");
     }, [scrollDirection]);
 
     useEffect(() => {
@@ -90,6 +89,12 @@ export default function ClientLayout({ children }) {
             const offcanvasInstance = bootstrap.Offcanvas.getInstance(offcanvas);
             if (offcanvasInstance) offcanvasInstance.hide();
         });
+
+        // Drift zoom overlay'leri kaldır (ürün detaydan çıkınca kare ekranda kalmasın)
+        if (typeof document !== "undefined") {
+            document.querySelectorAll(".drift-zoom-pane, .drift-bounding-box").forEach((el) => el.remove());
+            document.querySelectorAll(".section-image-zoom").forEach((el) => el.classList.remove("zoom-active"));
+        }
 
         // WOW Init
         const WOW = require("@/utils/wow");
@@ -151,9 +156,10 @@ export default function ClientLayout({ children }) {
             <NewsletterModal />
             <ShareModal />
             <ScrollTop />
-            <div className="whatsapp-floating-btn">
+            {/* WhatsApp butonu*/}
+            {/* <div className="whatsapp-floating-btn">
                 <WhatsappButton />
-            </div>
+            </div> */}
             <CookieConsentBanner />
         </Context>
     );

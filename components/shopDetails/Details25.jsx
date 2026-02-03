@@ -6,7 +6,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { paymentImages } from "@/data/singleProductOptions";
 import StickyItem from "./StickyItem";
-import { bundleproducts } from "@/data/products";
 import Quantity from "./Quantity";
 import { useContextElement } from "@/context/Context";
 export default function Details25({ product }) {
@@ -181,45 +180,125 @@ export default function Details25({ product }) {
                       <div className="text fw-6">Share</div>
                     </a>
                   </div>
-                  <div className="tf-product-bundle-wrap">
-                    <div className="title">Pairs well with</div>
-                    <div className="tf-product-form-bundle">
-                      <div className="tf-bundle-products">
-                        {bundleproducts.map((product, i) => (
-                          <div
-                            key={product.id}
-                            className={`tf-bundle-product-item item-has-checkox check ${i == 2 ? "pb_15 line mb_15" : ""
-                              }`}
-                          >
-                            <div className="tf-product-bundle-image">
-                              <Link
-                                className="radius-10 overflow-hidden"
-                                href={`/product-detail/${product.id}`}
-                              >
-                                <Image
-                                  alt={product.title}
-                                  src={product.imgSrc}
-                                  width={713}
-                                  height={891}
-                                />
-                              </Link>
-                            </div>
-                            <div className="tf-product-bundle-infos">
-                              <span className="tf-product-bundle-title">
-                                {product.title}
-                              </span>
-                              <div className="tf-product-bundle-price">
-                                <div className="price">
-                                  ${product.price.toFixed(2)}
-                                </div>{" "}
-                                {/* Format price */}
+                  {product.bundle_items &&
+                    Array.isArray(product.bundle_items) &&
+                    product.bundle_items.length > 0 &&
+                    product.bundle_total_prices && (
+                      <div className="tf-product-bundle-wrap">
+                        <div className="title">Paket içerisindeki ürünler</div>
+                        <div className="tf-product-form-bundle">
+                          <div className="tf-bundle-products">
+                            {product.bundle_items.map((item, i) => {
+                              const categorySlug =
+                                item.categories?.[0]?.slug || "urun";
+                              const productUrl = `/magaza/${categorySlug}/${item.slug}`;
+                              const imgUrl =
+                                item.cover_image?.url ||
+                                item.cover_image?.thumbnail_url ||
+                                "/images/products/placeholder.jpg";
+                              const displayPrice = item.bundle_discount_price
+                                ? item.bundle_discount_price
+                                : item.normal_price;
+                              return (
+                                <div
+                                  key={item.product_id}
+                                  className={`tf-bundle-product-item item-has-checkox check ${i < product.bundle_items.length - 1 ? "pb_15 line mb_15" : ""}`}
+                                >
+                                  <div className="tf-product-bundle-image">
+                                    <Link
+                                      className="radius-10 overflow-hidden"
+                                      href={productUrl}
+                                    >
+                                      <Image
+                                        alt={item.product_name}
+                                        src={imgUrl}
+                                        width={713}
+                                        height={891}
+                                        unoptimized={
+                                          imgUrl.startsWith("http")
+                                        }
+                                      />
+                                    </Link>
+                                  </div>
+                                  <div className="tf-product-bundle-infos">
+                                    <span className="tf-product-bundle-title">
+                                      {item.product_name}
+                                      {item.quantity > 1 && (
+                                        <span className="text-muted ms-1">
+                                          x{item.quantity}
+                                        </span>
+                                      )}
+                                    </span>
+                                    <div className="tf-product-bundle-price">
+                                      {item.bundle_discount_price != null &&
+                                        item.bundle_discount_price !==
+                                        item.normal_price ? (
+                                        <>
+                                          <div className="price price-on-sale">
+                                            {typeof item.bundle_discount_price ===
+                                              "number"
+                                              ? `₺${item.bundle_discount_price.toLocaleString("tr-TR")}`
+                                              : item.bundle_discount_price}
+                                          </div>
+                                          <div className="compare-at-price">
+                                            ₺
+                                            {typeof item.normal_price ===
+                                              "number"
+                                              ? item.normal_price.toLocaleString(
+                                                "tr-TR"
+                                              )
+                                              : item.normal_price}
+                                          </div>
+                                        </>
+                                      ) : (
+                                        <div className="price">
+                                          {typeof displayPrice === "number"
+                                            ? `₺${displayPrice.toLocaleString("tr-TR")}`
+                                            : displayPrice}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                          {product.bundle_total_prices && (
+                            <div className="tf-bundle-total mt-3 pt-3 border-top">
+                              <div className="d-flex justify-content-between align-items-center">
+                                <span className="fw-6">Toplam:</span>
+                                <div>
+                                  {product.bundle_total_prices
+                                    .total_discount_price != null && (
+                                      <span className="price price-on-sale me-2">
+                                        ₺
+                                        {typeof product.bundle_total_prices
+                                          .total_discount_price === "number"
+                                          ? product.bundle_total_prices.total_discount_price.toLocaleString(
+                                            "tr-TR"
+                                          )
+                                          : product.bundle_total_prices.total_discount_price}
+                                      </span>
+                                    )}
+                                  {product.bundle_total_prices
+                                    .total_normal_price != null && (
+                                      <span className="compare-at-price">
+                                        ₺
+                                        {typeof product.bundle_total_prices
+                                          .total_normal_price === "number"
+                                          ? product.bundle_total_prices.total_normal_price.toLocaleString(
+                                            "tr-TR"
+                                          )
+                                          : product.bundle_total_prices.total_normal_price}
+                                      </span>
+                                    )}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        ))}
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  </div>
+                    )}
                   <div className="tf-product-info-delivery-return">
                     <div className="row">
                       <div className="col-xl-6 col-12">

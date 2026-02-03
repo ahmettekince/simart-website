@@ -65,14 +65,11 @@ export default function Quantity({ setQuantity = (value) => { }, minQuantity = 1
 
   const handleIncrease = () => {
     if (disabled || isLoading) return;
-    
     const currentCount = Number(count) || 0;
+    if (currentCount >= effectiveMax) return;
     const newCount = currentCount + 1;
-    
-    if (newCount <= effectiveMax) {
-      const finalValue = updateCount(newCount);
-      setQuantity(finalValue);
-    }
+    const finalValue = updateCount(newCount);
+    setQuantity(finalValue);
   };
 
   const handleInputChange = (e) => {
@@ -186,9 +183,12 @@ export default function Quantity({ setQuantity = (value) => { }, minQuantity = 1
       <span
         className={`btn-quantity minus-btn ${isMinusDisabled ? "disabled" : ""}`}
         onClick={handleDecrease}
+        role="button"
+        aria-disabled={isMinusDisabled}
         style={{
           opacity: isMinusDisabled ? 0.5 : 1,
           cursor: isMinusDisabled ? "not-allowed" : "pointer",
+          pointerEvents: isMinusDisabled ? "none" : "auto",
         }}
       >
         -
@@ -214,9 +214,13 @@ export default function Quantity({ setQuantity = (value) => { }, minQuantity = 1
       <span
         className={`btn-quantity plus-btn ${isPlusDisabled ? "disabled" : ""}`}
         onClick={handleIncrease}
+        role="button"
+        aria-disabled={isPlusDisabled}
+        tabIndex={isPlusDisabled ? -1 : 0}
         style={{
           opacity: isPlusDisabled ? 0.5 : 1,
           cursor: isPlusDisabled ? "not-allowed" : "pointer",
+          pointerEvents: isPlusDisabled ? "none" : "auto",
         }}
       >
         +

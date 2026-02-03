@@ -20,6 +20,7 @@ export async function getProducts(params = "") {
 /**
  * Belirli bir kategoriye ait ürünleri getirir.
  * @param {string} categorySlug - Kategori slug'ı (örn: "robotlar")
+ * @returns {Promise<Array>} Ürün listesi
  */
 export async function getProductsByCategory(categorySlug) {
     if (!categorySlug) {
@@ -36,6 +37,31 @@ export async function getProductsByCategory(categorySlug) {
 
     log("[API products.js] getProductsByCategory failed:", response);
     return [];
+}
+
+/**
+ * Kategori bilgisi ve ürünlerini getirir. API'den category objesi döner.
+ * @param {string} categorySlug - Kategori slug'ı
+ * @returns {Promise<{products: Array, category: {name, slug, product_count}|null}>}
+ */
+export async function getCategoryWithProducts(categorySlug) {
+    if (!categorySlug) {
+        log("[API products.js] getCategoryWithProducts: categorySlug is required");
+        return { products: [], category: null };
+    }
+
+    const endpoint = `/products/category/${categorySlug}`;
+    const response = await serverFetch(endpoint, { next: { revalidate: 0 } });
+
+    if (response?.status === "success") {
+        return {
+            products: response.data || [],
+            category: response.category || null,
+        };
+    }
+
+    log("[API products.js] getCategoryWithProducts failed:", response);
+    return { products: [], category: null };
 }
 
 /**

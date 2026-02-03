@@ -1,6 +1,6 @@
 import Header from "@/components/headers/Header";
 import MagazaDisplay from "@/components/shop/MagazaDisplay";
-import { getProductsByCategory } from "@/api/products";
+import { getCategoryWithProducts } from "@/api/products";
 import { getCategories } from "@/api/home";
 import { notFound } from "next/navigation";
 
@@ -9,13 +9,13 @@ import { notFound } from "next/navigation";
  */
 export async function generateMetadata({ params }) {
   const { kategori } = await params;
-  const products = await getProductsByCategory(kategori);
-  const categoryName =
-    products.length > 0 && products[0].categories?.[0]?.name ? products[0].categories[0].name : kategori;
+  const { products, category } = await getCategoryWithProducts(kategori);
+  const categoryName = category?.name || kategori;
+  const productCount = category?.product_count ?? products.length;
 
   return {
     title: `${categoryName} - Şımart Teknoloji`,
-    description: `${categoryName} kategorisindeki ürünlerimizi keşfedin. ${products.length} ürün bulundu.`,
+    description: `${categoryName} kategorisindeki ürünlerimizi keşfedin. ${productCount} ürün bulundu.`,
   };
 }
 
@@ -32,12 +32,14 @@ export default async function KategoriPage({ params }) {
     notFound();
   }
 
-  // Kategoriye ait ürünleri ve tüm kategorileri çek
-  const [products, categories] = await Promise.all([getProductsByCategory(kategori), getCategories()]);
+  // Kategori bilgisi ve ürünleri (API'den category objesi gelir)
+  const [{ products, category }, categories] = await Promise.all([
+    getCategoryWithProducts(kategori),
+    getCategories(),
+  ]);
 
-  // Kategori adını bul (ilk ürünün kategorisinden)
-  const categoryName =
-    products.length > 0 && products[0].categories?.[0]?.name ? products[0].categories[0].name : kategori;
+  const categoryName = category?.name || kategori;
+  const productCount = category?.product_count ?? products.length;
 
   return (
     <main className="magaza-page">
@@ -48,7 +50,7 @@ export default async function KategoriPage({ params }) {
         <div className="container-full">
           <div className="heading text-center">{categoryName}</div>
           <p className="text-center text-2 text_black-2 mt_5">
-            {products.length > 0 ? `${products.length} ürün bulundu` : "Bu kategoride ürün bulunamadı"}
+            {productCount > 0 ? `${productCount} ürün bulundu` : "Bu kategoride ürün bulunamadı"}
           </p>
         </div>
       </div>

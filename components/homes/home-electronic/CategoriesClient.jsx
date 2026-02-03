@@ -4,9 +4,16 @@ import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination } from "swiper/modules";
 
+const CATEGORY_PLACEHOLDER = "/images/collections/collection-1.jpg";
+
+function getCategoryImageSrc(url) {
+  if (!url || typeof url !== "string" || url.trim() === "") return CATEGORY_PLACEHOLDER;
+  return url;
+}
+
 export default function CategoriesClient({ categories }) {
   return (
-    <div className="sw-pagination-wrapper">
+    <div className="sw-pagination-wrapper categories-pagination-wrapper">
       <Swiper
         dir="ltr"
         slidesPerView={6}
@@ -29,16 +36,17 @@ export default function CategoriesClient({ categories }) {
         pagination={{ clickable: true, el: ".spd159" }}
       >
         {categories.map((item, index) => (
-          <SwiperSlide key={index}>
+          <SwiperSlide key={index} style={{ border: "2px solid #f5f5f5", borderRadius: "12px" }}>
             <div className="collection-item-v2 type-small hover-img">
               <Link href={`/magaza/${item.slug || "collection-sub"}`} className="collection-inner">
                 <div className="collection-image img-style radius-10">
                   <Image
                     className="lazyload"
                     alt={item.name}
-                    src={item.image?.url || "/images/collections/collection-1.jpg"}
+                    src={getCategoryImageSrc(item.image?.url)}
                     width={600}
                     height={730}
+                    loading="lazy"
                   />
                 </div>
                 <div className="collection-content">
@@ -47,7 +55,7 @@ export default function CategoriesClient({ categories }) {
                   </div>
                   <div className="bottom">
                     <button className="tf-btn collection-title hover-icon btn-light rounded-full">
-                      <span>Şimdi İncele</span>
+                      <span>İncele</span>
                       <i className="icon icon-arrow1-top-left" />
                     </button>
                   </div>

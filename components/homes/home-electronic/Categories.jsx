@@ -3,7 +3,7 @@ import CategoriesClient from "./CategoriesClient";
 
 export default function Categories({ categories = [] }) {
   return (
-    <section className="flat-spacing-11 pb-0">
+    <section className="flat-spacing-7 pb-0 section-categories-home">
       <div className="container">
         <div className="position-relative">
           <div className="flat-title flex-row justify-content-between px-0">

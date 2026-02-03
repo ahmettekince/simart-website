@@ -87,26 +87,35 @@ export default function Slider5({
     }
   }, []);
 
+  const driftInstancesRef = useRef([]);
+
   useEffect(() => {
     // Function to initialize Drift
     const imageZoom = () => {
-      if (window.innerWidth < 768) return;
+      if (typeof window === "undefined" || window.innerWidth < 768) return;
       const driftAll = document.querySelectorAll(".tf-image-zoom");
       const pane = document.querySelector(".tf-zoom-main");
+      if (!pane || driftAll.length === 0) return;
 
+      const instances = [];
       driftAll.forEach((el) => {
-        new Drift(el, {
-          zoomFactor: 2,
-          paneContainer: pane,
-          inlinePane: false,
-          handleTouch: false,
-          hoverBoundingBox: true,
-          containInline: true,
-        });
+        try {
+          const instance = new Drift(el, {
+            zoomFactor: 2,
+            paneContainer: pane,
+            inlinePane: false,
+            handleTouch: false,
+            hoverBoundingBox: true,
+            containInline: true,
+          });
+          instances.push(instance);
+        } catch (e) {
+          // ignore
+        }
       });
+      driftInstancesRef.current = instances;
     };
 
-    // Call the function
     imageZoom();
     const zoomElements = document.querySelectorAll(".tf-image-zoom");
 
@@ -129,12 +138,28 @@ export default function Slider5({
       element.addEventListener("mouseleave", handleMouseLeave);
     });
 
-    // Cleanup event listeners on component unmount
+    // Cleanup: sayfa değişince Drift overlay'leri kaldır
     return () => {
       zoomElements.forEach((element) => {
         element.removeEventListener("mouseover", handleMouseOver);
         element.removeEventListener("mouseleave", handleMouseLeave);
       });
+      // Drift örneklerini destroy et (zoom karesi ve pane gitsin)
+      driftInstancesRef.current.forEach((instance) => {
+        try {
+          if (instance && typeof instance.destroy === "function") {
+            instance.destroy();
+          }
+        } catch (e) {
+          // ignore
+        }
+      });
+      driftInstancesRef.current = [];
+      // Body'de kalmış drift overlay'leri kaldır (Next.js client navigation sonrası)
+      if (typeof document !== "undefined") {
+        document.querySelectorAll(".drift-zoom-pane, .drift-bounding-box, .zoom-magnifier-containing .drift-zoom-pane").forEach((el) => el.remove());
+        document.querySelectorAll(".section-image-zoom").forEach((el) => el.classList.remove("zoom-active"));
+      }
     };
   }, []); // Empty dependency array to run only once on mount
 

@@ -81,6 +81,12 @@ export default function StickyItem({
         if (typeof firstImage === "string") return firstImage;
         if (firstImage?.url) return firstImage.url;
       }
+      if (product.gallery_images && product.gallery_images.length > 0) {
+        const first = product.gallery_images[0];
+        if (typeof first === "string") return first;
+        if (first?.url) return first.url;
+        if (first?.thumbnail_url) return first.thumbnail_url;
+      }
     }
     return displayProduct.imgSrc;
   };
@@ -125,6 +131,19 @@ export default function StickyItem({
     <div className={`tf-sticky-btn-atc ${isVisible ? "show" : ""}`} ref={stickyRef}>
       <div className="container">
         <div className="tf-height-observer w-100 d-flex align-items-center">
+          <div className="tf-sticky-atc-image d-none d-md-flex">
+            {productImage && (
+              <Image
+                src={productImage}
+                alt={productName || "Ürün"}
+                width={56}
+                height={56}
+                className="rounded"
+                style={{ objectFit: "cover" }}
+                unoptimized={typeof productImage === "string" && productImage.startsWith("http")}
+              />
+            )}
+          </div>
           <div className="tf-sticky-atc-price-wrap">
             <span className="price-on-sale">₺{Number(totalPrice).toLocaleString("tr-TR")}</span>
             {totalOriginalPrice != null && totalOriginalPrice > totalPrice && (
@@ -173,6 +192,16 @@ export default function StickyItem({
         </div>
       </div>
       <style jsx>{`
+        .tf-sticky-atc-image {
+          flex-shrink: 0;
+          margin-right: 12px;
+        }
+        .tf-sticky-atc-image img {
+          width: 56px;
+          height: 56px;
+          border-radius: 8px;
+          object-fit: cover;
+        }
         .tf-sticky-atc-price-wrap {
           display: flex;
           flex-direction: column;

@@ -11,6 +11,7 @@ export default function Hero() {
           alt="image-collection"
           width={2000}
           height={1262}
+
         />
         <div className="box-content text-center">
           <div className="container">

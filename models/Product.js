@@ -281,7 +281,11 @@ export class ProductModel {
             
             // Bundle
             bundle_items: product.bundle_items || null,
+            bundle_total_prices: product.bundle_total_prices || null,
             
+            // Açıklama layout: "standard" = container, "full" = container-fluid
+            description_layout: product.description_layout || "standard",
+
             // Teknik özellikler ve içerik
             technical_specifications: product.technical_specifications || [],
             box_content_data: product.box_content_data || [],
