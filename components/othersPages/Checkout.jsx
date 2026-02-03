@@ -19,6 +19,7 @@ import CheckoutFAQs from "@/components/othersPages/checkout/CheckoutFAQs";
 
 export default function Checkout() {
   const { items } = useCartStore();
+  const isCartSynced = useCartStore((state) => state.isSynced);
 
   // API'den gelen totals.total kullan, yoksa local hesapla (fallback)
   const totals = useCartStore((state) => state.totals);
@@ -70,8 +71,15 @@ export default function Checkout() {
   const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
   const [orderErrors, setOrderErrors] = useState({}); // Field bazlı hatalar
   const [orderErrorMessage, setOrderErrorMessage] = useState(""); // Genel hata mesajı
+  const [deliveryAddressErrors, setDeliveryAddressErrors] = useState({}); // Teslimat adresi API hataları (alan bazlı)
+  const [billingAddressErrors, setBillingAddressErrors] = useState({}); // Fatura adresi API hataları (alan bazlı)
   const [lastPostRequest, setLastPostRequest] = useState(null); // Son POST isteği bilgisi
   const [lastPostResponse, setLastPostResponse] = useState(null); // Son POST response bilgisi
+
+  // Misafir checkout (login değilse): e-posta, şifre e-postaya gönderilsin (varsayılan işaretli), şifre alanı
+  const [guestEmail, setGuestEmail] = useState("");
+  const [sendPasswordToEmail, setSendPasswordToEmail] = useState(true); // Varsayılan işaretli: şifrem e-posta adresime gönderilsin
+  const [guestPassword, setGuestPassword] = useState("");
 
   // Şehirleri lazy load ile yükle (sadece ilk açılışta)
   const fetchCities = async () => {
@@ -302,6 +310,8 @@ export default function Checkout() {
   const handleSaveDeliveryAddress = async (e) => {
     e.preventDefault();
     setIsSavingAddress(true);
+    setDeliveryAddressErrors({});
+    setOrderErrorMessage("");
 
     const formData = new FormData(e.target);
     const addressData = {
@@ -316,7 +326,7 @@ export default function Checkout() {
       address_detail: formData.get("delivery[address_detail]"),
     };
 
-    // Fatura adresi olarak da kaydedilecekse
+    // Fatura adresi olarak da kaydedilecekse (API individual/company bekliyor)
     if (useAsBillingAddress) {
       addressData.use_invoice_address = true;
       addressData.invoice_type = invoiceType === "corporate" ? "company" : "individual";
@@ -353,8 +363,17 @@ export default function Checkout() {
       }
     } catch (error) {
       log("Teslimat adresi kaydedilirken hata:", error);
-      // Hata durumunda alert yerine state üzerinden hata gösterimi yapılabilir
-      setOrderErrorMessage("Adres kaydedilirken bir hata oluştu. Lütfen bilgilerinizi kontrol edip tekrar deneyin.");
+      const errData = error.response?.data;
+      if (errData?.errors && typeof errData.errors === "object") {
+        const fieldErrors = {};
+        Object.keys(errData.errors).forEach((key) => {
+          if (Array.isArray(errData.errors[key]) && errData.errors[key].length > 0) {
+            fieldErrors[key] = errData.errors[key];
+          }
+        });
+        setDeliveryAddressErrors(fieldErrors);
+      }
+      setOrderErrorMessage(errData?.message || "Adres kaydedilirken bir hata oluştu. Lütfen bilgilerinizi kontrol edip tekrar deneyin.");
     } finally {
       setIsSavingAddress(false);
     }
@@ -364,6 +383,8 @@ export default function Checkout() {
   const handleSaveBillingAddress = async (e) => {
     e.preventDefault();
     setIsSavingAddress(true);
+    setBillingAddressErrors({});
+    setOrderErrorMessage("");
 
     const formData = new FormData(e.target);
     const addressData = {
@@ -376,7 +397,7 @@ export default function Checkout() {
       district_id: selectedBillingDistrictId,
       neighborhood_id: selectedBillingNeighborhoodId,
       address_detail: formData.get("billing[address_detail]"),
-      invoice_type: invoiceType,
+      invoice_type: invoiceType === "corporate" ? "company" : "individual",
     };
 
     // Fatura tipine göre ek alanlar
@@ -410,7 +431,17 @@ export default function Checkout() {
       }
     } catch (error) {
       log("Fatura adresi kaydedilirken hata:", error);
-      setOrderErrorMessage("Fatura adresi kaydedilirken bir hata oluştu. Lütfen bilgilerinizi kontrol edip tekrar deneyin.");
+      const errData = error.response?.data;
+      if (errData?.errors && typeof errData.errors === "object") {
+        const fieldErrors = {};
+        Object.keys(errData.errors).forEach((key) => {
+          if (Array.isArray(errData.errors[key]) && errData.errors[key].length > 0) {
+            fieldErrors[key] = errData.errors[key];
+          }
+        });
+        setBillingAddressErrors(fieldErrors);
+      }
+      setOrderErrorMessage(errData?.message || "Fatura adresi kaydedilirken bir hata oluştu. Lütfen bilgilerinizi kontrol edip tekrar deneyin.");
     } finally {
       setIsSavingAddress(false);
     }
@@ -436,7 +467,7 @@ export default function Checkout() {
     }
 
     if (!sameBillingAddress && !selectedBillingAddressId) {
-      setOrderErrors({ invoice_address_id: ["Lütfen fatura adresi seçin."] });
+      setOrderErrors({ invoice_address_id: ["Lütfen fatura adresi seçin veya kaydedin."] });
       return;
     }
 
@@ -588,20 +619,112 @@ export default function Checkout() {
 
   return (
     <section className="flat-spacing-11">
-      {/* Mobil sepet tutarı bar - sadece mobilde görünür */}
+      {/* Mobil sepet tutarı bar - sadece mobilde görünür; yüklenene kadar skeleton */}
       <div className="checkout-mobile-cart-bar">
         <div className="checkout-mobile-cart-bar-row">
           <span className="checkout-mobile-cart-bar-label">Sepet tutarı</span>
           <div className="checkout-mobile-cart-bar-right">
-            <span className="checkout-mobile-cart-bar-price">₺{cartTotals.total.toLocaleString("tr-TR")}</span>
-            <span className="checkout-mobile-cart-bar-kdv">KDV dahil</span>
+            {isCartSynced ? (
+              <>
+                <span className="checkout-mobile-cart-bar-price">₺{cartTotals.total.toLocaleString("tr-TR")}</span>
+                <span className="checkout-mobile-cart-bar-kdv">KDV dahil</span>
+              </>
+            ) : (
+              <span className="skeleton-content skeleton-rect" style={{ display: "inline-block", width: "90px", height: "20px", borderRadius: "8px" }} />
+            )}
           </div>
         </div>
       </div>
       <div className="container">
         <div className="tf-page-cart-wrap layout-2">
           <div className="tf-page-cart-item">
-            <h5 className="fw-5 mb_20">1 - Teslimat Adresi</h5>
+            {/* Sol sütun: sepet senkronize olana kadar skeleton - login ise sadece teslimat, misafirse kayıt + teslimat (auth bilinmiyorsa misafir skeleton) */}
+            {!isCartSynced ? (
+              <div className="checkout-form-skeleton">
+                {/* Misafir: 1 - Kayıt İşlemleri (auth bilinmiyor veya !isAuthenticated) */}
+                {(!isInitialized || !isAuthenticated) && (
+                  <>
+                    <div className="skeleton-content skeleton-rect skeleton-heading" style={{ width: "200px" }} />
+                    <div className="skeleton-content skeleton-rect skeleton-paragraph" />
+                    <div className="skeleton-field">
+                      <div className="skeleton-content skeleton-rect skeleton-label" style={{ width: "80px" }} />
+                      <div className="skeleton-content skeleton-rect skeleton-input" />
+                    </div>
+                    <div className="skeleton-checkbox-row">
+                      <div className="skeleton-content skeleton-checkbox-box" />
+                      <div className="skeleton-content skeleton-rect skeleton-checkbox-label" />
+                    </div>
+                  </>
+                )}
+                {/* Herkes: Teslimat Adresi (login ise 1, misafirse 2 numaralı adım) */}
+                <div className="skeleton-content skeleton-rect skeleton-heading" style={{ width: "220px", marginTop: isInitialized && isAuthenticated ? 0 : "24px" }} />
+                <div className="skeleton-field">
+                  <div className="skeleton-content skeleton-rect skeleton-label" style={{ width: "180px" }} />
+                  <div className="skeleton-content skeleton-rect skeleton-address-select" />
+                </div>
+                <div className="skeleton-content skeleton-address-card">
+                  <div className="skeleton-content skeleton-rect skeleton-card-line" />
+                  <div className="skeleton-content skeleton-rect skeleton-card-line" />
+                  <div className="skeleton-content skeleton-rect skeleton-card-line" />
+                </div>
+                <div className="skeleton-content skeleton-rect" style={{ height: "14px", width: "100%", maxWidth: "380px", marginTop: "20px", borderRadius: "6px" }} />
+              </div>
+            ) : (
+              <>
+            {/* Adım numarası: login değilse 1 Kayıt, 2 Teslimat, 3 Fatura, 4 Ödeme; login ise 1 Teslimat, 2 Fatura, 3 Ödeme */}
+            {!isAuthenticated && isInitialized && (
+              <>
+                <h5 className="fw-5 mb_20">1 - Kayıt İşlemleri</h5>
+                <p className="text_black-2 mb_20" style={{ fontSize: "14px" }}>
+                  Siparişinizi takip edebilmeniz ve hesabınıza giriş yapabilmeniz için e-posta adresinizi girin.
+                </p>
+                <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
+                  <label htmlFor="checkout-guest-email">E-posta*</label>
+                  <input
+                    type="email"
+                    id="checkout-guest-email"
+                    name="guest_email"
+                    placeholder="ornek@email.com"
+                    value={guestEmail}
+                    onChange={(e) => setGuestEmail(e.target.value)}
+                    autoComplete="email"
+                  />
+                </fieldset>
+                <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <input
+                      type="checkbox"
+                      id="checkout-send-password-email"
+                      checked={sendPasswordToEmail}
+                      onChange={(e) => {
+                        setSendPasswordToEmail(e.target.checked);
+                        if (e.target.checked) setGuestPassword("");
+                      }}
+                      style={{ margin: 0, verticalAlign: "middle" }}
+                    />
+                    <label htmlFor="checkout-send-password-email" style={{ margin: 0, lineHeight: "1.5" }}>
+                      Şifrem e-posta adresime gönderilsin
+                    </label>
+                  </div>
+                </fieldset>
+                {!sendPasswordToEmail && (
+                  <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
+                    <label htmlFor="checkout-guest-password">Şifre*</label>
+                    <input
+                      type="password"
+                      id="checkout-guest-password"
+                      name="guest_password"
+                      placeholder="Şifre belirleyin"
+                      value={guestPassword}
+                      onChange={(e) => setGuestPassword(e.target.value)}
+                      autoComplete="new-password"
+                    />
+                  </fieldset>
+                )}
+              </>
+            )}
+
+            <h5 className="fw-5 mb_20">{isAuthenticated ? "1" : "2"} - Teslimat Adresi</h5>
 
             {/* Auth durumu yüklenene kadar bekle */}
             {!isInitialized ? (
@@ -612,11 +735,6 @@ export default function Checkout() {
                   <div style={{ marginBottom: "15px", padding: "12px", backgroundColor: "#fee", border: "1px solid #fcc", borderRadius: "6px", fontSize: "14px", color: "#c33" }}>
                     {orderErrors.delivery_address_id[0]}
                   </div>
-                )}
-
-                {/* Adresler yükleniyor */}
-                {isAuthenticated && isLoadingAddresses && (
-                  <CircularLoading text="Adresler yükleniyor..." />
                 )}
 
                 {/* Giriş yapmış kullanıcılar için teslimat adresi seçimi */}
@@ -770,8 +888,21 @@ export default function Checkout() {
                   </>
                 )}
 
-            {/* Teslimat Adresi Formu - Kayıtlı adres yoksa veya "Yeni Adres Ekle" tıklandıysa göster */}
-            {(!isAuthenticated || (!isLoadingAddresses && savedDeliveryAddresses.length === 0) || showDeliveryAddressForm) && (
+            {/* Giriş yapmış ama teslimat adresi yok: sadece "Adres Ekle" alanı göster, form gösterme */}
+            {isAuthenticated && !isLoadingAddresses && savedDeliveryAddresses.length === 0 && !showDeliveryAddressForm && (
+              <div style={{ marginTop: "20px", marginBottom: "20px" }}>
+                <p style={{ fontSize: "14px", color: "#666", marginBottom: "16px" }}>
+                  Teslimat adresiniz bulunmuyor. Siparişi tamamlamak için bir adres ekleyin.
+                </p>
+                <AddAddressButton
+                  onClick={() => setShowDeliveryAddressForm(true)}
+                  text="Teslimat Adresi Ekle"
+                />
+              </div>
+            )}
+
+            {/* Teslimat Adresi Formu - Misafir kullanıcı veya "Adres Ekle" tıklandıysa göster */}
+            {(!isAuthenticated || showDeliveryAddressForm) && (
               <form onSubmit={handleSaveDeliveryAddress} className="form-checkout" style={{ marginTop: "20px" }}>
                 <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
                   <label htmlFor="address-title">Adres Başlığı Örneğin Evim veya İş Yerim*</label>
@@ -922,7 +1053,10 @@ export default function Checkout() {
                     {invoiceType === "individual" && (
                       <fieldset className="box fieldset">
                         <label htmlFor="delivery_tc_identity">TC Kimlik No*</label>
-                        <input required type="text" id="delivery_tc_identity" name="delivery_tc_identity" maxLength="11" pattern="[0-9]{11}" />
+                        <input required type="text" id="delivery_tc_identity" name="delivery_tc_identity" maxLength="11" pattern="[0-9]{11}" style={deliveryAddressErrors.tckn ? { borderColor: "#dc3545" } : undefined} />
+                        {deliveryAddressErrors.tckn && (
+                          <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>{deliveryAddressErrors.tckn[0]}</div>
+                        )}
                       </fieldset>
                     )}
 
@@ -931,7 +1065,10 @@ export default function Checkout() {
                       <>
                         <fieldset className="box fieldset" style={{ marginBottom: "15px" }}>
                           <label htmlFor="delivery_company_name">Şirket Adı*</label>
-                          <input required type="text" id="delivery_company_name" name="delivery_company_name" />
+                          <input required type="text" id="delivery_company_name" name="delivery_company_name" style={deliveryAddressErrors.company_name ? { borderColor: "#dc3545" } : undefined} />
+                          {deliveryAddressErrors.company_name && (
+                            <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>{deliveryAddressErrors.company_name[0]}</div>
+                          )}
                         </fieldset>
                         <fieldset className="box fieldset" style={{ marginBottom: "15px" }}>
                           <label htmlFor="delivery_tax_office">Vergi Dairesi Seçiniz*</label>
@@ -949,10 +1086,16 @@ export default function Checkout() {
                             required
                             searchPlaceholder="Vergi dairesi ara..."
                           />
+                          {deliveryAddressErrors.tax_office_id && (
+                            <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>{deliveryAddressErrors.tax_office_id[0]}</div>
+                          )}
                         </fieldset>
                         <fieldset className="box fieldset">
                           <label htmlFor="delivery_tax_number">Vergi No*</label>
-                          <input required type="text" id="delivery_tax_number" name="delivery_tax_number" />
+                          <input required type="text" id="delivery_tax_number" name="delivery_tax_number" placeholder="10 hane, sadece rakam" style={deliveryAddressErrors.tax_number ? { borderColor: "#dc3545" } : undefined} />
+                          {deliveryAddressErrors.tax_number && (
+                            <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>{deliveryAddressErrors.tax_number[0]}</div>
+                          )}
                         </fieldset>
                       </>
                     )}
@@ -1033,7 +1176,7 @@ export default function Checkout() {
               if (!hasInvoiceType) {
                 return (
                   <div style={{ marginTop: "20px", marginBottom: "20px" }}>
-                    <h5 className="fw-5 mb_20">2 - Fatura Bilgileri</h5>
+                    <h5 className="fw-5 mb_20">{isAuthenticated ? "2" : "3"} - Fatura Bilgileri</h5>
                     <p style={{ fontSize: "14px", color: "#666", marginBottom: "20px" }}>
                       Teslimat adresinizde fatura türü bilgisi bulunmadığı için fatura türünü seçmeniz gerekmektedir.
                     </p>
@@ -1139,10 +1282,10 @@ export default function Checkout() {
               return null;
             })()}
 
-            {/* Fatura adresi seçimi - Checkbox işaretli değilse ve teslimat adresi seçildiyse göster */}
+                {/* 2 - Fatura Adresi: Checkbox işaretli değilse ve teslimat adresi seçildiyse göster */}
             {!sameBillingAddress && selectedDeliveryAddressId !== null && (
               <>
-                <h5 className="fw-5 mb_20 mt_40">2 - Fatura Adresi</h5>
+                <h5 className="fw-5 mb_20 mt_40">{isAuthenticated ? "2" : "3"} - Fatura Adresi</h5>
 
                 {orderErrors.invoice_address_id && (
                   <div style={{ marginBottom: "15px", padding: "12px", backgroundColor: "#fee", border: "1px solid #fcc", borderRadius: "6px", fontSize: "14px", color: "#c33" }}>
@@ -1150,12 +1293,7 @@ export default function Checkout() {
                   </div>
                 )}
 
-                {/* Adresler yükleniyor */}
-                {isAuthenticated && isLoadingAddresses && (
-                  <CircularLoading text="Adresler yükleniyor..." />
-                )}
-
-                {/* Giriş yapmış kullanıcılar için kayıtlı fatura adresi seçimi */}
+                {/* Giriş yapmış, fatura adresi var: liste + Adres Ekle butonu */}
                 {isAuthenticated && !isLoadingAddresses && savedBillingAddresses.length > 0 && !showBillingAddressForm && (
                   <>
                     <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
@@ -1306,8 +1444,21 @@ export default function Checkout() {
                   </>
                 )}
 
-                {/* Fatura adresi formu - Kayıtlı adres yoksa veya "Yeni Adres Ekle" tıklandıysa göster */}
-                {(!isAuthenticated || (!isLoadingAddresses && savedBillingAddresses.length === 0) || showBillingAddressForm) && (
+                {/* Giriş yapmış ama fatura adresi yok: sadece "Fatura Adresi Ekle" göster */}
+                {isAuthenticated && !isLoadingAddresses && savedBillingAddresses.length === 0 && !showBillingAddressForm && (
+                  <div style={{ marginTop: "20px", marginBottom: "20px" }}>
+                    <p style={{ fontSize: "14px", color: "#666", marginBottom: "16px" }}>
+                      Fatura adresiniz bulunmuyor. Siparişi tamamlamak için bir fatura adresi ekleyin.
+                    </p>
+                    <AddAddressButton
+                      onClick={() => setShowBillingAddressForm(true)}
+                      text="Fatura Adresi Ekle"
+                    />
+                  </div>
+                )}
+
+                {/* Fatura adresi formu - Misafir kullanıcı veya "Fatura Adresi Ekle" tıklandıysa göster */}
+                {(!isAuthenticated || showBillingAddressForm) && (
                   <form onSubmit={handleSaveBillingAddress} className="form-checkout" style={{ marginTop: "20px" }}>
                     {/* Fatura Adresi Formu */}
                     <div className="box grid-2" style={{ marginBottom: "20px", gap: "15px" }}>
@@ -1337,7 +1488,8 @@ export default function Checkout() {
                             setSelectedBillingCityId(value);
                             setSelectedBillingDistrictId("");
                           }}
-                          placeholder="Seçiniz"
+                          onOpen={fetchCities}
+                          placeholder={isLoadingCities ? "Yükleniyor..." : "Seçiniz"}
                           required
                           searchPlaceholder="Şehir ara..."
                         />
@@ -1428,7 +1580,10 @@ export default function Checkout() {
                     {invoiceType === "individual" && (
                       <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
                         <label htmlFor="tc-identity">T.C. Kimlik Numaranız*</label>
-                        <input required type="text" id="tc-identity" name="tc_identity" maxLength={11} pattern="[0-9]{11}" />
+                        <input required type="text" id="tc-identity" name="tc_identity" maxLength={11} pattern="[0-9]{11}" style={billingAddressErrors.tckn ? { borderColor: "#dc3545" } : undefined} />
+                        {billingAddressErrors.tckn && (
+                          <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>{billingAddressErrors.tckn[0]}</div>
+                        )}
                       </fieldset>
                     )}
 
@@ -1436,11 +1591,17 @@ export default function Checkout() {
                       <>
                         <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
                           <label htmlFor="company-name">Firma Adı</label>
-                          <input required type="text" id="company-name" name="company_name" placeholder="Firma Adı" />
+                          <input required type="text" id="company-name" name="company_name" placeholder="Firma Adı" style={billingAddressErrors.company_name ? { borderColor: "#dc3545" } : undefined} />
+                          {billingAddressErrors.company_name && (
+                            <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>{billingAddressErrors.company_name[0]}</div>
+                          )}
                         </fieldset>
                         <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
                           <label htmlFor="tax-number">Vergi Numaranız</label>
-                          <input required type="text" id="tax-number" name="tax_number" placeholder="Vergi Numaranız" />
+                          <input required type="text" id="tax-number" name="tax_number" placeholder="Vergi Numaranız (10 hane, sadece rakam)" style={billingAddressErrors.tax_number ? { borderColor: "#dc3545" } : undefined} />
+                          {billingAddressErrors.tax_number && (
+                            <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>{billingAddressErrors.tax_number[0]}</div>
+                          )}
                         </fieldset>
                         <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
                           <label htmlFor="tax-office">Vergi Dairesi Seçiniz*</label>
@@ -1460,6 +1621,9 @@ export default function Checkout() {
                             required
                             searchPlaceholder="Vergi dairesi ara..."
                           />
+                          {billingAddressErrors.tax_office_id && (
+                            <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>{billingAddressErrors.tax_office_id[0]}</div>
+                          )}
                         </fieldset>
                       </>
                     )}
@@ -1499,14 +1663,22 @@ export default function Checkout() {
               Kargonuzun size sorunsuz şekilde ulaşabilmesi için bilgilerinizi eksiksiz girdiğinizden emin olun.
             </p>
 
-            {/* Ödeme Bilgileri - Sadece teslimat ve fatura adresi seçildiyse göster */}
-            {selectedDeliveryAddressId !== null && (sameBillingAddress || selectedBillingAddressId !== null) && (
+            {/* Ödeme Bilgileri: Fatura adresi ekleme formu açıkken gösterme; faturalı teslimat seçiliyse 2. adım, değilse 3. adım */}
+            {selectedDeliveryAddressId !== null && !showBillingAddressForm && (sameBillingAddress || selectedBillingAddressId !== null) && (() => {
+              const selectedDeliveryAddress = savedDeliveryAddresses.find(
+                (addr) => addr.id === selectedDeliveryAddressId
+              );
+              const isInvoicedDelivery = selectedDeliveryAddress?.invoice_type != null;
+              const paymentStepNum = isAuthenticated ? (isInvoicedDelivery ? 2 : 3) : 4;
+              return (
               <>
+                <h5 className="fw-5 mb_20 mt_40">{paymentStepNum} - Ödeme Bilgileri</h5>
                 <PaymentOptions ref={paymentOptionsRef} cartTotal={cartTotals.total} />
                 
                 <CheckoutFAQs />
               </>
-            )}
+              );
+            })()}
 
             {/* POST İsteği Debug Paneli */}
             {(lastPostRequest || lastPostResponse) && (
@@ -1582,6 +1754,8 @@ export default function Checkout() {
               </div>
             )}
               </>
+            )}
+            </>
             )}
           </div>
           <OrderSummary

@@ -104,7 +104,7 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
   return (
     <div style={{ marginTop: "30px", paddingTop: "30px", borderTop: "1px solid #e5e5e5" }}>
       {/* Başlık */}
-      <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "30px" }}>
+      {/* <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "30px" }}>
         <div
           style={{
             width: "40px",
@@ -123,7 +123,7 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
           2
         </div>
         <h5 className="fw-5" style={{ margin: 0 }}>Ödeme Seçenekleri</h5>
-      </div>
+      </div> */}
 
       {/* İki Sütunlu Layout */}
       <div
@@ -131,7 +131,7 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
         style={{
           display: "grid",
           gridTemplateColumns: "1fr 1fr",
-          gap: "30px",
+          gap: "10px",
           alignItems: "flex-start",
         }}
       >
@@ -376,7 +376,7 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
                 </div>
               ) : (
                 <>
-                  <div style={{ marginBottom: "15px", fontSize: "14px", color: "#666" }}>
+                  <div style={{ marginBottom: "8px", fontSize: "14px", color: "#666" }}>
                     Kartınız {installmentOptions.filter((opt) => opt.is_available).length} taksit için uygundur.
                   </div>
                   <div

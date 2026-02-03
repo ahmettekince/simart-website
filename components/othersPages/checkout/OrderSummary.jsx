@@ -37,6 +37,7 @@ export default function OrderSummary({
   const [giftNote, setGiftNote] = useState("");
   const { applyCoupon, removeCoupon } = useCartStore();
   const coupon = useCartStore((state) => state.coupon);
+  const isCartSynced = useCartStore((state) => state.isSynced);
 
   // Sayfa yüklendiğinde localStorage'dan hediye notunu oku (sipariş notu localStorage'dan okunmayacak)
   useEffect(() => {
@@ -156,6 +157,36 @@ export default function OrderSummary({
       setIsRemovingCoupon(false);
     }
   };
+
+  // Sepet henüz API'den yüklenmediyse skeleton göster (sadece ilk adım yüksekliği - sayfa boyu değil)
+  if (!isCartSynced) {
+    return (
+      <div className="tf-page-cart-footer">
+        <div className="tf-cart-footer-inner order-summary-skeleton order-summary-skeleton-step1-only">
+          <div className="skeleton-content skeleton-rect skeleton-title" />
+          <div className="skeleton-product-list">
+            {[1, 2].map((i) => (
+              <div key={i} className="skeleton-product-item">
+                <div className="skeleton-content skeleton-img" />
+                <div className="skeleton-product-info">
+                  <div className="skeleton-content skeleton-rect skeleton-line" />
+                  <div className="skeleton-content skeleton-rect skeleton-line" />
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="skeleton-content skeleton-coupon" />
+          <div className="skeleton-totals">
+            <div className="skeleton-content skeleton-rect skeleton-total-row" />
+            <div className="skeleton-content skeleton-rect skeleton-total-row" style={{ width: "80%" }} />
+          </div>
+          <div className="skeleton-divider" />
+          <div className="skeleton-content skeleton-rect skeleton-total-main" />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="tf-page-cart-footer">
       <div className="tf-cart-footer-inner">
@@ -427,21 +458,24 @@ export default function OrderSummary({
           )}
           <div className="wd-check-payment" style={{ marginTop: "30px", paddingTop: "30px", borderTop: "1px solid #e5e5e5" }}>
             {showAgreements && (
-              <div className="box-checkbox fieldset-radio mb_20">
-                <input 
-                  type="checkbox" 
-                  id="check-agreements" 
-                  className="tf-check" 
-                  checked={acceptedAgreements}
-                  onChange={(e) => onAcceptedAgreementsChange(e.target.checked)}
-                />
-                <label htmlFor="check-agreements" className="text_black-2">
-                  <Link href="/gizlilik-politikasi" target="_blank" style={{ textDecoration: "underline" }}>Gizlilik Politikasını</Link>,{" "}
-                  <Link href="/sartlar-ve-kosullar" target="_blank" style={{ textDecoration: "underline" }}>Şartlar ve Koşulları</Link> ve{" "}
-                  <Link href="/iade-politikasi" target="_blank" style={{ textDecoration: "underline" }}>İade ve Geri Ödeme Politikasını</Link> okudum, kabul ediyorum.
-                </label>
+              <div className="mb_20" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                <div className="box-checkbox fieldset-radio" style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
+                  <input 
+                    type="checkbox" 
+                    id="check-agreements" 
+                    className="tf-check" 
+                    checked={acceptedAgreements}
+                    onChange={(e) => onAcceptedAgreementsChange(e.target.checked)}
+                    style={{ marginTop: "3px", flexShrink: 0 }}
+                  />
+                  <label htmlFor="check-agreements" className="text_black-2" style={{ margin: 0, lineHeight: "1.5" }}>
+                    <Link href="/gizlilik-politikasi" target="_blank" style={{ textDecoration: "underline" }}>Gizlilik Politikasını</Link>,{" "}
+                    <Link href="/sartlar-ve-kosullar" target="_blank" style={{ textDecoration: "underline" }}>Şartlar ve Koşulları</Link> ve{" "}
+                    <Link href="/iade-politikasi" target="_blank" style={{ textDecoration: "underline" }}>İade ve Geri Ödeme Politikasını</Link> okudum, kabul ediyorum.
+                  </label>
+                </div>
                 {orderErrors.agreements_accepted && (
-                  <div style={{ marginTop: "8px", fontSize: "12px", color: "#dc3545" }}>
+                  <div style={{ marginTop: "8px", fontSize: "12px", color: "#dc3545", width: "100%" }}>
                     {orderErrors.agreements_accepted[0]}
                   </div>
                 )}
