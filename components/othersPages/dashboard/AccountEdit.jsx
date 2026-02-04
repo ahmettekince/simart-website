@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import apiClient from "@/utils/apiClient";
 import { log } from "@/utils/logger";
+import { filterNameValue } from "@/utils/inputFormatters";
 import CircularLoading from "@/components/common/CircularLoading";
 
 export default function AccountEdit() {
@@ -45,9 +46,10 @@ export default function AccountEdit() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    const filtered = (name === "first_name" || name === "last_name") ? filterNameValue(value) : value;
     setCustomerData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: filtered,
     }));
     // Mesajları temizle
     setMessage("");

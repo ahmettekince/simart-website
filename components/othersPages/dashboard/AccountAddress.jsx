@@ -7,6 +7,7 @@ import { getCities, getDistricts, getNeighborhoods } from "@/api/locations";
 import SearchableSelect from "@/components/common/SearchableSelect";
 import AddAddressButton from "@/components/common/AddAddressButton";
 import PhoneInput from "@/components/common/PhoneInput";
+import { formatTcInput, formatTaxNumberInput, formatNameInput } from "@/utils/inputFormatters";
 
 export default function AccountAddress() {
   const [activeTab, setActiveTab] = useState("delivery"); // "delivery" veya "billing"
@@ -451,7 +452,7 @@ export default function AccountAddress() {
           <div className="box grid-3" style={{ gap: "15px" }}>
             <fieldset className="fieldset">
               <label htmlFor="first-name">Ad*</label>
-              <input required type="text" id="first-name" name="first_name" />
+              <input required type="text" id="first-name" name="first_name" onInput={formatNameInput} />
               {fieldErrors.first_name && (
                 <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
                   {fieldErrors.first_name[0]}
@@ -460,7 +461,7 @@ export default function AccountAddress() {
             </fieldset>
             <fieldset className="fieldset">
               <label htmlFor="last-name">Soyad*</label>
-              <input required type="text" id="last-name" name="last_name" />
+              <input required type="text" id="last-name" name="last_name" onInput={formatNameInput} />
               {fieldErrors.last_name && (
                 <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
                   {fieldErrors.last_name[0]}
@@ -634,7 +635,7 @@ export default function AccountAddress() {
               {invoiceType === "individual" && (
                 <fieldset className="box fieldset">
                   <label htmlFor="tckn">TC Kimlik No*</label>
-                  <input required type="text" id="tckn" name="tckn" maxLength="11" />
+                  <input required type="text" id="tckn" name="tckn" maxLength={11} inputMode="numeric" autoComplete="off" onInput={formatTcInput} />
                   {fieldErrors.tckn && (
                     <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
                       {fieldErrors.tckn[0]}
@@ -648,7 +649,7 @@ export default function AccountAddress() {
                 <>
                   <fieldset className="box fieldset">
                     <label htmlFor="company_name">Şirket Adı*</label>
-                    <input required type="text" id="company_name" name="company_name" />
+                    <input required type="text" id="company_name" name="company_name" onInput={formatNameInput} />
                     {fieldErrors.company_name && (
                       <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
                         {fieldErrors.company_name[0]}
@@ -666,7 +667,7 @@ export default function AccountAddress() {
                   </fieldset>
                   <fieldset className="box fieldset">
                     <label htmlFor="tax_number">Vergi No*</label>
-                    <input required type="text" id="tax_number" name="tax_number" />
+                    <input required type="text" id="tax_number" name="tax_number" maxLength={10} inputMode="numeric" autoComplete="off" onInput={formatTaxNumberInput} />
                     {fieldErrors.tax_number && (
                       <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
                         {fieldErrors.tax_number[0]}
@@ -926,7 +927,7 @@ export default function AccountAddress() {
           <div className="box grid-3" style={{ gap: "15px" }}>
             <fieldset className="fieldset">
               <label htmlFor="edit-first-name">Ad*</label>
-              <input required type="text" id="edit-first-name" name="first_name" />
+              <input required type="text" id="edit-first-name" name="first_name" onInput={formatNameInput} />
               {fieldErrors.first_name && (
                 <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
                   {fieldErrors.first_name[0]}
@@ -935,7 +936,7 @@ export default function AccountAddress() {
             </fieldset>
             <fieldset className="fieldset">
               <label htmlFor="edit-last-name">Soyad*</label>
-              <input required type="text" id="edit-last-name" name="last_name" />
+              <input required type="text" id="edit-last-name" name="last_name" onInput={formatNameInput} />
               {fieldErrors.last_name && (
                 <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
                   {fieldErrors.last_name[0]}
@@ -1088,7 +1089,7 @@ export default function AccountAddress() {
               {invoiceType === "individual" && (
                 <fieldset className="box fieldset">
                   <label htmlFor="edit-tckn">TC Kimlik No*</label>
-                  <input required type="text" id="edit-tckn" name="tckn" maxLength="11" />
+                  <input required type="text" id="edit-tckn" name="tckn" maxLength={11} inputMode="numeric" autoComplete="off" onInput={formatTcInput} />
                   {fieldErrors.tckn && (
                     <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
                       {fieldErrors.tckn[0]}
@@ -1102,7 +1103,7 @@ export default function AccountAddress() {
                 <>
                   <fieldset className="box fieldset">
                     <label htmlFor="edit-company_name">Şirket Adı*</label>
-                    <input required type="text" id="edit-company_name" name="company_name" />
+                    <input required type="text" id="edit-company_name" name="company_name" onInput={formatNameInput} />
                     {fieldErrors.company_name && (
                       <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
                         {fieldErrors.company_name[0]}
@@ -1120,7 +1121,7 @@ export default function AccountAddress() {
                   </fieldset>
                   <fieldset className="box fieldset">
                     <label htmlFor="edit-tax_number">Vergi No*</label>
-                    <input required type="text" id="edit-tax_number" name="tax_number" />
+                    <input required type="text" id="edit-tax_number" name="tax_number" maxLength={10} inputMode="numeric" autoComplete="off" onInput={formatTaxNumberInput} />
                     {fieldErrors.tax_number && (
                       <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
                         {fieldErrors.tax_number[0]}

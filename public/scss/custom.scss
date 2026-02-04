@@ -5,6 +5,20 @@ input[type="checkbox"],
   border-color: #555 !important;
 }
 
+/* Checkout: layout artık .odeme-page-layout üzerinden yönetiliyor */
+
+/* Kupon kutusu: hata/başarı mesajı input+butonun altında */
+.coupon-box {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.coupon-box>div:first-child {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+
 .tf-check:checked,
 input[type="checkbox"]:checked,
 .form-check-input[type="checkbox"]:checked {
@@ -109,6 +123,283 @@ input[type="checkbox"]:checked,
     margin-top: 16px;
     margin-bottom: 16px;
     max-height: 180px;
+  }
+}
+
+/* Sipariş detay modalı - tema ile uyumlu stil */
+.order-detail-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.35);
+  z-index: 1060;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.order-detail-modal {
+  max-width: 720px;
+  width: 100%;
+}
+
+.order-detail-modal-inner {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.18);
+  padding: 20px 24px 22px;
+  height: 60vh;
+  width: 100%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+}
+
+.order-detail-header {
+  border-bottom: 1px solid #e5e7eb;
+  padding-bottom: 10px;
+  margin-bottom: 16px;
+}
+
+.order-detail-close {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.order-detail-body {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.order-detail-summary {
+  background-color: #f9fafb;
+  border-radius: 8px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.order-detail-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.order-detail-row .label {
+  color: #6b7280;
+}
+
+.order-detail-row .value {
+  font-weight: 600;
+  color: #111827;
+}
+
+.order-detail-row.total-row .value {
+  color: #0bc15c;
+  font-weight: 700;
+}
+
+.order-detail-section {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 12px;
+}
+
+.order-detail-address .name {
+  font-weight: 600;
+}
+
+.order-detail-address .phone {
+  color: #4b5563;
+  margin-bottom: 4px;
+}
+
+.order-detail-address .address {
+  color: #111827;
+}
+
+.order-detail-log-list {
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 0;
+}
+
+.order-detail-log-item {
+  padding: 8px 0;
+  border-bottom: 1px dashed #e5e7eb;
+}
+
+.order-detail-log-item:last-child {
+  border-bottom: none;
+}
+
+.order-detail-log-item .log-date {
+  font-weight: 600;
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+
+.order-detail-log-item .log-desc {
+  color: #4b5563;
+}
+
+/* Ödeme durumu badge renkleri */
+.order-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.order-status-badge--failed {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.order-status-badge--pending {
+  background-color: #fef3c7;
+  color: #ca8a04;
+}
+
+.order-status-badge--success {
+  background-color: #fef3c7;
+  color: #ca8a04;
+}
+
+.order-number-copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.order-copy-btn {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+  cursor: pointer;
+  padding: 0;
+}
+
+.order-copy-btn:hover {
+  background-color: #edf2ff;
+  border-color: #3c81b5;
+}
+
+.order-copy-btn::before,
+.order-copy-btn::after {
+  content: "";
+  position: absolute;
+  border: 2px solid #4b5563;
+  border-radius: 4px;
+  box-sizing: border-box;
+}
+
+.order-copy-btn::before {
+  width: 11px;
+  height: 13px;
+  top: 5px;
+  left: 6px;
+}
+
+.order-copy-btn::after {
+  width: 11px;
+  height: 13px;
+  top: 3px;
+  left: 4px;
+  background-color: #fff;
+}
+
+.order-copy-btn.copied {
+  border-color: #10b981;
+  background-color: #ecfdf5;
+}
+
+.order-copy-btn.copied::before,
+.order-copy-btn.copied::after {
+  border-color: #059669;
+}
+
+.order-section-toggle {
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 10px 2px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  outline: none;
+}
+
+.order-section-arrow {
+  font-size: 18px;
+  line-height: 1;
+  display: inline-block;
+  margin-left: 10px;
+  transition: transform 0.2s ease;
+}
+
+.order-section-arrow.open {
+  transform: rotate(180deg);
+}
+
+/* Skeleton loading */
+.order-detail-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.skeleton-line,
+.skeleton-block {
+  background: linear-gradient(90deg, #f3f4f6 0px, #e5e7eb 40px, #f3f4f6 80px);
+  background-size: 600px 100%;
+  animation: skeleton-loading 1.2s ease-in-out infinite;
+  border-radius: 999px;
+}
+
+.skeleton-line {
+  height: 12px;
+  width: 100%;
+}
+
+.skeleton-line.half {
+  width: 60%;
+}
+
+.skeleton-line.skeleton-title {
+  height: 16px;
+  width: 40%;
+}
+
+.skeleton-block {
+  height: 48px;
+  border-radius: 12px;
+}
+
+.skeleton-block.short {
+  height: 32px;
+  width: 70%;
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: -200px 0;
+  }
+
+  100% {
+    background-position: 200px 0;
   }
 }
 
@@ -627,13 +918,20 @@ body.product-detail-page .progress-wrap {
 }
 
 .checkout-header-inner {
-  max-width: 1200px;
+  width: 100%;
+  max-width: 75%;
   margin: 0 auto;
   padding: 16px 70px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+}
+
+@media (max-width: 992px) {
+  .checkout-header-inner {
+    max-width: 100%;
+  }
 }
 
 .checkout-header-logo {
@@ -695,6 +993,178 @@ body.product-detail-page .progress-wrap {
     font-size: 12px;
     gap: 6px;
   }
+}
+
+/* Ödeme: Kart Bilgileri + Taksit Seçenekleri (Trendyol benzeri, abartısız) */
+.payment2-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .payment2-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.payment2-card {
+  border: 1px solid #e9ecef;
+  border-radius: 10px;
+  background: #fff;
+  overflow: hidden;
+}
+
+.payment2-card__header {
+  padding: 12px 14px;
+  border-bottom: 1px solid #edf1f4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.payment2-card__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+}
+
+.payment2-card__body {
+  padding: 14px;
+}
+
+.payment2-card__body--tight {
+  padding: 10px 0;
+}
+
+.payment2-field {
+  margin-bottom: 12px;
+}
+
+.payment2-field--muted {
+  margin-top: 6px;
+}
+
+.payment2-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+}
+
+.payment2-input,
+.payment2-select {
+  width: 100%;
+  height: 44px;
+  padding: 10px 12px;
+  border: 1px solid #e5e5e5;
+  border-radius: 8px;
+  font-size: 14px;
+  background: #fff;
+  transition: border-color .2s, box-shadow .2s;
+  outline: none;
+}
+
+.payment2-input:focus,
+.payment2-select:focus {
+  border-color: #3c81b5;
+  box-shadow: 0 0 0 3px rgba(60, 129, 181, 0.10);
+}
+
+.payment2-row {
+  display: grid;
+  grid-template-columns: 1fr 140px;
+  gap: 12px;
+  align-items: end;
+}
+
+@media (max-width: 480px) {
+  .payment2-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.payment2-exp {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.payment2-input--cvv {
+  max-width: 140px;
+}
+
+.payment2-empty {
+  padding: 14px;
+  color: #6b7280;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.payment2-installments {
+  display: flex;
+  flex-direction: column;
+}
+
+.payment2-installments__head {
+  display: grid;
+  grid-template-columns: 18px 1fr 90px 90px;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 14px;
+  color: #6b7280;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.payment2-installment {
+  display: grid;
+  grid-template-columns: 18px 1fr 90px 90px;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 14px;
+  border-top: 1px solid #edf1f4;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.payment2-installment:first-child {
+  border-top: 0;
+}
+
+.payment2-installment input {
+  margin: 0;
+}
+
+.payment2-installment__left {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+}
+
+.payment2-installment__right {
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+  white-space: nowrap;
+}
+
+.ta-right {
+  text-align: right;
+}
+
+.payment2-installment.is-selected {
+  background: rgba(60, 129, 181, 0.06);
+}
+
+.payment2-badge {
+  margin-left: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #3c81b5;
 }
 
 /* Mobil sepet tutarı bar - içerikle hizalı (aynı yatay padding) */
@@ -759,7 +1229,7 @@ body.product-detail-page .progress-wrap {
 /* Ödeme sayfası - referans oranlarına uygun, yanlardan boşluk */
 .odeme-page-layout {
   width: 100%;
-  max-width: 1200px;
+  max-width: 75%;
   margin: 0 auto;
   padding-left: 70px;
   padding-right: 70px;
@@ -808,6 +1278,15 @@ body.product-detail-page .progress-wrap {
 /* Sipariş özeti arka plan rengi */
 .odeme-page-layout .tf-page-cart-checkout {
   background-color: #f5f5f5 !important;
+}
+
+/* Sipariş bilgileri (OrderSummary) büyük ekranda sabit kalsın */
+@media (min-width: 992px) {
+  .odeme-page-layout .order-summary-sticky-wrap {
+    position: sticky;
+    top: 100px;
+    align-self: flex-start;
+  }
 }
 
 /* Bundle ürün fiyatları - detay sayfası gibi küçük, yeşil/gri */

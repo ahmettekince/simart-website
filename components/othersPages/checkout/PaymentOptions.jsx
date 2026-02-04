@@ -135,367 +135,196 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
   }));
 
   return (
-    <div style={{ marginTop: "30px", paddingTop: "30px", borderTop: "1px solid #e5e5e5" }}>
-      {/* Başlık */}
-      {/* <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "30px" }}>
-        <div
-          style={{
-            width: "40px",
-            height: "40px",
-            borderRadius: "50%",
-            backgroundColor: "#f5f5f5",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontSize: "18px",
-            fontWeight: "600",
-            color: "#333",
-            flexShrink: 0,
-          }}
-        >
-          2
-        </div>
-        <h5 className="fw-5" style={{ margin: 0 }}>Ödeme Seçenekleri</h5>
-      </div> */}
-
-      {/* İki Sütunlu Layout */}
-      <div
-        className="payment-layout"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "10px",
-          alignItems: "flex-start",
-        }}
-      >
-        <style dangerouslySetInnerHTML={{
-          __html: `
-            @media (max-width: 768px) {
-              .payment-layout {
-                grid-template-columns: 1fr !important;
-                gap: 20px !important;
-              }
-            }
-          `
-        }} />
-        {/* Sol Sütun - Kart Formu */}
-        <div className="form-checkout">
-          <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
-            <label htmlFor="card-holder" style={{ display: "block", marginBottom: "8px", fontSize: "14px", fontWeight: "500", color: "#333" }}>
-              Kart Üzerindeki İsim
-            </label>
-            <input
-              type="text"
-              id="card-holder"
-              name="card-holder"
-              placeholder="AD SOYAD"
-              value={cardHolderName}
-              onChange={(e) => {
-                const value = e.target.value.replace(/\d/g, "");
-                setCardHolderName(value.toUpperCase());
-              }}
-              style={{
-                width: "100%",
-                padding: "12px 15px",
-                border: "1px solid #e5e5e5",
-                borderRadius: "8px",
-                fontSize: "14px",
-                transition: "all 0.3s ease",
-                backgroundColor: "#fff",
-                textTransform: "uppercase",
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = "#3c81b5";
-                e.target.style.boxShadow = "0 0 0 3px rgba(60, 129, 181, 0.1)";
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = "#e5e5e5";
-                e.target.style.boxShadow = "none";
-              }}
-            />
-          </fieldset>
-
-          <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
-            <label htmlFor="card-number" style={{ display: "block", marginBottom: "8px", fontSize: "14px", fontWeight: "500", color: "#333" }}>
-              Kart Numarası
-            </label>
-            <input
-              ref={cardNumberInputRef}
-              type="text"
-              id="card-number"
-              name="card-number"
-              autoComplete="cc-number"
-              placeholder="1234 5678 9012 3456"
-              defaultValue=""
-              onChange={(e) => {
-                let value = e.target.value.replace(/\D/g, "");
-                if (value.length <= 16) {
-                  value = value.match(/.{1,4}/g)?.join(" ") || value;
-                  e.target.value = value;
-                  setCardNumber(value);
-                }
-              }}
-              onBlur={(e) => {
-                const raw = (e.target.value || "").replace(/\D/g, "");
-                if (raw.length >= 6) {
-                  const formatted = formatCardNumber(e.target.value);
-                  setCardNumber((prev) => {
-                    const prevClean = (prev || "").replace(/\s/g, "");
-                    return prevClean === raw ? prev : formatted;
-                  });
-                }
-                e.target.style.borderColor = "#e5e5e5";
-                e.target.style.boxShadow = "none";
-              }}
-              maxLength={19}
-              style={{
-                width: "100%",
-                padding: "12px 15px",
-                border: "1px solid #e5e5e5",
-                borderRadius: "8px",
-                fontSize: "14px",
-                transition: "all 0.3s ease",
-                backgroundColor: cardNumber ? "#f0f8ff" : "#fff",
-              }}
-              onFocus={(e) => {
-                e.target.style.borderColor = "#3c81b5";
-                e.target.style.boxShadow = "0 0 0 3px rgba(60, 129, 181, 0.1)";
-                requestAnimationFrame(() => syncCardNumberFromInput());
-              }}
-            />
-
-          </fieldset>
-
-          <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
-            {/* Label'lar tek satırda */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "15px", marginBottom: "8px" }}>
-              <label htmlFor="expiry-month" style={{ fontSize: "14px", fontWeight: "500", color: "#333", whiteSpace: "nowrap" }}>
-                Son Kullanma Tarihi
-              </label>
-              <label htmlFor="expiry-year" style={{ fontSize: "14px", fontWeight: "500", color: "#333", opacity: 0, pointerEvents: "none" }}>
-                &nbsp;
-              </label>
-              <label htmlFor="cvv" style={{ fontSize: "14px", fontWeight: "500", color: "#333", whiteSpace: "nowrap" }}>
-                Güvenlik Kodu
-              </label>
-            </div>
-            {/* Input'lar tek satırda */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "15px" }}>
-              <select
-                id="expiry-month"
-                name="expiry-month"
-                value={expiryMonth}
-                onChange={(e) => setExpiryMonth(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "12px 15px",
-                  border: "1px solid #e5e5e5",
-                  borderRadius: "8px",
-                  fontSize: "14px",
-                  transition: "all 0.3s ease",
-                  backgroundColor: "#fff",
-                  cursor: "pointer",
-                  height: "44px",
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = "#3c81b5";
-                  e.target.style.boxShadow = "0 0 0 3px rgba(60, 129, 181, 0.1)";
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = "#e5e5e5";
-                  e.target.style.boxShadow = "none";
-                }}
-              >
-                <option value="">Ay</option>
-                {Array.from({ length: 12 }, (_, i) => {
-                  const month = String(i + 1).padStart(2, "0");
-                  return (
-                    <option key={month} value={month}>
-                      {month}
-                    </option>
-                  );
-                })}
-              </select>
-              <select
-                id="expiry-year"
-                name="expiry-year"
-                value={expiryYear}
-                onChange={(e) => setExpiryYear(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "12px 15px",
-                  border: "1px solid #e5e5e5",
-                  borderRadius: "8px",
-                  fontSize: "14px",
-                  transition: "all 0.3s ease",
-                  backgroundColor: "#fff",
-                  cursor: "pointer",
-                  height: "44px",
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = "#3c81b5";
-                  e.target.style.boxShadow = "0 0 0 3px rgba(60, 129, 181, 0.1)";
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = "#e5e5e5";
-                  e.target.style.boxShadow = "none";
-                }}
-              >
-                <option value="">Yıl</option>
-                {Array.from({ length: 20 }, (_, i) => {
-                  const year = new Date().getFullYear() + i;
-                  return (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  );
-                })}
-              </select>
+    <div className="payment2" style={{ marginTop: "24px" }}>
+      <div className="payment2-grid">
+        {/* Sol: Kart Bilgileri */}
+        <div className="payment2-card">
+          <div className="payment2-card__header">
+            <div className="payment2-card__title">Kart Bilgileri</div>
+          </div>
+          <div className="payment2-card__body">
+            <div className="payment2-field">
+              <label className="payment2-label" htmlFor="card-holder">Kart Üzerindeki İsim</label>
               <input
+                className="payment2-input"
                 type="text"
-                id="cvv"
-                name="cvv"
-                placeholder="123"
-                value={cvv}
+                id="card-holder"
+                name="card-holder"
+                autoComplete="cc-name"
+                placeholder="AD SOYAD"
+                value={cardHolderName}
                 onChange={(e) => {
-                  const value = e.target.value.replace(/\D/g, "");
-                  if (value.length <= 3) {
-                    setCvv(value);
-                  }
-                }}
-                maxLength={3}
-                style={{
-                  width: "100%",
-                  padding: "12px 15px",
-                  border: "1px solid #e5e5e5",
-                  borderRadius: "8px",
-                  fontSize: "14px",
-                  transition: "all 0.3s ease",
-                  backgroundColor: "#fff",
-                  height: "44px",
-                }}
-                onFocus={(e) => {
-                  e.target.style.borderColor = "#3c81b5";
-                  e.target.style.boxShadow = "0 0 0 3px rgba(60, 129, 181, 0.1)";
-                }}
-                onBlur={(e) => {
-                  e.target.style.borderColor = "#e5e5e5";
-                  e.target.style.boxShadow = "none";
+                  const value = e.target.value.replace(/\d/g, "");
+                  setCardHolderName(value.toUpperCase());
                 }}
               />
             </div>
-          </fieldset>
-        </div>
 
-        {/* Sağ Sütun - Taksit Seçenekleri */}
-        <div>
-          {cardNumber.replace(/\s/g, "").length < 6 && (
-            <div
-              style={{
-                padding: "20px",
-                backgroundColor: "#f8f9fa",
-                borderRadius: "8px",
-                border: "1px dashed #e5e5e5",
-                textAlign: "center",
-              }}
-            >
-              <div style={{ fontSize: "16px", marginBottom: "8px", color: "#333" }}>💳</div>
-              <div style={{ fontSize: "14px", color: "#666", lineHeight: "1.5" }}>
-                Kart numarasının ilk 6 hanesini girdiğinizde<br />
-                taksit seçenekleri burada görünecektir.
+            <div className="payment2-field">
+              <label className="payment2-label" htmlFor="card-number">Kart Numarası</label>
+              <input
+                className="payment2-input"
+                ref={cardNumberInputRef}
+                type="text"
+                id="card-number"
+                name="card-number"
+                autoComplete="cc-number"
+                placeholder="1234 5678 9012 3456"
+                defaultValue=""
+                onChange={(e) => {
+                  let value = e.target.value.replace(/\D/g, "");
+                  if (value.length <= 16) {
+                    value = value.match(/.{1,4}/g)?.join(" ") || value;
+                    e.target.value = value;
+                    setCardNumber(value);
+                  }
+                }}
+                onBlur={(e) => {
+                  const raw = (e.target.value || "").replace(/\D/g, "");
+                  if (raw.length >= 6) {
+                    const formatted = formatCardNumber(e.target.value);
+                    setCardNumber((prev) => {
+                      const prevClean = (prev || "").replace(/\s/g, "");
+                      return prevClean === raw ? prev : formatted;
+                    });
+                  }
+                }}
+                onFocus={() => requestAnimationFrame(() => syncCardNumberFromInput())}
+                maxLength={19}
+              />
+            </div>
+
+            <div className="payment2-row">
+              <div className="payment2-field">
+                <label className="payment2-label">Son Kullanma Tarihi</label>
+                <div className="payment2-exp">
+                  <select
+                    className="payment2-select"
+                    id="expiry-month"
+                    name="expiry-month"
+                    value={expiryMonth}
+                    onChange={(e) => setExpiryMonth(e.target.value)}
+                    autoComplete="cc-exp-month"
+                  >
+                    <option value="">Ay</option>
+                    {Array.from({ length: 12 }, (_, i) => {
+                      const month = String(i + 1).padStart(2, "0");
+                      return (
+                        <option key={month} value={month}>
+                          {month}
+                        </option>
+                      );
+                    })}
+                  </select>
+                  <select
+                    className="payment2-select"
+                    id="expiry-year"
+                    name="expiry-year"
+                    value={expiryYear}
+                    onChange={(e) => setExpiryYear(e.target.value)}
+                    autoComplete="cc-exp-year"
+                  >
+                    <option value="">Yıl</option>
+                    {Array.from({ length: 20 }, (_, i) => {
+                      const year = new Date().getFullYear() + i;
+                      return (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+              </div>
+
+              <div className="payment2-field">
+                <label className="payment2-label" htmlFor="cvv">CVV</label>
+                <input
+                  className="payment2-input payment2-input--cvv"
+                  type="text"
+                  id="cvv"
+                  name="cvv"
+                  autoComplete="cc-csc"
+                  placeholder="123"
+                  value={cvv}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\D/g, "");
+                    if (value.length <= 3) setCvv(value);
+                  }}
+                  maxLength={3}
+                />
               </div>
             </div>
-          )}
 
-          {isLoadingInstallments && cardNumber.replace(/\s/g, "").length >= 6 && (
-            <div style={{ padding: "20px", textAlign: "center", color: "#666", fontSize: "14px" }}>
-              Taksit seçenekleri yükleniyor...
-            </div>
-          )}
+          </div>
+        </div>
 
-          {!isLoadingInstallments && installmentOptions.length > 0 && (
-            <>
-              {paymentType === "single" ? (
-                <div style={{ padding: "20px", backgroundColor: "#f5f5f5", borderRadius: "8px", fontSize: "14px", color: "#666", textAlign: "center" }}>
-                  Bu kart ile sadece tek çekim yapılabilir.
-                </div>
-              ) : (
-                <>
-                  <div style={{ marginBottom: "8px", fontSize: "14px", color: "#666" }}>
-                    Kartınız {installmentOptions.filter((opt) => opt.is_available).length} taksit için uygundur.
+        {/* Sağ: Taksit Seçenekleri (ödeme alanının parçası gibi) */}
+        <div className="payment2-card">
+          <div className="payment2-card__header">
+            <div className="payment2-card__title">Taksit Seçenekleri</div>
+          </div>
+          <div className="payment2-card__body payment2-card__body--tight">
+            {cardNumber.replace(/\s/g, "").length < 6 && (
+              <div className="payment2-empty">
+                Kart numarasının ilk 6 hanesini girdiğinizde taksit seçenekleri burada görünecektir.
+              </div>
+            )}
+
+            {isLoadingInstallments && cardNumber.replace(/\s/g, "").length >= 6 && (
+              <div className="payment2-empty">Taksit seçenekleri yükleniyor...</div>
+            )}
+
+            {!isLoadingInstallments && installmentOptions.length > 0 && (
+              <>
+                {paymentType === "single" ? (
+                  <div className="payment2-empty">Bu kart ile sadece tek çekim yapılabilir.</div>
+                ) : (
+                  <div className="payment2-installments">
+                    <div className="payment2-installments__head">
+                      <span />
+                      <span>Taksit</span>
+                      <span className="ta-right">Aylık</span>
+                      <span className="ta-right">Toplam</span>
+                    </div>
+                    {installmentOptions
+                      .filter((o) => o.is_available)
+                      .map((o) => {
+                        const count = o.installment_count;
+                        const monthly = Number(o.monthly_payment);
+                        const total = Number(o.total_payment);
+                        const monthlyText = `₺${monthly.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                        const totalText = `₺${total.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                        return (
+                          <label
+                            key={count}
+                            className={`payment2-installment ${selectedInstallment === count ? "is-selected" : ""}`}
+                          >
+                            <input
+                              type="radio"
+                              name="installment"
+                              value={count}
+                              checked={selectedInstallment === count}
+                              onChange={() => setSelectedInstallment(count)}
+                            />
+                            <span className="payment2-installment__left">
+                              {count === 1 ? "Tek Çekim" : `${count} Taksit`}
+                              {o.campaign_applied && campaign && (
+                                <span className="payment2-badge">
+                                  {campaign.campaign_type_label || campaign.name || "Kampanya"}
+                                </span>
+                              )}
+                            </span>
+                            <span className="payment2-installment__mid ta-right">{count === 1 ? "" : monthlyText}</span>
+                            <span className="payment2-installment__right ta-right">{count === 1 ? "" : totalText}</span>
+                          </label>
+                        );
+                      })}
                   </div>
-                  <div
-                    style={{
-                      border: "1px solid #e5e5e5",
-                      borderRadius: "8px",
-                      overflow: "hidden",
-                    }}
-                  >
-                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                      <thead>
-                        <tr style={{ backgroundColor: "#f9f9f9", borderBottom: "1px solid #e5e5e5" }}>
-                          <th style={{ padding: "4px 6px", textAlign: "left", fontSize: "11px", fontWeight: "600", color: "#333", width: "15px" }}></th>
-                          <th style={{ padding: "4px 6px", textAlign: "left", fontSize: "11px", fontWeight: "600", color: "#333" }}>Taksit</th>
-                          <th style={{ padding: "4px 6px", textAlign: "right", fontSize: "11px", fontWeight: "600", color: "#333" }}>Aylık Ödeme</th>
-                          <th style={{ padding: "4px 6px", textAlign: "right", fontSize: "11px", fontWeight: "600", color: "#333" }}>Toplam</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {installmentOptions
-                          .filter((option) => option.is_available)
-                          .map((option) => (
-                            <tr
-                              key={option.installment_count}
-                              style={{
-                                borderBottom: "1px solid #f0f0f0",
-                                cursor: "pointer",
-                                transition: "background-color 0.2s",
-                              }}
-                              onMouseEnter={(e) => {
-                                if (selectedInstallment !== option.installment_count) {
-                                  e.currentTarget.style.backgroundColor = "#f9f9f9";
-                                }
-                              }}
-                              onMouseLeave={(e) => {
-                                if (selectedInstallment !== option.installment_count) {
-                                  e.currentTarget.style.backgroundColor = "#fff";
-                                }
-                              }}
-                              onClick={() => setSelectedInstallment(option.installment_count)}
-                            >
-                              <td style={{ padding: "6px 8px", textAlign: "center", verticalAlign: "middle" }}>
-                                <input
-                                  type="radio"
-                                  name="installment"
-                                  value={option.installment_count}
-                                  checked={selectedInstallment === option.installment_count}
-                                  onChange={() => setSelectedInstallment(option.installment_count)}
-                                  style={{ cursor: "pointer", margin: 0 }}
-                                />
-                              </td>
-                              <td style={{ padding: "6px 8px", fontSize: "13px", color: "#333", verticalAlign: "middle" }}>
-                                {option.installment_count === 1 ? "Tek Çekim" : `${option.installment_count} Taksit`}
-                                {option.campaign_applied && campaign && (
-                                  <span style={{ marginLeft: "4px", fontSize: "11px", color: "#3c81b5", fontWeight: "500" }}>
-                                    ({campaign.campaign_type_label || campaign.name || "Kampanya"})
-                                  </span>
-                                )}
-                              </td>
-                              <td style={{ padding: "6px 8px", textAlign: "right", fontSize: "13px", color: "#333", verticalAlign: "middle" }}>
-                                ₺{parseFloat(option.monthly_payment).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                              </td>
-                              <td style={{ padding: "6px 8px", textAlign: "right", fontSize: "13px", color: "#333", fontWeight: "600", verticalAlign: "middle" }}>
-                                ₺{parseFloat(option.total_payment).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                              </td>
-                            </tr>
-                          ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </>
-              )}
-            </>
-          )}
+                )}
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>
