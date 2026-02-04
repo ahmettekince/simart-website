@@ -92,9 +92,13 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
     return () => clearTimeout(timeoutId);
   }, [cardNumber, cartTotal]);
 
-  // Tarayıcı autofill ile kart bilgisi doldurulduğunda state'i DOM ile senkronize et (taksit seçenekleri gelsin)
+  // Autofill: Controlled input React tarafından ezildiği için kart alanını uncontrolled yapıp
+  // input'taki değeri periyodik okuyup state'e yazıyoruz; böylece taksit isteği tetiklenir.
   useEffect(() => {
-    const syncCardNumberFromDOM = () => {
+    const POLL_INTERVAL = 150;
+    const POLL_DURATION = 4000;
+    let elapsed = 0;
+    const syncFromInput = () => {
       const el = cardNumberInputRef.current;
       if (!el) return;
       const raw = (el.value || "").replace(/\D/g, "");
@@ -102,26 +106,23 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
         const formatted = formatCardNumber(el.value);
         setCardNumber((prev) => {
           const prevClean = (prev || "").replace(/\s/g, "");
-          if (prevClean === raw) return prev;
-          return formatted;
+          return prevClean === raw ? prev : formatted;
         });
       }
     };
-
-    const t1 = setTimeout(syncCardNumberFromDOM, 100);
-    const t2 = setTimeout(syncCardNumberFromDOM, 400);
-    const t3 = setTimeout(syncCardNumberFromDOM, 800);
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-      clearTimeout(t3);
-    };
+    const t = setInterval(() => {
+      syncFromInput();
+      elapsed += POLL_INTERVAL;
+      if (elapsed >= POLL_DURATION) clearInterval(t);
+    }, POLL_INTERVAL);
+    syncFromInput();
+    return () => clearInterval(t);
   }, []);
 
-  // Parent component'ten form verilerini almak için expose et
+  // Parent component'ten form verilerini almak için expose et (kart numarası her zaman input'tan okunur, autofill dahil)
   useImperativeHandle(ref, () => ({
     getPaymentData: () => {
-      // Yıl formatını 2 haneli yap (örn: 2032 -> "32")
+      const rawCardNumber = (cardNumberInputRef.current?.value || cardNumber || "").replace(/\s/g, "");
       let formattedYear = expiryYear;
       if (expiryYear && expiryYear.length === 4) {
         formattedYear = expiryYear.substring(2);
@@ -129,7 +130,7 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
 
       return {
         card_holder_name: cardHolderName,
-        card_number: cardNumber.replace(/\s/g, ""), // Boşlukları temizle
+        card_number: rawCardNumber,
         expiry_month: expiryMonth,
         expiry_year: formattedYear,
         cvv: cvv,
@@ -229,11 +230,12 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
               id="card-number"
               name="card-number"
               placeholder="1234 5678 9012 3456"
-              value={cardNumber}
+              defaultValue=""
               onChange={(e) => {
                 let value = e.target.value.replace(/\D/g, "");
                 if (value.length <= 16) {
                   value = value.match(/.{1,4}/g)?.join(" ") || value;
+                  e.target.value = value;
                   setCardNumber(value);
                 }
               }}
