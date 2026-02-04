@@ -142,6 +142,7 @@ input[type="checkbox"]:checked,
     background-color: #3c81b5;
     box-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
   }
+
   &.swiper-pagination-bullet-active::before {
     background-color: #3c81b5;
     box-shadow: 0 0 10px rgba(255, 255, 255, 1);
@@ -894,20 +895,6 @@ body.product-detail-page .progress-wrap {
   }
 }
 
-/* Hero: Görsel gelmeden önce alan rezerve (layout shift önleme) */
-.tf-hero-min-height .wrap-slider,
-.tf-hero-min-height .swiper-slide {
-  min-height: clamp(280px, 45vw, 520px);
-}
-
-.tf-hero-min-height .swiper-wrapper {
-  align-items: stretch;
-}
-
-.tf-hero-min-height .swiper-slide>div {
-  min-height: inherit;
-}
-
 /* Header scroll hide: ClientLayout body class ile (hydration uyumlu, inline style yok) */
 body.header-scroll-hide #header,
 body.header-scroll-hide header.header-default {
@@ -918,31 +905,39 @@ body.header-scroll-hide header.header-default {
 .tf-technical-specs-tabs .tf-btn.active {
   font-weight: 600;
 }
+
 .tf-spec-table-wrap {
   border: 1px solid #eee;
   border-radius: 10px;
   overflow: hidden;
 }
+
 .tf-spec-table {
   width: 100%;
+
   .tf-spec-name {
     width: 50%;
     max-width: 320px;
     font-size: 14px;
   }
+
   .tf-spec-value {
     font-size: 14px;
     color: #1a1a1a;
   }
+
   .tf-spec-row-even td {
     background-color: #f8f9fa;
   }
+
   .tf-spec-row-odd td {
     background-color: #fff;
   }
+
   tr:not(:last-child) td {
     border-bottom: 1px solid #eee;
   }
+
   td {
     padding: 12px 16px !important;
     vertical-align: middle;

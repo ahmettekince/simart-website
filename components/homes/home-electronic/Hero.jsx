@@ -9,7 +9,7 @@ export default function Hero({ banners = [] }) {
   if (!banners || banners.length === 0) return null;
 
   return (
-    <div className="tf-slideshow slider-home-2 slider-effect-fade position-relative tf-hero-min-height">
+    <div className="tf-slideshow slider-home-2 slider-effect-fade position-relative">
       <Swiper
         dir="ltr"
         slidesPerView={1}
@@ -48,7 +48,7 @@ export default function Hero({ banners = [] }) {
   );
 }
 
-// Görsel içeriği yöneten alt bileşen - ilk slide eager, diğerleri lazy (sayfa hemen açılsın)
+// Görsel içeriği yöneten alt bileşen — ilk slide eager, diğerleri lazy
 function BannerContent({ images, isFirstSlide = false }) {
   if (!images) return null;
   const loadMode = isFirstSlide ? "eager" : "lazy";
@@ -63,9 +63,6 @@ function BannerContent({ images, isFirstSlide = false }) {
           className="w-100 h-100"
           style={{ objectFit: "cover" }}
           loading={loadMode}
-          width={1920}
-          height={600}
-          decoding="async"
         />
       </div>
 
@@ -77,9 +74,6 @@ function BannerContent({ images, isFirstSlide = false }) {
           className="w-100 h-100"
           style={{ objectFit: "cover" }}
           loading={loadMode}
-          width={1024}
-          height={500}
-          decoding="async"
         />
       </div>
 
@@ -91,9 +85,6 @@ function BannerContent({ images, isFirstSlide = false }) {
           className="w-100 h-auto"
           style={{ objectFit: "cover" }}
           loading={loadMode}
-          width={768}
-          height={400}
-          decoding="async"
         />
       </div>
     </>

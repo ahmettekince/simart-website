@@ -1,7 +1,16 @@
 "use client";
-import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
+import { useState, useEffect, useRef, useImperativeHandle, forwardRef } from "react";
 import { log } from "@/utils/logger";
 import apiClient from "@/utils/apiClient";
+
+// Kart numarasını 4'lü gruplara formatlar
+function formatCardNumber(value) {
+  const cleaned = (value || "").replace(/\D/g, "");
+  if (cleaned.length <= 16) {
+    return cleaned.match(/.{1,4}/g)?.join(" ") || cleaned;
+  }
+  return cleaned.slice(0, 16).match(/.{1,4}/g)?.join(" ") || cleaned.slice(0, 16);
+}
 
 const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
   // Kart bilgileri state'leri
@@ -10,6 +19,8 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
   const [expiryMonth, setExpiryMonth] = useState("");
   const [expiryYear, setExpiryYear] = useState("");
   const [cvv, setCvv] = useState("");
+
+  const cardNumberInputRef = useRef(null);
 
   // Taksit seçenekleri state'leri
   const [installmentOptions, setInstallmentOptions] = useState([]);
@@ -80,6 +91,32 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
 
     return () => clearTimeout(timeoutId);
   }, [cardNumber, cartTotal]);
+
+  // Tarayıcı autofill ile kart bilgisi doldurulduğunda state'i DOM ile senkronize et (taksit seçenekleri gelsin)
+  useEffect(() => {
+    const syncCardNumberFromDOM = () => {
+      const el = cardNumberInputRef.current;
+      if (!el) return;
+      const raw = (el.value || "").replace(/\D/g, "");
+      if (raw.length >= 6) {
+        const formatted = formatCardNumber(el.value);
+        setCardNumber((prev) => {
+          const prevClean = (prev || "").replace(/\s/g, "");
+          if (prevClean === raw) return prev;
+          return formatted;
+        });
+      }
+    };
+
+    const t1 = setTimeout(syncCardNumberFromDOM, 100);
+    const t2 = setTimeout(syncCardNumberFromDOM, 400);
+    const t3 = setTimeout(syncCardNumberFromDOM, 800);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
+  }, []);
 
   // Parent component'ten form verilerini almak için expose et
   useImperativeHandle(ref, () => ({
@@ -187,6 +224,7 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
               Kart Numarası
             </label>
             <input
+              ref={cardNumberInputRef}
               type="text"
               id="card-number"
               name="card-number"
@@ -198,6 +236,18 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
                   value = value.match(/.{1,4}/g)?.join(" ") || value;
                   setCardNumber(value);
                 }
+              }}
+              onBlur={(e) => {
+                const raw = (e.target.value || "").replace(/\D/g, "");
+                if (raw.length >= 6) {
+                  const formatted = formatCardNumber(e.target.value);
+                  setCardNumber((prev) => {
+                    const prevClean = (prev || "").replace(/\s/g, "");
+                    return prevClean === raw ? prev : formatted;
+                  });
+                }
+                e.target.style.borderColor = "#e5e5e5";
+                e.target.style.boxShadow = "none";
               }}
               maxLength={19}
               style={{
@@ -212,10 +262,6 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
               onFocus={(e) => {
                 e.target.style.borderColor = "#3c81b5";
                 e.target.style.boxShadow = "0 0 0 3px rgba(60, 129, 181, 0.1)";
-              }}
-              onBlur={(e) => {
-                e.target.style.borderColor = "#e5e5e5";
-                e.target.style.boxShadow = "none";
               }}
             />
 
