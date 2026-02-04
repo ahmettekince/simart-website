@@ -2,7 +2,6 @@ import "../public/scss/main.scss";
 import "photoswipe/dist/photoswipe.css";
 import "rc-slider/assets/index.css";
 import ClientLayout from "@/components/common/ClientLayout";
-import DeferredStyles from "@/components/common/DeferredStyles";
 
 import { SpeedInsights } from "@vercel/speed-insights/next"
 
@@ -32,7 +31,6 @@ export default async function RootLayout({ children }) {
     <html lang="tr">
       <SpeedInsights />
       <body className="preload-wrapper">
-        <DeferredStyles />
         {/* Google reCaptcha (body içinde yükleniyor) */}
         <script src="https://www.google.com/recaptcha/api.js" async></script>
         <div className="preload preload-container" id="preloader">
