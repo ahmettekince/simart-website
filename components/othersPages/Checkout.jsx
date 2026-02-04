@@ -1779,41 +1779,6 @@ export default function Checkout() {
                         Kargonuzun size sorunsuz şekilde ulaşabilmesi için bilgilerinizi eksiksiz girdiğinizden emin olun.
                       </p>
 
-                      {/* İleri tarihli kargo: ödeme bilgilerinin hemen üstünde */}
-                      {(isAuthenticated ? (selectedDeliveryAddressId !== null && !showBillingAddressForm && (sameBillingAddress || selectedBillingAddressId !== null)) : true) && (
-                        <div className="mb_24 mt_40">
-                          <label className="d-flex align-items-center gap-2 mb_12" style={{ cursor: "pointer" }}>
-                            <input
-                              type="checkbox"
-                              checked={preferLaterDelivery}
-                              onChange={(e) => {
-                                setPreferLaterDelivery(e.target.checked);
-                                if (!e.target.checked) setPreferredDeliveryDate("");
-                              }}
-                            />
-                            <span>Siparişimin ileri bir tarihte gönderilmesini istiyorum</span>
-                          </label>
-                          {preferLaterDelivery && (
-                            <div className="ps-3" style={{ borderLeft: "3px solid #e5e7eb" }}>
-                              <p className="text_black-2 mb_8" style={{ fontSize: "14px" }}>
-                                Siparişinizin belirlediğiniz tarihte kargoya verilmesi için bir tarih seçin.
-                              </p>
-                              <input
-                                type="date"
-                                className="form-control mb_8"
-                                value={preferredDeliveryDate}
-                                onChange={(e) => setPreferredDeliveryDate(e.target.value)}
-                                min={new Date().toISOString().slice(0, 10)}
-                                style={{ maxWidth: "220px" }}
-                              />
-                              <p className="text-muted mb_0" style={{ fontSize: "12px" }}>
-                                Resmi bayramlara denk gelirse süre değişiklik gösterebilir.
-                              </p>
-                            </div>
-                          )}
-                        </div>
-                      )}
-
                       {/* Ödeme Bilgileri: Giriş yapmışta adres seçildikten sonra; misafirde hep görünür (tek form) */}
                       {(isAuthenticated ? (selectedDeliveryAddressId !== null && !showBillingAddressForm && (sameBillingAddress || selectedBillingAddressId !== null)) : true) && (() => {
                         const selectedDeliveryAddress = savedDeliveryAddresses.find(
@@ -1924,6 +1889,13 @@ export default function Checkout() {
               // Sözleşme onayı
               acceptedAgreements={acceptedAgreements}
               onAcceptedAgreementsChange={setAcceptedAgreements}
+              preferLaterDelivery={preferLaterDelivery}
+              preferredDeliveryDate={preferredDeliveryDate}
+              onPreferLaterDeliveryChange={(checked) => {
+                setPreferLaterDelivery(checked);
+                if (!checked) setPreferredDeliveryDate("");
+              }}
+              onPreferredDeliveryDateChange={setPreferredDeliveryDate}
             />
           </div>
         </div>

@@ -827,6 +827,47 @@ export default function Details9({ product }) {
                                         </div>
                                       )}
                                     </div>
+                                    {/* Bundle item yıldız puanı */}
+                                    {(item.average_rating != null && item.average_rating > 0) || (item.review_count != null && item.review_count > 0) ? (
+                                      <div className="tf-product-bundle-rating" style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "6px" }}>
+                                        <span style={{ fontSize: "13px", fontWeight: "600" }}>
+                                          {(item.average_rating ?? 0).toFixed(1)}
+                                        </span>
+                                        <div className="stars-box" style={{ display: "flex", gap: "2px" }}>
+                                          {[...Array(5)].map((_, starIdx) => {
+                                            const rating = item.average_rating ?? 0;
+                                            const starValue = starIdx + 1;
+                                            const fillPercentage = Math.max(0, Math.min(100, (rating - starIdx) * 100));
+                                            const isFilled = rating >= starValue;
+                                            const isPartial = rating > starIdx && rating < starValue;
+                                            return (
+                                              <div key={starIdx} className="star-wrapper" style={{ position: "relative", display: "inline-block", fontSize: "12px", lineHeight: 1 }}>
+                                                <i className="icon-star star-empty" style={{ color: "#ddd" }} />
+                                                {isFilled ? (
+                                                  <i className="icon-star star-filled" style={{ position: "absolute", top: 0, left: 0, color: "#f59e0b" }} />
+                                                ) : isPartial ? (
+                                                  <i
+                                                    className="icon-star star-filled star-partial"
+                                                    style={{
+                                                      position: "absolute",
+                                                      top: 0,
+                                                      left: 0,
+                                                      color: "#f59e0b",
+                                                      clipPath: `inset(0 ${100 - fillPercentage}% 0 0)`
+                                                    }}
+                                                  />
+                                                ) : null}
+                                              </div>
+                                            );
+                                          })}
+                                        </div>
+                                        {item.review_count > 0 && (
+                                          <span style={{ fontSize: "12px", color: "#888" }}>
+                                            ({item.review_count} değerlendirme)
+                                          </span>
+                                        )}
+                                      </div>
+                                    ) : null}
                                   </div>
                                 </div>
                               );

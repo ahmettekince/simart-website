@@ -6,20 +6,25 @@ import { useCartStore } from "@/stores/cartStore";
 
 const GIFT_NOTE_KEY = "cart_gift_note";
 
-export default function OrderSummary({ 
-  items, 
-  cartTotals, 
-  onSubmitOrder, 
-  isSubmitting = false, 
-  orderErrors = {}, 
-  orderErrorMessage = "", 
-  onOrderNoteChange, 
-  onGiftNoteChange, 
-  onShowOrderNoteChange, 
+export default function OrderSummary({
+  items,
+  cartTotals,
+  onSubmitOrder,
+  isSubmitting = false,
+  orderErrors = {},
+  orderErrorMessage = "",
+  onOrderNoteChange,
+  onGiftNoteChange,
+  onShowOrderNoteChange,
   onShowGiftNoteChange,
   // Sözleşme onayı
   acceptedAgreements,
   onAcceptedAgreementsChange,
+  // İleri tarihli kargo
+  preferLaterDelivery = false,
+  preferredDeliveryDate = "",
+  onPreferLaterDeliveryChange,
+  onPreferredDeliveryDateChange,
   buttonText = "Sipariş Ver",
   showNotes = true,
   showAgreements = true,
@@ -454,16 +459,63 @@ export default function OrderSummary({
                   />
                 </div>
               )}
+
+              {/* İleri tarihli kargo - hediye notunun hemen altında */}
+              <div
+                className="box-checkbox fieldset-radio"
+                style={{ display: "flex", alignItems: "center", gap: "8px" }}
+              >
+                <input
+                  type="checkbox"
+                  id="prefer-later-delivery"
+                  className="tf-check"
+                  checked={preferLaterDelivery}
+                  onChange={(e) => {
+                    onPreferLaterDeliveryChange &&
+                      onPreferLaterDeliveryChange(e.target.checked);
+                  }}
+                  style={{ flexShrink: 0 }}
+                />
+                <label
+                  htmlFor="prefer-later-delivery"
+                  className="text_black-2"
+                  style={{ margin: 0, padding: 0 }}
+                >
+                  Siparişimin ileri bir tarihte gönderilmesini istiyorum (isteğe bağlı)
+                </label>
+              </div>
+              {preferLaterDelivery && (
+                <div style={{ paddingLeft: "26px", marginTop: "8px" }}>
+                  <p className="text_black-2 mb_8" style={{ fontSize: "13px" }}>
+                    Siparişinizin belirlediğiniz tarihte kargoya verilmesi için bir tarih seçin.
+                  </p>
+                  <input
+                    type="date"
+                    className="form-control mb_8"
+                    value={preferredDeliveryDate}
+                    onChange={(e) =>
+                      onPreferredDeliveryDateChange &&
+                      onPreferredDeliveryDateChange(e.target.value)
+                    }
+                    min={new Date().toISOString().slice(0, 10)}
+                    style={{ maxWidth: "220px" }}
+                  />
+                  <p className="text-muted mb_0" style={{ fontSize: "12px" }}>
+                    Resmi bayramlara denk gelirse süre değişiklik gösterebilir.
+                  </p>
+                </div>
+              )}
+
             </>
           )}
           <div className="wd-check-payment" style={{ marginTop: "30px", paddingTop: "30px", borderTop: "1px solid #e5e5e5" }}>
             {showAgreements && (
               <div className="mb_20" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
                 <div className="box-checkbox fieldset-radio" style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
-                  <input 
-                    type="checkbox" 
-                    id="check-agreements" 
-                    className="tf-check" 
+                  <input
+                    type="checkbox"
+                    id="check-agreements"
+                    className="tf-check"
                     checked={acceptedAgreements}
                     onChange={(e) => onAcceptedAgreementsChange(e.target.checked)}
                     style={{ marginTop: "3px", flexShrink: 0 }}

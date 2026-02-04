@@ -281,12 +281,7 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
                   <div className="payment2-empty">Bu kart ile sadece tek çekim yapılabilir.</div>
                 ) : (
                   <div className="payment2-installments">
-                    <div className="payment2-installments__head">
-                      <span />
-                      <span>Taksit</span>
-                      <span className="ta-right">Aylık</span>
-                      <span className="ta-right">Toplam</span>
-                    </div>
+
                     {installmentOptions
                       .filter((o) => o.is_available)
                       .map((o) => {
@@ -315,7 +310,7 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
                                 </span>
                               )}
                             </span>
-                            <span className="payment2-installment__mid ta-right">{count === 1 ? "" : monthlyText}</span>
+                            <span className="payment2-installment__mid ta-right">{count === 1 ? "" : `${count} x ${monthlyText}`}</span>
                             <span className="payment2-installment__right ta-right">{count === 1 ? "" : totalText}</span>
                           </label>
                         );

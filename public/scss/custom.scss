@@ -440,6 +440,11 @@ input[type="checkbox"]:checked,
   }
 }
 
+/* Hero: pagination dot'ları aşağı al (tema 40px/50px ile yukarıda kalıyordu) */
+.slider-home-2 .wrap-pagination {
+  bottom: 20px !important;
+}
+
 .brand-item-v2.hover-opacity img {
   transition: 0.3s;
 
@@ -1035,7 +1040,7 @@ body.product-detail-page .progress-wrap {
 }
 
 .payment2-card__body--tight {
-  padding: 10px 0;
+  padding: 0px 0;
 }
 
 .payment2-field {
@@ -1143,6 +1148,11 @@ body.product-detail-page .progress-wrap {
   font-size: 13px;
   font-weight: 600;
   color: #333;
+}
+
+.payment2-installment__mid {
+  white-space: nowrap;
+  text-align: right;
 }
 
 .payment2-installment__right {
