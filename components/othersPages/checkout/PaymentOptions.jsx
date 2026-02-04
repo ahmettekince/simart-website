@@ -30,37 +30,31 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
   const [cardType, setCardType] = useState(null); // "credit" veya "debit"
   const [campaign, setCampaign] = useState(null); // Kampanya bilgisi
 
-  // Kart numarası değiştiğinde taksit seçeneklerini getir
+  // Kart numarası değiştiğinde taksit seçeneklerini getir (ilk 6 hane = BIN; autofill 16 hane getirdiğinde de çalışır)
+  const lastBinRef = useRef(null);
   useEffect(() => {
     const fetchInstallmentOptions = async () => {
-      // Kart numarasından boşlukları temizle
-      const cleanCardNumber = cardNumber.replace(/\s/g, "");
+      const cleanCardNumber = (cardNumber || "").replace(/\s/g, "");
+      const bin = cleanCardNumber.length >= 6 ? cleanCardNumber.substring(0, 6) : null;
 
-      // Sadece tam 6 hane olduğunda istek at (6'dan fazla olduğunda istek atma)
-      if (cleanCardNumber.length === 6) {
-        const bin = cleanCardNumber.substring(0, 6);
+      if (bin) {
+        // Aynı BIN için tekrar istek atma
+        if (lastBinRef.current === bin) return;
+        lastBinRef.current = bin;
         const amount = cartTotal.toFixed(2);
-
         setIsLoadingInstallments(true);
         try {
           const response = await apiClient.get("/installment/options", {
-            params: {
-              bin: bin,
-              amount: amount,
-            },
+            params: { bin, amount },
           });
-
           if (response.data && response.data.success) {
             setInstallmentOptions(response.data.options || []);
-            setPaymentType(response.data.payment_type); // "single" veya "installment"
-            setCardType(response.data.card_type); // "credit" veya "debit"
-            setCampaign(response.data.campaign || null); // Kampanya bilgisi
-
-            // Eğer tek çekim ise (single), otomatik olarak 1 taksit seç
+            setPaymentType(response.data.payment_type);
+            setCardType(response.data.card_type);
+            setCampaign(response.data.campaign || null);
             if (response.data.payment_type === "single") {
               setSelectedInstallment(1);
-            } else if (response.data.options && response.data.options.length > 0) {
-              // İlk taksit seçeneğini varsayılan olarak seç
+            } else if (response.data.options?.length > 0) {
               setSelectedInstallment(response.data.options[0].installment_count);
             }
           }
@@ -73,50 +67,51 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
         } finally {
           setIsLoadingInstallments(false);
         }
-      } else if (cleanCardNumber.length < 6) {
-        // 6 haneden az ise taksit seçeneklerini temizle
+      } else {
+        lastBinRef.current = null;
         setInstallmentOptions([]);
         setPaymentType(null);
         setCardType(null);
         setCampaign(null);
         setSelectedInstallment(1);
       }
-      // 6'dan fazla hane varsa hiçbir şey yapma (zaten BIN aynı, tekrar istek atmaya gerek yok)
     };
 
-    // Debounce için timeout kullan
-    const timeoutId = setTimeout(() => {
-      fetchInstallmentOptions();
-    }, 500);
-
+    const timeoutId = setTimeout(fetchInstallmentOptions, 400);
     return () => clearTimeout(timeoutId);
   }, [cardNumber, cartTotal]);
 
-  // Autofill: Controlled input React tarafından ezildiği için kart alanını uncontrolled yapıp
-  // input'taki değeri periyodik okuyup state'e yazıyoruz; böylece taksit isteği tetiklenir.
+  // Autofill: input uncontrolled; değeri periyodik + focus'ta okuyup state'e yazıyoruz (taksit isteği tetiklensin)
+  const syncCardNumberFromInput = () => {
+    const el = cardNumberInputRef.current;
+    if (!el) return;
+    const raw = (el.value || "").replace(/\D/g, "");
+    if (raw.length >= 6) {
+      const formatted = formatCardNumber(el.value);
+      setCardNumber((prev) => {
+        const prevClean = (prev || "").replace(/\s/g, "");
+        return prevClean === raw ? prev : formatted;
+      });
+    }
+  };
   useEffect(() => {
-    const POLL_INTERVAL = 150;
-    const POLL_DURATION = 4000;
+    const POLL_INTERVAL = 200;
+    const POLL_DURATION = 6000;
     let elapsed = 0;
-    const syncFromInput = () => {
-      const el = cardNumberInputRef.current;
-      if (!el) return;
-      const raw = (el.value || "").replace(/\D/g, "");
-      if (raw.length >= 6) {
-        const formatted = formatCardNumber(el.value);
-        setCardNumber((prev) => {
-          const prevClean = (prev || "").replace(/\s/g, "");
-          return prevClean === raw ? prev : formatted;
-        });
-      }
-    };
     const t = setInterval(() => {
-      syncFromInput();
+      syncCardNumberFromInput();
       elapsed += POLL_INTERVAL;
       if (elapsed >= POLL_DURATION) clearInterval(t);
     }, POLL_INTERVAL);
-    syncFromInput();
-    return () => clearInterval(t);
+    const t1 = setTimeout(syncCardNumberFromInput, 0);
+    const t2 = setTimeout(syncCardNumberFromInput, 300);
+    const t3 = setTimeout(syncCardNumberFromInput, 800);
+    return () => {
+      clearInterval(t);
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
   }, []);
 
   // Parent component'ten form verilerini almak için expose et (kart numarası her zaman input'tan okunur, autofill dahil)
@@ -229,6 +224,7 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
               type="text"
               id="card-number"
               name="card-number"
+              autoComplete="cc-number"
               placeholder="1234 5678 9012 3456"
               defaultValue=""
               onChange={(e) => {
@@ -264,6 +260,7 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
               onFocus={(e) => {
                 e.target.style.borderColor = "#3c81b5";
                 e.target.style.boxShadow = "0 0 0 3px rgba(60, 129, 181, 0.1)";
+                requestAnimationFrame(() => syncCardNumberFromInput());
               }}
             />
 
