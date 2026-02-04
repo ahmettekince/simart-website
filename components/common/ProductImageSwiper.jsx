@@ -13,6 +13,7 @@ import { Pagination, Navigation } from "swiper/modules";
  * @param {string} props.productName - Product name for alt text
  * @param {number} props.width - Image width (default: 360)
  * @param {number} props.height - Image height (default: 360)
+ * @param {string} props.sizes - Responsive sizes for smaller download (e.g. "(max-width: 768px) 50vw, 320px")
  * @param {Array} props.campaignTags - Array of campaign tag image URLs
  * @param {string} props.categorySlug - Category slug for link (optional, defaults to "urunler")
  */
@@ -22,6 +23,7 @@ export default function ProductImageSwiper({
     productName = "product",
     width = 360,
     height = 360,
+    sizes = "(max-width: 480px) 50vw, (max-width: 768px) 33vw, 320px",
     campaignTags = [],
     categorySlug = "urunler",
 }) {
@@ -106,7 +108,8 @@ export default function ProductImageSwiper({
                     alt={productName}
                     width={width}
                     height={height}
-                    quality={90}
+                    quality={100}
+                    sizes={sizes}
                     style={{
                         objectFit: 'cover',
                         objectPosition: 'center',
@@ -152,7 +155,8 @@ export default function ProductImageSwiper({
                             alt={productName}
                             width={width}
                             height={height}
-                            quality={90}
+                            quality={100}
+                            sizes={sizes}
                             style={{
                                 objectFit: 'cover',
                                 objectPosition: 'center',
@@ -229,7 +233,8 @@ export default function ProductImageSwiper({
                                         alt={`${productName} - ${index + 1}`}
                                         width={width}
                                         height={height}
-                                        quality={90}
+                                        quality={100}
+                                        sizes={sizes}
                                         style={{
                                             objectFit: 'cover',
                                             objectPosition: 'center',

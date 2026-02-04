@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Autoplay, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 
@@ -55,36 +56,48 @@ function BannerContent({ images, isFirstSlide = false }) {
 
   return (
     <>
-      {/* Desktop Version (>= 1024px) */}
+      {/* Desktop - responsive boyut + yüksek kalite (quality=90) */}
       <div className="d-none d-lg-block w-100 h-100">
-        <img
+        <Image
           src={images.desktop?.url}
           alt="Banner Desktop"
+          width={1920}
+          height={1080}
+          quality={90}
           className="w-100 h-100"
           style={{ objectFit: "cover" }}
-          loading={loadMode}
+          sizes="100vw"
+          priority={isFirstSlide}
         />
       </div>
 
-      {/* Tablet Version (768px - 1023px) */}
+      {/* Tablet */}
       <div className="d-none d-md-block d-lg-none w-100 h-100">
-        <img
+        <Image
           src={images.tablet?.url}
           alt="Banner Tablet"
+          width={1024}
+          height={768}
+          quality={90}
           className="w-100 h-100"
           style={{ objectFit: "cover" }}
-          loading={loadMode}
+          sizes="100vw"
+          priority={isFirstSlide}
         />
       </div>
 
-      {/* Mobile Version (< 768px) */}
+      {/* Mobile - görüntülenen boyuta uygun, kalite düşmez */}
       <div className="d-block d-md-none w-100 mobile-banner-wrap">
-        <img
+        <Image
           src={images.mobile?.url}
           alt="Banner Mobile"
+          width={800}
+          height={934}
+          quality={90}
           className="w-100 h-auto"
-          style={{ objectFit: "cover" }}
-          loading={loadMode}
+          style={{ objectFit: "cover", maxWidth: "100%" }}
+          sizes="(max-width: 768px) 100vw, 800px"
+          priority={isFirstSlide}
         />
       </div>
     </>

@@ -18,6 +18,7 @@ import ShareModal from "@/components/modals/ShareModal";
 import ScrollTop from "@/components/common/ScrollTop";
 import WhatsappButton from "@/components/common/WhatsappButton";
 import CookieConsentBanner from "@/components/common/CookieConsentBanner";
+import Analytics from "@/components/common/Analytics";
 
 export default function ClientLayout({ children }) {
     const pathname = usePathname();
@@ -161,6 +162,7 @@ export default function ClientLayout({ children }) {
                 <WhatsappButton />
             </div> */}
             <CookieConsentBanner />
+            <Analytics />
         </Context>
     );
 }

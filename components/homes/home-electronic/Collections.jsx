@@ -1,12 +1,9 @@
 "use client";
 import Image from "next/image";
-import { Pagination } from "swiper/modules";
-import { Swiper, SwiperSlide } from "swiper/react";
 import Link from "next/link";
 import Button from "@/components/common/Button";
 
 export default function Collections({ collections = [] }) {
-  // API'den veri gelmezse component render edilmez
   if (!collections || collections.length === 0) {
     return null;
   }
@@ -14,29 +11,17 @@ export default function Collections({ collections = [] }) {
   return (
     <section className="flat-spacing-8 pb_0">
       <div className="container">
-        <Swiper
-          dir="ltr"
-          modules={[Pagination]}
-          slidesPerView={2}
-          spaceBetween={15}
-          breakpoints={{
-            1200: { slidesPerView: 2, spaceBetween: 30 },
-            768: { slidesPerView: 2, spaceBetween: 30 },
-            0: { slidesPerView: 1, spaceBetween: 15 },
-          }}
-          className="tf-sw-recent"
-        >
+        <div className="row g-3 g-md-4">
           {collections.map((collection, index) => {
-            const { images, title, subtitle, link, button_text } = collection;
-            // Tüm cihazlarda aynı görseli kullan (responsive görsel yok)
+            const { images, title, subtitle, link } = collection;
             const imageUrl = images?.url || images?.desktop?.url || images?.tablet?.url || images?.mobile?.url;
 
             if (!imageUrl) return null;
 
             return (
-              <SwiperSlide key={collection.id || index}>
-                <div className="collection-item-v4 lg hover-img">
-                  <div className="collection-inner">
+              <div key={collection.id || index} className="col-12 col-md-6">
+                <div className="collection-item-v4 lg hover-img h-100">
+                  <div className="collection-inner h-100">
                     {link ? (
                       <Link
                         href={link}
@@ -82,10 +67,10 @@ export default function Collections({ collections = [] }) {
                     </div>
                   </div>
                 </div>
-              </SwiperSlide>
+              </div>
             );
           })}
-        </Swiper>
+        </div>
       </div>
     </section>
   );

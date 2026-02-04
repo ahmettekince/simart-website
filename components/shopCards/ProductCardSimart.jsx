@@ -63,8 +63,9 @@ export default function ProductCardSimart({ product }) {
           images={product.images || []}
           productSlug={productSlug}
           productName={title}
-          width={1000}
-          height={1000}
+          width={500}
+          height={500}
+          sizes="(max-width: 480px) 50vw, (max-width: 768px) 33vw, (max-width: 1200px) 25vw, 320px"
           campaignTags={product.campaign_tags || []}
           categorySlug={categorySlug}
         />
