@@ -2314,6 +2314,7 @@
 
   td {
     padding: 18px 10px;
+    vertical-align: middle;
 
     // margin-bottom: 18px;
     &:first-child {
@@ -2331,6 +2332,7 @@
 .tf-cart-item {
   .tf-cart-item_product {
     display: flex;
+    align-items: center;
 
     .cart-info {
       .cart-title {

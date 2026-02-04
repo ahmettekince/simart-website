@@ -711,7 +711,7 @@ export default function Details9({ product }) {
                       </div>
                       <div className="text fw-6">Soru sor</div>
                     </a>
-                    <a href="#delivery_return" data-bs-toggle="modal" className="tf-product-extra-icon">
+                    {/* <a href="#delivery_return" data-bs-toggle="modal" className="tf-product-extra-icon">
                       <div className="icon">
                         <svg
                           className="d-inline-block"
@@ -725,6 +725,13 @@ export default function Details9({ product }) {
                         </svg>
                       </div>
                       <div className="text fw-6">Teslimat &amp; İade</div>
+                    </a> */}
+                    <a href="#share_social" data-bs-toggle="modal" className="tf-product-extra-icon" title="Paylaş" aria-label="Paylaş">
+                      <div className="icon">
+                        <i className="icon-share" />
+
+                      </div>
+                      <div className="text fw-6">Paylaş</div>
                     </a>
                     <a
                       href={`https://api.whatsapp.com/send?phone=${(siteConfig?.contact?.phone?.whatsapp?.tel || "905526428208").replace(/\D/g, "")}&text=${encodeURIComponent(
@@ -742,11 +749,7 @@ export default function Details9({ product }) {
                       </div>
                       <div className="text fw-6">WhatsApp</div>
                     </a>
-                    <a href="#share_social" data-bs-toggle="modal" className="tf-product-extra-icon tf-extra-icon-only" title="Paylaş" aria-label="Paylaş">
-                      <div className="icon">
-                        <i className="icon-share" />
-                      </div>
-                    </a>
+
                   </div>
 
                   {/* Bundle ürünleri - Pairs well with */}
@@ -790,6 +793,7 @@ export default function Details9({ product }) {
                                     </Link>
                                   </div>
                                   <div className="tf-product-bundle-infos">
+                                    {/* 1. İsim - ürün detaydaki gibi */}
                                     <span className="tf-product-bundle-title">
                                       {item.product_name}
                                       {item.quantity > 1 && (
@@ -798,38 +802,9 @@ export default function Details9({ product }) {
                                         </span>
                                       )}
                                     </span>
-                                    <div className="tf-product-bundle-price">
-                                      {item.bundle_discount_price != null &&
-                                        item.bundle_discount_price !==
-                                        item.normal_price ? (
-                                        <>
-                                          <div className="price price-on-sale">
-                                            {typeof item.bundle_discount_price ===
-                                              "number"
-                                              ? `₺${item.bundle_discount_price.toLocaleString("tr-TR")}`
-                                              : item.bundle_discount_price}
-                                          </div>
-                                          <div className="compare-at-price">
-                                            ₺
-                                            {typeof item.normal_price ===
-                                              "number"
-                                              ? item.normal_price.toLocaleString(
-                                                "tr-TR"
-                                              )
-                                              : item.normal_price}
-                                          </div>
-                                        </>
-                                      ) : (
-                                        <div className="price">
-                                          {typeof displayPrice === "number"
-                                            ? `₺${displayPrice.toLocaleString("tr-TR")}`
-                                            : displayPrice}
-                                        </div>
-                                      )}
-                                    </div>
-                                    {/* Bundle item yıldız puanı */}
+                                    {/* 2. Yıldız puanı */}
                                     {(item.average_rating != null && item.average_rating > 0) || (item.review_count != null && item.review_count > 0) ? (
-                                      <div className="tf-product-bundle-rating" style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "6px" }}>
+                                      <div className="tf-product-bundle-rating" style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "6px", marginBottom: "6px" }}>
                                         <span style={{ fontSize: "13px", fontWeight: "600" }}>
                                           {(item.average_rating ?? 0).toFixed(1)}
                                         </span>
@@ -868,6 +843,36 @@ export default function Details9({ product }) {
                                         )}
                                       </div>
                                     ) : null}
+                                    {/* 3. Fiyat */}
+                                    <div className="tf-product-bundle-price" style={{ fontSize: "15px" }}>
+                                      {item.bundle_discount_price != null &&
+                                        item.bundle_discount_price !==
+                                        item.normal_price ? (
+                                        <>
+                                          <div className="price price-on-sale">
+                                            {typeof item.bundle_discount_price ===
+                                              "number"
+                                              ? `₺${item.bundle_discount_price.toLocaleString("tr-TR")}`
+                                              : item.bundle_discount_price}
+                                          </div>
+                                          <div className="compare-at-price">
+                                            ₺
+                                            {typeof item.normal_price ===
+                                              "number"
+                                              ? item.normal_price.toLocaleString(
+                                                "tr-TR"
+                                              )
+                                              : item.normal_price}
+                                          </div>
+                                        </>
+                                      ) : (
+                                        <div className="price">
+                                          {typeof displayPrice === "number"
+                                            ? `₺${displayPrice.toLocaleString("tr-TR")}`
+                                            : displayPrice}
+                                        </div>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
                               );

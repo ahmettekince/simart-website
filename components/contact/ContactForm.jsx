@@ -4,30 +4,42 @@ import Link from "next/link";
 import React, { useRef, useState } from "react";
 import apiClient from "@/utils/apiClient";
 import { siteConfig } from "@/config/site";
+import { formatPhoneValue } from "@/utils/inputFormatters";
 
 export default function ContactForm() {
   const formRef = useRef();
   const [success, setSuccess] = useState(true);
   const [showMessage, setShowMessage] = useState(false);
-
   const [loading, setLoading] = useState(false);
   const [apiMessage, setApiMessage] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [phoneValue, setPhoneValue] = useState("+90");
 
   const handleShowMessage = () => {
     setShowMessage(true);
-    setTimeout(() => {
-      setShowMessage(false);
-    }, 7000);
+    setTimeout(() => setShowMessage(false), 7000);
+  };
+
+  const setErrorsFromResponse = (data) => {
+    const errs = data?.errors && typeof data.errors === "object" ? data.errors : {};
+    const next = {};
+    ["full_name", "email", "phone", "message"].forEach((key) => {
+      const arr = errs[key];
+      next[key] = Array.isArray(arr) ? arr : [];
+    });
+    setFieldErrors(next);
   };
 
   const sendMail = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setFieldErrors({});
     const formData = new FormData(e.target);
+    const phone = formData.get("phone") || phoneValue;
     const data = {
       full_name: formData.get("full_name"),
       email: formData.get("email"),
-      phone: formData.get("phone"),
+      phone: formatPhoneValue(phone) || phone,
       message: formData.get("message"),
     };
 
@@ -38,18 +50,17 @@ export default function ContactForm() {
         setSuccess(true);
         setApiMessage("Mesajınız başarıyla gönderildi.");
         e.target.reset();
+        setPhoneValue("+90");
       } else {
-        // API status: "error" but HTTP 200
         setSuccess(false);
         setApiMessage(response.data.message || "Bir hata oluştu.");
+        setErrorsFromResponse(response.data);
       }
     } catch (error) {
-      // Axios non-200 responses (like 429 Too Many Requests)
       setSuccess(false);
-      const errorMessage = error.response?.data?.message || "Bir hata oluştu. Lütfen tekrar deneyin.";
-      setApiMessage(errorMessage);
-
-      // We don't want to log this as a "system error" if it's just a 429 rate limit
+      const errData = error.response?.data;
+      setApiMessage(errData?.message || "Bir hata oluştu. Lütfen tekrar deneyin.");
+      setErrorsFromResponse(errData || {});
       if (error.response?.status !== 429) {
         console.error("Contact Form Error:", error);
       }
@@ -70,6 +81,11 @@ export default function ContactForm() {
                 <div className="d-flex gap-15 mb_15">
                   <fieldset className="w-100">
                     <input type="text" name="full_name" id="name" required placeholder="İsim Soyisim *" />
+                    {fieldErrors.full_name?.length > 0 && (
+                      <div className="contact-field-error" style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                        {fieldErrors.full_name[0]}
+                      </div>
+                    )}
                   </fieldset>
                   <fieldset className="w-100">
                     <input
@@ -80,11 +96,31 @@ export default function ContactForm() {
                       required
                       placeholder="E-Posta *"
                     />
+                    {fieldErrors.email?.length > 0 && (
+                      <div className="contact-field-error" style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                        {fieldErrors.email[0]}
+                      </div>
+                    )}
                   </fieldset>
                 </div>
                 <div className="mb_15">
                   <fieldset className="w-100">
-                    <input type="text" name="phone" id="phone" required placeholder="Telefon Numaranız *" />
+                    <input
+                      type="tel"
+                      inputMode="numeric"
+                      autoComplete="tel"
+                      id="phone"
+                      required
+                      placeholder="+90 5XX XXX XX XX"
+                      value={phoneValue}
+                      onChange={(e) => setPhoneValue(formatPhoneValue(e.target.value) || "+90")}
+                    />
+                    <input type="hidden" name="phone" value={phoneValue} />
+                    {fieldErrors.phone?.length > 0 && (
+                      <div className="contact-field-error" style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                        {fieldErrors.phone[0]}
+                      </div>
+                    )}
                   </fieldset>
                 </div>
                 <div className="mb_15">
@@ -97,10 +133,21 @@ export default function ContactForm() {
                     rows={10}
                     defaultValue={""}
                   />
+                  {fieldErrors.message?.length > 0 && (
+                    <div className="contact-field-error" style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                      {fieldErrors.message[0]}
+                    </div>
+                  )}
                 </div>
-                <div className={`tfSubscribeMsg ${showMessage ? "active" : ""}`}>
-                  <p style={{ color: success ? "rgb(52, 168, 83)" : "red" }}>{apiMessage}</p>
-                </div>
+                {(() => {
+                  const hasFieldErrors = Object.values(fieldErrors).some((arr) => arr.length > 0);
+                  const showGeneralMessage = (success || !hasFieldErrors) && apiMessage;
+                  return showGeneralMessage ? (
+                    <div className={`tfSubscribeMsg ${showMessage ? "active" : ""}`}>
+                      <p style={{ color: success ? "rgb(52, 168, 83)" : "red" }}>{apiMessage}</p>
+                    </div>
+                  ) : null;
+                })()}
                 <div className="send-wrap">
                   <button
                     type="submit"

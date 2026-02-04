@@ -2,8 +2,9 @@
 import React, { useState, useEffect } from "react";
 import apiClient from "@/utils/apiClient";
 import { log } from "@/utils/logger";
-import { filterNameValue } from "@/utils/inputFormatters";
+import { filterNameValue, formatPhoneValue } from "@/utils/inputFormatters";
 import CircularLoading from "@/components/common/CircularLoading";
+import PhoneInput from "@/components/common/PhoneInput";
 
 export default function AccountEdit() {
   const [customerData, setCustomerData] = useState({
@@ -21,6 +22,17 @@ export default function AccountEdit() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
+  // Telefon doğrulama
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [phoneVerifiedAt, setPhoneVerifiedAt] = useState("");
+  const [phoneForVerify, setPhoneForVerify] = useState("");
+  const [verificationCode, setVerificationCode] = useState("");
+  const [codeSent, setCodeSent] = useState(false);
+  const [sendCodeLoading, setSendCodeLoading] = useState(false);
+  const [verifyLoading, setVerifyLoading] = useState(false);
+  const [phoneMessage, setPhoneMessage] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+
   // Müşteri bilgilerini yükle
   useEffect(() => {
     const fetchCustomerData = async () => {
@@ -33,6 +45,8 @@ export default function AccountEdit() {
             last_name: customer.last_name || "",
             email: customer.email || "",
           });
+          if (customer.phone) setCustomerPhone(customer.phone);
+          if (customer.phone_verified_at) setPhoneVerifiedAt(customer.phone_verified_at);
         }
       } catch (error) {
         log("Müşteri bilgileri yüklenirken hata:", error);
@@ -54,6 +68,88 @@ export default function AccountEdit() {
     // Mesajları temizle
     setMessage("");
     setError("");
+  };
+
+  // API cevabı: errors doluysa onları göster, boşsa sadece message
+  const getApiErrorMessage = (data) => {
+    if (!data) return null;
+    const errors = data.errors;
+    const msg = data.message;
+    const hasErrors = errors && typeof errors === "object" && Object.keys(errors).length > 0;
+    const errorValues = hasErrors ? Object.values(errors).flat().filter(Boolean) : [];
+    if (errorValues.length > 0) return errorValues.join(" ");
+    if (msg) return msg;
+    return null;
+  };
+
+  /** Doğrulama kodu gönder: body'de sadece phone */
+  const handleSendVerificationCode = async () => {
+    const phone = formatPhoneValue(phoneForVerify);
+    if (!phone || phone.length < 12) {
+      setPhoneError("Geçerli bir telefon numarası girin (+90 ile başlamalı, 10 hane).");
+      return;
+    }
+    setPhoneError("");
+    setPhoneMessage("");
+    setSendCodeLoading(true);
+    try {
+      const response = await apiClient.post("/customer/phone/verify", { phone });
+      if (response.data?.status === "success") {
+        setPhoneMessage(response.data?.message || "Doğrulama kodu telefonunuza gönderildi.");
+        setCodeSent(true);
+      } else {
+        setPhoneError(getApiErrorMessage(response.data) || "Kod gönderilemedi.");
+      }
+    } catch (err) {
+      setPhoneError(
+        getApiErrorMessage(err.response?.data) || err.message || "Kod gönderilirken bir hata oluştu."
+      );
+    } finally {
+      setSendCodeLoading(false);
+    }
+  };
+
+  /** Kodu doğrula: body'de phone + code */
+  const handleVerifyCode = async () => {
+    const phone = formatPhoneValue(phoneForVerify);
+    if (!phone || phone.length < 12) {
+      setPhoneError("Geçerli bir telefon numarası girin.");
+      return;
+    }
+    if (!verificationCode.trim()) {
+      setPhoneError("Doğrulama kodunu girin.");
+      return;
+    }
+    setPhoneError("");
+    setPhoneMessage("");
+    setVerifyLoading(true);
+    try {
+      const response = await apiClient.post("/customer/phone/verify", {
+        phone,
+        code: verificationCode.trim(),
+      });
+      if (response.data?.status === "success") {
+        setPhoneMessage(response.data?.message || "Telefon numaranız başarıyla doğrulandı.");
+        setCodeSent(false);
+        setVerificationCode("");
+        setPhoneForVerify("");
+        if (response.data?.data?.phone) setCustomerPhone(response.data.data.phone);
+        if (response.data?.data?.phone_verified_at) setPhoneVerifiedAt(response.data.data.phone_verified_at);
+        // Müşteri bilgilerini yeniden yükle (phone_verified_at güncellenmiş olabilir)
+        const meRes = await apiClient.get("/customer/me");
+        if (meRes.data?.data?.customer?.phone_verified_at) {
+          setPhoneVerifiedAt(meRes.data.data.customer.phone_verified_at);
+        }
+      } else {
+        setPhoneError(getApiErrorMessage(response.data) || "Doğrulama başarısız.");
+      }
+    } catch (err) {
+      setPhoneError(
+        getApiErrorMessage(err.response?.data) || err.message || "Doğrulama sırasında bir hata oluştu."
+      );
+    } finally {
+      setVerifyLoading(false);
+    }
   };
 
   const handlePasswordChange = (e) => {
@@ -110,7 +206,7 @@ export default function AccountEdit() {
             new_password_confirm: "",
           });
         } else {
-          setError(passwordResponse.data?.message || "Şifre değiştirilirken bir hata oluştu.");
+          setError(getApiErrorMessage(passwordResponse.data) || "Şifre değiştirilirken bir hata oluştu.");
           setIsSaving(false);
           return;
         }
@@ -137,7 +233,7 @@ export default function AccountEdit() {
       }
     } catch (err) {
       const errorMessage =
-        err.response?.data?.message ||
+        getApiErrorMessage(err.response?.data) ||
         err.response?.data?.error ||
         err.message ||
         "Bilgiler güncellenirken bir hata oluştu.";
@@ -251,6 +347,101 @@ export default function AccountEdit() {
               E-posta adresiniz
             </label>
           </div>
+
+          {/* Telefon Doğrulama */}
+          <h6 className="mb_20">Telefon Doğrulama</h6>
+          {phoneMessage && (
+            <div
+              className="mb_15"
+              style={{
+                padding: "12px 16px",
+                backgroundColor: "#d4edda",
+                border: "1px solid #c3e6cb",
+                borderRadius: "4px",
+                color: "#155724",
+              }}
+            >
+              {phoneMessage}
+            </div>
+          )}
+          {phoneError && (
+            <div
+              className="mb_15"
+              style={{
+                padding: "12px 16px",
+                backgroundColor: "#f8d7da",
+                border: "1px solid #f5c6cb",
+                borderRadius: "4px",
+                color: "#721c24",
+              }}
+            >
+              {phoneError}
+            </div>
+          )}
+          {phoneVerifiedAt ? (
+            <p className="mb_20" style={{ color: "#155724" }}>
+              Telefonunuz doğrulandı: {customerPhone ? (customerPhone.startsWith("+") ? customerPhone : `+${customerPhone}`) : "—"}
+            </p>
+          ) : (
+            <>
+              <div className="tf-field style-1 mb_15">
+                <PhoneInput
+                  id="phone-verify"
+                  value={phoneForVerify}
+                  onChange={setPhoneForVerify}
+                  placeholder="+90 5XX XXX XX XX"
+                  className="tf-field-input tf-input fw-6"
+                />
+                <label className="tf-field-label fw-4 text_black-2" htmlFor="phone-verify">
+                  Telefon numaranız
+                </label>
+              </div>
+              <div className="mb_15">
+                <button
+                  type="button"
+                  className="tf-btn radius-3 btn-fill animate-hover-btn"
+                  onClick={handleSendVerificationCode}
+                  disabled={sendCodeLoading}
+                >
+                  {sendCodeLoading ? "Gönderiliyor..." : "Doğrulama kodu gönder"}
+                </button>
+              </div>
+              {codeSent && (
+                <>
+                  <div className="tf-field style-1 mb_15">
+                    <input
+                      className="tf-field-input tf-input fw-6"
+                      placeholder=" "
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={6}
+                      id="verify-code"
+                      value={verificationCode}
+                      onChange={(e) => {
+                        const v = e.target.value.replace(/\D/g, "").slice(0, 6);
+                        setVerificationCode(v);
+                        setPhoneError("");
+                      }}
+                    />
+                    <label className="tf-field-label fw-4 text_black-2" htmlFor="verify-code">
+                      Doğrulama kodu (6 rakam)
+                    </label>
+                  </div>
+                  <div className="mb_20">
+                    <button
+                      type="button"
+                      className="tf-btn radius-3 btn-fill animate-hover-btn"
+                      onClick={handleVerifyCode}
+                      disabled={verifyLoading}
+                    >
+                      {verifyLoading ? "Doğrulanıyor..." : "Doğrula"}
+                    </button>
+                  </div>
+                </>
+              )}
+            </>
+          )}
+
           <h6 className="mb_20">Şifre Değiştirme</h6>
           <div className="tf-field style-1 mb_30">
             <input

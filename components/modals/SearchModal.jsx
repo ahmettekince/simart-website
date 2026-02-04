@@ -188,31 +188,15 @@ export default function SearchModal() {
                             </Link>
                           </div>
                           <div className="content">
-                            <Link href={getProductLink(product)}>
+                            <Link href={getProductLink(product)} className="d-block">
                               {product.name}
                             </Link>
-                            <div className="tf-product-info-price">
-                              {product.discount_price && product.discount_price < product.price ? (
-                                <>
-                                  <div className="compare-at-price">
-                                    {formatPrice(product.price)}
-                                  </div>
-                                  <div className="price-on-sale fw-6">
-                                    {formatPrice(product.final_price || product.discount_price)}
-                                  </div>
-                                </>
-                              ) : (
-                                <div className="price fw-6">
-                                  {formatPrice(product.final_price || product.price)}
-                                </div>
-                              )}
-                            </div>
-                            {product.reviews?.average_rating && (
+                            {(product.reviews?.average_rating != null && product.reviews.average_rating > 0) || (product.reviews?.count != null && product.reviews.count > 0) ? (
                               <div className="rating-wrap" style={{ marginTop: "4px", display: "flex", alignItems: "center", gap: "6px" }}>
                                 <div className="stars-box" style={{ display: "flex", gap: "2px" }}>
                                   {[...Array(5)].map((_, i) => {
                                     const starValue = i + 1;
-                                    const rating = product.reviews.average_rating;
+                                    const rating = product.reviews?.average_rating ?? 0;
                                     const fillPercentage = Math.max(0, Math.min(100, ((rating - i) * 100)));
                                     const isFilled = rating >= starValue;
                                     const isPartial = rating > i && rating < starValue;
@@ -239,15 +223,31 @@ export default function SearchModal() {
                                   })}
                                 </div>
                                 <span className="rating-num" style={{ fontSize: "13px", fontWeight: 600 }}>
-                                  {product.reviews.average_rating.toFixed(1)}
+                                  {(product.reviews?.average_rating ?? 0).toFixed(1)}
                                 </span>
-                                {product.reviews.count > 0 && (
+                                {(product.reviews?.count ?? 0) > 0 && (
                                   <span className="review-num" style={{ fontSize: "12px", color: "#888" }}>
                                     ({product.reviews.count})
                                   </span>
                                 )}
                               </div>
-                            )}
+                            ) : null}
+                            <div className="tf-product-info-price" style={{ marginTop: "4px" }}>
+                              {product.discount_price && product.discount_price < product.price ? (
+                                <>
+                                  <div className="compare-at-price">
+                                    {formatPrice(product.price)}
+                                  </div>
+                                  <div className="price-on-sale fw-6">
+                                    {formatPrice(product.final_price || product.discount_price)}
+                                  </div>
+                                </>
+                              ) : (
+                                <div className="price fw-6">
+                                  {formatPrice(product.final_price || product.price)}
+                                </div>
+                              )}
+                            </div>
                           </div>
                         </div>
                       ))}

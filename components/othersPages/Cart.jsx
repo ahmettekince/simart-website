@@ -69,6 +69,7 @@ export default function Cart() {
                     <th>Fiyat</th>
                     <th>Miktar</th>
                     <th>Toplam</th>
+                    <th style={{ width: "48px" }} aria-label="Kaldır" />
                   </tr>
                 </thead>
                 <tbody>
@@ -98,9 +99,10 @@ export default function Cart() {
                               const itemPrice = item.discount_price || item.price || 0;
                               const itemTotal = itemPrice * item.quantity;
                               const categorySlug = item.product?.categories?.[0]?.slug || item.product?.primary_category?.slug || "urunler";
+                              const minQty = Number(item.min_purchase_quantity ?? item.product?.min_purchase_quantity ?? 1) || 1;
                               const rawMax = item.max_purchase_quantity ?? item.product?.max_purchase_quantity ?? item.product?.max_quantity ?? null;
                               const parsedMax = rawMax === null || rawMax === undefined ? null : Number(rawMax);
-                              const maxQty = parsedMax === 0 ? 999 : (Number.isFinite(parsedMax) ? parsedMax : null);
+                              const maxQty = parsedMax === 0 ? null : (Number.isFinite(parsedMax) ? parsedMax : null);
 
                               return (
                                 <tr key={item.id} className="tf-cart-item">
@@ -110,14 +112,6 @@ export default function Cart() {
                                     </Link>
                                     <div className="cart-info">
                                       <Link href={`/magaza/${categorySlug}/${item.slug}`} className="cart-title link" style={{ fontWeight: 'bold' }}>{item.name}</Link>
-                                      <span className="remove-cart link remove" onClick={() => handleRemoveItem(item.id)} style={{ color: '#dc3545', cursor: 'pointer' }} title="Kaldır">
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                          <polyline points="3 6 5 6 21 6" />
-                                          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                                          <path d="M10 11v6" /><path d="M14 11v6" />
-                                          <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-                                        </svg>
-                                      </span>
                                     </div>
                                   </td>
                                   <td className="tf-cart-item_price" cart-data-title="Fiyat">
@@ -134,7 +128,7 @@ export default function Cart() {
                                   </td>
                                   <td className="tf-cart-item_quantity" cart-data-title="Miktar">
                                     <div className="cart-quantity">
-                                      <Quantity isLoading={loadingQuantityFor === item.id} setQuantity={(qty) => setItemQuantity(item.id, qty)} initialValue={item.quantity} minQuantity={1} maxQuantity={maxQty} />
+                                      <Quantity isLoading={loadingQuantityFor === item.id} setQuantity={(qty) => setItemQuantity(item.id, qty)} initialValue={item.quantity} minQuantity={minQty} maxQuantity={maxQty} />
                                       {item.applied_campaign_ids?.length > 0 && applied_campaigns && (
                                         <div style={{ marginTop: '8px' }}>
                                           {item.applied_campaign_ids.map((campaignId) => {
@@ -148,6 +142,16 @@ export default function Cart() {
                                   </td>
                                   <td className="tf-cart-item_total" cart-data-title="Toplam">
                                     <div className="cart-total" style={{ minWidth: "60px" }}>₺{itemTotal.toLocaleString("tr-TR")}</div>
+                                  </td>
+                                  <td className="tf-cart-item_remove" cart-data-title="">
+                                    <button type="button" onClick={() => handleRemoveItem(item.id)} className="remove-cart btn p-0 border-0 bg-transparent" style={{ color: "#dc3545", cursor: "pointer" }} title="Ürünü kaldır" aria-label="Ürünü kaldır">
+                                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <polyline points="3 6 5 6 21 6" />
+                                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                                        <path d="M10 11v6" /><path d="M14 11v6" />
+                                        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                                      </svg>
+                                    </button>
                                   </td>
                                 </tr>
                               );
@@ -166,6 +170,7 @@ export default function Cart() {
                                   <td className="tf-cart-item_price" cart-data-title="Fiyat"><div className="cart-price" style={{ color: '#10b981' }}>Bedelsiz</div></td>
                                   <td className="tf-cart-item_quantity" cart-data-title="Miktar"><div className="cart-quantity">x{giftItem.quantity}</div></td>
                                   <td className="tf-cart-item_total" cart-data-title="Toplam"><div className="cart-total" style={{ color: '#10b981' }}>Hediye</div></td>
+                                  <td className="tf-cart-item_remove" cart-data-title="" />
                                 </tr>
                               );
                             })}
@@ -182,6 +187,7 @@ export default function Cart() {
                             <td className="tf-cart-item_price" cart-data-title="Fiyat"><div className="cart-price" style={{ color: '#10b981' }}>Bedelsiz</div></td>
                             <td className="tf-cart-item_quantity" cart-data-title="Miktar"><div className="cart-quantity">x{giftItem.quantity}</div></td>
                             <td className="tf-cart-item_total" cart-data-title="Toplam"><div className="cart-total" style={{ color: '#10b981' }}>Hediye</div></td>
+                            <td className="tf-cart-item_remove" cart-data-title="" />
                           </tr>
                         ))}
                       </>

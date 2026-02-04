@@ -7,7 +7,7 @@ import { getCities, getDistricts, getNeighborhoods } from "@/api/locations";
 import SearchableSelect from "@/components/common/SearchableSelect";
 import AddAddressButton from "@/components/common/AddAddressButton";
 import PhoneInput from "@/components/common/PhoneInput";
-import { formatTcInput, formatTaxNumberInput, formatNameInput } from "@/utils/inputFormatters";
+import { formatNameInput, filterTcValue, filterTaxNumberValue } from "@/utils/inputFormatters";
 
 export default function AccountAddress() {
   const [activeTab, setActiveTab] = useState("delivery"); // "delivery" veya "billing"
@@ -19,8 +19,10 @@ export default function AccountAddress() {
   const [billingAddresses, setBillingAddresses] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Form state'leri
+  // Form state'leri (şehir/ilçe/mahalle sadece gerektiğinde yüklenir - ödeme sayfası gibi)
   const [cities, setCities] = useState([]);
+  const [citiesLoaded, setCitiesLoaded] = useState(false);
+  const [isLoadingCities, setIsLoadingCities] = useState(false);
   const [selectedCityId, setSelectedCityId] = useState("");
   const [districts, setDistricts] = useState([]);
   const [selectedDistrictId, setSelectedDistrictId] = useState("");
@@ -32,6 +34,12 @@ export default function AccountAddress() {
   const [fieldErrors, setFieldErrors] = useState({}); // Field bazlı hatalar
   const [invoiceType, setInvoiceType] = useState("individual"); // "individual" veya "company"
   const [useAsBillingAddress, setUseAsBillingAddress] = useState(false); // Bu adresi fatura adreslerimde kullan
+  const [taxOffices, setTaxOffices] = useState([]);
+  const [taxOfficesLoaded, setTaxOfficesLoaded] = useState(false);
+  const [isLoadingTaxOffices, setIsLoadingTaxOffices] = useState(false);
+  const [selectedTaxOfficeId, setSelectedTaxOfficeId] = useState("");
+  const [tcknValue, setTcknValue] = useState("");
+  const [taxNumberValue, setTaxNumberValue] = useState("");
 
   // Adresleri yükle
   useEffect(() => {
@@ -58,20 +66,24 @@ export default function AccountAddress() {
     fetchAddresses();
   }, []);
 
-  // Şehirleri yükle
-  useEffect(() => {
-    const fetchCities = async () => {
-      try {
-        const citiesData = await getCities();
+  // Şehirleri sadece il dropdown açıldığında yükle (ödeme sayfası gibi; sayfa açılışında istek atılmaz)
+  const fetchCities = async () => {
+    if (citiesLoaded || isLoadingCities) return;
+    setIsLoadingCities(true);
+    try {
+      const citiesData = await getCities();
+      if (citiesData && citiesData.length > 0) {
         setCities(citiesData);
-      } catch (error) {
-        log("Şehirler yüklenirken hata:", error);
+        setCitiesLoaded(true);
       }
-    };
-    fetchCities();
-  }, []);
+    } catch (error) {
+      log("Şehirler yüklenirken hata:", error);
+    } finally {
+      setIsLoadingCities(false);
+    }
+  };
 
-  // İlçeleri yükle
+  // İlçeleri yükle (sadece il seçildikten sonra)
   useEffect(() => {
     const fetchDistricts = async () => {
       if (!selectedCityId) {
@@ -110,6 +122,28 @@ export default function AccountAddress() {
     };
     fetchNeighborhoods();
   }, [selectedDistrictId]);
+
+  // Vergi dairelerini API'den çek (Kurumsal seçildiğinde veya dropdown açıldığında)
+  const fetchTaxOffices = async () => {
+    if (taxOfficesLoaded || isLoadingTaxOffices) return;
+    setIsLoadingTaxOffices(true);
+    try {
+      const response = await apiClient.get("/tax-offices");
+      if (response.data?.status === "success" && response.data?.data) {
+        setTaxOffices(response.data.data);
+        setTaxOfficesLoaded(true);
+      }
+    } catch (error) {
+      log("Vergi daireleri yüklenirken hata:", error);
+      setTaxOffices([]);
+    } finally {
+      setIsLoadingTaxOffices(false);
+    }
+  };
+
+  useEffect(() => {
+    if (invoiceType === "company") fetchTaxOffices();
+  }, [invoiceType]);
 
 
   const currentAddresses = activeTab === "delivery" ? deliveryAddresses : billingAddresses;
@@ -163,15 +197,14 @@ export default function AccountAddress() {
             if (addressDetailInput) addressDetailInput.value = address.address_detail || "";
 
             if (address.invoice_type === "individual") {
-              const tcknInput = form.querySelector('[name="tckn"]');
-              if (tcknInput) tcknInput.value = address.tckn || "";
+              setTcknValue(address.tckn ? String(address.tckn).replace(/\D/g, "").slice(0, 11) : "");
+              setTaxNumberValue("");
             } else if (address.invoice_type === "company") {
               const companyNameInput = form.querySelector('[name="company_name"]');
-              const taxOfficeInput = form.querySelector('[name="tax_office"]');
-              const taxNumberInput = form.querySelector('[name="tax_number"]');
               if (companyNameInput) companyNameInput.value = address.company_name || "";
-              if (taxOfficeInput) taxOfficeInput.value = address.tax_office || "";
-              if (taxNumberInput) taxNumberInput.value = address.tax_number || "";
+              setTcknValue("");
+              setTaxNumberValue(address.tax_number ? String(address.tax_number).replace(/\D/g, "").slice(0, 10) : "");
+              setSelectedTaxOfficeId(address.tax_office_id?.toString() || address.tax_office?.id?.toString() || "");
             }
           }
         }, 100);
@@ -208,11 +241,28 @@ export default function AccountAddress() {
       addressData.invoice_type = invoiceType;
 
       if (invoiceType === "individual") {
-        addressData.tckn = formData.get("tckn");
+        const tckn = filterTcValue(tcknValue);
+        if (tckn.length !== 11) {
+          setFieldErrors((prev) => ({ ...prev, tckn: ["TC Kimlik No 11 haneli olmalıdır."] }));
+          setIsSaving(false);
+          return;
+        }
+        addressData.tckn = tckn;
       } else if (invoiceType === "company") {
+        const taxNumber = filterTaxNumberValue(taxNumberValue);
+        if (taxNumber.length !== 10) {
+          setFieldErrors((prev) => ({ ...prev, tax_number: ["Vergi numarası 10 haneli olmalıdır."] }));
+          setIsSaving(false);
+          return;
+        }
+        if (!selectedTaxOfficeId) {
+          setFieldErrors((prev) => ({ ...prev, tax_office_id: ["Vergi dairesi seçiniz."] }));
+          setIsSaving(false);
+          return;
+        }
         addressData.company_name = formData.get("company_name");
-        addressData.tax_office = formData.get("tax_office");
-        addressData.tax_number = formData.get("tax_number");
+        addressData.tax_office_id = selectedTaxOfficeId;
+        addressData.tax_number = taxNumber;
       }
     }
 
@@ -222,15 +272,26 @@ export default function AccountAddress() {
       addressData.invoice_type = invoiceType;
 
       if (invoiceType === "individual") {
-        const tckn = formData.get("tckn");
+        const tckn = filterTcValue(tcknValue);
+        if (tckn.length > 0 && tckn.length !== 11) {
+          setFieldErrors((prev) => ({ ...prev, tckn: ["TC Kimlik No 11 haneli olmalıdır."] }));
+          setIsSaving(false);
+          return;
+        }
         if (tckn) addressData.tckn = tckn;
       } else if (invoiceType === "company") {
         const companyName = formData.get("company_name");
-        const taxOffice = formData.get("tax_office");
-        const taxNumber = formData.get("tax_number");
+        const taxNumber = filterTaxNumberValue(taxNumberValue);
         if (companyName) addressData.company_name = companyName;
-        if (taxOffice) addressData.tax_office = taxOffice;
-        if (taxNumber) addressData.tax_number = taxNumber;
+        if (selectedTaxOfficeId) addressData.tax_office_id = selectedTaxOfficeId;
+        if (taxNumber) {
+          if (taxNumber.length !== 10) {
+            setFieldErrors((prev) => ({ ...prev, tax_number: ["Vergi numarası 10 haneli olmalıdır."] }));
+            setIsSaving(false);
+            return;
+          }
+          addressData.tax_number = taxNumber;
+        }
       }
     }
 
@@ -266,6 +327,8 @@ export default function AccountAddress() {
         setEditingAddressId(null);
         setFieldErrors({});
         setInvoiceType("individual");
+        setTcknValue("");
+        setTaxNumberValue("");
 
         // Adresleri yeniden yükle
         await refetchAddresses();
@@ -397,7 +460,13 @@ export default function AccountAddress() {
 
         {/* Yeni Adres Butonu */}
         <div style={{ marginTop: "30px", marginBottom: "20px" }}>
-          <AddAddressButton onClick={() => setactiveEdit(true)} />
+          <AddAddressButton
+            onClick={() => {
+              setactiveEdit(true);
+              setTcknValue("");
+              setTaxNumberValue("");
+            }}
+          />
         </div>
         <form
           className="show-form-address wd-form-address form-checkout"
@@ -493,7 +562,8 @@ export default function AccountAddress() {
                   setSelectedCityId(value);
                   setSelectedDistrictId("");
                 }}
-                placeholder="Seçiniz"
+                onOpen={fetchCities}
+                placeholder={isLoadingCities ? "Yükleniyor..." : "Seçiniz"}
                 required
                 searchPlaceholder="Şehir ara..."
               />
@@ -616,7 +686,10 @@ export default function AccountAddress() {
                       id="invoice-company-new"
                       value="company"
                       checked={invoiceType === "company"}
-                      onChange={(e) => setInvoiceType(e.target.value)}
+                      onChange={(e) => {
+                        setInvoiceType(e.target.value);
+                        if (e.target.value === "individual") setSelectedTaxOfficeId("");
+                      }}
                       style={{ margin: 0, verticalAlign: "middle" }}
                     />
                     <label htmlFor="invoice-company-new" style={{ margin: 0, lineHeight: "1.5" }}>
@@ -635,7 +708,18 @@ export default function AccountAddress() {
               {invoiceType === "individual" && (
                 <fieldset className="box fieldset">
                   <label htmlFor="tckn">TC Kimlik No*</label>
-                  <input required type="text" id="tckn" name="tckn" maxLength={11} inputMode="numeric" autoComplete="off" onInput={formatTcInput} />
+                  <input
+                    required
+                    type="text"
+                    id="tckn"
+                    name="tckn"
+                    value={tcknValue}
+                    onChange={(e) => setTcknValue(filterTcValue(e.target.value))}
+                    maxLength={11}
+                    inputMode="numeric"
+                    autoComplete="off"
+                    placeholder="11 hane, sadece rakam"
+                  />
                   {fieldErrors.tckn && (
                     <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
                       {fieldErrors.tckn[0]}
@@ -658,16 +742,37 @@ export default function AccountAddress() {
                   </fieldset>
                   <fieldset className="box fieldset">
                     <label htmlFor="tax_office">Vergi Dairesi*</label>
-                    <input required type="text" id="tax_office" name="tax_office" />
-                    {fieldErrors.tax_office && (
+                    <SearchableSelect
+                      id="tax_office"
+                      name="tax_office"
+                      options={taxOffices.map((o) => ({ id: o.id, name: o.name }))}
+                      value={selectedTaxOfficeId}
+                      onChange={(value) => setSelectedTaxOfficeId(value)}
+                      onOpen={fetchTaxOffices}
+                      placeholder={isLoadingTaxOffices ? "Yükleniyor..." : "Vergi dairesi seçiniz"}
+                      searchPlaceholder="Vergi dairesi ara..."
+                      required
+                    />
+                    {fieldErrors.tax_office_id && (
                       <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
-                        {fieldErrors.tax_office[0]}
+                        {fieldErrors.tax_office_id[0]}
                       </div>
                     )}
                   </fieldset>
                   <fieldset className="box fieldset">
                     <label htmlFor="tax_number">Vergi No*</label>
-                    <input required type="text" id="tax_number" name="tax_number" maxLength={10} inputMode="numeric" autoComplete="off" onInput={formatTaxNumberInput} />
+                    <input
+                      required
+                      type="text"
+                      id="tax_number"
+                      name="tax_number"
+                      value={taxNumberValue}
+                      onChange={(e) => setTaxNumberValue(filterTaxNumberValue(e.target.value))}
+                      maxLength={10}
+                      inputMode="numeric"
+                      autoComplete="off"
+                      placeholder="10 hane, sadece rakam"
+                    />
                     {fieldErrors.tax_number && (
                       <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
                         {fieldErrors.tax_number[0]}
@@ -698,6 +803,9 @@ export default function AccountAddress() {
                 setFieldErrors({});
                 setInvoiceType("individual");
                 setUseAsBillingAddress(false);
+                setSelectedTaxOfficeId("");
+                setTcknValue("");
+                setTaxNumberValue("");
               }}
             >
               İptal
@@ -969,7 +1077,8 @@ export default function AccountAddress() {
                   setSelectedDistrictId("");
                   setSelectedNeighborhoodId("");
                 }}
-                placeholder="Seçiniz"
+                onOpen={fetchCities}
+                placeholder={isLoadingCities ? "Yükleniyor..." : "Seçiniz"}
                 required
                 searchPlaceholder="Şehir ara..."
               />
@@ -1070,7 +1179,10 @@ export default function AccountAddress() {
                       id="edit-invoice-company"
                       value="company"
                       checked={invoiceType === "company"}
-                      onChange={(e) => setInvoiceType(e.target.value)}
+                      onChange={(e) => {
+                        setInvoiceType(e.target.value);
+                        if (e.target.value === "individual") setSelectedTaxOfficeId("");
+                      }}
                       style={{ margin: 0, verticalAlign: "middle" }}
                     />
                     <label htmlFor="edit-invoice-company" style={{ margin: 0, lineHeight: "1.5" }}>
@@ -1089,7 +1201,18 @@ export default function AccountAddress() {
               {invoiceType === "individual" && (
                 <fieldset className="box fieldset">
                   <label htmlFor="edit-tckn">TC Kimlik No*</label>
-                  <input required type="text" id="edit-tckn" name="tckn" maxLength={11} inputMode="numeric" autoComplete="off" onInput={formatTcInput} />
+                  <input
+                    required
+                    type="text"
+                    id="edit-tckn"
+                    name="tckn"
+                    value={tcknValue}
+                    onChange={(e) => setTcknValue(filterTcValue(e.target.value))}
+                    maxLength={11}
+                    inputMode="numeric"
+                    autoComplete="off"
+                    placeholder="11 hane, sadece rakam"
+                  />
                   {fieldErrors.tckn && (
                     <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
                       {fieldErrors.tckn[0]}
@@ -1112,16 +1235,37 @@ export default function AccountAddress() {
                   </fieldset>
                   <fieldset className="box fieldset">
                     <label htmlFor="edit-tax_office">Vergi Dairesi*</label>
-                    <input required type="text" id="edit-tax_office" name="tax_office" />
-                    {fieldErrors.tax_office && (
+                    <SearchableSelect
+                      id="edit-tax_office"
+                      name="tax_office"
+                      options={taxOffices.map((o) => ({ id: o.id, name: o.name }))}
+                      value={selectedTaxOfficeId}
+                      onChange={(value) => setSelectedTaxOfficeId(value)}
+                      onOpen={fetchTaxOffices}
+                      placeholder={isLoadingTaxOffices ? "Yükleniyor..." : "Vergi dairesi seçiniz"}
+                      searchPlaceholder="Vergi dairesi ara..."
+                      required
+                    />
+                    {fieldErrors.tax_office_id && (
                       <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
-                        {fieldErrors.tax_office[0]}
+                        {fieldErrors.tax_office_id[0]}
                       </div>
                     )}
                   </fieldset>
                   <fieldset className="box fieldset">
                     <label htmlFor="edit-tax_number">Vergi No*</label>
-                    <input required type="text" id="edit-tax_number" name="tax_number" maxLength={10} inputMode="numeric" autoComplete="off" onInput={formatTaxNumberInput} />
+                    <input
+                      required
+                      type="text"
+                      id="edit-tax_number"
+                      name="tax_number"
+                      value={taxNumberValue}
+                      onChange={(e) => setTaxNumberValue(filterTaxNumberValue(e.target.value))}
+                      maxLength={10}
+                      inputMode="numeric"
+                      autoComplete="off"
+                      placeholder="10 hane, sadece rakam"
+                    />
                     {fieldErrors.tax_number && (
                       <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
                         {fieldErrors.tax_number[0]}
@@ -1151,6 +1295,9 @@ export default function AccountAddress() {
                 setEditingAddress(null);
                 setFieldErrors({});
                 setInvoiceType("individual");
+                setSelectedTaxOfficeId("");
+                setTcknValue("");
+                setTaxNumberValue("");
               }}
             >
               İptal

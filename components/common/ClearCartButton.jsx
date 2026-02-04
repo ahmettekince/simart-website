@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useCartStore } from "@/stores/cartStore";
 
 /**
- * Sepeti Boşalt butonu - onay modalı ile birlikte
+ * Sepeti Temizle butonu - onay modalı ile birlikte
  * @param {string} variant - "button" (sepet sayfası) | "inline" (cart modal)
  */
 export default function ClearCartButton({ variant = "button" }) {
@@ -74,30 +74,31 @@ export default function ClearCartButton({ variant = "button" }) {
           >
             <style>{`@keyframes fadeInScale { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }`}</style>
             <div style={{ fontSize: "18px", marginBottom: "10px", color: "#333", fontWeight: "700" }}>
-              Sepeti Boşalt?
+              Sepeti Temizle?
             </div>
             <div style={{ fontSize: "14px", marginBottom: "25px", color: "#666", lineHeight: "1.5" }}>
-              Sepetinizdeki tüm ürünleri silmek istediğinize emin misiniz?
+              Sepetinizdeki tüm ürünleri temizlemek istediğinize emin misiniz?
             </div>
             <div style={{ display: "flex", gap: "12px" }}>
               <button
                 onClick={confirmClearCart}
+                className="clear-cart-confirm-btn"
                 style={{
                   flex: 1,
                   padding: "12px",
-                  backgroundColor: "#dc3545",
+                  backgroundColor: "var(--primary)",
                   color: "#fff",
                   border: "none",
                   borderRadius: "10px",
                   fontSize: "14px",
                   fontWeight: "600",
                   cursor: "pointer",
-                  transition: "background-color 0.2s",
+                  transition: "background-color 0.2s, filter 0.2s",
                 }}
-                onMouseEnter={(e) => (e.target.style.backgroundColor = "#bb2d3b")}
-                onMouseLeave={(e) => (e.target.style.backgroundColor = "#dc3545")}
+                onMouseEnter={(e) => { e.target.style.filter = "brightness(0.9)"; }}
+                onMouseLeave={(e) => { e.target.style.filter = "none"; }}
               >
-                Evet, Sil
+                Evet, Temizle
               </button>
               <button
                 onClick={() => setShowClearConfirm(false)}
@@ -125,23 +126,23 @@ export default function ClearCartButton({ variant = "button" }) {
         <button
           {...triggerProps}
           className="text_primary fw-6 bg-transparent border-0 underline"
-          style={{ ...triggerProps.style, fontSize: "14px" }}
+          style={{ ...triggerProps.style, fontSize: "14px", color: "var(--primary)" }}
         >
-          {isClearingCart ? "Temizleniyor..." : "Sepeti Boşalt"}
+          {isClearingCart ? "Temizleniyor..." : "Sepeti Temizle"}
         </button>
       ) : (
         <span
           {...triggerProps}
           style={{
             fontSize: "12px",
-            color: isClearingCart ? "#ccc" : "#dc3545",
+            color: isClearingCart ? "#ccc" : "var(--primary)",
             textDecoration: "underline",
             marginLeft: "15px",
             fontWeight: "400",
             ...triggerProps.style,
           }}
         >
-          {isClearingCart ? "Temizleniyor..." : "Sepeti Boşalt"}
+          {isClearingCart ? "Temizleniyor..." : "Sepeti Temizle"}
         </span>
       )}
     </>

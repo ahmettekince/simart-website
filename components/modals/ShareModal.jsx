@@ -1,15 +1,30 @@
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
 
+const MODAL_ID = "share_social";
+
+function updateShareFromWindow(setShareUrl, setShareTitle) {
+  if (typeof window === "undefined") return;
+  setShareUrl(window.location.href);
+  setShareTitle(document.title || "");
+}
+
 export default function ShareModal() {
   const [shareUrl, setShareUrl] = useState("");
   const [shareTitle, setShareTitle] = useState("");
 
+  // İlk mount'ta URL'i al (SSR sonrası)
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      setShareUrl(window.location.href);
-      setShareTitle(document.title || "");
-    }
+    updateShareFromWindow(setShareUrl, setShareTitle);
+  }, []);
+
+  // Modal her açıldığında güncel sayfa linkini al (client-side navigasyondan sonra doğru URL)
+  useEffect(() => {
+    const el = document.getElementById(MODAL_ID);
+    if (!el) return;
+    const onShown = () => updateShareFromWindow(setShareUrl, setShareTitle);
+    el.addEventListener("shown.bs.modal", onShown);
+    return () => el.removeEventListener("shown.bs.modal", onShown);
   }, []);
 
   const encodedUrl = useMemo(() => encodeURIComponent(shareUrl || ""), [shareUrl]);
@@ -24,7 +39,7 @@ export default function ShareModal() {
   };
 
   return (
-    <div className="modal modalCentered fade modalDemo tf-product-modal modal-part-content" id="share_social">
+    <div className="modal modalCentered fade modalDemo tf-product-modal modal-part-content" id={MODAL_ID}>
       <div className="modal-dialog modal-dialog-centered">
         <div className="modal-content">
           <div className="header">

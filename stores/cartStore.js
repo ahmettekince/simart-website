@@ -286,6 +286,7 @@ export const useCartStore = create(
                     is_gift: apiItem.is_gift || false,
                     source_product_ids: apiItem.source_product_ids || [],
                     applied_campaign_ids: apiItem.applied_campaign_ids || [],
+                    min_purchase_quantity: apiItem.product.minPurchaseQuantity ?? 1,
                     max_purchase_quantity: apiItem.product.maxPurchaseQuantity ?? null,
                     // API'den gelen ek bilgiler
                     taxAmount: apiItem.taxAmount,
@@ -297,6 +298,7 @@ export const useCartStore = create(
                         slug: apiItem.product.slug,
                         sku: apiItem.product.sku,
                         cover_image: apiItem.product.coverImage,
+                        min_purchase_quantity: apiItem.product.minPurchaseQuantity ?? 1,
                         max_purchase_quantity: apiItem.product.maxPurchaseQuantity ?? null,
                     }
                 };

@@ -146,7 +146,7 @@ export default function Orders() {
                 <tr className="tf-order-item" key={order.id}>
                   <td>{order.order_number}</td>
                   <td>{formatDate(order.created_at)}</td>
-                  <td>{order.status_text}</td>
+                  <td>{order.payment_status_text ?? order.status_text}</td>
                   <td>{formatTotal(order.total)}</td>
                   <td>
                     <button

@@ -10,23 +10,29 @@ import { openCartModal } from "@/utils/openCartModal";
 export default function MobileMenu({ menuItems: initialMenuItems = [] }) {
   const pathname = usePathname();
   const [menuItems, setMenuItems] = useState(initialMenuItems);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const { isAuthenticated, logout } = useAuthStore();
 
-  const handleLogout = async (e) => {
-    e.preventDefault();
+  const doLogout = async (e) => {
+    if (e) e.preventDefault();
+    if (isLoggingOut) return;
+    setIsLoggingOut(true);
     try {
       await apiClient.post("/customer/logout");
       logout();
-      // Cookie cleanup
       document.cookie = "_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
       document.cookie = "_token=; path=/; domain=" + window.location.hostname + "; expires=Thu, 01 Jan 1970 00:00:00 GMT";
       window.location.href = "/giris-yap";
+      return;
     } catch (error) {
       console.error("Logout error:", error);
       document.cookie = "_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
       document.cookie = "_token=; path=/; domain=" + window.location.hostname + "; expires=Thu, 01 Jan 1970 00:00:00 GMT";
       window.location.href = "/giris-yap";
+      return;
     }
+    setIsLoggingOut(false);
   };
 
   useEffect(() => {
@@ -118,6 +124,7 @@ export default function MobileMenu({ menuItems: initialMenuItems = [] }) {
   };
 
   return (
+    <>
     <div className="offcanvas offcanvas-start canvas-mb" id="mobileMenu">
       <span className="icon-close icon-close-popup" data-bs-dismiss="offcanvas" aria-label="Close" />
       <div className="mb-canvas-content">
@@ -191,7 +198,7 @@ export default function MobileMenu({ menuItems: initialMenuItems = [] }) {
         </div>
         <div className="mb-bottom">
           {isAuthenticated ? (
-            <a href="#" onClick={handleLogout} className="site-nav-icon">
+            <a href="#" onClick={(e) => { e.preventDefault(); setShowLogoutConfirm(true); }} className="site-nav-icon">
               <i className="icon icon-account" />
               Çıkış Yap
             </a>
@@ -204,5 +211,76 @@ export default function MobileMenu({ menuItems: initialMenuItems = [] }) {
         </div>
       </div>
     </div>
+
+      {showLogoutConfirm && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 10000,
+            backdropFilter: "blur(2px)",
+          }}
+        >
+          <div
+            style={{
+              width: "90%",
+              maxWidth: "320px",
+              backgroundColor: "#fff",
+              borderRadius: "16px",
+              padding: "30px 25px",
+              textAlign: "center",
+              boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
+            }}
+          >
+            <div style={{ fontSize: "18px", marginBottom: "10px", color: "#333", fontWeight: "700" }}>
+              {isLoggingOut ? "Çıkış yapılıyor..." : "Çıkış yapmak istiyor musunuz?"}
+            </div>
+            <div style={{ display: "flex", gap: "12px", marginTop: "25px" }}>
+              <button
+                onClick={doLogout}
+                disabled={isLoggingOut}
+                style={{
+                  flex: 1,
+                  padding: "12px",
+                  backgroundColor: isLoggingOut ? "#999" : "#333",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "10px",
+                  fontSize: "14px",
+                  fontWeight: "600",
+                  cursor: isLoggingOut ? "wait" : "pointer",
+                }}
+              >
+                Evet, Çıkış Yap
+              </button>
+              <button
+                onClick={() => !isLoggingOut && setShowLogoutConfirm(false)}
+                disabled={isLoggingOut}
+                style={{
+                  flex: 1,
+                  padding: "12px",
+                  backgroundColor: "#f5f5f5",
+                  color: "#333",
+                  border: "none",
+                  borderRadius: "10px",
+                  fontSize: "14px",
+                  fontWeight: "600",
+                  cursor: isLoggingOut ? "not-allowed" : "pointer",
+                }}
+              >
+                Vazgeç
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }

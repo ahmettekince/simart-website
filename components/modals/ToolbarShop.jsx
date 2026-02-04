@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import apiClient from "@/utils/apiClient";
 
 const PLACEHOLDER_IMG = "/images/collections/collection-1.jpg";
+const OFFCANVAS_ID = "toolbarShopmb";
 
 function getImageSrc(url) {
   if (!url || typeof url !== "string" || url.trim() === "") return PLACEHOLDER_IMG;
@@ -14,22 +15,34 @@ function getImageSrc(url) {
 
 export default function ToolbarShop() {
   const [categories, setCategories] = useState([]);
+  const loadedRef = useRef(false);
 
+  // Kategorileri sadece offcanvas (mağaza menüsü) açıldığında yükle; sayfa açılışında istek atma
   useEffect(() => {
-    apiClient
-      .get("/categories")
-      .then((res) => {
-        if (res?.data?.status === "success" && Array.isArray(res.data.data)) {
-          setCategories(res.data.data);
-        }
-      })
-      .catch(() => setCategories([]));
+    const el = document.getElementById(OFFCANVAS_ID);
+    if (!el) return;
+
+    const loadCategories = () => {
+      if (loadedRef.current) return;
+      loadedRef.current = true;
+      apiClient
+        .get("/categories")
+        .then((res) => {
+          if (res?.data?.status === "success" && Array.isArray(res.data.data)) {
+            setCategories(res.data.data);
+          }
+        })
+        .catch(() => setCategories([]));
+    };
+
+    el.addEventListener("show.bs.offcanvas", loadCategories);
+    return () => el.removeEventListener("show.bs.offcanvas", loadCategories);
   }, []);
 
   return (
     <div
       className="offcanvas offcanvas-start canvas-mb toolbar-shop-mobile"
-      id="toolbarShopmb"
+      id={OFFCANVAS_ID}
     >
       <span
         className="icon-close icon-close-popup"

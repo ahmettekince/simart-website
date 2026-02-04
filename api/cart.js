@@ -50,6 +50,7 @@ export async function getCart() {
                             slug: item.product?.slug || "",
                             sku: item.product?.sku || "",
                             coverImage: imageUrl,
+                            minPurchaseQuantity: item.product?.min_purchase_quantity ?? 1,
                             maxPurchaseQuantity:
                                 item.product?.max_purchase_quantity ??
                                 item.product?.max_quantity ??

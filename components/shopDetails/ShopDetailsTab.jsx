@@ -95,9 +95,13 @@ export default function ShopDetailsTab({ product }) {
   const techSpecs = product?.technical_specifications || [];
   const hasTechSpecs = Array.isArray(techSpecs) && techSpecs.length > 0;
 
-  // Sıra: Açıklama, Yorumlar, (varsa) Teknik, (varsa) SSS, Kargo, İade.
+  // Açıklama tabı sadece description doluysa gösterilir (null veya boş string ise gizle)
+  const descVal = product?.description;
+  const hasDescription = descVal != null && String(descVal).trim() !== "";
+
+  // Sıra: (description varsa) Açıklama, Yorumlar, (varsa) Teknik, (varsa) SSS, Kargo, İade.
   const tabIds = [
-    "desc",
+    ...(hasDescription ? ["desc"] : []),
     "reviews",
     ...(hasTechSpecs ? ["tech"] : []),
     ...(hasFaq ? ["faq"] : []),
@@ -105,7 +109,7 @@ export default function ShopDetailsTab({ product }) {
     "return",
   ];
   const tabs = [
-    { title: "Açıklama", active: true },
+    ...(hasDescription ? [{ title: "Açıklama", active: false }] : []),
     { title: reviewCount > 0 ? `Yorumlar (${reviewCount})` : "Yorumlar", active: false },
     ...(hasTechSpecs ? [{ title: "Teknik Özellikler", active: false }] : []),
     ...(hasFaq ? [{ title: "Sıkça Sorulan Sorular", active: false }] : []),
@@ -114,6 +118,8 @@ export default function ShopDetailsTab({ product }) {
   ];
 
   const indexOf = (id) => { const i = tabIds.indexOf(id); return i >= 0 ? i + 1 : null; };
+  const descTabIndex = indexOf("desc");
+  const reviewsTabIndex = indexOf("reviews");
   const techSpecsTabIndex = indexOf("tech");
   const faqTabIndex = indexOf("faq");
   const kargoTabIndex = indexOf("kargo");
@@ -141,15 +147,13 @@ export default function ShopDetailsTab({ product }) {
                   ))}
                 </ul>
                 <div className="widget-content-tab">
+                  {hasDescription && (
                   <div
-                    className={`widget-content-inner ${currentTab == 1 ? "active pt_0" : ""
+                    className={`widget-content-inner ${currentTab === descTabIndex ? "active pt_0" : ""
                       } `}
                   >
-                    {/* Açıklama fotoğrafları Varsa Burası Boş Kalacak, Alt Bölümde Render Olacak */}
-                    {(
-                      <div className="">
-                        {/* Eğer açıklama fotoğrafları yoksa eski içeriği göster */}
-
+                    {/* Açıklama içeriği alt bölümde render olacak */}
+                    <div className="">
                         {!product?.description && (
                           <>
                             <p className="mb_30">
@@ -211,10 +215,10 @@ export default function ShopDetailsTab({ product }) {
                           </>
                         )}
                       </div>
-                    )}
                   </div>
+                  )}
                   <div
-                    className={`widget-content-inner ${currentTab == 2 ? "active" : ""
+                    className={`widget-content-inner ${currentTab === reviewsTabIndex ? "active" : ""
                       } `}
                   >
                     {product?.reviews?.items?.length > 0 ? (
@@ -556,8 +560,8 @@ export default function ShopDetailsTab({ product }) {
         </div>
       </section>
 
-      {/* Açıklama Fotoğrafları Bölümü - Widgets Tab Altında ve Section Olarak */}
-      {currentTab == 1 && (
+      {/* Açıklama bölümü - sadece description dolu ve Açıklama sekmesi seçiliyse */}
+      {hasDescription && currentTab === descTabIndex && (
         <section className="" style={{ overflowX: "hidden" }}>
           <div className={descriptionContainerClass}>
             <div className="row">

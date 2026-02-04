@@ -146,7 +146,8 @@ export default function Quantity({ setQuantity = (value) => { }, minQuantity = 1
   };
 
   const isMinusDisabled = disabled || isLoading || count === "" || Number(count) <= minQuantity;
-  const isPlusDisabled = disabled || isLoading || count === "" || Number(count) >= effectiveMax;
+  const atMax = effectiveMax != null && effectiveMax < 999 && Number(count) >= effectiveMax;
+  const isPlusDisabled = disabled || isLoading || count === "" || atMax;
 
   return (
     <div className="wg-quantity" style={{ position: "relative" }}>
@@ -217,6 +218,7 @@ export default function Quantity({ setQuantity = (value) => { }, minQuantity = 1
         role="button"
         aria-disabled={isPlusDisabled}
         tabIndex={isPlusDisabled ? -1 : 0}
+        title={atMax ? "Maksimum miktara ulaştınız" : undefined}
         style={{
           opacity: isPlusDisabled ? 0.5 : 1,
           cursor: isPlusDisabled ? "not-allowed" : "pointer",

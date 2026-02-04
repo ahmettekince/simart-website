@@ -4,8 +4,8 @@ import RecentProducts from "@/components/shopDetails/RecentProducts";
 import React from "react";
 
 export const metadata = {
-  title: "View Cart || Ecomus - Ultimate Nextjs Ecommerce Template",
-  description: "Ecomus - Ultimate Nextjs Ecommerce Template",
+  title: "Sepetim - Şımart Teknoloji",
+  description: "Sepetim sayfası. Sepetinizdeki ürünleri görüntüleyin ve sipariş verin.",
 };
 export default function page() {
   return (

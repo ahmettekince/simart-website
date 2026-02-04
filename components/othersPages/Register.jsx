@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import apiClient from "@/utils/apiClient";
 import { siteConfig } from "@/config/site";
-import { filterNameValue } from "@/utils/inputFormatters";
+import { filterNameValue, formatFirstNameValue, formatLastNameValue } from "@/utils/inputFormatters";
 
 export default function Register() {
   const router = useRouter();
@@ -74,7 +74,12 @@ export default function Register() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    const filtered = (name === "first_name" || name === "last_name") ? filterNameValue(value) : value;
+    let filtered = value;
+    if (name === "first_name") {
+      filtered = formatFirstNameValue(filterNameValue(value));
+    } else if (name === "last_name") {
+      filtered = formatLastNameValue(filterNameValue(value));
+    }
     setFormData((prev) => ({
       ...prev,
       [name]: filtered,
