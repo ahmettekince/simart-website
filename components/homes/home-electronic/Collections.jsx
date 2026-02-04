@@ -74,4 +74,5 @@ export default function Collections({ collections = [] }) {
       </div>
     </section>
   );
+
 }
