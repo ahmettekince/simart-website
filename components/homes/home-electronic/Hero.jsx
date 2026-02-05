@@ -1,7 +1,6 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { Autoplay, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 
@@ -49,6 +48,13 @@ export default function Hero({ banners = [] }) {
   );
 }
 
+// Görsel boyutları: layout için sabit oran, tarayıcının yanlış boyutta render etmesini önler
+const BANNER_SIZES = {
+  desktop: { width: 1920, height: 1080 },
+  tablet: { width: 1024, height: 576 },
+  mobile: { width: 768, height: 934 },
+};
+
 // Görsel içeriği yöneten alt bileşen — ilk slide eager, diğerleri lazy
 function BannerContent({ images, isFirstSlide = false }) {
   if (!images) return null;
@@ -56,48 +62,45 @@ function BannerContent({ images, isFirstSlide = false }) {
 
   return (
     <>
-      {/* Desktop - responsive boyut + yüksek kalite (quality=90) */}
+      {/* Desktop (>= 1024px) */}
       <div className="d-none d-lg-block w-100 h-100">
-        <Image
+        <img
           src={images.desktop?.url}
           alt="Banner Desktop"
-          width={1920}
-          height={1080}
-          quality={90}
+          width={BANNER_SIZES.desktop.width}
+          height={BANNER_SIZES.desktop.height}
           className="w-100 h-100"
           style={{ objectFit: "cover" }}
-          sizes="100vw"
-          priority={isFirstSlide}
+          loading={loadMode}
+          decoding="async"
         />
       </div>
 
-      {/* Tablet */}
+      {/* Tablet (768px - 1023px) */}
       <div className="d-none d-md-block d-lg-none w-100 h-100">
-        <Image
+        <img
           src={images.tablet?.url}
           alt="Banner Tablet"
-          width={1024}
-          height={768}
-          quality={90}
+          width={BANNER_SIZES.tablet.width}
+          height={BANNER_SIZES.tablet.height}
           className="w-100 h-100"
           style={{ objectFit: "cover" }}
-          sizes="100vw"
-          priority={isFirstSlide}
+          loading={loadMode}
+          decoding="async"
         />
       </div>
 
-      {/* Mobile - görüntülenen boyuta uygun, kalite düşmez */}
+      {/* Mobile (< 768px) */}
       <div className="d-block d-md-none w-100 mobile-banner-wrap">
-        <Image
+        <img
           src={images.mobile?.url}
           alt="Banner Mobile"
-          width={800}
-          height={934}
-          quality={90}
+          width={BANNER_SIZES.mobile.width}
+          height={BANNER_SIZES.mobile.height}
           className="w-100 h-auto"
           style={{ objectFit: "cover", maxWidth: "100%" }}
-          sizes="(max-width: 768px) 100vw, 800px"
-          priority={isFirstSlide}
+          loading={loadMode}
+          decoding="async"
         />
       </div>
     </>

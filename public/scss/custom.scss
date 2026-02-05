@@ -1069,11 +1069,11 @@ input[type="checkbox"]:checked,
   transition: transform 0.2s;
 }
 
-.cookie-toggle-input:checked + .cookie-toggle-slider {
+.cookie-toggle-input:checked+.cookie-toggle-slider {
   background: var(--primary, #3c81b5);
 }
 
-.cookie-toggle-input:checked + .cookie-toggle-slider::before {
+.cookie-toggle-input:checked+.cookie-toggle-slider::before {
   transform: translateX(22px);
 }
 
