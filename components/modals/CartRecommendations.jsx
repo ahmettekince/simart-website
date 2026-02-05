@@ -131,11 +131,11 @@ function RecommendationItem({ product }) {
     if (isAdding || showSuccess) return;
     setIsAdding(true);
     try {
-      await addItem(product, 1, false);
-      setShowSuccess(true);
-      setTimeout(() => {
-        setShowSuccess(false);
-      }, 1500);
+      const result = await addItem(product, 1, false);
+      if (result?.added) {
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 1500);
+      }
     } catch (error) {
       console.error("Önerilen ürünü sepete eklerken hata:", error);
     } finally {

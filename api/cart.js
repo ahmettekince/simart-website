@@ -109,19 +109,35 @@ export async function getCart() {
  * Sepete ürün ekler (Client-side)
  * @param {string} productSlug - Ürün slug'ı (örn: "katya-u")
  * @param {number} quantity - Miktar (varsayılan: 1)
+ * @param {Object} [options] - Opsiyonel ek alanlar (hediye kampanyası için vb.)
+ * @param {number} [options.selectedGiftProductId] - Seçilen hediye ürün ID'si
+ * @param {number} [options.campaignId] - Kampanya ID'si
  * @returns {Promise<Object|null>} Sepet verisi veya null
  */
-export async function addToCart(productSlug, quantity = 1) {
+export async function addToCart(productSlug, quantity = 1, options = {}) {
     if (!productSlug) {
         log("[API cart.js] addToCart: productSlug is required");
         return null;
     }
 
     try {
-        const response = await apiClient.post("/cart/items", {
+        const payload = {
             product_slug: productSlug,
             quantity: quantity,
-        });
+        };
+
+        // Hediye senaryosu için ek alanları sadece sağlandığında ekle
+        if (options && typeof options === "object") {
+            const { selectedGiftProductId, campaignId } = options;
+            if (selectedGiftProductId != null) {
+                payload.selected_gift_product_id = selectedGiftProductId;
+            }
+            if (campaignId != null) {
+                payload.campaign_id = campaignId;
+            }
+        }
+
+        const response = await apiClient.post("/cart/items", payload);
 
         // addToCart API'si sadece success mesajı döndürüyor, cart data'sı yok
         // Bu yüzden başarılı olduğunda cart'ı tekrar çekiyoruz

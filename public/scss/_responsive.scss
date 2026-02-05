@@ -4191,7 +4191,17 @@
   }
 
   .tf-sticky-btn-atc {
-    bottom: 67px;
+    bottom: 63px;
+  }
+
+  // Sticky bar aktifken tablet/mobil alt boşluğu kaldır (navbar gizlendiğinde)
+  body.sticky-atc-active .tf-sticky-btn-atc {
+    bottom: 0;
+  }
+
+  // Sticky bar aktifken mobil alt boşluğu kaldır (navbar gizlendiğinde)
+  body.sticky-atc-active .tf-sticky-btn-atc {
+    bottom: 0;
   }
 
   .tf-accordion-wrap {
@@ -5127,7 +5137,7 @@
   }
 
   .tf-sticky-btn-atc {
-    bottom: 67px;
+    bottom: 63px;
   }
 
   .tf-toolbar-bottom.type-1024 {

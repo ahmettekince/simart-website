@@ -9,13 +9,11 @@ import Cookies from "js-cookie";
 
 const COOKIE_NAME = "cookie_consent";
 const COOKIE_ANALYTICS = "cookie_consent_analytics";
-const COOKIE_PERFORMANCE = "cookie_consent_performance";
 const COOKIE_EXPIRY = 365;
 
 export default function CookieConsentBanner() {
     const [visible, setVisible] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
-    const [performanceEnabled, setPerformanceEnabled] = useState(true);
     const [analyticsEnabled, setAnalyticsEnabled] = useState(true);
     const [expandedSection, setExpandedSection] = useState(null);
 
@@ -36,9 +34,8 @@ export default function CookieConsentBanner() {
         }
     };
 
-    const saveAndClose = (performance, analytics) => {
+    const saveAndClose = (analytics) => {
         Cookies.set(COOKIE_NAME, "accepted", { expires: COOKIE_EXPIRY });
-        Cookies.set(COOKIE_PERFORMANCE, performance ? "true" : "false", { expires: COOKIE_EXPIRY });
         Cookies.set(COOKIE_ANALYTICS, analytics ? "true" : "false", { expires: COOKIE_EXPIRY });
         setVisible(false);
         setSettingsOpen(false);
@@ -46,12 +43,11 @@ export default function CookieConsentBanner() {
     };
 
     const accept = () => {
-        saveAndClose(true, true);
+        saveAndClose(true);
     };
 
     const decline = () => {
         Cookies.set(COOKIE_NAME, "declined", { expires: COOKIE_EXPIRY });
-        Cookies.set(COOKIE_PERFORMANCE, "false", { expires: COOKIE_EXPIRY });
         Cookies.set(COOKIE_ANALYTICS, "false", { expires: COOKIE_EXPIRY });
         setVisible(false);
         setSettingsOpen(false);
@@ -69,13 +65,12 @@ export default function CookieConsentBanner() {
     };
 
     const handleSaveSettings = () => {
-        saveAndClose(performanceEnabled, analyticsEnabled);
+        saveAndClose(analyticsEnabled);
     };
 
     const handleAcceptAllInModal = () => {
-        setPerformanceEnabled(true);
         setAnalyticsEnabled(true);
-        saveAndClose(true, true);
+        saveAndClose(true);
     };
 
     if (!visible) return null;
@@ -152,42 +147,6 @@ export default function CookieConsentBanner() {
                                             Web sitemizin düzgün şekilde çalışabilmesi için bazı çerezler zorunlu olarak kullanılmaktadır ve bu çerezler sistemlerimiz üzerinden devre dışı bırakılamaz. Bu çerezler genellikle sizin talep ettiğiniz hizmetlerin sağlanması amacıyla ayarlanır. Örneğin; gizlilik ayarlarınızı kaydetmek, hesabınıza giriş yapabilmenizi sağlamak veya formlar üzerinden gönderdiğiniz bilgileri işleyebilmek için kullanılabilir.
                                             {" "}
                                             Tarayıcı ayarlarınızı değiştirerek bu çerezleri engelleyebilir veya çerez kullanımı hakkında bildirim almayı tercih edebilirsiniz. Ancak bu durumda web sitemizin bazı özellikleri beklenen şekilde çalışmayabilir.
-                                        </p>
-                                        <Link href="/gizlilik-politikasi" className="cookie-vendor-link">
-                                            Satıcı Ayrıntılarını Görüntüle
-                                        </Link>
-                                    </div>
-                                )}
-                            </section>
-
-                            {/* Performans - seçilebilir */}
-                            <section className="cookie-category">
-                                <div
-                                    className="cookie-category-header cookie-category-header-clickable"
-                                    onClick={() => toggleSection("performance")}
-                                    role="button"
-                                    tabIndex={0}
-                                    onKeyDown={(e) => e.key === "Enter" && toggleSection("performance")}
-                                    aria-expanded={expandedSection === "performance"}
-                                >
-                                    <span className="cookie-category-icon">{expandedSection === "performance" ? "−" : "+"}</span>
-                                    <h3 className="cookie-category-title">Performans Tanımlama Bilgileri</h3>
-                                    <label className="cookie-toggle-wrap" onClick={(e) => e.stopPropagation()}>
-                                        <input
-                                            type="checkbox"
-                                            className="cookie-toggle-input"
-                                            checked={performanceEnabled}
-                                            onChange={(e) => setPerformanceEnabled(e.target.checked)}
-                                        />
-                                        <span className="cookie-toggle-slider" />
-                                    </label>
-                                </div>
-                                {expandedSection === "performance" && (
-                                    <div className="cookie-category-content">
-                                        <p className="cookie-category-desc">
-                                            Bu çerezler, web sitemizin performansını analiz edebilmemiz ve geliştirebilmemiz amacıyla ziyaretçi sayısını ve trafik kaynaklarını ölçmemize yardımcı olur. Hangi sayfaların daha fazla veya daha az ziyaret edildiğini görmemizi ve kullanıcıların site içerisinde nasıl hareket ettiğini anlamamızı sağlar.
-                                            {" "}
-                                            Elde edilen veriler toplu olarak değerlendirilir ve kişisel olarak sizi tanımlamaz. Bu çerezleri kabul etmemeniz durumunda, siteyi ne zaman ziyaret ettiğinize ve siteyi nasıl kullandığınıza dair analiz yapmamız mümkün olmayacaktır.
                                         </p>
                                         <Link href="/gizlilik-politikasi" className="cookie-vendor-link">
                                             Satıcı Ayrıntılarını Görüntüle

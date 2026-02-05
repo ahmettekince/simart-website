@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import { decodeHtmlEntities } from "@/utils/stripHtml";
 import Accordion from "@/components/common/Accordion";
+import BirlikteAlNew from "@/components/shopDetails/BirlikteAlNew";
 
 const SORT_OPTIONS = [
   { value: "default", label: "Varsayılan" },
@@ -95,13 +96,42 @@ export default function ShopDetailsTab({ product }) {
   const techSpecs = product?.technical_specifications || [];
   const hasTechSpecs = Array.isArray(techSpecs) && techSpecs.length > 0;
 
-  // Açıklama tabı sadece description doluysa gösterilir (null veya boş string ise gizle)
+  // Açıklama tab bar'da yok; içerik varsa yukarıda (tab'ların üstünde) render edilir
   const descVal = product?.description;
   const hasDescription = descVal != null && String(descVal).trim() !== "";
 
-  // Sıra: (description varsa) Açıklama, Yorumlar, (varsa) Teknik, (varsa) SSS, Kargo, İade.
+  // Birlikte Al (Alternatifler) - sadece mobilde, açıklama ve tablar arasında
+  const hasVariations = product && Array.isArray(product.variations) && product.variations.length > 0;
+  const categorySlugForVariations =
+    product?.primary_category?.slug ||
+    (Array.isArray(product?.categories) && product.categories[0]?.slug) ||
+    "urunler";
+  const baseVariation = hasVariations && product ? {
+    name: product.name || product.title || "",
+    slug: product.slug || "",
+    category_slug: categorySlugForVariations,
+    is_in_stock: product.is_in_stock,
+    is_pre_order: product.is_pre_order,
+    price: product.price,
+    discount_price: product.discount_price,
+    cover_image: product.images?.[0] || product.gallery_images?.[0] || null,
+  } : null;
+  const allVariations = useMemo(() => {
+    if (!hasVariations || !product) return [];
+    const list = [];
+    if (baseVariation?.slug) list.push(baseVariation);
+    product.variations.forEach((v) => {
+      if (!v) return;
+      const slug = v.slug || "";
+      const cat = v.category_slug || baseVariation?.category_slug || "urunler";
+      if (baseVariation && slug === baseVariation.slug && cat === baseVariation.category_slug) return;
+      list.push({ ...v, slug, category_slug: cat });
+    });
+    return list;
+  }, [product, baseVariation, hasVariations]);
+
+  // Sıra: Değerlendirmeler, (varsa) Teknik, (varsa) SSS, Kargo, İade. Açıklama tab'ı yok.
   const tabIds = [
-    ...(hasDescription ? ["desc"] : []),
     "reviews",
     ...(hasTechSpecs ? ["tech"] : []),
     ...(hasFaq ? ["faq"] : []),
@@ -109,8 +139,7 @@ export default function ShopDetailsTab({ product }) {
     "return",
   ];
   const tabs = [
-    ...(hasDescription ? [{ title: "Açıklama", active: false }] : []),
-    { title: reviewCount > 0 ? `Yorumlar (${reviewCount})` : "Yorumlar", active: false },
+    { title: reviewCount > 0 ? `Değerlendirmeler (${reviewCount})` : "Değerlendirmeler", active: false },
     ...(hasTechSpecs ? [{ title: "Teknik Özellikler", active: false }] : []),
     ...(hasFaq ? [{ title: "Sıkça Sorulan Sorular", active: false }] : []),
     { title: "Kargo", active: false },
@@ -118,18 +147,57 @@ export default function ShopDetailsTab({ product }) {
   ];
 
   const indexOf = (id) => { const i = tabIds.indexOf(id); return i >= 0 ? i + 1 : null; };
-  const descTabIndex = indexOf("desc");
   const reviewsTabIndex = indexOf("reviews");
   const techSpecsTabIndex = indexOf("tech");
   const faqTabIndex = indexOf("faq");
   const kargoTabIndex = indexOf("kargo");
   const returnTabIndex = indexOf("return");
 
+  // Hash #product-reviews gelince Değerlendirmeler sekmesine geç
+  useEffect(() => {
+    const checkHash = () => {
+      if (typeof window !== "undefined" && window.location.hash === "#product-reviews") {
+        setCurrentTab(reviewsTabIndex ?? 1);
+      }
+    };
+    checkHash();
+    window.addEventListener("hashchange", checkHash);
+    return () => window.removeEventListener("hashchange", checkHash);
+  }, [reviewsTabIndex]);
+
   const descriptionContainerClass = product?.description_layout === "full" ? "container-fluid" : "container";
 
   return (
     <>
-      <section className="pt_0" style={{ paddingBottom: "0px !important" }}>
+      {/* Açıklama bölümü - tab bar'da yok, sadece yukarıda gösterilir */}
+      {hasDescription && (
+        <section className="" style={{ overflowX: "hidden", paddingTop: "15px" }}>
+          <div className={descriptionContainerClass}>
+            <div className="row">
+              <div className="col-12" >
+                {product?.description && (
+                  <div
+                    className="product-description-text"
+                    dangerouslySetInnerHTML={{ __html: decodeHtmlEntities(product.description) }}
+                  />
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+      {/* Birlikte Al - sadece mobilde, açıklamanın altında tabların üstünde (araya) */}
+      {hasVariations && allVariations.length > 0 && (
+        <div className="container d-md-none" style={{ marginTop: 0, marginBottom: 24 }}>
+          <BirlikteAlNew
+            variations={allVariations}
+            currentSlug={product.slug}
+            currentCategorySlug={categorySlugForVariations}
+          />
+        </div>
+      )}
+
+      <section id="product-reviews" className="pt_0" style={{ paddingBottom: "0px !important" }}>
         <div className="container">
           <div className="row">
             <div className="col-12">
@@ -147,76 +215,6 @@ export default function ShopDetailsTab({ product }) {
                   ))}
                 </ul>
                 <div className="widget-content-tab">
-                  {hasDescription && (
-                  <div
-                    className={`widget-content-inner ${currentTab === descTabIndex ? "active pt_0" : ""
-                      } `}
-                  >
-                    {/* Açıklama içeriği alt bölümde render olacak */}
-                    <div className="">
-                        {!product?.description && (
-                          <>
-                            <p className="mb_30">
-                              Button-up shirt sleeves and a relaxed silhouette. It's
-                              tailored with drapey, crinkle-texture fabric that's made
-                              from LENZING™ ECOVERO™ Viscose — responsibly sourced
-                              wood-based fibres produced through a process that reduces
-                              impact on forests, biodiversity and water supply.
-                            </p>
-                            <div className="tf-product-des-demo">
-                              <div className="right">
-                                <h3 className="fs-16 fw-5">Features</h3>
-                                <ul>
-                                  <li>Front button placket</li>
-                                  <li>Adjustable sleeve tabs</li>
-                                  <li>Babaton embroidered crest at placket and hem</li>
-                                </ul>
-                                <h3 className="fs-16 fw-5">Materials Care</h3>
-                                <ul className="mb-0">
-                                  <li>Content: 100% LENZING™ ECOVERO™ Viscose</li>
-                                  <li>Care: Hand wash</li>
-                                  <li>Imported</li>
-                                </ul>
-                              </div>
-                              <div className="left">
-                                <h3 className="fs-16 fw-5">Materials Care</h3>
-                                <div className="d-flex gap-10 mb_15 align-items-center">
-                                  <div className="icon">
-                                    <i className="icon-machine" />
-                                  </div>
-                                  <span>Machine wash max. 30ºC. Short spin.</span>
-                                </div>
-                                <div className="d-flex gap-10 mb_15 align-items-center">
-                                  <div className="icon">
-                                    <i className="icon-iron" />
-                                  </div>
-                                  <span>Iron maximum 110ºC.</span>
-                                </div>
-                                <div className="d-flex gap-10 mb_15 align-items-center">
-                                  <div className="icon">
-                                    <i className="icon-bleach" />
-                                  </div>
-                                  <span>Do not bleach/bleach.</span>
-                                </div>
-                                <div className="d-flex gap-10 mb_15 align-items-center">
-                                  <div className="icon">
-                                    <i className="icon-dry-clean" />
-                                  </div>
-                                  <span>Do not dry clean.</span>
-                                </div>
-                                <div className="d-flex gap-10 align-items-center">
-                                  <div className="icon">
-                                    <i className="icon-tumble-dry" />
-                                  </div>
-                                  <span>Tumble dry, medium hear.</span>
-                                </div>
-                              </div>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                  </div>
-                  )}
                   <div
                     className={`widget-content-inner ${currentTab === reviewsTabIndex ? "active" : ""
                       } `}
@@ -328,48 +326,47 @@ export default function ShopDetailsTab({ product }) {
                           </div>
                         ) : (
                           sortedReviews.map((review) => (
-                            <div key={review.id} className="review-item mb_30 pb_30" style={{ paddingBottom: "10px", borderBottom: "1px solid #f2f2f2" }}>
-                              <div className="d-flex justify-content-between align-items-center mb_15">
-                                <div className="review-user-info">
-                                  <div className="fw-6 fs-16 mb_5">{review.user_name}</div>
-                                  <div className="d-flex gap-5 align-items-center">
-                                    <div className="review-rating d-flex" style={{ gap: "2px" }}>
-                                      {[...Array(5)].map((_, i) => {
-                                        const starValue = i + 1;
-                                        const rating = review.rating || 0;
-                                        const isFilled = rating >= starValue;
-                                        const isPartial = rating > i && rating < starValue;
-                                        const fillPercentage = Math.max(0, Math.min(100, ((rating - i) * 100)));
+                            <div key={review.id} className="review-item mb_30 pb_30" style={{ paddingTop: "14px", borderTop: "1px solid #eee" }}>
+                              {/* Önce yıldızlar; ortalaması yazılmaz */}
+                              <div className="review-rating d-flex" style={{ gap: "2px", marginBottom: "6px" }}>
+                                {[...Array(5)].map((_, i) => {
+                                  const starValue = i + 1;
+                                  const rating = review.rating || 0;
+                                  const isFilled = rating >= starValue;
+                                  const isPartial = rating > i && rating < starValue;
+                                  const fillPercentage = Math.max(0, Math.min(100, ((rating - i) * 100)));
 
-                                        return (
-                                          <div key={i} className="star-wrapper" style={{ position: "relative", display: "inline-block", fontSize: "14px", lineHeight: 1 }}>
-                                            <i className="icon-star star-empty" style={{ color: "#ddd" }} />
-                                            {isFilled ? (
-                                              <i className="icon-star star-filled" style={{ position: "absolute", top: 0, left: 0, color: "#f59e0b" }} />
-                                            ) : isPartial ? (
-                                              <i
-                                                className="icon-star star-filled star-partial"
-                                                style={{
-                                                  position: "absolute",
-                                                  top: 0,
-                                                  left: 0,
-                                                  color: "#f59e0b",
-                                                  clipPath: `inset(0 ${100 - fillPercentage}% 0 0)`
-                                                }}
-                                              />
-                                            ) : null}
-                                          </div>
-                                        );
-                                      })}
+                                  return (
+                                    <div key={i} className="star-wrapper" style={{ position: "relative", display: "inline-block", fontSize: "14px", lineHeight: 1 }}>
+                                      <i className="icon-star star-empty" style={{ color: "#ddd" }} />
+                                      {isFilled ? (
+                                        <i className="icon-star star-filled" style={{ position: "absolute", top: 0, left: 0, color: "#f59e0b" }} />
+                                      ) : isPartial ? (
+                                        <i
+                                          className="icon-star star-filled star-partial"
+                                          style={{
+                                            position: "absolute",
+                                            top: 0,
+                                            left: 0,
+                                            color: "#f59e0b",
+                                            clipPath: `inset(0 ${100 - fillPercentage}% 0 0)`
+                                          }}
+                                        />
+                                      ) : null}
                                     </div>
-                                    <span className="text-muted fs-12 ms_10">
-                                      {new Date(review.created_at).toLocaleDateString("tr-TR")}
-                                    </span>
-                                  </div>
-                                </div>
+                                  );
+                                })}
+                              </div>
+                              {/* İsim ve tarih yıldızın altında */}
+                              <div className="review-user-info mb_10" style={{ fontSize: "12px", display: "inline-flex", alignItems: "center", gap: "8px" }}>
+                                <span className="text_black-2" style={{ fontWeight: 600 }}>{review.user_name}</span>
+                                <span style={{ color: "#888", fontSize: "12px" }}>·</span>
+                                <span style={{ fontSize: "13px", color: "#666" }}>
+                                  {new Date(review.created_at).toLocaleDateString("tr-TR")}
+                                </span>
                               </div>
                               <div className="review-comment mb_10">
-                                <p className="fs-14 text_black-2" style={{ lineHeight: "1.6" }}>
+                                <p className="fs-14" style={{ lineHeight: "1.6", color: "#333" }}>
                                   {review.comment}
                                 </p>
                               </div>
@@ -559,24 +556,6 @@ export default function ShopDetailsTab({ product }) {
           </div>
         </div>
       </section>
-
-      {/* Açıklama bölümü - sadece description dolu ve Açıklama sekmesi seçiliyse */}
-      {hasDescription && currentTab === descTabIndex && (
-        <section className="" style={{ overflowX: "hidden" }}>
-          <div className={descriptionContainerClass}>
-            <div className="row">
-              <div className="col-12" >
-                {product?.description && (
-                  <div
-                    className="product-description-text"
-                    dangerouslySetInnerHTML={{ __html: decodeHtmlEntities(product.description) }}
-                  />
-                )}
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* Yorum fotoğrafı preview lightbox */}
       {previewImage && (

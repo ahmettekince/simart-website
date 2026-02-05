@@ -26,7 +26,7 @@ import { log } from '@/utils/logger';
  * @property {CartItem[]} items - Sepetteki ürünler
  * @property {number} totalPrice - Toplam fiyat (computed)
  * @property {number} totalItems - Toplam ürün sayısı (computed)
- * @property {(product: Object, quantity?: number) => void} addItem - Sepete ürün ekle
+ * @property {(product: Object, quantity?: number, openModal?: boolean, options?: Object) => void} addItem - Sepete ürün ekle
  * @property {(productId: number, quantity: number) => void} updateQuantity - Ürün miktarını güncelle
  * @property {(productId: number) => void} removeItem - Sepetten ürün çıkar
  * @property {(productId: number) => boolean} isInCart - Ürün sepette mi kontrol et
@@ -69,30 +69,48 @@ export const useCartStore = create(
         totals: null, // API'den gelen toplam bilgileri (subtotal, discount, tax, total)
         applied_campaigns: [], // Uygulanan kampanyalar
         coupon: null, // Uygulanan kupon bilgisi
+        /** Hediye kampanyalı ürün sepete eklenirken hediye seçimi için bekleyen istek (merkezi modal) */
+        pendingGiftAdd: null, // { product, quantity, openModal } | null
 
         // Actions
 
         /**
+         * Bekleyen hediye seçimini iptal et (modal kapatılınca)
+         */
+        clearPendingGiftAdd: () => set({ pendingGiftAdd: null }),
+
+        /**
          * Sepete ürün ekle (API ile senkronize)
+         * Hediye kampanyalı ürünlerde options.selectedGiftProductId yoksa önce pendingGiftAdd set edilir;
+         * global GiftSelectionModal açılır, kullanıcı hediye seçip onaylayınca addItem tekrar options ile çağrılır.
          * @param {Object} product - Ürün objesi
          * @param {number} quantity - Miktar (varsayılan: 1)
          * @param {boolean} openModal - Modal açılsın mı? (varsayılan: false)
+         * @param {Object} [options] - Opsiyonel ek alanlar (selectedGiftProductId, campaignId vb.)
          */
-        addItem: async (product, quantity = 1, openModal = false) => {
+        addItem: async (product, quantity = 1, openModal = false, options = null) => {
             if (!product || !product.id) {
                 log('[CartStore] addItem: Geçersiz ürün objesi');
-                return;
+                return { added: false };
             }
 
             const productSlug = product.slug || '';
             if (!productSlug) {
                 log('[CartStore] addItem: Ürün slug\'ı bulunamadı');
-                return;
+                return { added: false };
+            }
+
+            const campaigns = product.selectable_gift_campaigns || product.selectableGiftCampaigns;
+            const hasGiftCampaigns = Array.isArray(campaigns) && campaigns.length > 0;
+            const hasGiftSelected = options && (options.selectedGiftProductId != null || options.selected_gift_product_id != null);
+
+            if (hasGiftCampaigns && !hasGiftSelected) {
+                set({ pendingGiftAdd: { product, quantity, openModal } });
+                return { added: false };
             }
 
             try {
-                // API'ye istek at (addToCart zaten getCart çağırıp cartData döndürüyor)
-                const cartData = await addToCartAPI(productSlug, quantity);
+                const cartData = await addToCartAPI(productSlug, quantity, options || {});
 
                 if (cartData) {
                     get().syncFromAPI(cartData);
@@ -105,11 +123,13 @@ export const useCartStore = create(
                             }, 100);
                         }
                     }
-                } else {
-                    log('[CartStore] addItem: API başarısız oldu');
+                    return { added: true };
                 }
+                log('[CartStore] addItem: API başarısız oldu');
+                return { added: false };
             } catch (error) {
                 log('[CartStore] addItem error:', error);
+                return { added: false };
             }
         },
 

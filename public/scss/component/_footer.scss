@@ -415,4 +415,8 @@
         }
     }
 
+    // Ürün detay sticky sepete ekle barı görünürken mobil toolbar'ı gizle
+    &.type-1150.hide-when-sticky-atc {
+        display: none !important;
+    }
 }

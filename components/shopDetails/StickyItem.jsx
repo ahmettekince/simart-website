@@ -2,11 +2,11 @@
 import { options } from "@/data/singleProductOptions";
 import Image from "next/image";
 import React, { useEffect, useState, useRef, useMemo } from "react";
-import Quantity from "./Quantity";
 import { products4 } from "@/data/products";
 import { useContextElement } from "@/context/Context";
 import { useCartStore } from "@/stores/cartStore";
 import { getProductButtonState } from "@/utils/productStock";
+import MaxQuantityToast from "@/components/common/MaxQuantityToast";
 
 export default function StickyItem({
   product = null,
@@ -18,40 +18,54 @@ export default function StickyItem({
 }) {
   const { addProductToCart, isAddedToCartProducts } = useContextElement();
   const { addItem } = useCartStore();
+  const cartItems = useCartStore((s) => s.items);
   const [isAdding, setIsAdding] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showMaxReachedToast, setShowMaxReachedToast] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const stickyRef = useRef(null);
   const observerRef = useRef(null);
 
-  // Scroll event ile sticky button'ı göster/gizle
+  // Mobil kontrolü (767px)
+  useEffect(() => {
+    const check = () => setIsMobile(typeof window !== "undefined" && window.innerWidth <= 767);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  // Mobilde sticky bar her zaman görünür; masaüstünde scroll ile göster/gizle
   useEffect(() => {
     const handleScroll = () => {
+      if (isMobile) {
+        setIsVisible(true);
+        return;
+      }
       const buyButton = document.querySelector(".tf-product-info-buy-button");
       if (buyButton) {
         const rect = buyButton.getBoundingClientRect();
-        // Buy button viewport'tan çıktığında sticky button'ı göster
-        setIsVisible(rect.bottom < 0);
+        const hasScrolled = window.scrollY > 0;
+        setIsVisible(hasScrolled && rect.bottom < 0);
       }
     };
 
+    handleScroll();
     window.addEventListener("scroll", handleScroll);
-    handleScroll(); // İlk yüklemede kontrol et
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [isMobile]);
 
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
-
-  // IntersectionObserver ile de kontrol edebiliriz
   useEffect(() => {
+    if (isMobile) {
+      setIsVisible(true);
+      return;
+    }
     const buyButton = document.querySelector(".tf-product-info-buy-button");
     if (!buyButton) return;
 
     observerRef.current = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          // Buy button görünür değilse sticky button'ı göster
           setIsVisible(!entry.isIntersecting);
         });
       },
@@ -65,7 +79,7 @@ export default function StickyItem({
         observerRef.current.disconnect();
       }
     };
-  }, []);
+  }, [isMobile]);
 
   // Ürün bilgileri
   const displayProduct = product || products4[2];
@@ -109,17 +123,31 @@ export default function StickyItem({
   const totalPrice = finalPrice * quantity;
   const totalOriginalPrice = originalPrice ? originalPrice * quantity : null;
 
+  const existingCartItem = product && cartItems?.find((it) => it?.product?.id === product?.id || it?.id === product?.id);
+  const effectiveMaxLimit = maxQuantity === null || maxQuantity === 0 ? 999 : Math.max(1, Number(maxQuantity));
+
   const handleAddToCart = async () => {
     if (isAdding || showSuccess || buttonState.buttonDisabled) return;
+    if (product && effectiveMaxLimit < 999) {
+      const currentQty = existingCartItem?.quantity || 0;
+      if (currentQty >= effectiveMaxLimit) {
+        setShowMaxReachedToast(true);
+        return;
+      }
+    }
     setIsAdding(true);
     try {
       if (product) {
-        await addItem(product, quantity, false);
+        const result = await addItem(product, quantity, false);
+        if (result?.added) {
+          setShowSuccess(true);
+          setTimeout(() => setShowSuccess(false), 2000);
+        }
       } else {
         addProductToCart(displayProduct.id);
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 2000);
       }
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 2000);
     } catch (error) {
       console.error("Sepete ekleme hatası:", error);
     } finally {
@@ -129,6 +157,7 @@ export default function StickyItem({
 
   return (
     <div className={`tf-sticky-btn-atc ${isVisible ? "show" : ""}`} ref={stickyRef}>
+      <MaxQuantityToast visible={showMaxReachedToast} onHide={() => setShowMaxReachedToast(false)} />
       <div className="container">
         <div className="tf-height-observer w-100 d-flex align-items-center">
           <div className="tf-sticky-atc-image d-none d-md-flex">
@@ -136,54 +165,48 @@ export default function StickyItem({
               <Image
                 src={productImage}
                 alt={productName || "Ürün"}
-                width={56}
-                height={56}
+                width={70}
+                height={70}
                 className="rounded"
                 style={{ objectFit: "cover" }}
                 unoptimized={typeof productImage === "string" && productImage.startsWith("http")}
               />
             )}
           </div>
-          <div className="tf-sticky-atc-price-wrap">
-            <span className="price-on-sale">₺{Number(totalPrice).toLocaleString("tr-TR")}</span>
-            {totalOriginalPrice != null && totalOriginalPrice > totalPrice && (
-              <span className="compare-at-price">₺{Number(totalOriginalPrice).toLocaleString("tr-TR")}</span>
-            )}
+          <div className="tf-sticky-atc-mid">
+            <p className="tf-sticky-atc-title-line d-none d-lg-block" title={productName || ""}>
+              {productName || "Ürün"}
+            </p>
+            <div className={`tf-sticky-atc-price-wrap ${totalOriginalPrice != null && totalOriginalPrice > totalPrice ? "has-discount" : ""}`}>
+              <span className="price-on-sale">₺{Number(totalPrice).toLocaleString("tr-TR")}</span>
+              {totalOriginalPrice != null && totalOriginalPrice > totalPrice && (
+                <span className="compare-at-price">₺{Number(totalOriginalPrice).toLocaleString("tr-TR")}</span>
+              )}
+            </div>
           </div>
           <div className="tf-sticky-atc-spacer" />
           <div className="tf-sticky-atc-infos">
             <form onSubmit={(e) => e.preventDefault()} className="">
               <div className="tf-sticky-atc-btns">
-                <div className="tf-sticky-atc-qty-wrap">
-                  <div className="tf-product-info-quantity">
-                    <Quantity
-                      setQuantity={setQuantity}
-                      minQuantity={minQuantity}
-                      maxQuantity={maxQuantity}
-                      initialValue={quantity}
-                      disabled={buttonState.buttonDisabled}
-                    />
-                  </div>
-                </div>
                 {soldOut || buttonState.buttonDisabled ? (
                   <button
                     type="button"
                     disabled
-                    className={`main-cart-btn ${buttonState.buttonText === "Stokta Yok" ? "out-of-stock" : ""}`}
+                    className={`sticky-atc-btn ${buttonState.buttonText === "Stokta Yok" ? "sticky-atc-btn--out-of-stock" : ""}`}
                   >
-                    <span className="button-text-main">{buttonState.buttonText}</span>
+                    <span className="sticky-atc-btn__text">{buttonState.buttonText}</span>
                   </button>
                 ) : (
                   <button
                     type="button"
                     onClick={handleAddToCart}
                     disabled={isAdding || showSuccess}
-                    className={`main-cart-btn ${showSuccess ? "success-animation" : ""}`}
+                    className={`sticky-atc-btn ${showSuccess ? "sticky-atc-btn--success" : ""}`}
                   >
-                    <span className="button-text-main">
+                    <span className="sticky-atc-btn__text">
                       {showSuccess ? "Sepete Eklendi" : isAdding ? "Ekleniyor..." : buttonState.buttonText}
                     </span>
-                    {showSuccess && <span className="button-text-slide">Sepete Eklendi</span>}
+                    {showSuccess && <span className="sticky-atc-btn__slide">Sepete Eklendi</span>}
                   </button>
                 )}
               </div>
@@ -209,121 +232,140 @@ export default function StickyItem({
           flex-shrink: 0;
         }
         .tf-sticky-atc-spacer {
-          flex: 1;
-          min-width: 50px;
+          flex: 0 0 10px;
+          width: 10px;
+          min-width: 10px;
+          max-width: 10px;
+        }
+        /* Mobil/tablet: fiyat ile buton arası 50px */
+        @media (max-width: 991px) {
+          .tf-sticky-atc-spacer {
+            flex: 0 0 50px;
+            width: 50px;
+            min-width: 50px;
+            max-width: 50px;
+          }
         }
         .tf-sticky-atc-price-wrap .price-on-sale {
-          font-size: 18px;
+          font-size: 17px;
           font-weight: 700;
           color: var(--primary, #1c355e);
         }
+        .tf-sticky-atc-price-wrap.has-discount .price-on-sale {
+          color: #0bc15c;
+        }
         .tf-sticky-atc-price-wrap .compare-at-price {
-          font-size: 14px;
-          color: rgba(0, 0, 0, 0.55);
+          font-size: 13px;
+          color: #999;
           text-decoration: line-through;
         }
         .tf-sticky-atc-btns {
           display: flex;
-          gap: 12px;
           align-items: center;
           width: 100%;
         }
-        .tf-sticky-atc-btns .tf-sticky-atc-qty-wrap {
-          width: 88px;
-          flex-shrink: 0;
-          min-width: 88px;
-        }
-        .tf-sticky-atc-btns .tf-product-info-quantity {
-          flex-shrink: 0;
-        }
-        .tf-sticky-atc-btns .main-cart-btn {
-          flex: 1;
-          min-width: 0;
+
+        /* Sticky bar kendi butonu - responsive */
+        .sticky-atc-btn {
           width: 100%;
-          height: 44px;
-          border-radius: 12px;
-          font-size: 13px;
+          min-width: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+          border: none;
+          border-radius: 10px;
           font-weight: 600;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
-          align-items: center;
-          padding: 0 16px;
-          display: flex;
-          text-align: center;
-          justify-content: center;
-          transition: all 0.3s ease;
-          position: relative;
-          border: 1px solid var(--primary);
-          background: var(--primary);
-          color: #fff;
           cursor: pointer;
+          transition: background 0.2s, color 0.2s, transform 0.15s;
+          -webkit-tap-highlight-color: transparent;
+          background: var(--primary, #3c81b5);
+          color: #fff;
+          padding: 0 14px;
+          height: 44px;
+          font-size: 15px;
         }
-        .tf-sticky-atc-btns .main-cart-btn:disabled {
-          opacity: 1 !important;
+
+        /* Mobilde buton sadece yazı kadar + sağdan soldan 10px, sağa yaslı */
+        @media (max-width: 767px) {
+          .tf-sticky-atc-btns {
+            width: auto;
+            flex-shrink: 0;
+            margin-left: auto;
+          }
+          .sticky-atc-btn {
+            width: auto;
+            padding: 0 15px;
+          }
+        }
+        .sticky-atc-btn:active:not(:disabled) {
+          transform: scale(0.98);
+        }
+        .sticky-atc-btn:disabled {
           cursor: not-allowed;
+          opacity: 1;
         }
-        .tf-sticky-atc-btns .main-cart-btn.out-of-stock {
-          background: #dc2626 !important;
-          border-color: #dc2626 !important;
+        .sticky-atc-btn--out-of-stock {
+          background: #dc2626;
+          color: #fff;
         }
-        .tf-sticky-atc-btns .main-cart-btn.out-of-stock:disabled {
-          background: #dc2626 !important;
-          border-color: #dc2626 !important;
-          opacity: 1 !important;
+        .sticky-atc-btn--out-of-stock:disabled {
+          background: #dc2626;
         }
-        .tf-sticky-atc-btns .main-cart-btn .button-text-main,
-        .tf-sticky-atc-btns .main-cart-btn .button-text-slide {
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
+        .sticky-atc-btn__text,
+        .sticky-atc-btn__slide {
           display: block;
           width: 100%;
-          flex: 1;
-          min-width: 0;
           text-align: center;
+          overflow: hidden;
+          text-overflow: ellipsis;
           position: relative;
         }
-        .tf-sticky-atc-btns .main-cart-btn.success-animation {
+        .sticky-atc-btn--success {
           background: #10b981;
-          border-color: #10b981;
           overflow: hidden;
         }
-        .tf-sticky-atc-btns .main-cart-btn.success-animation .button-text-main {
+        .sticky-atc-btn--success .sticky-atc-btn__text {
           opacity: 0;
           transform: translateY(100%);
           transition: opacity 0.2s, transform 0.2s;
         }
-        .tf-sticky-atc-btns .main-cart-btn.success-animation .button-text-slide {
+        .sticky-atc-btn__slide {
           position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
+          inset: 0;
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 0 16px;
-          color: #fff;
-          z-index: 1;
-          animation: slideUpFromButton 2s cubic-bezier(0.4, 0, 0.2, 1);
+          padding: 0 14px;
+          animation: stickyBtnSlide 2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        @keyframes slideUpFromButton {
-          0% {
-            transform: translateY(100%);
-            opacity: 0;
+        @keyframes stickyBtnSlide {
+          0% { transform: translateY(100%); opacity: 0; }
+          20% { transform: translateY(0); opacity: 1; }
+          80% { transform: translateY(0); opacity: 1; }
+          100% { transform: translateY(100%); opacity: 0; }
+        }
+
+        /* Tablet */
+        @media (min-width: 768px) and (max-width: 991px) {
+          .sticky-atc-btn {
+            height: 40px;
+            font-size: 15px;
+            border-radius: 10px;
+            padding: 0 16px;
           }
-          20% {
-            transform: translateY(0);
-            opacity: 1;
-          }
-          80% {
-            transform: translateY(0);
-            opacity: 1;
-          }
-          100% {
-            transform: translateY(100%);
-            opacity: 0;
+        }
+
+        /* Desktop (sticky kart içinde) */
+        @media (min-width: 992px) {
+          .sticky-atc-btn {
+            height: 36px;
+            font-size: 15px;
+            border-radius: 8px;
+            padding: 0 12px;
           }
         }
       `}</style>

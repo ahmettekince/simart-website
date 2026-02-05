@@ -30,10 +30,10 @@ export default function ProductsClient({ products = [] }) {
                             slidesPerView={4}
                             spaceBetween={30}
                             breakpoints={{
-                                1100: { slidesPerView: 4 },
-                                768: { slidesPerView: 3 },
-                                640: { slidesPerView: 2 },
-                                0: { slidesPerView: 2 },
+                                1100: { slidesPerView: 4, spaceBetween: 30 },
+                                768: { slidesPerView: 3, spaceBetween: 20 },
+                                640: { slidesPerView: 2, spaceBetween: 12 },
+                                0: { slidesPerView: 2, spaceBetween: 8 },
                             }}
                             className="swiper-wrapper"
                             modules={[Navigation]}

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useContextElement } from "@/context/Context";
 import { useCartStore } from "@/stores/cartStore";
 import ProductImageSwiper from "@/components/common/ProductImageSwiper";
+import MaxQuantityToast from "@/components/common/MaxQuantityToast";
 import { getProductButtonState } from "@/utils/productStock";
 
 export default function ProductCardSimart({ product }) {
@@ -11,10 +12,10 @@ export default function ProductCardSimart({ product }) {
   const addToWishlist = context?.addToWishlist || (() => { });
   const isAddedtoWishlist = context?.isAddedtoWishlist || (() => false);
   const { addItem, isInCart } = useCartStore();
+  const cartItems = useCartStore((s) => s.items);
   const [isAdding, setIsAdding] = React.useState(false);
   const [showSuccess, setShowSuccess] = React.useState(false);
-
-  const [isWishlistProcessing, setIsWishlistProcessing] = React.useState(false);
+  const [showMaxReachedToast, setShowMaxReachedToast] = React.useState(false);
 
   // -- Veriler --
   const title = product.name || product.title;
@@ -55,8 +56,13 @@ export default function ProductCardSimart({ product }) {
   // -- Buton Metin Mantığı --
   const { buttonText, buttonDisabled } = getProductButtonState(product);
 
+  const existingCartItem = cartItems?.find((it) => it?.product?.id === product?.id || it?.id === product?.id) || null;
+  const rawMax = product?.max_purchase_quantity ?? product?.max_quantity;
+  const effectiveMaxLimit = rawMax === 0 || rawMax == null ? 999 : Math.max(1, Number(rawMax));
+
   return (
     <div className="product-card-simart">
+      <MaxQuantityToast visible={showMaxReachedToast} onHide={() => setShowMaxReachedToast(false)} />
       {/* Üst Kısım: Görsel (Ölçek ve Kalite Korundu) */}
       <div className="card-image-area">
         <ProductImageSwiper
@@ -122,14 +128,18 @@ export default function ProductCardSimart({ product }) {
             <button
               onClick={async () => {
                 if (isAdding || showSuccess) return;
+                const currentQty = existingCartItem?.quantity || 0;
+                if (effectiveMaxLimit < 999 && currentQty >= effectiveMaxLimit) {
+                  setShowMaxReachedToast(true);
+                  return;
+                }
                 setIsAdding(true);
                 try {
-                  await addItem(product, 1, false);
-                  // Başarılı olduğunda animasyon göster
-                  setShowSuccess(true);
-                  setTimeout(() => {
-                    setShowSuccess(false);
-                  }, 2000); // Animasyon 2 saniye sürüyor
+                  const result = await addItem(product, 1, false);
+                  if (result?.added) {
+                    setShowSuccess(true);
+                    setTimeout(() => setShowSuccess(false), 2000);
+                  }
                 } catch (error) {
                   console.error("Sepete ekleme hatası:", error);
                 } finally {
@@ -146,47 +156,7 @@ export default function ProductCardSimart({ product }) {
               {showSuccess && <span className="button-text-slide">Sepete Eklendi</span>}
             </button>
           </div>
-          {/* <button
-            onClick={() => {
-              if (isWishlistProcessing) return;
 
-              setIsWishlistProcessing(true);
-              addToWishlist(product.id);
-
-              // Tooltip'i kapat
-              if (typeof window !== "undefined") {
-                const tooltips = document.querySelectorAll(".action-tooltip");
-                tooltips.forEach((tooltip) => {
-                  tooltip.style.opacity = "0";
-                  tooltip.style.visibility = "hidden";
-                });
-              }
-
-              // Cooldown: 500ms sonra tekrar tıklanabilir
-              setTimeout(() => {
-                setIsWishlistProcessing(false);
-              }, 500);
-            }}
-            onMouseLeave={() => {
-              // Mouse ayrıldığında tooltip'i kapat
-              if (typeof window !== "undefined") {
-                const tooltips = document.querySelectorAll(".action-tooltip");
-                tooltips.forEach((tooltip) => {
-                  tooltip.style.opacity = "0";
-                  tooltip.style.visibility = "hidden";
-                });
-              }
-            }}
-            disabled={isWishlistProcessing}
-            className={`wish-action-btn ${isAdded ? "active" : ""}`}
-            style={{
-              cursor: isWishlistProcessing ? "wait" : "pointer",
-              opacity: isWishlistProcessing ? 0.7 : 1
-            }}
-          >
-            <i className={`icon ${isAdded ? "icon-delete" : "icon-heart"}`} />
-            <span className="action-tooltip">{isAdded ? "Favorilerden Kaldır" : "Favorilere Ekle"}</span>
-          </button> */}
         </div>
       </div>
 
@@ -215,22 +185,20 @@ export default function ProductCardSimart({ product }) {
                     display: flex;
                     flex-direction: column;
                     flex: 1;
-                    padding: 12px;
-          min-height: 0;
-          justify-content: flex-end;
+                    padding: 1px 12px 8px 8px;
+                    min-height: 0;
+                    justify-content: flex-end;
                 }
 
                 /* Hizalama Slotları */
         .title-slot {
           height: 40px;
-          margin-bottom: 4px;
           overflow: hidden;
           flex-shrink: 0;
           font-weight: bold;         
         }
         .rating-slot {
           height: 20px;
-          margin-bottom: 8px;
           display: flex;
           align-items: center;
           flex-shrink: 0;
@@ -483,8 +451,11 @@ export default function ProductCardSimart({ product }) {
         }
 
                 @media (max-width: 768px) {
+          .product-card-simart {
+            min-height: 0;
+          }
           .card-content-area {
-            padding: 10px;
+            padding: 1px 12px 8px 8px;
           }
           .price-slot {
             margin-bottom: 8px;

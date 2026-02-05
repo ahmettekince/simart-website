@@ -24,6 +24,7 @@ export default function CollectionBanner({ banner = null }) {
               src={images?.desktop?.url}
               width={1400}
               height={532}
+              quality={100}
             />
           </div>
           {/* Tablet Version (768px - 1023px) - Tablet varsa tablet, yoksa desktop */}
@@ -36,6 +37,7 @@ export default function CollectionBanner({ banner = null }) {
               src={images?.tablet?.url || images?.desktop?.url}
               width={1024}
               height={400}
+              quality={100}
             />
           </div>
           {/* Mobile Version (< 768px) */}
@@ -48,6 +50,7 @@ export default function CollectionBanner({ banner = null }) {
               src={images?.mobile?.url}
               width={600}
               height={400}
+              quality={100}
             />
           </div>
           <div className="box-content">

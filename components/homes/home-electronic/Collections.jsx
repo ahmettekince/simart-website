@@ -27,24 +27,22 @@ export default function Collections({ collections = [] }) {
                         href={link}
                         className="radius-20 collection-image img-style"
                       >
-                        <Image
-                          className="lazyload"
+                        <img
+                          className="lazyload w-100 h-auto"
                           data-src={imageUrl}
                           alt={title || "collection"}
                           src={imageUrl}
-                          width={600}
-                          height={400}
+                          style={{ width: "100%", height: "auto" }}
                         />
                       </Link>
                     ) : (
-                      <div className="radius-20 collection-image img-style">
-                        <Image
-                          className="lazyload"
+                      <div className="radius-20 collection-image img-style h-100">
+                        <img
+                          className="lazyload w-100 h-auto"
                           data-src={imageUrl}
                           alt={title || "collection"}
                           src={imageUrl}
-                          width={600}
-                          height={400}
+                          style={{ width: "100%", height: "auto" }}
                         />
                       </div>
                     )}
@@ -61,7 +59,7 @@ export default function Collections({ collections = [] }) {
                       {link && (
                         <Button
                           href={link}
-                          text={"shop now"}
+                          text={"Koleksiyona Git"}
                         />
                       )}
                     </div>

@@ -1,5 +1,6 @@
 "use client";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useState, useRef } from "react";
+import ReactDOM from "react-dom";
 import Link from "next/link";
 import { decodeHtmlEntities } from "@/utils/stripHtml";
 import Slider5 from "./sliders/Slider5";
@@ -13,6 +14,109 @@ import { useContextElement } from "@/context/Context";
 import { useCartStore } from "@/stores/cartStore";
 import { getProductButtonState } from "@/utils/productStock";
 import { siteConfig } from "@/config/site";
+import MaxQuantityToast from "@/components/common/MaxQuantityToast";
+import BirlikteAlNew from "./BirlikteAlNew";
+
+const TOOLTIP_MAX_WIDTH = 360;
+const TOOLTIP_MARGIN = 16;
+
+/** Yuvarlak (?) ikonu – tıklanınca protokol açıklamasını gösterir. Tooltip body'de portal ile render edilir; taşma ve z-index sorunu olmaz. */
+function ProductProtocolHelp({ description, protocolName }) {
+  const [open, setOpen] = useState(false);
+  const [position, setPosition] = useState({ top: 0, left: 0, maxWidth: TOOLTIP_MAX_WIDTH });
+  const triggerRef = useRef(null);
+
+  useLayoutEffect(() => {
+    if (!open || !triggerRef.current || typeof document === "undefined") return;
+    const el = triggerRef.current;
+    const rect = el.getBoundingClientRect();
+    const viewW = window.innerWidth;
+    const maxW = Math.min(TOOLTIP_MAX_WIDTH, viewW - TOOLTIP_MARGIN * 2);
+    let left = rect.left;
+    if (left + maxW > viewW - TOOLTIP_MARGIN) left = viewW - maxW - TOOLTIP_MARGIN;
+    if (left < TOOLTIP_MARGIN) left = TOOLTIP_MARGIN;
+    setPosition({
+      top: rect.bottom + 6,
+      left,
+      maxWidth: maxW,
+    });
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const handleClickOutside = (e) => {
+      if (triggerRef.current && !triggerRef.current.contains(e.target)) {
+        const tooltip = document.querySelector(".product-protocol-tooltip");
+        if (tooltip && tooltip.contains(e.target)) return;
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [open]);
+
+  const tooltipEl = open && typeof document !== "undefined" && (
+    <div
+      role="tooltip"
+      className="product-protocol-tooltip"
+      style={{
+        position: "fixed",
+        top: position.top,
+        left: position.left,
+        zIndex: 10050,
+        minWidth: "200px",
+        maxWidth: position.maxWidth,
+        padding: "12px 14px",
+        background: "#fff",
+        border: "1px solid #e5e7eb",
+        borderRadius: "10px",
+        boxShadow: "0 4px 14px rgba(0,0,0,0.12)",
+        fontSize: "13px",
+        lineHeight: 1.55,
+        color: "#374151",
+      }}
+    >
+      {protocolName && (
+        <div style={{ fontWeight: 600, marginBottom: "6px", color: "#111" }}>{protocolName}</div>
+      )}
+      <div
+        className="product-protocol-tooltip__content"
+        dangerouslySetInnerHTML={{ __html: description ? decodeHtmlEntities(description) : "" }}
+      />
+    </div>
+  );
+
+  return (
+    <>
+      <span ref={triggerRef} style={{ position: "relative", display: "inline-flex", alignItems: "center" }}>
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-label="Daha fazla bilgi"
+          style={{
+            width: "20px",
+            height: "20px",
+            borderRadius: "50%",
+            border: "1px solid #888",
+            background: "#fff",
+            color: "#555",
+            fontSize: "12px",
+            fontWeight: "700",
+            lineHeight: 1,
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            flexShrink: 0,
+          }}
+        >
+          ?
+        </button>
+      </span>
+      {tooltipEl && ReactDOM.createPortal(tooltipEl, document.body)}
+    </>
+  );
+}
 
 export default function Details9({ product }) {
   const [currentColor, setCurrentColor] = useState(colors[0]);
@@ -20,13 +124,18 @@ export default function Details9({ product }) {
   const cartItems = useCartStore((s) => s.items);
   const [isAdding, setIsAdding] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showMaxReachedToast, setShowMaxReachedToast] = useState(false);
+  const [showShortDescription, setShowShortDescription] = useState(false);
+
+  useEffect(() => {
+    const check = () => setShowShortDescription(typeof window !== "undefined" && window.innerWidth >= 992);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
 
   // Icon mapping
-  const iconMap = {
-    "eye": "👁️",
-    "shopping-cart": "🛒",
-    "truck": "🚚"
-  };
+
 
   // API'den gelen info_messages'ı kullan
   const announcementMessages = useMemo(() => {
@@ -91,6 +200,9 @@ export default function Details9({ product }) {
       category_slug: categorySlug,
       is_in_stock: product.is_in_stock,
       is_pre_order: product.is_pre_order,
+      price: product.price,
+      discount_price: product.discount_price,
+      cover_image: product.images?.[0] || product.gallery_images?.[0] || null,
     };
   }, [product, hasVariations]);
 
@@ -117,13 +229,6 @@ export default function Details9({ product }) {
     });
     return list;
   }, [product, baseVariation, hasVariations]);
-
-  const [currentVariation, setCurrentVariation] = useState(hasVariations ? allVariations[0] : null);
-
-  useEffect(() => {
-    if (hasVariations && allVariations.length > 0) setCurrentVariation(allVariations[0]);
-    else setCurrentVariation(null);
-  }, [hasVariations, allVariations]);
 
   // Min/Max: API ne veriyorsa onu uygula
   // max_purchase_quantity = 0 ise sınırsız (null), değilse o değere kadar sınırlı
@@ -223,9 +328,9 @@ export default function Details9({ product }) {
     if (effectiveMaxLimit > 0) {
       const currentQtyInCart = existingCartItem?.quantity || 0;
 
-      // Eğer zaten sınırdaysa ekleme yapma
+      // Eğer zaten sınırdaysa ekleme yapma, bildirim göster
       if (currentQtyInCart >= effectiveMaxLimit) {
-        // Belki burada buton metnini "Maksimum Miktar" gibi bir şeye çevirebilirsin ama şimdilik sessizce durduruyoruz
+        setShowMaxReachedToast(true);
         return;
       }
 
@@ -237,9 +342,11 @@ export default function Details9({ product }) {
 
     setIsAdding(true);
     try {
-      await addItem(product, qtyToAdd, false);
-      setShowSuccess(true);
-      setTimeout(() => setShowSuccess(false), 2000);
+      const result = await addItem(product, qtyToAdd, false);
+      if (result?.added) {
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 2000);
+      }
     } catch (error) {
       console.error("Sepete ekleme hatası:", error);
     } finally {
@@ -247,12 +354,13 @@ export default function Details9({ product }) {
     }
   };
   return (
-    <section className="flat-spacing-4 pt_0" style={{ maxWidth: "100vw", overflow: "clip" }}>
+    <section className=" pt_0" style={{ maxWidth: "100vw", overflow: "clip" }}>
+      <MaxQuantityToast visible={showMaxReachedToast} onHide={() => setShowMaxReachedToast(false)} />
       <div className="tf-main-product section-image-zoom">
         <div className="container">
           <div className="row">
             <div className="col-md-6">
-              <div className="tf-product-media-wrap sticky-top">
+              <div className="tf-product-media-wrap ">
                 <div className="thumbs-slider">
                   <Slider5
                     handleColor={handleColor}
@@ -271,11 +379,13 @@ export default function Details9({ product }) {
                     <h5>{product.title ? product.title : "Cotton jersey top"}</h5>
                   </div>
 
-                  {/* Rating gösterimi - Sadece yorum varsa göster */}
+                  {/* Rating gösterimi: puan ortalaması (4.8) + yıldızlar + değerlendirme sayısı */}
                   {(product.reviews?.count > 1) && (product.reviews?.average_rating) && (product.reviews?.average_rating > 0 || product.rating > 0 || product.average_rating > 0) && (
                     <div className="tf-product-info-rating" style={{ marginBottom: "12px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        <span style={{ fontSize: "14px", fontWeight: "600" }}>{(product.reviews?.average_rating || product.rating || product.average_rating || 0).toFixed(1)}</span>
+                        <span style={{ fontSize: "14px", fontWeight: "600", color: "#1a1a1a" }}>
+                          {(product.reviews?.average_rating || product.rating || product.average_rating || 0).toFixed(1)}
+                        </span>
                         <div className="stars-box" style={{ display: "flex", gap: "2px" }}>
                           {[...Array(5)].map((_, i) => {
                             const rating = product.reviews?.average_rating || product.rating || product.average_rating || 0;
@@ -307,7 +417,26 @@ export default function Details9({ product }) {
                         </div>
 
                         {(product.reviews?.count || product.reviews_count || product.review_count) > 0 && (
-                          <span style={{ fontSize: "13px", color: "#888" }}><b style={{ fontWeight: "600", color: "#777" }}>{product.reviews?.count || product.reviews_count || product.review_count} </b> Değerlendirme </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              window.location.hash = "#product-reviews";
+                              setTimeout(() => document.getElementById("product-reviews")?.scrollIntoView({ behavior: "smooth" }), 50);
+                            }}
+                            style={{ fontSize: "13px", color: "#888", display: "inline-flex", alignItems: "center", gap: "4px", background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "inherit" }}
+                          >
+                            <b style={{ fontWeight: "600", color: "#777" }}>{product.reviews?.count || product.reviews_count || product.review_count} </b>
+                            Değerlendirme
+                            {product.reviews?.fotografli_yorum && (
+                              <span style={{ display: "inline-flex", alignItems: "center", marginLeft: "2px" }} title="Fotoğraflı yorumlar">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                                  <rect x="2" y="5" width="20" height="14" rx="2" ry="2" />
+                                  <line x1="2" y1="9" x2="22" y2="9" />
+                                  <circle cx="12" cy="13" r="3" />
+                                </svg>
+                              </span>
+                            )}
+                          </button>
                         )}
                       </div>
                       {product.bundle_items && Array.isArray(product.bundle_items) && product.bundle_items.length > 0 && (
@@ -318,6 +447,18 @@ export default function Details9({ product }) {
                     </div>
                   )}
 
+                  {/* Fiyat - sadece PC’de (mobilde sticky bar’da) */}
+                  <div className="tf-product-info-price d-none d-lg-block" style={{ marginBottom: "16px" }}>
+                    <span className="price-on-sale" style={{ fontSize: "20px", fontWeight: "700", color: originalPrice ? "#0bc15c" : "var(--primary, #3c81b5)" }}>
+                      ₺{Number(finalPrice).toLocaleString("tr-TR")}
+                    </span>
+                    {originalPrice != null && originalPrice > finalPrice && (
+                      <span className="compare-at-price" style={{ fontSize: "15px", color: "#999", textDecoration: "line-through", marginLeft: "8px" }}>
+                        ₺{Number(originalPrice).toLocaleString("tr-TR")}
+                      </span>
+                    )}
+                  </div>
+
                   <div className="tf-product-info-badges">
                     <div className="product-status-content">
 
@@ -327,13 +468,12 @@ export default function Details9({ product }) {
                             const isActive = idx === currentMessageIndex;
                             const isNext = idx === (currentMessageIndex + 1) % announcementMessages.length;
                             const isAnimatingOut = isActive && isAnimating;
-                            const icon = msg.icon ? iconMap[msg.icon] || "" : "";
+
                             return (
                               <p
                                 key={idx}
                                 className={`fw-6 announcement-message ${isActive ? "active" : ""} ${isNext && isAnimating ? "next" : ""} ${isAnimatingOut ? "animating-out" : ""}`}
                               >
-                                {icon && <span style={{ marginRight: "6px" }}>{icon}</span>}
                                 {msg.message}
                               </p>
                             );
@@ -343,22 +483,6 @@ export default function Details9({ product }) {
                         )}
                       </div>
                     </div>
-                  </div>
-                  <div className="tf-product-info-price">
-                    <div className="price-on-sale">₺{finalPrice.toLocaleString("tr-TR")}</div>
-                    {originalPrice && originalPrice > finalPrice && (
-                      <div className="compare-at-price">₺{originalPrice.toLocaleString("tr-TR")}</div>
-                    )}
-                    {/* {(timeBasedDiscount || product.discount_price) && originalPrice && (
-                      <div className="badges-on-sale">
-                        <span>
-                          {timeBasedDiscount
-                            ? timeBasedDiscount.discount_value
-                            : Math.round(((originalPrice - finalPrice) / originalPrice) * 100)}
-                        </span>
-                        % İNDİRİM
-                      </div>
-                    )} */}
                   </div>
 
                   {timeBasedDiscount && countdownTargetDate && (
@@ -379,43 +503,23 @@ export default function Details9({ product }) {
                       </div>
                     </div>
                   )}
+                  {/* Birlikte Al - desktop: burada; mobil: açıklama (tab) alanından sonra (sayfada) */}
                   {hasVariations && (
-                    <div className="tf-product-info-variant-picker">
-                      <div className="variant-picker-item"></div>
-                      <div className="variant-picker-item">
-                        <form className="variant-picker-values">
-                          {allVariations.map((variation, idx) => {
-                            const inputId = `variation-${idx}`;
-                            const isActive =
-                              currentVariation &&
-                              (currentVariation.slug === variation.slug || currentVariation.name === variation.name);
-                            const variationUrl = `/magaza/${variation.category_slug || "urunler"}/${variation.slug || ""
-                              }`;
-                            return (
-                              <React.Fragment key={variation.slug || variation.name || idx}>
-                                <input type="radio" name="variation" id={inputId} readOnly checked={isActive} />
-                                <label
-                                  onClick={() => {
-                                    if (!isActive) setCurrentVariation(variation);
-                                  }}
-                                  className="style-text"
-                                  htmlFor={inputId}
-                                  data-value={variation.slug || variation.name}
-                                >
-                                  <p>
-                                    <Link href={variationUrl}>{variation.name}</Link>
-                                  </p>
-                                </label>
-                              </React.Fragment>
-                            );
-                          })}
-                        </form>
-                      </div>
+                    <div className="d-none d-md-block">
+                      <BirlikteAlNew
+                        variations={allVariations}
+                        currentSlug={product.slug}
+                        currentCategorySlug={
+                          product.primary_category?.slug ||
+                          (Array.isArray(product.categories) && product.categories[0]?.slug) ||
+                          "urunler"
+                        }
+                      />
                     </div>
                   )}
 
-                  {/* Kısa Açıklama */}
-                  {product.short_description && (
+                  {/* Kısa Açıklama - sadece desktop (mobilde render etme) */}
+                  {showShortDescription && product.short_description && (
                     <>
                       <style dangerouslySetInnerHTML={{
                         __html: `
@@ -467,9 +571,39 @@ export default function Details9({ product }) {
                     </>
                   )}
 
+                  {/* Ürün protokolü: "Bu ürün [görsel] ile çalışmaktadır." + (?) ile açıklama */}
+                  {product.product_protocol && (
+                    <div className="tf-product-info-protocol" style={{ marginTop: "16px", marginBottom: "20px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                        <span style={{ fontSize: "14px", color: "#333", lineHeight: 1.5 }}>
+                          Bu ürün{" "}
+                          {product.product_protocol.image?.url ? (
+                            <Image
+                              src={product.product_protocol.image.url}
+                              alt={product.product_protocol.image?.alt_text || product.product_protocol.name || "Protokol"}
+                              width={32}
+                              height={32}
+                              style={{ display: "inline-block", verticalAlign: "middle", objectFit: "contain" }}
+                              unoptimized={String(product.product_protocol.image.url).startsWith("http")}
+                            />
+                          ) : (
+                            <strong>{product.product_protocol.name}</strong>
+                          )}{" "}
+                          ile çalışmaktadır.
+                        </span>
+                        {product.product_protocol.description && (
+                          <ProductProtocolHelp
+                            description={product.product_protocol.description}
+                            protocolName={product.product_protocol.name}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   <div className="tf-product-info-buy-button">
                     <form onSubmit={(e) => e.preventDefault()} className="">
-                      <div className="tf-product-buy-actions" style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                      <div className="tf-product-buy-actions d-none d-md-flex" style={{ alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                         <div className="tf-product-info-quantity" style={{ margin: 0 }}>
                           <Quantity setQuantity={setQuantity} minQuantity={minQuantity} maxQuantity={maxQuantity} disabled={buttonState.buttonDisabled} />
                         </div>
@@ -489,7 +623,7 @@ export default function Details9({ product }) {
 
                       {/* <div className="w-100">
                         <a href="#" className="btns-full">
-                          Satın al{" "}
+                          Sepete Ekle{" "}
                           <Image
                             alt="image"
                             src="/images/payments/paypal.png"
@@ -559,32 +693,56 @@ export default function Details9({ product }) {
                       pointer-events: auto;
                     }
 
-                    /* Varyasyon butonları: arkaplan beyaz, yazı siyah, gölge yok */
+                    /* Varyasyon chip/buton: net görünüm, seçili = primary, değil = gri chip */
                     .tf-product-info-variant-picker .variant-picker-values .style-text {
-                      background: #fff !important;
-                      color: #000 !important;
-                      border: 1px solid #e5e7eb !important;
+                      display: inline-flex !important;
+                      align-items: center !important;
+                      justify-content: center !important;
+                      min-height: 40px !important;
+                      padding: 8px 16px !important;
+                      border-radius: 10px !important;
+                      border: 1px solid #e0e0e0 !important;
+                      background: #f5f5f5 !important;
+                      color: #333 !important;
+                      font-size: 14px !important;
+                      font-weight: 500 !important;
+                      cursor: pointer !important;
+                      transition: background 0.2s, border-color 0.2s, color 0.2s !important;
                       box-shadow: none !important;
+                      text-decoration: none !important;
                     }
-                    /* Sadece seçili OLMAYAN varyasyonlarda hover border yansın */
+                    .tf-product-info-variant-picker .variant-picker-values .style-text p {
+                      margin: 0 !important;
+                      color: inherit !important;
+                      font-size: inherit !important;
+                      font-weight: inherit !important;
+                    }
+                    /* Seçili OLMAYAN: hover’da daha belirgin */
                     .tf-product-info-variant-picker
                       .variant-picker-values
                       input[type="radio"]:not(:checked)
-                      + .style-text:hover {
-                      border-color: #111 !important;
+                      + .style-text:hover,
+                    .tf-product-info-variant-picker .variant-picker-values a.style-text:hover {
+                      background: #eee !important;
+                      border-color: var(--primary, #3c81b5) !important;
+                      color: #111 !important;
                     }
-                    .tf-product-info-variant-picker .variant-picker-values .style-text p,
-                    .tf-product-info-variant-picker .variant-picker-values .style-text a {
-                      color: #000 !important;
-                    }
-                    /* Seçili varyasyon: hafif soluk, tıklanamaz, hover efekti yok */
+                    /* Seçili varyasyon: primary dolgu, beyaz yazı */
                     .tf-product-info-variant-picker
                       .variant-picker-values
                       input[type="radio"]:checked
                       + .style-text {
-                      opacity: 0.7;
-                      box-shadow: none !important;
+                      background: var(--primary, #3c81b5) !important;
+                      border-color: var(--primary, #3c81b5) !important;
+                      color: #fff !important;
                       pointer-events: none;
+                      cursor: default !important;
+                    }
+                    .tf-product-info-variant-picker
+                      .variant-picker-values
+                      input[type="radio"]:checked
+                      + .style-text p {
+                      color: #fff !important;
                     }
 
                     /* Anasayfa ile aynı Sepete Eklendi animasyonu */
@@ -705,12 +863,12 @@ export default function Details9({ product }) {
                       </div>
                       <div className="text fw-6">Compare color</div>
                     </a> */}
-                    <a href="#ask_question" data-bs-toggle="modal" className="tf-product-extra-icon">
+                    {/* <a href="#ask_question" data-bs-toggle="modal" className="tf-product-extra-icon">
                       <div className="icon">
                         <i className="icon-question" />
                       </div>
                       <div className="text fw-6">Soru sor</div>
-                    </a>
+                    </a> */}
                     {/* <a href="#delivery_return" data-bs-toggle="modal" className="tf-product-extra-icon">
                       <div className="icon">
                         <svg
@@ -726,14 +884,14 @@ export default function Details9({ product }) {
                       </div>
                       <div className="text fw-6">Teslimat &amp; İade</div>
                     </a> */}
-                    <a href="#share_social" data-bs-toggle="modal" className="tf-product-extra-icon" title="Paylaş" aria-label="Paylaş">
+                    {/* <a href="#share_social" data-bs-toggle="modal" className="tf-product-extra-icon" title="Paylaş" aria-label="Paylaş">
                       <div className="icon">
                         <i className="icon-share" />
 
                       </div>
                       <div className="text fw-6">Paylaş</div>
-                    </a>
-                    <a
+                    </a> */}
+                    {/* <a
                       href={`https://api.whatsapp.com/send?phone=${(siteConfig?.contact?.phone?.whatsapp?.tel || "905526428208").replace(/\D/g, "")}&text=${encodeURIComponent(
                         `${product?.name || product?.title || "Ürün"} hakkında bilgi almak istiyorum.`
                       )}`}
@@ -748,7 +906,7 @@ export default function Details9({ product }) {
                         </svg>
                       </div>
                       <div className="text fw-6">WhatsApp</div>
-                    </a>
+                    </a> */}
 
                   </div>
 

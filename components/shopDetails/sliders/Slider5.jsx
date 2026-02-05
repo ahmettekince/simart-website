@@ -6,6 +6,7 @@ import { Navigation, Thumbs } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Gallery, Item } from "react-photoswipe-gallery";
 import ModelViewerModal from "@/components/modals/ModelViewerModal";
+import NavDotsPill from "@/components/common/NavDotsPill";
 
 export default function Slider5({
   currentColor = "Beige",
@@ -50,27 +51,33 @@ export default function Slider5({
   const finalModelUrl = model3dUrl || staticModelUrl;
 
   // Her zaman model ekle (static veya prop'tan gelen)
-  if (finalModelUrl) {
-    images.push({
-      id: images.length + 1,
-      src: images[0]?.src || "/images/placeholder.jpg",
-      modelSrc: finalModelUrl,
-      alt: "3D Model",
-      width: 713,
-      height: 1070,
-      dataValue: currentColor?.toLowerCase?.() || "beige",
-      is3D: true,
-      isModel: true,
-    });
-  }
+  // if (finalModelUrl) {
+  //   images.push({
+  //     id: images.length + 1,
+  //     src: images[0]?.src || "/images/placeholder.jpg",
+  //     modelSrc: finalModelUrl,
+  //     alt: "3D Model",
+  //     width: 713,
+  //     height: 1070,
+  //     dataValue: currentColor?.toLowerCase?.() || "beige",
+  //     is3D: true,
+  //     isModel: true,
+  //   });
+  // }
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
   const swiperRef = useRef(null);
+  const [activeSlideIndex, setActiveSlideIndex] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [activeModelUrl, setActiveModelUrl] = useState(null);
 
-  // Slide değişince etkileşimi sıfırla
+  // Slide değişince: state güncelle + soldaki thumb listesini kaydır ki aktif foto görünsün (önce/sonra farkı belli olsun)
   const handleSlideChange = (swiper) => {
-    handleColor(images[swiper.activeIndex].dataValue);
+    const idx = swiper.activeIndex;
+    setActiveSlideIndex(idx);
+    handleColor(images[idx]?.dataValue);
+    if (thumbsSwiper) {
+      thumbsSwiper.slideTo(idx, 300);
+    }
   };
 
   useEffect(() => {
@@ -180,7 +187,7 @@ export default function Slider5({
         dir="ltr"
         direction="vertical"
         spaceBetween={10}
-        slidesPerView={7.1}
+        slidesPerView={5}
         className="swiper tf-product-media-thumbs other-image-zoom"
         onSwiper={setThumbsSwiper}
         modules={[Thumbs]}
@@ -192,7 +199,7 @@ export default function Slider5({
           },
           1150: {
             direction: "vertical",
-            slidesPerView: 7.1,
+            slidesPerView: 5,
           },
         }}
       >
@@ -217,99 +224,111 @@ export default function Slider5({
         ))}
       </Swiper>
       <Gallery>
-        <Swiper
-          dir="ltr"
-          style={{ touchAction: "pan-y" }}
-          spaceBetween={10}
-          slidesPerView={1}
-          autoHeight={true}
-          navigation={{
-            nextEl: ".swiper-button-next",
-            prevEl: ".swiper-button-prev",
-          }}
-          className="swiper tf-product-media-main"
-          id="gallery-swiper-started"
-          thumbs={{ swiper: thumbsSwiper }}
-          modules={[Thumbs, Navigation]}
-          onSwiper={(swiper) => (swiperRef.current = swiper)}
-          onSlideChange={handleSlideChange}
-        >
-          {images.map((slide, index) =>
-            slide.isModel ? (
-              <SwiperSlide className="swiper-slide" key={index}>
-                <div
-                  className="item"
-                  style={{
-                    position: 'relative',
-                    height: '100%',
-                    width: '100%',
-                    aspectRatio: '713 / 1070',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: '#f5f5f5'
-                  }}
-                >
-                  {/* Poster Resmi (Arkaplan) */}
-                  {slide.src && slide.src !== "/images/placeholder.jpg" && (
-                    <Image
-                      className="lazyload"
-                      data-src={slide.src}
-                      alt={""}
-                      src={slide.src}
-                      width={slide.width}
-                      height={slide.height}
-                      style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover' }}
-                    />
-                  )}
-
-                  {/* Model Açma Butonu (Merkezde) */}
-                  <button
-                    onClick={() => openModelViewer(slide.modelSrc)}
+        <div className="tf-product-main-with-dots">
+          <Swiper
+            dir="ltr"
+            style={{ touchAction: "pan-y" }}
+            spaceBetween={10}
+            slidesPerView={1}
+            autoHeight={true}
+            navigation={{
+              nextEl: ".swiper-button-next",
+              prevEl: ".swiper-button-prev",
+            }}
+            className="swiper tf-product-media-main"
+            id="gallery-swiper-started"
+            thumbs={{ swiper: thumbsSwiper }}
+            modules={[Thumbs, Navigation]}
+            onSwiper={(swiper) => (swiperRef.current = swiper)}
+            onSlideChange={handleSlideChange}
+          >
+            {images.map((slide, index) =>
+              slide.isModel ? (
+                <SwiperSlide className="swiper-slide" key={index}>
+                  <div
+                    className="item"
                     style={{
-                      zIndex: 20,
-                      padding: '12px 24px',
-                      backgroundColor: 'rgba(0,0,0,0.8)',
-                      color: '#fff',
-                      border: 'none',
-                      borderRadius: '30px',
+                      position: 'relative',
+                      height: '100%',
+                      width: '100%',
+                      aspectRatio: '713 / 1070',
                       display: 'flex',
-                      flexDirection: 'column',
                       alignItems: 'center',
-                      gap: '8px',
-                      cursor: 'pointer',
-                      backdropFilter: 'blur(5px)'
+                      justifyContent: 'center',
+                      backgroundColor: '#f5f5f5'
                     }}
                   >
-                    <i className="icon-btn3d" style={{ fontSize: '32px' }}></i>
-                    <span style={{ fontSize: '14px', fontWeight: '600' }}>3D İncele</span>
-                  </button>
-                </div>
-              </SwiperSlide>
-            ) : (
-              <SwiperSlide className="swiper-slide" key={index}>
-                <Item original={slide.src} thumbnail={slide.src} width={slide.width} height={slide.height}>
-                  {({ ref, open }) => (
-                    <a onClick={open} className="item">
+                    {/* Poster Resmi (Arkaplan) */}
+                    {slide.src && slide.src !== "/images/placeholder.jpg" && (
                       <Image
-                        ref={ref}
-                        className="tf-image-zoom lazyload"
-                        data-zoom={slide.src}
+                        className="lazyload"
                         data-src={slide.src}
-                        alt="image"
+                        alt={""}
                         src={slide.src}
                         width={slide.width}
                         height={slide.height}
+                        style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover' }}
                       />
-                    </a>
-                  )}
-                </Item>
-              </SwiperSlide>
-            )
+                    )}
+
+                    {/* Model Açma Butonu (Merkezde) */}
+                    <button
+                      onClick={() => openModelViewer(slide.modelSrc)}
+                      style={{
+                        zIndex: 20,
+                        padding: '12px 24px',
+                        backgroundColor: 'rgba(0,0,0,0.8)',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '30px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '8px',
+                        cursor: 'pointer',
+                        backdropFilter: 'blur(5px)'
+                      }}
+                    >
+                      <i className="icon-btn3d" style={{ fontSize: '32px' }}></i>
+                      <span style={{ fontSize: '14px', fontWeight: '600' }}>3D İncele</span>
+                    </button>
+                  </div>
+                </SwiperSlide>
+              ) : (
+                <SwiperSlide className="swiper-slide" key={index}>
+                  <Item original={slide.src} thumbnail={slide.src} width={slide.width} height={slide.height}>
+                    {({ ref, open }) => (
+                      <a onClick={open} className="item">
+                        <Image
+                          ref={ref}
+                          className="tf-image-zoom lazyload"
+                          data-zoom={slide.src}
+                          data-src={slide.src}
+                          alt="image"
+                          src={slide.src}
+                          width={slide.width}
+                          height={slide.height}
+                        />
+                      </a>
+                    )}
+                  </Item>
+                </SwiperSlide>
+              )
+            )}
+            <div className="swiper-button-next button-style-arrow thumbs-next"></div>
+            <div className="swiper-button-prev button-style-arrow thumbs-prev"></div>
+          </Swiper>
+          {images.length > 1 && (
+            <div className="tf-product-dots-mobile">
+              <NavDotsPill
+                total={images.length}
+                activeIndex={activeSlideIndex}
+                onDotClick={(i) => swiperRef.current?.slideTo(i)}
+                ariaLabel="Ürün görselleri"
+              />
+            </div>
           )}
-          <div className="swiper-button-next button-style-arrow thumbs-next"></div>
-          <div className="swiper-button-prev button-style-arrow thumbs-prev"></div>
-        </Swiper>{" "}
+        </div>
       </Gallery>
     </>
   );

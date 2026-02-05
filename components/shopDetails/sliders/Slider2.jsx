@@ -7,7 +7,7 @@ import Drift from "drift-zoom";
 
 export default function Slider2({
   currentColor = "Beige",
-  handleColor = () => {},
+  handleColor = () => { },
   firstImage,
 }) {
   const images = [

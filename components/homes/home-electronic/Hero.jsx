@@ -1,12 +1,19 @@
 "use client";
-import React from "react";
+import React, { useRef, useState } from "react";
 import Link from "next/link";
-import { Autoplay, Pagination } from "swiper/modules";
+import Image from "next/image";
+import { Autoplay } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
+import NavDotsPill from "@/components/common/NavDotsPill";
 
 export default function Hero({ banners = [] }) {
+  const swiperRef = useRef(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+
   // Veri yoksa bileşeni render etme
   if (!banners || banners.length === 0) return null;
+
+  const total = banners.length;
 
   return (
     <div className="tf-slideshow slider-home-2 slider-effect-fade position-relative">
@@ -15,14 +22,16 @@ export default function Hero({ banners = [] }) {
         slidesPerView={1}
         spaceBetween={0}
         centeredSlides={false}
-        loop={banners.length > 1}
+        loop={total > 1}
+        autoHeight={true}
         autoplay={{
           delay: 4000,
           disableOnInteraction: false,
         }}
         speed={1000}
-        modules={[Pagination, Autoplay]}
-        pagination={{ clickable: true, el: ".spd160" }}
+        modules={[Autoplay]}
+        onSwiper={(swiper) => (swiperRef.current = swiper)}
+        onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
         className="tf-sw-slideshow"
       >
         {banners.map((slide, index) => (
@@ -38,22 +47,20 @@ export default function Hero({ banners = [] }) {
             </div>
           </SwiperSlide>
         ))}
-      </Swiper>
-      <div className="wrap-pagination sw-absolute-2">
-        <div className="container">
-          <div className="sw-dots sw-pagination-slider justify-content-center spd160" />
+        <div className="wrap-pagination sw-absolute-2">
+          <div className="container d-flex justify-content-center">
+            <NavDotsPill
+              total={total}
+              activeIndex={activeIndex}
+              onDotClick={(i) => swiperRef.current?.slideToLoop?.(i) ?? swiperRef.current?.slideTo?.(i)}
+              ariaLabel="Banner slaytları"
+            />
+          </div>
         </div>
-      </div>
+      </Swiper>
     </div>
   );
 }
-
-// Görsel boyutları: layout için sabit oran, tarayıcının yanlış boyutta render etmesini önler
-const BANNER_SIZES = {
-  desktop: { width: 1920, height: 1080 },
-  tablet: { width: 1024, height: 576 },
-  mobile: { width: 768, height: 934 },
-};
 
 // Görsel içeriği yöneten alt bileşen — ilk slide eager, diğerleri lazy
 function BannerContent({ images, isFirstSlide = false }) {
@@ -62,45 +69,51 @@ function BannerContent({ images, isFirstSlide = false }) {
 
   return (
     <>
-      {/* Desktop (>= 1024px) */}
-      <div className="d-none d-lg-block w-100 h-100">
-        <img
+      {/* Desktop Version (>= 1024px) - görüntülenen boyuta uygun, büyük dosya indirilmez */}
+      <div className="d-none d-lg-block w-100">
+        <Image
           src={images.desktop?.url}
           alt="Banner Desktop"
-          width={BANNER_SIZES.desktop.width}
-          height={BANNER_SIZES.desktop.height}
-          className="w-100 h-100"
+          width={1920}
+          height={1080}
+          className="w-100 h-auto"
           style={{ objectFit: "cover" }}
-          loading={loadMode}
-          decoding="async"
+          sizes="100vw"
+          quality={100}
+          priority={isFirstSlide}
+          loading={isFirstSlide ? "eager" : "lazy"}
         />
       </div>
 
-      {/* Tablet (768px - 1023px) */}
-      <div className="d-none d-md-block d-lg-none w-100 h-100">
-        <img
+      {/* Tablet Version (768px - 1023px) */}
+      <div className="d-none d-md-block d-lg-none w-100">
+        <Image
           src={images.tablet?.url}
           alt="Banner Tablet"
-          width={BANNER_SIZES.tablet.width}
-          height={BANNER_SIZES.tablet.height}
-          className="w-100 h-100"
+          width={1024}
+          height={768}
+          className="w-100 h-auto"
           style={{ objectFit: "cover" }}
-          loading={loadMode}
-          decoding="async"
+          sizes="100vw"
+          quality={100}
+          priority={isFirstSlide}
+          loading={isFirstSlide ? "eager" : "lazy"}
         />
       </div>
 
-      {/* Mobile (< 768px) */}
-      <div className="d-block d-md-none w-100 mobile-banner-wrap">
-        <img
+      {/* Mobile Version (< 768px) - görüntülenen boyuta uygun küçük dosya */}
+      <div className="d-block d-md-none w-100 mobile-banner-wrap position-relative">
+        <Image
           src={images.mobile?.url}
           alt="Banner Mobile"
-          width={BANNER_SIZES.mobile.width}
-          height={BANNER_SIZES.mobile.height}
+          width={800}
+          height={934}
           className="w-100 h-auto"
           style={{ objectFit: "cover", maxWidth: "100%" }}
-          loading={loadMode}
-          decoding="async"
+          sizes="(max-width: 768px) 100vw, 800px"
+          quality={100}
+          priority={isFirstSlide}
+          loading={isFirstSlide ? "eager" : "lazy"}
         />
       </div>
     </>

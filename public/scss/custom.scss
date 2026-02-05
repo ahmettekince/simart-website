@@ -445,6 +445,63 @@ input[type="checkbox"]:checked,
   bottom: 20px !important;
 }
 
+/* NavDotsPill: aktif nokta büyük, diğerleri küçük; aktif #3c81b5 (~%80 ölçek) */
+.nav-dots-pill {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+
+  .nav-dots-pill__inner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    background: rgba(255, 252, 248, 0.85);
+    backdrop-filter: blur(6px);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  }
+
+  /* Sabit hücre: alan geçişte hareket etmesin */
+  .nav-dots-pill__cell {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 6px;
+    height: 6px;
+    flex-shrink: 0;
+  }
+
+  .nav-dots-pill__dot {
+    border-radius: 50%;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    background: #8a8a8a;
+    transition: background 0.2s ease;
+    flex-shrink: 0;
+
+    &:hover {
+      background: #6a6a6a;
+    }
+
+    /* İnaktif: küçük (hücre içinde ortalanır) */
+    &--small {
+      width: 4px;
+      height: 4px;
+    }
+
+    /* Aktif: büyük + mavi (hücreyi doldurur) */
+    &--active {
+      width: 6px;
+      height: 6px;
+      background: #3c81b5;
+      cursor: default;
+    }
+  }
+}
+
 .brand-item-v2.hover-opacity img {
   transition: 0.3s;
 
@@ -660,10 +717,163 @@ input[type="checkbox"]:checked,
   }
 }
 
+/* Desktop: soldaki thumbnails sadece 5 tane görünsün */
+@media (min-width: 1150px) {
+  .thumbs-slider .tf-product-media-thumbs {
+    max-height: 540px !important; /* ~5 thumbnail + aralıklar */
+    overflow: hidden !important;
+  }
+}
+
 @media (max-width: 1149px) {
   .thumbs-slider .tf-product-media-thumbs .swiper-slide {
     width: 72px !important;
     min-width: 72px;
+  }
+}
+
+/* Ürün detay: mobilde navigation dots (nokta), thumb'lar gizli */
+.tf-product-dots-mobile {
+  display: none;
+  position: relative;
+  margin-top: 0;
+}
+
+/* Desktop: ürün galerisi wrapper'ı boyutunu sınırla (milyonlarca px kaplamasın) */
+@media (min-width: 768px) {
+  .tf-product-main-with-dots {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    max-height: 846px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .tf-product-main-with-dots .tf-product-media-main,
+  .tf-product-main-with-dots .swiper.tf-product-media-main {
+    max-height: 846px !important;
+    height: auto !important;
+  }
+
+  .tf-product-main-with-dots .swiper-wrapper {
+    max-height: 846px;
+  }
+
+  .tf-product-main-with-dots .swiper-slide,
+  .tf-product-main-with-dots .swiper-slide .item {
+    max-height: 846px;
+    height: auto !important;
+  }
+
+  .tf-product-main-with-dots .swiper-slide .item img {
+    max-height: 846px;
+    object-fit: cover;
+  }
+}
+
+/* Ürün detay: galeri ok butonları – eski görünüm (beyaz dolgu, belirgin ok) */
+.tf-product-main-with-dots .tf-product-media-main {
+  .swiper-button-next.button-style-arrow,
+  .swiper-button-prev.button-style-arrow {
+    width: 46px;
+    height: 46px;
+    background-color: var(--white) !important;
+    border: none;
+    border-radius: 50%;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+    &::after {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--main) !important;
+    }
+    &:hover:not(.swiper-button-disabled) {
+      background-color: var(--primary) !important;
+      &::after {
+        color: var(--white) !important;
+      }
+    }
+    &.swiper-button-disabled {
+      opacity: 0.35;
+    }
+  }
+}
+
+@media (max-width: 767px) {
+
+  /* Full-bleed: section'ın overflow: clip'ini kaldır (inline style'ı !important ile geçersiz kıl) */
+  section.flat-spacing-4.pt_0:has(.tf-main-product) {
+    overflow: visible !important;
+  }
+
+  .tf-main-product.section-image-zoom,
+  .tf-main-product .container .row {
+    overflow: visible;
+  }
+
+  .tf-main-product .row>.col-md-6:first-child {
+    padding-left: 0;
+    padding-right: 0;
+    overflow: visible;
+  }
+
+  /* Fotoğraf etrafındaki boşluğu kaldır – tam genişlik (edge-to-edge) */
+  .tf-main-product .tf-product-media-wrap {
+    width: 100vw;
+    max-width: 100vw;
+    margin-left: calc(50% - 50vw);
+    margin-right: calc(50% - 50vw);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .tf-main-product .tf-product-media-main {
+    width: 100% !important;
+    max-width: 100%;
+    border-radius: 0;
+  }
+
+  .tf-main-product .thumbs-slider {
+    padding: 0;
+  }
+
+  .thumbs-slider .tf-product-media-thumbs {
+    display: none !important;
+  }
+
+  .tf-product-main-with-dots {
+    width: 100%;
+    position: relative;
+  }
+
+  /* Dot'lar fotoğrafın içinde, altta */
+  .tf-product-dots-mobile {
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 0 14px;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 2;
+    margin-top: 0;
+
+    .swiper-pagination-bullet {
+      width: 8px;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.8);
+      opacity: 1;
+      margin: 0 !important;
+      transition: background 0.2s, transform 0.2s;
+
+      &.swiper-pagination-bullet-active {
+        background: #fff;
+        transform: scale(1.2);
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.2);
+      }
+    }
   }
 }
 
@@ -915,7 +1125,7 @@ input[type="checkbox"]:checked,
 
 .cookie-settings-title {
   margin: 0;
-  font-size: 20px;
+  font-size: 16px;
   font-weight: 600;
   color: #1a1a1a;
 }
@@ -995,7 +1205,7 @@ input[type="checkbox"]:checked,
 
 .cookie-category-title {
   margin: 0;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: #333;
   flex: 1;
@@ -1115,35 +1325,160 @@ input[type="checkbox"]:checked,
   }
 }
 
-/* Ürün detay sayfasında scroll-to-top butonu sticky bar üstünde */
+/* Ürün detay sayfasında scroll-to-top butonu sticky bar'ın üzerinde */
 body.product-detail-page .progress-wrap {
-  bottom: 130px;
+  bottom: 70px;
+  z-index: 71;
 }
 
-/* Sticky bar quantity - wrapper sabit 88px, içerideki wg-quantity küçülsün (global override) */
-.tf-sticky-btn-atc .tf-sticky-atc-qty-wrap {
-  width: 88px !important;
-  min-width: 88px !important;
-  max-width: 88px !important;
+/* Desktop: sticky ATC kartı 24px + 100px yükseklik; scroll-to-top kartın üstünde dursun */
+@media (min-width: 992px) {
+  body.product-detail-page .progress-wrap {
+    bottom: 140px;
+    /* 24px + 100px (kart) + 16px boşluk */
+    z-index: 71;
+  }
+}
+
+/* Mobilde ürün detay sayfasında breadcrumb gizle */
+@media (max-width: 991px) {
+  body.product-detail-page .tf-breadcrumb {
+    display: none !important;
+  }
+}
+
+/* Protokol (?) tooltip: sayfa dışına taşmayı kaldır, metin sarmala */
+.product-protocol-tooltip {
+  max-width: min(360px, calc(100vw - 24px)) !important;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
   overflow: hidden;
+
+  .product-protocol-tooltip__content {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    max-width: 100%;
+  }
 }
 
-.tf-sticky-btn-atc .tf-sticky-atc-qty-wrap .wg-quantity {
-  width: 100% !important;
-  max-width: 100% !important;
-  height: 36px !important;
-  border-radius: 8px;
-
-  .btn-quantity {
-    width: 26px !important;
-    height: 36px !important;
-    font-size: 18px;
+/* Desktop: sticky ATC sağ altta yüzen kart - 420x100, foto 70px, bilgi 170px */
+@media (min-width: 992px) {
+  .tf-sticky-btn-atc {
+    width: 420px;
+    height: 100px;
+    min-height: 100px;
+    left: auto;
+    right: 24px;
+    bottom: 24px;
+    border-radius: 16px;
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.14);
+    overflow: hidden;
+    transform: translateY(100%);
+    visibility: hidden;
+    pointer-events: none;
+    transition: transform 0.3s ease, visibility 0.3s ease;
   }
 
-  input {
-    width: 28px !important;
-    height: 36px !important;
-    font-size: 14px;
+  .tf-sticky-btn-atc.show {
+    transform: translateY(0);
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .tf-sticky-btn-atc .container {
+    max-width: none;
+    width: 100%;
+    height: 100%;
+    padding: 10px 14px;
+    overflow: hidden;
+  }
+
+  .tf-sticky-btn-atc .tf-height-observer {
+    padding: 0;
+    height: 100%;
+    align-items: center;
+    min-width: 0;
+  }
+
+  .tf-sticky-btn-atc .tf-sticky-atc-image {
+    width: 70px;
+    max-width: 70px;
+    min-width: 70px;
+    height: 70px;
+    margin-right: 10px;
+  }
+
+  .tf-sticky-btn-atc .tf-sticky-atc-image img {
+    width: 70px !important;
+    height: 70px !important;
+    max-width: 70px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  .tf-sticky-atc-mid {
+    width: 170px;
+    min-width: 170px;
+    max-width: 170px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  /* 1–2. satır: ürün ismi, 2 satır sonra ... */
+  .tf-sticky-atc-title-line {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a1a1a;
+    line-height: 1.35;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* 3. satır: fiyat – şimdiki fiyat büyük, eski fiyat küçük; indirimde yeşil */
+  .tf-sticky-atc-price-wrap .price-on-sale {
+    font-size: 17px;
+  }
+
+  .tf-sticky-atc-price-wrap.has-discount .price-on-sale {
+    color: #0bc15c;
+  }
+
+  .tf-sticky-atc-price-wrap .compare-at-price {
+    font-size: 13px;
+    color: #999;
+    text-decoration: line-through;
+  }
+
+  .tf-sticky-btn-atc .tf-sticky-atc-spacer {
+    flex: 0 0 10px;
+    width: 10px;
+    min-width: 10px;
+    max-width: 10px;
+  }
+
+  .tf-sticky-btn-atc .tf-sticky-atc-infos {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .tf-sticky-btn-atc .tf-sticky-atc-btns {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+/* Mobil/tablet: full width sticky (mevcut davranış) */
+@media (max-width: 991px) {
+  .tf-sticky-atc-title-line {
+    display: none !important;
   }
 }
 
@@ -1619,6 +1954,26 @@ body.product-detail-page .progress-wrap {
 body.header-scroll-hide #header,
 body.header-scroll-hide header.header-default {
   top: -185px !important;
+}
+
+/* Mobilde alt bottom bar (toolbar) gizle; sticky bar her zaman en altta, sabit görünür */
+@media (max-width: 767px) {
+  .tf-toolbar-bottom.type-1150 {
+    display: none !important;
+  }
+
+  .tf-sticky-btn-atc {
+    bottom: 0 !important;
+    box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.12), 0 -2px 8px rgba(0, 0, 0, 0.08);
+  }
+
+  /* Ürün detay: mobilde sticky bar baştan sabit görünsün */
+  body.product-detail-page .tf-sticky-btn-atc {
+    transform: translateY(0);
+    visibility: visible;
+    pointer-events: auto;
+    opacity: 1;
+  }
 }
 
 /* Teknik Özellikler tab: başlık + kategoriler + özellik tablosu */

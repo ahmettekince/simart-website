@@ -100,12 +100,12 @@ export default function Footer({ bgColor = "", footerMenus = null }) {
                     </li>
                     <li>
                       <p>
-                        Email: <a href="mailto:destek@simart.me">destek@simart.me</a>
+                        E-posta: <a href="mailto:destek@simart.me">destek@simart.me</a>
                       </p>
                     </li>
                     <li>
                       <p>
-                        Phone: <a href="tel:+908503466126">+90 850 346 6126</a>
+                        Telefon: <a href="tel:+908503466126">+90 850 346 6126</a>
                       </p>
                     </li>
                   </ul>

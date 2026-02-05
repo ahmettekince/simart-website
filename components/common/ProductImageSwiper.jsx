@@ -1,9 +1,10 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Navigation } from "swiper/modules";
+import NavDotsPill from "@/components/common/NavDotsPill";
 
 /**
  * Product image swiper component
@@ -28,6 +29,7 @@ export default function ProductImageSwiper({
     categorySlug = "urunler",
 }) {
     const [currentIndex, setCurrentIndex] = useState(0);
+    const swiperRef = useRef(null);
 
     // Helper to render campaign tags
     const renderCampaignTags = () => {
@@ -86,11 +88,9 @@ export default function ProductImageSwiper({
                             display: 'block',
                         }}
                     >
-                        <Image
+                        <img
                             src={tag.url}
                             alt="Campaign Tag"
-                            width={60}
-                            height={60}
                             className="campaign-tag-img"
                         />
                     </Link>
@@ -102,19 +102,15 @@ export default function ProductImageSwiper({
     if (!images || images.length === 0) {
         return (
             <div className="product-img">
-                <Image
+                <img
                     className="img-product"
                     src="/images/products/product-1.jpg"
                     alt={productName}
-                    width={width}
-                    height={height}
-                    quality={100}
-                    sizes={sizes}
                     style={{
                         objectFit: 'cover',
                         objectPosition: 'center',
                         width: '100%',
-                        height: '100%'
+                        height: 'auto'
                     }}
                 />
             </div>
@@ -149,19 +145,15 @@ export default function ProductImageSwiper({
                             height: '100%'
                         }}
                     >
-                        <Image
+                        <img
                             className="img-product"
                             src={imageUrl}
                             alt={productName}
-                            width={width}
-                            height={height}
-                            quality={100}
-                            sizes={sizes}
                             style={{
                                 objectFit: 'cover',
                                 objectPosition: 'center',
                                 width: '100%',
-                                height: '100%'
+                                height: 'auto'
                             }}
                             loading="lazy"
                         />
@@ -211,15 +203,13 @@ export default function ProductImageSwiper({
         <>
             <div className="product-img-swiper position-relative no-hover-effect">
                 <Swiper
+                    onSwiper={(swiper) => { swiperRef.current = swiper; }}
                     modules={[Pagination, Navigation]}
                     spaceBetween={0}
                     slidesPerView={1}
                     loop={true}
-                    pagination={{
-                        clickable: true,
-                        dynamicBullets: false,
-                    }}
-                    onSlideChange={(swiper) => setCurrentIndex(swiper.activeIndex)}
+                    pagination={false}
+                    onSlideChange={(swiper) => setCurrentIndex(swiper.realIndex)}
                     className="product-images-swiper"
                 >
                     {images.map((image, index) => {
@@ -227,19 +217,15 @@ export default function ProductImageSwiper({
                         return (
                             <SwiperSlide key={index}>
                                 <Link href={`/magaza/${categorySlug}/${productSlug}`} className="product-img">
-                                    <Image
+                                    <img
                                         className="img-product"
                                         src={imageUrl}
                                         alt={`${productName} - ${index + 1}`}
-                                        width={width}
-                                        height={height}
-                                        quality={100}
-                                        sizes={sizes}
                                         style={{
                                             objectFit: 'cover',
                                             objectPosition: 'center',
                                             width: '100%',
-                                            height: '100%'
+                                            height: 'auto'
                                         }}
                                         loading="lazy"
                                     />
@@ -251,6 +237,16 @@ export default function ProductImageSwiper({
 
                 {renderCampaignTags()}
 
+                {images.length > 1 && (
+                    <div className="product-images-swiper__nav-dots">
+                        <NavDotsPill
+                            total={images.length}
+                            activeIndex={currentIndex}
+                            onDotClick={(i) => swiperRef.current?.slideToLoop(i)}
+                            ariaLabel="Ürün görselleri"
+                        />
+                    </div>
+                )}
             </div>
             <style jsx global>{`
                 /* Campaign Tags Styling - Duplicate for Swiper version since JSX Styles are scoped or need to be global for this usage */
@@ -285,6 +281,21 @@ export default function ProductImageSwiper({
                 .no-hover-effect:hover .img-product,
                 .card-product-wrapper:hover .no-hover-effect .img-product {
                     opacity: 1 !important;
+                }
+                /* Nav dots: fotoğrafın üzerinde, altta ve ortada */
+                .product-images-swiper__nav-dots {
+                    position: absolute;
+                    bottom: 12px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    z-index: 20;
+                    pointer-events: none;
+                }
+                .product-images-swiper__nav-dots .nav-dots-pill {
+                    pointer-events: auto;
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
                 }
                 .product-images-swiper .swiper-pagination {
                     position: absolute;

@@ -90,10 +90,13 @@ export default function MagazaDisplay({ products: initialProducts = [], categori
                         }
                     }
                     @media (max-width: 768px) {
+                        .product-grid {
+                            margin: -6px;
+                        }
                         .product-col {
                             flex: 0 0 50%;
                             max-width: 50%;
-                            padding: 8px;
+                            padding: 6px;
                         }
                         .magaza-list-section {
                             padding: 10px 0 60px;
@@ -103,8 +106,11 @@ export default function MagazaDisplay({ products: initialProducts = [], categori
                         }
                     }
                     @media (max-width: 480px) {
+                        .product-grid {
+                            margin: -4px;
+                        }
                         .product-col {
-                            padding: 5px;
+                            padding: 4px;
                         }
                     }
                 `}</style>
