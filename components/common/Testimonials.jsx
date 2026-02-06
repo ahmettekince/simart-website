@@ -1,12 +1,16 @@
 "use client";
 import Image from "next/image";
 import { testimonials } from "@/data/testimonials";
-import React from "react";
+import React, { useRef, useState } from "react";
 import Link from "next/link";
-import { Navigation, Pagination } from "swiper/modules";
+import { Navigation } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
+import NavDotsPill from "@/components/common/NavDotsPill";
 
 export default function Testimonials() {
+  const swiperRef = useRef(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+
   return (
     <section
       className="flat-spacing-5 pt_0 flat-testimonial"
@@ -23,6 +27,9 @@ export default function Testimonials() {
             className="swiper tf-sw-testimonial"
             spaceBetween={30} // Equivalent to data-space-lg
             slidesPerView={3} // Equivalent to data-preview
+            loop={testimonials.length > 3}
+            onSwiper={(swiper) => (swiperRef.current = swiper)}
+            onSlideChange={(swiper) => setActiveIndex(swiper.realIndex ?? swiper.activeIndex)}
             breakpoints={{
               0: {
                 slidesPerView: 1, // Equivalent to data-mobile
@@ -37,12 +44,11 @@ export default function Testimonials() {
                 spaceBetween: 30, // Equivalent to data-space-md
               },
             }}
-            modules={[Navigation, Pagination]}
+            modules={[Navigation]}
             navigation={{
               prevEl: ".snbp3",
               nextEl: ".snbn3",
             }}
-            pagination={{ clickable: true, el: ".spb3" }}
           >
             {testimonials.map((testimonial, index) => (
               <SwiperSlide className="swiper-slide" key={index}>
@@ -96,7 +102,16 @@ export default function Testimonials() {
           <div className="nav-sw nav-prev-slider nav-prev-testimonial lg snbn3">
             <span className="icon icon-arrow-right" />
           </div>
-          <div className="sw-dots style-2 sw-pagination-testimonial justify-content-center spb3" />
+          {testimonials.length > 1 && (
+            <div className="d-flex justify-content-center" style={{ marginTop: "20px" }}>
+              <NavDotsPill
+                total={testimonials.length}
+                activeIndex={activeIndex}
+                onDotClick={(i) => swiperRef.current?.slideToLoop?.(i) ?? swiperRef.current?.slideTo?.(i)}
+                ariaLabel="Müşteri yorumları"
+              />
+            </div>
+          )}
         </div>
       </div>
     </section>

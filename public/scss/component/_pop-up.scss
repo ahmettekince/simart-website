@@ -1028,6 +1028,9 @@
       width: 80px;
       height: 110px;
       border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden;
+      display: block;
 
       img {
         width: 100%;
@@ -1103,6 +1106,8 @@
   }
 
   .tf-minicart-recommendations-item {
+    margin: 4px 12px;
+    padding: 4px 0;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -1189,7 +1194,7 @@
   }
 
   .tf-mini-cart-bottom-wrap {
-    padding: 4px 36px 12px;
+    padding: 4px 15px 12px;
 
     .tf-cart-totals-discounts {
       display: flex;

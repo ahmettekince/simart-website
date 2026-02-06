@@ -16,6 +16,8 @@ import { getProductButtonState } from "@/utils/productStock";
 import { siteConfig } from "@/config/site";
 import MaxQuantityToast from "@/components/common/MaxQuantityToast";
 import BirlikteAlNew from "./BirlikteAlNew";
+import StarRating from "@/components/common/StarRating";
+import ProductVideoPlayer from "./ProductVideoPlayer";
 
 const TOOLTIP_MAX_WIDTH = 360;
 const TOOLTIP_MARGIN = 16;
@@ -291,15 +293,6 @@ export default function Details9({ product }) {
     }
   };
 
-  const {
-    addProductToCart,
-    isAddedToCartProducts,
-    addToCompareItem,
-    isAddedtoCompareItem,
-    addToWishlist,
-    isAddedtoWishlist,
-  } = useContextElement();
-
   // Stok durumuna göre buton metni ve durumu
   const buttonState = useMemo(() => {
     return getProductButtonState(product);
@@ -317,7 +310,7 @@ export default function Details9({ product }) {
     }
 
     // Global max veya ürün max'ı hangisi küçükse ona göre sınırla
-    const GLOBAL_MAX = 999;
+    const GLOBAL_MAX = 99999;
     const effectiveMaxLimit = maxQuantity === null || maxQuantity === 0 ? GLOBAL_MAX : Math.min(maxQuantity, GLOBAL_MAX);
 
     if (qtyToAdd > effectiveMaxLimit) {
@@ -355,7 +348,7 @@ export default function Details9({ product }) {
   };
   return (
     <section className=" pt_0" style={{ maxWidth: "100vw", overflow: "clip" }}>
-      <MaxQuantityToast visible={showMaxReachedToast} onHide={() => setShowMaxReachedToast(false)} />
+      <MaxQuantityToast visible={showMaxReachedToast} onHide={() => setShowMaxReachedToast(false)} maxQuantity={maxQuantity} />
       <div className="tf-main-product section-image-zoom">
         <div className="container">
           <div className="row">
@@ -379,82 +372,52 @@ export default function Details9({ product }) {
                     <h5>{product.title ? product.title : "Cotton jersey top"}</h5>
                   </div>
 
-                  {/* Rating gösterimi: puan ortalaması (4.8) + yıldızlar + değerlendirme sayısı */}
-                  {(product.reviews?.count > 1) && (product.reviews?.average_rating) && (product.reviews?.average_rating > 0 || product.rating > 0 || product.average_rating > 0) && (
-                    <div className="tf-product-info-rating" style={{ marginBottom: "12px" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                        <span style={{ fontSize: "14px", fontWeight: "600", color: "#1a1a1a" }}>
-                          {(product.reviews?.average_rating || product.rating || product.average_rating || 0).toFixed(1)}
-                        </span>
-                        <div className="stars-box" style={{ display: "flex", gap: "2px" }}>
-                          {[...Array(5)].map((_, i) => {
-                            const rating = product.reviews?.average_rating || product.rating || product.average_rating || 0;
-                            const starValue = i + 1;
-                            const fillPercentage = Math.max(0, Math.min(100, ((rating - i) * 100)));
-                            const isFilled = rating >= starValue;
-                            const isPartial = rating > i && rating < starValue;
-
-                            return (
-                              <div key={i} className="star-wrapper" style={{ position: "relative", display: "inline-block", fontSize: "14px", lineHeight: 1 }}>
-                                <i className="icon-star star-empty" style={{ color: "#ddd" }} />
-                                {isFilled ? (
-                                  <i className="icon-star star-filled" style={{ position: "absolute", top: 0, left: 0, color: "#f59e0b" }} />
-                                ) : isPartial ? (
-                                  <i
-                                    className="icon-star star-filled star-partial"
-                                    style={{
-                                      position: "absolute",
-                                      top: 0,
-                                      left: 0,
-                                      color: "#f59e0b",
-                                      clipPath: `inset(0 ${100 - fillPercentage}% 0 0)`
-                                    }}
-                                  />
-                                ) : null}
-                              </div>
-                            );
-                          })}
+                  {/* Rating gösterimi: StarRating component + Değerlendirme butonu */}
+                  {((product.reviews?.average_rating || product.rating || product.average_rating || 0) > 0 ||
+                    (product.reviews?.count || product.reviews_count || product.review_count || 0) > 0) && (
+                      <div className="tf-product-info-rating" style={{ marginBottom: "12px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <StarRating
+                            rating={product.reviews?.average_rating || product.rating || product.average_rating || 0}
+                            reviewCount={product.reviews?.count || product.reviews_count || product.review_count || 0}
+                            size="large"
+                            showReviewCount={false}
+                          />
+                          {(product.reviews?.count || product.reviews_count || product.review_count) > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                window.location.hash = "#product-reviews";
+                                setTimeout(() => document.getElementById("product-reviews")?.scrollIntoView({ behavior: "smooth" }), 50);
+                              }}
+                              style={{ fontSize: "13px", color: "#888", display: "inline-flex", alignItems: "center", gap: "4px", background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "inherit" }}
+                            >
+                              <b style={{ fontWeight: "600", color: "#777" }}>{product.reviews?.count || product.reviews_count || product.review_count} </b>
+                              Değerlendirme
+                              {product.reviews?.fotografli_yorum && (
+                                <span style={{ display: "inline-flex", alignItems: "center", marginLeft: "2px" }} title="Fotoğraflı yorumlar">
+                                  <Image src="/images/products/camera.png" alt="Fotoğraflı yorumlar" width={28} height={18} style={{ flexShrink: 0, display: "block" }} />
+                                </span>
+                              )}
+                            </button>
+                          )}
                         </div>
-
-                        {(product.reviews?.count || product.reviews_count || product.review_count) > 0 && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              window.location.hash = "#product-reviews";
-                              setTimeout(() => document.getElementById("product-reviews")?.scrollIntoView({ behavior: "smooth" }), 50);
-                            }}
-                            style={{ fontSize: "13px", color: "#888", display: "inline-flex", alignItems: "center", gap: "4px", background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "inherit" }}
-                          >
-                            <b style={{ fontWeight: "600", color: "#777" }}>{product.reviews?.count || product.reviews_count || product.review_count} </b>
-                            Değerlendirme
-                            {product.reviews?.fotografli_yorum && (
-                              <span style={{ display: "inline-flex", alignItems: "center", marginLeft: "2px" }} title="Fotoğraflı yorumlar">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
-                                  <rect x="2" y="5" width="20" height="14" rx="2" ry="2" />
-                                  <line x1="2" y1="9" x2="22" y2="9" />
-                                  <circle cx="12" cy="13" r="3" />
-                                </svg>
-                              </span>
-                            )}
-                          </button>
+                        {product.bundle_items && Array.isArray(product.bundle_items) && product.bundle_items.length > 0 && (
+                          <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "6px" }}>
+                            (Bu puan paketteki ürünlerin ortalama puanıdır.)
+                          </div>
                         )}
                       </div>
-                      {product.bundle_items && Array.isArray(product.bundle_items) && product.bundle_items.length > 0 && (
-                        <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "6px" }}>
-                          (Bu puan paketteki ürünlerin ortalama puanıdır.)
-                        </div>
-                      )}
-                    </div>
-                  )}
+                    )}
 
                   {/* Fiyat - sadece PC’de (mobilde sticky bar’da) */}
                   <div className="tf-product-info-price d-none d-lg-block" style={{ marginBottom: "16px" }}>
                     <span className="price-on-sale" style={{ fontSize: "20px", fontWeight: "700", color: originalPrice ? "#0bc15c" : "var(--primary, #3c81b5)" }}>
-                      ₺{Number(finalPrice).toLocaleString("tr-TR")}
+                      {Number(finalPrice).toLocaleString("tr-TR")} TL
                     </span>
                     {originalPrice != null && originalPrice > finalPrice && (
                       <span className="compare-at-price" style={{ fontSize: "15px", color: "#999", textDecoration: "line-through", marginLeft: "8px" }}>
-                        ₺{Number(originalPrice).toLocaleString("tr-TR")}
+                        {Number(originalPrice).toLocaleString("tr-TR")} TL
                       </span>
                     )}
                   </div>
@@ -505,7 +468,7 @@ export default function Details9({ product }) {
                   )}
                   {/* Birlikte Al - desktop: burada; mobil: açıklama (tab) alanından sonra (sayfada) */}
                   {hasVariations && (
-                    <div className="d-none d-md-block">
+                    <div className="d-none d-md-block" style={{ paddingLeft: "3px" }}>
                       <BirlikteAlNew
                         variations={allVariations}
                         currentSlug={product.slug}
@@ -961,46 +924,15 @@ export default function Details9({ product }) {
                                       )}
                                     </span>
                                     {/* 2. Yıldız puanı */}
-                                    {(item.average_rating != null && item.average_rating > 0) || (item.review_count != null && item.review_count > 0) ? (
-                                      <div className="tf-product-bundle-rating" style={{ display: "flex", alignItems: "center", gap: "6px", marginTop: "6px", marginBottom: "6px" }}>
-                                        <span style={{ fontSize: "13px", fontWeight: "600" }}>
-                                          {(item.average_rating ?? 0).toFixed(1)}
-                                        </span>
-                                        <div className="stars-box" style={{ display: "flex", gap: "2px" }}>
-                                          {[...Array(5)].map((_, starIdx) => {
-                                            const rating = item.average_rating ?? 0;
-                                            const starValue = starIdx + 1;
-                                            const fillPercentage = Math.max(0, Math.min(100, (rating - starIdx) * 100));
-                                            const isFilled = rating >= starValue;
-                                            const isPartial = rating > starIdx && rating < starValue;
-                                            return (
-                                              <div key={starIdx} className="star-wrapper" style={{ position: "relative", display: "inline-block", fontSize: "12px", lineHeight: 1 }}>
-                                                <i className="icon-star star-empty" style={{ color: "#ddd" }} />
-                                                {isFilled ? (
-                                                  <i className="icon-star star-filled" style={{ position: "absolute", top: 0, left: 0, color: "#f59e0b" }} />
-                                                ) : isPartial ? (
-                                                  <i
-                                                    className="icon-star star-filled star-partial"
-                                                    style={{
-                                                      position: "absolute",
-                                                      top: 0,
-                                                      left: 0,
-                                                      color: "#f59e0b",
-                                                      clipPath: `inset(0 ${100 - fillPercentage}% 0 0)`
-                                                    }}
-                                                  />
-                                                ) : null}
-                                              </div>
-                                            );
-                                          })}
-                                        </div>
-                                        {item.review_count > 0 && (
-                                          <span style={{ fontSize: "12px", color: "#888" }}>
-                                            ({item.review_count} değerlendirme)
-                                          </span>
-                                        )}
+                                    {((item.average_rating ?? 0) > 0 || (item.review_count ?? 0) > 0) && (
+                                      <div style={{ marginTop: "6px", marginBottom: "6px" }}>
+                                        <StarRating
+                                          rating={item.average_rating ?? 0}
+                                          reviewCount={item.review_count ?? 0}
+                                          size="small"
+                                        />
                                       </div>
-                                    ) : null}
+                                    )}
                                     {/* 3. Fiyat */}
                                     <div className="tf-product-bundle-price" style={{ fontSize: "15px" }}>
                                       {item.bundle_discount_price != null &&
@@ -1010,11 +942,11 @@ export default function Details9({ product }) {
                                           <div className="price price-on-sale">
                                             {typeof item.bundle_discount_price ===
                                               "number"
-                                              ? `₺${item.bundle_discount_price.toLocaleString("tr-TR")}`
+                                              ? `${item.bundle_discount_price.toLocaleString("tr-TR")} TL`
                                               : item.bundle_discount_price}
                                           </div>
                                           <div className="compare-at-price">
-                                            ₺
+                                            {item.normal_price.toLocaleString("tr-TR")} TL
                                             {typeof item.normal_price ===
                                               "number"
                                               ? item.normal_price.toLocaleString(
@@ -1026,7 +958,7 @@ export default function Details9({ product }) {
                                       ) : (
                                         <div className="price">
                                           {typeof displayPrice === "number"
-                                            ? `₺${displayPrice.toLocaleString("tr-TR")}`
+                                            ? `${displayPrice.toLocaleString("tr-TR")} TL`
                                             : displayPrice}
                                         </div>
                                       )}
@@ -1055,6 +987,10 @@ export default function Details9({ product }) {
         maxQuantity={maxQuantity}
         soldOut={buttonState.buttonDisabled && buttonState.buttonText === "Stokta Yok"}
       />
+
+      {/* Video Player */}
+      {/* Video Player */}
+      <ProductVideoPlayer />
     </section>
   );
 }

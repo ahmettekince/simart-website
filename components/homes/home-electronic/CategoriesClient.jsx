@@ -60,26 +60,23 @@ export default function CategoriesClient({ categories }) {
                   <div className="top">
                     <h5 className="heading fw-5">{item.name}</h5>
                   </div>
-                  <div className="bottom">
-                    <button className="tf-btn collection-title hover-icon btn-light rounded-full">
-                      <span>İncele</span>
-                      <i className="icon icon-arrow1-top-left" />
-                    </button>
-                  </div>
+
                 </div>
               </Link>
             </div>
           </SwiperSlide>
         ))}
       </Swiper>
-      <div className="box-sw-navigation">
-        <NavDotsPill
-          total={total}
-          activeIndex={activeIndex}
-          onDotClick={(i) => (total > 1 ? swiperRef.current?.slideToLoop?.(i) : swiperRef.current?.slideTo?.(i))}
-          ariaLabel="Kategori slaytları"
-        />
-      </div>
+      {total > 1 && (
+        <div className="box-sw-navigation">
+          <NavDotsPill
+            total={total}
+            activeIndex={activeIndex}
+            onDotClick={(i) => swiperRef.current?.slideToLoop?.(i)}
+            ariaLabel="Kategori slaytları"
+          />
+        </div>
+      )}
     </div>
   );
 }

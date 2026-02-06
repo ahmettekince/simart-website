@@ -3,6 +3,7 @@ import Header from "@/components/headers/Header";
 import Details9 from "@/components/shopDetails/Details9";
 import Products from "@/components/shopDetails/Products";
 import ShopDetailsTab from "@/components/shopDetails/ShopDetailsTab";
+import ProductDetailHit from "@/components/shopDetails/ProductDetailHit";
 import React from "react";
 import Link from "next/link";
 import { getProductBySlug, getProductsByCategory } from "@/api/products";
@@ -146,12 +147,13 @@ export default async function page({ params }) {
         suppressHydrationWarning
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      <ProductDetailHit productSlug={urun} />
       <Header />
       <div className="tf-breadcrumb">
         <div className="container">
           <div className="tf-breadcrumb-wrap d-flex justify-content-between flex-wrap align-items-center">
             <div className="tf-breadcrumb-list">
-              <Link href={`/`} className="text">
+              {/* <Link href={`/`} className="text">
                 Mağaza
               </Link>
 
@@ -160,7 +162,7 @@ export default async function page({ params }) {
                 {categoryName}
               </Link>
               <i className="icon icon-arrow-right" />
-              <span className="text">{productName}</span>
+              <span className="text">{productName}</span> */}
             </div>
           </div>
         </div>

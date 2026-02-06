@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import apiClient from "@/utils/apiClient";
+import StarRating from "@/components/common/StarRating";
 
 export default function SearchModal() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -191,47 +192,13 @@ export default function SearchModal() {
                             <Link href={getProductLink(product)} className="d-block">
                               {product.name}
                             </Link>
-                            {(product.reviews?.average_rating != null && product.reviews.average_rating > 0) || (product.reviews?.count != null && product.reviews.count > 0) ? (
-                              <div className="rating-wrap" style={{ marginTop: "4px", display: "flex", alignItems: "center", gap: "6px" }}>
-                                <div className="stars-box" style={{ display: "flex", gap: "2px" }}>
-                                  {[...Array(5)].map((_, i) => {
-                                    const starValue = i + 1;
-                                    const rating = product.reviews?.average_rating ?? 0;
-                                    const fillPercentage = Math.max(0, Math.min(100, ((rating - i) * 100)));
-                                    const isFilled = rating >= starValue;
-                                    const isPartial = rating > i && rating < starValue;
-
-                                    return (
-                                      <div key={i} className="star-wrapper" style={{ position: "relative", display: "inline-block", fontSize: "12px", lineHeight: 1 }}>
-                                        <i className="icon-star star-empty" style={{ color: "#ddd" }} />
-                                        {isFilled ? (
-                                          <i className="icon-star star-filled" style={{ position: "absolute", top: 0, left: 0, color: "#f59e0b" }} />
-                                        ) : isPartial ? (
-                                          <i
-                                            className="icon-star star-filled star-partial"
-                                            style={{
-                                              position: "absolute",
-                                              top: 0,
-                                              left: 0,
-                                              color: "#f59e0b",
-                                              clipPath: `inset(0 ${100 - fillPercentage}% 0 0)`
-                                            }}
-                                          />
-                                        ) : null}
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                                <span className="rating-num" style={{ fontSize: "13px", fontWeight: 600 }}>
-                                  {(product.reviews?.average_rating ?? 0).toFixed(1)}
-                                </span>
-                                {(product.reviews?.count ?? 0) > 0 && (
-                                  <span className="review-num" style={{ fontSize: "12px", color: "#888" }}>
-                                    ({product.reviews.count})
-                                  </span>
-                                )}
-                              </div>
-                            ) : null}
+                            <div style={{ marginTop: "4px" }}>
+                              <StarRating
+                                rating={product.reviews?.average_rating ?? product.rating ?? product.average_rating ?? 0}
+                                reviewCount={product.reviews?.count ?? product.reviews_count ?? product.review_count ?? 0}
+                                size="small"
+                              />
+                            </div>
                             <div className="tf-product-info-price" style={{ marginTop: "4px" }}>
                               {product.discount_price && product.discount_price < product.price ? (
                                 <>

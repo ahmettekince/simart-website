@@ -237,7 +237,7 @@ export default function Details25({ product }) {
                                           <div className="price price-on-sale">
                                             {typeof item.bundle_discount_price ===
                                               "number"
-                                              ? `₺${item.bundle_discount_price.toLocaleString("tr-TR")}`
+                                              ? `₺${item.bundle_discount_price.toLocaleString("tr-TR")} `
                                               : item.bundle_discount_price}
                                           </div>
                                           <div className="compare-at-price">

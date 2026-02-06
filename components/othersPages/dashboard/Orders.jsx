@@ -55,7 +55,7 @@ export default function Orders() {
   const formatTotal = (total) => {
     if (total == null) return "-";
     const num = Number(total) || 0;
-    return `₺${num.toLocaleString("tr-TR")}`;
+    return `${num.toLocaleString("tr-TR")} TL`;
   };
 
   const getPaymentStatusClass = (paymentStatusText) => {
@@ -192,14 +192,14 @@ export default function Orders() {
               </div>
 
               {detailLoading && (
-              <div className="order-detail-skeleton">
-                <div className="skeleton-line skeleton-title" />
-                <div className="skeleton-line" />
-                <div className="skeleton-line" />
-                <div className="skeleton-line half" />
-                <div className="skeleton-block" />
-                <div className="skeleton-block short" />
-              </div>
+                <div className="order-detail-skeleton">
+                  <div className="skeleton-line skeleton-title" />
+                  <div className="skeleton-line" />
+                  <div className="skeleton-line" />
+                  <div className="skeleton-line half" />
+                  <div className="skeleton-block" />
+                  <div className="skeleton-block short" />
+                </div>
               )}
 
               {!detailLoading && detailError && (
@@ -215,11 +215,10 @@ export default function Orders() {
                         {selectedOrderDetail.order_number}
                         <button
                           type="button"
-                          className={`order-copy-btn ${
-                            copiedOrderNumber === selectedOrderDetail.order_number
+                          className={`order-copy-btn ${copiedOrderNumber === selectedOrderDetail.order_number
                               ? "copied"
                               : ""
-                          }`}
+                            }`}
                           onClick={() => handleCopyOrderNumber(selectedOrderDetail.order_number)}
                           aria-label={
                             copiedOrderNumber === selectedOrderDetail.order_number
@@ -270,9 +269,8 @@ export default function Orders() {
                       >
                         <span className="fw-6">Teslimat Adresi</span>
                         <span
-                          className={`order-section-arrow ${
-                            isAddressOpen ? "open" : ""
-                          }`}
+                          className={`order-section-arrow ${isAddressOpen ? "open" : ""
+                            }`}
                         >
                           ▾
                         </span>
@@ -289,11 +287,11 @@ export default function Orders() {
                             {(selectedOrderDetail.delivery_address.full_address ||
                               selectedOrderDetail.delivery_address.address_detail ||
                               "").split("\n").map((line, idx) => (
-                              <span key={idx}>
-                                {line}
-                                <br />
-                              </span>
-                            ))}
+                                <span key={idx}>
+                                  {line}
+                                  <br />
+                                </span>
+                              ))}
                           </div>
                         </div>
                       )}
@@ -310,9 +308,8 @@ export default function Orders() {
                         >
                           <span className="fw-6">İşlem Geçmişi</span>
                           <span
-                            className={`order-section-arrow ${
-                              isLogsOpen ? "open" : ""
-                            }`}
+                            className={`order-section-arrow ${isLogsOpen ? "open" : ""
+                              }`}
                           >
                             ▾
                           </span>

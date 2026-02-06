@@ -1,10 +1,14 @@
 "use client";
 
 import { iconBoxes3 } from "@/data/features";
-import { Pagination } from "swiper/modules";
+import { useRef, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
+import NavDotsPill from "@/components/common/NavDotsPill";
 
 export default function Features({ bgColor = "", titleFont = "" }) {
+  const swiperRef = useRef(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+
   return (
     <section
       className={`flat-spacing-1 flat-iconbox  wow fadeInUp ${bgColor}`}
@@ -15,14 +19,15 @@ export default function Features({ bgColor = "", titleFont = "" }) {
           <Swiper
             dir="ltr"
             className="swiper tf-sw-mobile"
+            loop={iconBoxes3.length > 4}
+            onSwiper={(swiper) => (swiperRef.current = swiper)}
+            onSlideChange={(swiper) => setActiveIndex(swiper.realIndex ?? swiper.activeIndex)}
             breakpoints={{
               1024: { slidesPerView: 4, spaceBetween: 30 },
               768: { slidesPerView: 3, spaceBetween: 30 },
               640: { slidesPerView: 2, spaceBetween: 15 },
               0: { slidesPerView: 1, spaceBetween: 15 },
             }}
-            modules={[Pagination]}
-            pagination={{ clickable: true, el: ".spd104" }}
           >
             {iconBoxes3.map((box, index) => (
               <SwiperSlide key={index}>
@@ -38,7 +43,16 @@ export default function Features({ bgColor = "", titleFont = "" }) {
               </SwiperSlide>
             ))}
           </Swiper>
-          <div className="sw-dots style-2 sw-pagination-mb justify-content-center spd104" />
+          {iconBoxes3.length > 1 && (
+            <div className="d-flex justify-content-center" style={{ marginTop: "20px" }}>
+              <NavDotsPill
+                total={iconBoxes3.length}
+                activeIndex={activeIndex}
+                onDotClick={(i) => swiperRef.current?.slideToLoop?.(i) ?? swiperRef.current?.slideTo?.(i)}
+                ariaLabel="Özellikler"
+              />
+            </div>
+          )}
         </div>
       </div>
     </section>

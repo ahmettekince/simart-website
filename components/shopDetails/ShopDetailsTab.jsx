@@ -5,6 +5,7 @@ import Image from "next/image";
 import { decodeHtmlEntities } from "@/utils/stripHtml";
 import Accordion from "@/components/common/Accordion";
 import BirlikteAlNew from "@/components/shopDetails/BirlikteAlNew";
+import InstallmentOptions from "@/components/shopDetails/InstallmentOptions";
 
 const SORT_OPTIONS = [
   { value: "default", label: "Varsayılan" },
@@ -130,9 +131,21 @@ export default function ShopDetailsTab({ product }) {
     return list;
   }, [product, baseVariation, hasVariations]);
 
-  // Sıra: Değerlendirmeler, (varsa) Teknik, (varsa) SSS, Kargo, İade. Açıklama tab'ı yok.
+  // Fiyat hesaplama: önce time_based_discount, sonra normal discount_price, son olarak price
+  const finalPrice = useMemo(() => {
+    const timeBasedDiscount = product?.time_based_discounts?.find(
+      (discount) => discount.remaining_minutes !== null && discount.remaining_minutes !== undefined
+    );
+    if (timeBasedDiscount && timeBasedDiscount.discounted_price) {
+      return timeBasedDiscount.discounted_price;
+    }
+    return product?.discount_price || product?.price || 0;
+  }, [product?.time_based_discounts, product?.discount_price, product?.price]);
+
+  // Sıra: Değerlendirmeler, Taksit Seçenekleri, (varsa) Teknik, (varsa) SSS, Kargo, İade. Açıklama tab'ı yok.
   const tabIds = [
     "reviews",
+    "installment",
     ...(hasTechSpecs ? ["tech"] : []),
     ...(hasFaq ? ["faq"] : []),
     "kargo",
@@ -140,18 +153,18 @@ export default function ShopDetailsTab({ product }) {
   ];
   const tabs = [
     { title: reviewCount > 0 ? `Değerlendirmeler (${reviewCount})` : "Değerlendirmeler", active: false },
+    { title: "Taksit Seçenekleri", active: false },
     ...(hasTechSpecs ? [{ title: "Teknik Özellikler", active: false }] : []),
     ...(hasFaq ? [{ title: "Sıkça Sorulan Sorular", active: false }] : []),
-    { title: "Kargo", active: false },
-    { title: "İade Politikası", active: false },
+
+
   ];
 
   const indexOf = (id) => { const i = tabIds.indexOf(id); return i >= 0 ? i + 1 : null; };
   const reviewsTabIndex = indexOf("reviews");
+  const installmentTabIndex = indexOf("installment");
   const techSpecsTabIndex = indexOf("tech");
   const faqTabIndex = indexOf("faq");
-  const kargoTabIndex = indexOf("kargo");
-  const returnTabIndex = indexOf("return");
 
   // Hash #product-reviews gelince Değerlendirmeler sekmesine geç
   useEffect(() => {
@@ -240,9 +253,9 @@ export default function ShopDetailsTab({ product }) {
                               style={{
                                 padding: "6px 11px",
                                 borderRadius: "999px",
-                                border: filterRating === null ? "2px solid #f59e0b" : "1px solid #ddd",
+                                border: filterRating === null ? "2px solid var(--primary, #3c81b5)" : "1px solid #ddd",
                                 background: "#fff",
-                                color: filterRating === null ? "#b45309" : "#666",
+                                color: filterRating === null ? "var(--primary, #3c81b5)" : "#666",
                                 cursor: "pointer",
                                 fontSize: "12px",
                                 fontWeight: "500",
@@ -254,7 +267,7 @@ export default function ShopDetailsTab({ product }) {
                             >
                               <span>Tümü</span>
                               <span>({reviewCount})</span>
-                              {filterRating === null && <i className="icon-check" style={{ color: "#f59e0b", fontSize: "10px" }} />}
+                              {filterRating === null && <i className="icon-check" style={{ color: "var(--primary, #3c81b5)", fontSize: "10px" }} />}
                             </button>
                             {[5, 4, 3, 2, 1].map((star) =>
                               ratingCounts[star] > 0 ? (
@@ -265,9 +278,9 @@ export default function ShopDetailsTab({ product }) {
                                   style={{
                                     padding: "6px 11px",
                                     borderRadius: "999px",
-                                    border: filterRating === star ? "2px solid #f59e0b" : "1px solid #ddd",
+                                    border: filterRating === star ? "2px solid var(--primary, #3c81b5)" : "1px solid #ddd",
                                     background: "#fff",
-                                    color: filterRating === star ? "#b45309" : "#333",
+                                    color: filterRating === star ? "var(--primary, #3c81b5)" : "#333",
                                     cursor: "pointer",
                                     fontSize: "12px",
                                     fontWeight: "500",
@@ -277,12 +290,12 @@ export default function ShopDetailsTab({ product }) {
                                     flexShrink: 0,
                                   }}
                                 >
-                                  <i className="icon-star star-filled" style={{ color: "#f59e0b", fontSize: "12px" }} />
+                                  <i className="icon-star star-filled" style={{ color: "#FFC107", fill: "#FFC107", fontSize: "12px" }} />
                                   <span>{star}</span>
                                   <span>{ratingLabels[star]}</span>
                                   <span>({ratingCounts[star]})</span>
                                   {filterRating === star ? (
-                                    <i className="icon-check" style={{ color: "#f59e0b", fontSize: "10px" }} />
+                                    <i className="icon-check" style={{ color: "var(--primary, #3c81b5)", fontSize: "10px" }} />
                                   ) : (
                                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: "#999" }}>
                                       <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
@@ -340,7 +353,7 @@ export default function ShopDetailsTab({ product }) {
                                     <div key={i} className="star-wrapper" style={{ position: "relative", display: "inline-block", fontSize: "14px", lineHeight: 1 }}>
                                       <i className="icon-star star-empty" style={{ color: "#ddd" }} />
                                       {isFilled ? (
-                                        <i className="icon-star star-filled" style={{ position: "absolute", top: 0, left: 0, color: "#f59e0b" }} />
+                                        <i className="icon-star star-filled" style={{ position: "absolute", top: 0, left: 0, color: "#FFC107", fill: "#FFC107" }} />
                                       ) : isPartial ? (
                                         <i
                                           className="icon-star star-filled star-partial"
@@ -348,7 +361,8 @@ export default function ShopDetailsTab({ product }) {
                                             position: "absolute",
                                             top: 0,
                                             left: 0,
-                                            color: "#f59e0b",
+                                            color: "#FFC107",
+                                            fill: "#FFC107",
                                             clipPath: `inset(0 ${100 - fillPercentage}% 0 0)`
                                           }}
                                         />
@@ -423,89 +437,19 @@ export default function ShopDetailsTab({ product }) {
                       </div>
                     ) : (
                       <div className="text-center py-5">
-                        <i className="icon-star mb_15 d-block opacity-20" style={{ fontSize: "40px" }} />
+                        <i className="icon-star mb_15 d-block opacity-20" style={{ fontSize: "40px", color: "var(--primary, #3c81b5)" }} />
                         <p className="text-muted">Bu ürün için henüz yorum yapılmamış.</p>
                       </div>
                     )}
                   </div>
+                  {/* Taksit Seçenekleri Tab */}
                   <div
-                    className={`widget-content-inner ${currentTab === kargoTabIndex ? "active" : ""}`}
+                    className={`widget-content-inner ${currentTab === installmentTabIndex ? "active" : ""}`}
                   >
-                    <div className="tf-page-privacy-policy">
-                      <div className="title">
-                        The Company Private Limited Policy
-                      </div>
-                      <p>
-                        The Company Private Limited and each of their respective
-                        subsidiary, parent and affiliated companies is deemed to
-                        operate this Website ("we" or "us") recognizes that you
-                        care how information about you is used and shared. We have
-                        created this Privacy Policy to inform you what information
-                        we collect on the Website, how we use your information and
-                        the choices you have about the way your information is
-                        collected and used. Please read this Privacy Policy
-                        carefully. Your use of the Website indicates that you have
-                        read and accepted our privacy practices, as outlined in
-                        this Privacy Policy.
-                      </p>
-                      <p>
-                        Please be advised that the practices described in this
-                        Privacy Policy apply to information gathered by us or our
-                        subsidiaries, affiliates or agents: (i) through this
-                        Website, (ii) where applicable, through our Customer
-                        Service Department in connection with this Website, (iii)
-                        through information provided to us in our free standing
-                        retail stores, and (iv) through information provided to us
-                        in conjunction with marketing promotions and sweepstakes.
-                      </p>
-                      <p>
-                        We are not responsible for the content or privacy
-                        practices on any websites.
-                      </p>
-                      <p>
-                        We reserve the right, in our sole discretion, to modify,
-                        update, add to, discontinue, remove or otherwise change
-                        any portion of this Privacy Policy, in whole or in part,
-                        at any time. When we amend this Privacy Policy, we will
-                        revise the "last updated" date located at the top of this
-                        Privacy Policy.
-                      </p>
-                      <p>
-                        If you provide information to us or access or use the
-                        Website in any way after this Privacy Policy has been
-                        changed, you will be deemed to have unconditionally
-                        consented and agreed to such changes. The most current
-                        version of this Privacy Policy will be available on the
-                        Website and will supersede all previous versions of this
-                        Privacy Policy.
-                      </p>
-                      <p>
-                        If you have any questions regarding this Privacy Policy,
-                        you should contact our Customer Service Department by
-                        email at marketing@company.com
-                      </p>
-                    </div>
+                    <InstallmentOptions productSlug={product?.slug} />
                   </div>
-                  <div
-                    className={`widget-content-inner ${currentTab === returnTabIndex ? "active" : ""}`}
-                  >
-                    <ul className="d-flex justify-content-center mb_18">
 
-                    </ul>
-                    <p className="text-center text-paragraph">
-                      LT01: 70% wool, 15% polyester, 10% polyamide, 5% acrylic 900
-                      Grms/mt
-                    </p>
-                  </div>
-                  {hasFaq && (
-                    <div
-                      className={`widget-content-inner ${currentTab === faqTabIndex ? "active" : ""}`}
-                    >
-                      <div className="flat-accordion style-default has-btns-arrow">
-                        <Accordion faqs={faqList} initialIndex={-1} />
-                      </div>
-                    </div>
-                  )}
+
                   {hasTechSpecs && (
                     <div
                       className={`widget-content-inner ${currentTab === techSpecsTabIndex ? "active" : ""}`}

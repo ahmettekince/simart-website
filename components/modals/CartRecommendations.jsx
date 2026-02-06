@@ -17,7 +17,7 @@ export default function CartRecommendations({ title = "İlginizi çekebilecekler
   const [apiRecommendations, setApiRecommendations] = useState([]);
   const [loading, setLoading] = useState(false);
   const hasCartItems = items && items.length > 0;
-  
+
   // Sepette ürün yoksa ve showWhenEmpty true ise API'den önerileri çek
   useEffect(() => {
     if (showWhenEmpty && !hasCartItems && apiRecommendations.length === 0 && !loading) {
@@ -39,7 +39,7 @@ export default function CartRecommendations({ title = "İlginizi çekebilecekler
   }, [showWhenEmpty, hasCartItems]);
 
   // Sepette ürün varsa props'tan gelen ürünleri kullan, yoksa API'den gelen önerileri kullan
-  const itemsToShow = hasCartItems 
+  const itemsToShow = hasCartItems
     ? (Array.isArray(products) ? products.slice(0, maxItems) : [])
     : (Array.isArray(apiRecommendations) ? apiRecommendations.slice(0, maxItems) : []);
 
@@ -154,7 +154,7 @@ function RecommendationItem({ product }) {
         <Link className="title" href={productUrl}>
           {title}
         </Link>
-        <div className="price">₺{Number(finalPrice || 0).toLocaleString("tr-TR")}</div>
+        <div className="price">{Number(finalPrice || 0).toLocaleString("tr-TR")} TL</div>
         <div className="tf-minicart-recommendations-actions">
           <button
             onClick={handleAddToCart}

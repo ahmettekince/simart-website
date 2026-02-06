@@ -16,7 +16,6 @@ import ToolbarShop from "@/components/modals/ToolbarShop";
 import NewsletterModal from "@/components/modals/NewsletterModal";
 import ShareModal from "@/components/modals/ShareModal";
 import ScrollTop from "@/components/common/ScrollTop";
-import WhatsappButton from "@/components/common/WhatsappButton";
 import CookieConsentBanner from "@/components/common/CookieConsentBanner";
 import Analytics from "@/components/common/Analytics";
 import GlobalGiftSelectionModal from "@/components/modals/GlobalGiftSelectionModal";
@@ -24,8 +23,8 @@ import GlobalGiftSelectionModal from "@/components/modals/GlobalGiftSelectionMod
 export default function ClientLayout({ children }) {
     const pathname = usePathname();
     const lastScrollY = useRef(0);
+    const lastScrollDirection = useRef("down");
     const [scrollDirection, setScrollDirection] = useState("down");
-    const syncFromAPI = useCartStore((state) => state.syncFromAPI);
     const isSynced = useCartStore((state) => state.isSynced);
     const initAuth = useAuthStore((state) => state.initAuth);
 
@@ -40,30 +39,51 @@ export default function ClientLayout({ children }) {
     }, []);
 
     useEffect(() => {
-        const handleScroll = () => {
-            const header = document.querySelector("header");
-            if (header) {
-                if (window.scrollY > 100) {
-                    header.classList.add("header-bg");
-                } else {
-                    header.classList.remove("header-bg");
-                }
-            }
+        let ticking = false;
+        const scrollThreshold = 5; // Minimum scroll farkı (px) - küçük değişiklikleri ignore et
 
-            const currentScrollY = window.scrollY;
-            if (currentScrollY > 250) {
-                if (currentScrollY > lastScrollY.current) {
-                    setScrollDirection("down");
-                } else {
-                    setScrollDirection("up");
-                }
-            } else {
-                setScrollDirection("down");
+        const handleScroll = () => {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    const header = document.querySelector("header");
+                    if (header) {
+                        if (window.scrollY > 100) {
+                            header.classList.add("header-bg");
+                        } else {
+                            header.classList.remove("header-bg");
+                        }
+                    }
+
+                    const currentScrollY = window.scrollY;
+                    const scrollDifference = Math.abs(currentScrollY - lastScrollY.current);
+
+                    // Sadece yeterli scroll farkı varsa direction'ı güncelle
+                    if (scrollDifference >= scrollThreshold) {
+                        let newDirection = lastScrollDirection.current;
+
+                        if (currentScrollY > 250) {
+                            newDirection = currentScrollY > lastScrollY.current ? "down" : "up";
+                        } else {
+                            // Scroll 250'den azsa header'ı göster
+                            newDirection = "down";
+                        }
+
+                        // Sadece direction gerçekten değiştiyse state'i güncelle
+                        if (lastScrollDirection.current !== newDirection) {
+                            lastScrollDirection.current = newDirection;
+                            setScrollDirection(newDirection);
+                        }
+
+                        lastScrollY.current = currentScrollY;
+                    }
+
+                    ticking = false;
+                });
+                ticking = true;
             }
-            lastScrollY.current = currentScrollY;
         };
 
-        window.addEventListener("scroll", handleScroll);
+        window.addEventListener("scroll", handleScroll, { passive: true });
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 

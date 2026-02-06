@@ -231,7 +231,7 @@ export default function OrderSummary({
                           {item.name}
                         </Link>
                       </div>
-                      <span className="price">₺{itemTotal.toLocaleString("tr-TR")}</span>
+                      <span className="price">{itemTotal.toLocaleString("tr-TR")} TL</span>
                     </div>
                   </li>
                 );
@@ -323,7 +323,7 @@ export default function OrderSummary({
                   Ara Toplam
                 </h6>
                 <h6 className="fw-5" style={{ fontSize: "14px" }}>
-                  ₺{cartTotals.subtotal.toLocaleString("tr-TR")}
+                  {cartTotals.subtotal.toLocaleString("tr-TR")} TL
                 </h6>
               </div>
             )}
@@ -335,7 +335,7 @@ export default function OrderSummary({
                   Size Özel İndirim
                 </h6>
                 <h6 className="fw-5" style={{ fontSize: "14px", color: "#0bc15c" }}>
-                  -₺{cartTotals.customDiscountAmount.toLocaleString("tr-TR")}
+                  -{cartTotals.customDiscountAmount.toLocaleString("tr-TR")} TL
                 </h6>
               </div>
             )}
@@ -345,7 +345,7 @@ export default function OrderSummary({
                   Kampanya İndirimi
                 </h6>
                 <h6 className="fw-5" style={{ fontSize: "14px", color: "#0bc15c" }}>
-                  -₺{cartTotals.campaignDiscountAmount.toLocaleString("tr-TR")}
+                  -{cartTotals.campaignDiscountAmount.toLocaleString("tr-TR")} TL
                 </h6>
               </div>
             )}
@@ -376,7 +376,7 @@ export default function OrderSummary({
                   </button>
                 </h6>
                 <h6 className="fw-5" style={{ fontSize: "14px", color: "#0bc15c" }}>
-                  -₺{cartTotals.couponDiscountAmount.toLocaleString("tr-TR")}
+                  -{cartTotals.couponDiscountAmount.toLocaleString("tr-TR")} TL
                 </h6>
               </div>
             )}
@@ -384,7 +384,7 @@ export default function OrderSummary({
 
           <div className="d-flex justify-content-between" style={{ borderTop: "1px solid #e5e5e5", paddingTop: "10px", marginTop: "10px" }}>
             <h6 className="fw-5" style={{ fontSize: "18px" }}>Toplam</h6>
-            <h6 className="total fw-5" style={{ fontSize: "18px" }}>₺{cartTotals.total.toLocaleString("tr-TR")}</h6>
+            <h6 className="total fw-5" style={{ fontSize: "18px" }}>{cartTotals.total.toLocaleString("tr-TR")} TL</h6>
           </div>
           {/* Sipariş Notu - Checkbox ile kontrol edilebilir */}
 

@@ -94,13 +94,41 @@ export const useCartStore = create(
         addItem: async (product, quantity = 1, openModal = false, options = null) => {
             if (!product || !product.id) {
                 log('[CartStore] addItem: Geçersiz ürün objesi');
-                return { added: false };
+                return { added: false, error: 'Geçersiz ürün' };
             }
 
             const productSlug = product.slug || '';
             if (!productSlug) {
                 log('[CartStore] addItem: Ürün slug\'ı bulunamadı');
-                return { added: false };
+                return { added: false, error: 'Ürün slug\'ı bulunamadı' };
+            }
+
+            // Max quantity kontrolü - sepetteki mevcut miktarı kontrol et
+            const state = get();
+            const existingItem = state.items.find(item => 
+                item?.product?.id === product.id || 
+                item?.id === product.id ||
+                item?.productId === product.id ||
+                (item?.product && item.product.id === product.id)
+            );
+            
+            const currentQty = existingItem?.quantity || 0;
+            // Max bilgisini önce sepetteki item'dan al (daha güncel), yoksa product'tan al
+            const rawMax = existingItem?.max_purchase_quantity ?? 
+                          existingItem?.product?.max_purchase_quantity ?? 
+                          existingItem?.product?.max_quantity ??
+                          product.max_purchase_quantity ?? 
+                          product.max_quantity ?? 
+                          null;
+            const parsedMax = rawMax === null || rawMax === undefined ? null : Number(rawMax);
+            const maxQty = parsedMax === 0 || parsedMax === null ? null : (Number.isFinite(parsedMax) ? parsedMax : null);
+            
+            if (maxQty != null && maxQty > 0) {
+                // Eğer mevcut miktar + eklenecek miktar max'ı aşıyorsa, ekleme yapma
+                if (currentQty + quantity > maxQty) {
+                    log(`[CartStore] addItem: Max quantity limit reached. Current: ${currentQty}, Adding: ${quantity}, Max: ${maxQty}`);
+                    return { added: false, error: 'MAX_QUANTITY_REACHED', maxQuantity: maxQty };
+                }
             }
 
             const campaigns = product.selectable_gift_campaigns || product.selectableGiftCampaigns;

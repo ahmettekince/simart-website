@@ -157,7 +157,7 @@ export default function StickyItem({
 
   return (
     <div className={`tf-sticky-btn-atc ${isVisible ? "show" : ""}`} ref={stickyRef}>
-      <MaxQuantityToast visible={showMaxReachedToast} onHide={() => setShowMaxReachedToast(false)} />
+      <MaxQuantityToast visible={showMaxReachedToast} onHide={() => setShowMaxReachedToast(false)} maxQuantity={maxQuantity} />
       <div className="container">
         <div className="tf-height-observer w-100 d-flex align-items-center">
           <div className="tf-sticky-atc-image d-none d-md-flex">
@@ -178,9 +178,9 @@ export default function StickyItem({
               {productName || "Ürün"}
             </p>
             <div className={`tf-sticky-atc-price-wrap ${totalOriginalPrice != null && totalOriginalPrice > totalPrice ? "has-discount" : ""}`}>
-              <span className="price-on-sale">₺{Number(totalPrice).toLocaleString("tr-TR")}</span>
+              <span className="price-on-sale">{Number(totalPrice).toLocaleString("tr-TR")} TL</span>
               {totalOriginalPrice != null && totalOriginalPrice > totalPrice && (
-                <span className="compare-at-price">₺{Number(totalOriginalPrice).toLocaleString("tr-TR")}</span>
+                <span className="compare-at-price">{Number(totalOriginalPrice).toLocaleString("tr-TR")} TL</span>
               )}
             </div>
           </div>

@@ -14,9 +14,14 @@ export default function Collections({ collections = [] }) {
         <div className="row g-3 g-md-4">
           {collections.map((collection, index) => {
             const { images, title, subtitle, link } = collection;
-            const imageUrl = images?.url || images?.desktop?.url || images?.tablet?.url || images?.mobile?.url;
+            
+            // Eğer images objesi yoksa veya hiçbir görsel yoksa render etme
+            if (!images || (!images.desktop?.url && !images.tablet?.url && !images.mobile?.url && !images.url)) {
+              return null;
+            }
 
-            if (!imageUrl) return null;
+            // Fallback: eğer images.url varsa (eski format), onu kullan
+            const fallbackUrl = images.url;
 
             return (
               <div key={collection.id || index} className="col-12 col-md-6">
@@ -27,23 +32,93 @@ export default function Collections({ collections = [] }) {
                         href={link}
                         className="radius-20 collection-image img-style"
                       >
-                        <img
-                          className="lazyload w-100 h-auto"
-                          data-src={imageUrl}
-                          alt={title || "collection"}
-                          src={imageUrl}
-                          style={{ width: "100%", height: "auto" }}
-                        />
+                        {/* Desktop Version (>= 1024px) */}
+                        <div className="d-none d-lg-block w-100">
+                          <Image
+                            src={images.desktop?.url || fallbackUrl}
+                            alt={title || "collection"}
+                            width={800}
+                            height={600}
+                            className="w-100 h-auto"
+                            style={{ objectFit: "cover" }}
+                            sizes="(min-width: 1024px) 50vw, 100vw"
+                            quality={100}
+                            loading="lazy"
+                          />
+                        </div>
+                        {/* Tablet Version (768px - 1023px) */}
+                        <div className="d-none d-md-block d-lg-none w-100">
+                          <Image
+                            src={images.tablet?.url || images.desktop?.url || fallbackUrl}
+                            alt={title || "collection"}
+                            width={600}
+                            height={450}
+                            className="w-100 h-auto"
+                            style={{ objectFit: "cover" }}
+                            sizes="(min-width: 768px) 50vw, 100vw"
+                            quality={100}
+                            loading="lazy"
+                          />
+                        </div>
+                        {/* Mobile Version (< 768px) */}
+                        <div className="d-block d-md-none w-100">
+                          <Image
+                            src={images.mobile?.url || images.tablet?.url || images.desktop?.url || fallbackUrl}
+                            alt={title || "collection"}
+                            width={600}
+                            height={450}
+                            className="w-100 h-auto"
+                            style={{ objectFit: "cover" }}
+                            sizes="100vw"
+                            quality={100}
+                            loading="lazy"
+                          />
+                        </div>
                       </Link>
                     ) : (
                       <div className="radius-20 collection-image img-style h-100">
-                        <img
-                          className="lazyload w-100 h-auto"
-                          data-src={imageUrl}
-                          alt={title || "collection"}
-                          src={imageUrl}
-                          style={{ width: "100%", height: "auto" }}
-                        />
+                        {/* Desktop Version (>= 1024px) */}
+                        <div className="d-none d-lg-block w-100">
+                          <Image
+                            src={images.desktop?.url || fallbackUrl}
+                            alt={title || "collection"}
+                            width={800}
+                            height={600}
+                            className="w-100 h-auto"
+                            style={{ objectFit: "cover" }}
+                            sizes="(min-width: 1024px) 50vw, 100vw"
+                            quality={100}
+                            loading="lazy"
+                          />
+                        </div>
+                        {/* Tablet Version (768px - 1023px) */}
+                        <div className="d-none d-md-block d-lg-none w-100">
+                          <Image
+                            src={images.tablet?.url || images.desktop?.url || fallbackUrl}
+                            alt={title || "collection"}
+                            width={600}
+                            height={450}
+                            className="w-100 h-auto"
+                            style={{ objectFit: "cover" }}
+                            sizes="(min-width: 768px) 50vw, 100vw"
+                            quality={100}
+                            loading="lazy"
+                          />
+                        </div>
+                        {/* Mobile Version (< 768px) */}
+                        <div className="d-block d-md-none w-100">
+                          <Image
+                            src={images.mobile?.url || images.tablet?.url || images.desktop?.url || fallbackUrl}
+                            alt={title || "collection"}
+                            width={600}
+                            height={450}
+                            className="w-100 h-auto"
+                            style={{ objectFit: "cover" }}
+                            sizes="100vw"
+                            quality={100}
+                            loading="lazy"
+                          />
+                        </div>
                       </div>
                     )}
                     <div

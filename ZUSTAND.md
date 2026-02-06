@@ -366,7 +366,7 @@ export default function CartPage() {
           <button onClick={() => removeItem(item.id)}>Sil</button>
         </div>
       ))}
-      <div>Toplam: ₺{totalPrice.toLocaleString('tr-TR')}</div>
+      <div>Toplam: {totalPrice.toLocaleString('tr-TR')}₺</div>
       <button onClick={clearCart}>Sepeti Temizle</button>
     </div>
   );

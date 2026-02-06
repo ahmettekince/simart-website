@@ -720,7 +720,8 @@ input[type="checkbox"]:checked,
 /* Desktop: soldaki thumbnails sadece 5 tane görünsün */
 @media (min-width: 1150px) {
   .thumbs-slider .tf-product-media-thumbs {
-    max-height: 540px !important; /* ~5 thumbnail + aralıklar */
+    max-height: 540px !important;
+    /* ~5 thumbnail + aralıklar */
     overflow: hidden !important;
   }
 }
@@ -774,6 +775,7 @@ input[type="checkbox"]:checked,
 
 /* Ürün detay: galeri ok butonları – eski görünüm (beyaz dolgu, belirgin ok) */
 .tf-product-main-with-dots .tf-product-media-main {
+
   .swiper-button-next.button-style-arrow,
   .swiper-button-prev.button-style-arrow {
     width: 46px;
@@ -782,17 +784,21 @@ input[type="checkbox"]:checked,
     border: none;
     border-radius: 50%;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+
     &::after {
       font-size: 11px;
       font-weight: 700;
       color: var(--main) !important;
     }
+
     &:hover:not(.swiper-button-disabled) {
       background-color: var(--primary) !important;
+
       &::after {
         color: var(--white) !important;
       }
     }
+
     &.swiper-button-disabled {
       opacity: 0.35;
     }
@@ -1693,7 +1699,7 @@ body.product-detail-page .progress-wrap {
 .payment2-installment {
   display: grid;
   grid-template-columns: 18px 1fr 90px 90px;
-  gap: 10px;
+  gap: 25px;
   align-items: center;
   padding: 12px 14px;
   border-top: 1px solid #edf1f4;
@@ -1956,19 +1962,23 @@ body.header-scroll-hide header.header-default {
   top: -185px !important;
 }
 
-/* Mobilde alt bottom bar (toolbar) gizle; sticky bar her zaman en altta, sabit görünür */
-@media (max-width: 767px) {
+/* Mobilde alt bottom bar (toolbar) - sadece ürün detay sayfasında gizle */
+@media (max-width: 1149px) {
+
+  /* Mobilde toolbar görünür olmalı */
   .tf-toolbar-bottom.type-1150 {
+    display: flex !important;
+  }
+
+  /* Ürün detay sayfasında toolbar'ı gizle */
+  body.product-detail-page .tf-toolbar-bottom.type-1150 {
     display: none !important;
   }
 
-  .tf-sticky-btn-atc {
+  /* Ürün detay sayfasında sticky bar her zaman en altta, sabit görünür */
+  body.product-detail-page .tf-sticky-btn-atc {
     bottom: 0 !important;
     box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.12), 0 -2px 8px rgba(0, 0, 0, 0.08);
-  }
-
-  /* Ürün detay: mobilde sticky bar baştan sabit görünsün */
-  body.product-detail-page .tf-sticky-btn-atc {
     transform: translateY(0);
     visibility: visible;
     pointer-events: auto;

@@ -1,13 +1,13 @@
 import Features from "@/components/common/Features";
+import Testimonials from "@/components/common/Testimonials";
 import Header from "@/components/headers/Header";
 import Blogs from "@/components/homes/home-electronic/Blogs";
 import Categories from "@/components/homes/home-electronic/Categories";
 import CollectionBanner from "@/components/homes/home-electronic/CollectionBanner";
 import Collections from "@/components/homes/home-electronic/Collections";
-
 import Hero from "@/components/homes/home-electronic/Hero";
 import Products from "@/components/homes/home-electronic/Products";
-import Testimonials from "@/components/homes/home-electronic/Testimonials";
+
 import React from "react";
 import { getCategories, getBanners, getCollectionBanner, getCollections } from "@/api/home";
 import { getMenus } from "@/api/menus";

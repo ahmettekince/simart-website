@@ -96,14 +96,16 @@ export default function BirlikteAlSepet() {
     <div className="birlikte-al-sepet" style={{ marginBottom: 4, width: "100%", maxWidth: "100%", minWidth: 0, }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8, minWidth: 0 }}>
         <span style={{ fontSize: 16, fontWeight: 700, color: "#111", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>Sepetinize ekleyebilirsiniz</span>
-        <div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
-          <NavDotsPill
-            total={targetProducts.length}
-            activeIndex={activeIndex}
-            onDotClick={(i) => swiperRef.current?.slideTo?.(i)}
-            ariaLabel="Birlikte al önerileri"
-          />
-        </div>
+        {targetProducts.length > 1 && (
+          <div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
+            <NavDotsPill
+              total={targetProducts.length}
+              activeIndex={activeIndex}
+              onDotClick={(i) => swiperRef.current?.slideTo?.(i)}
+              ariaLabel="Birlikte al önerileri"
+            />
+          </div>
+        )}
       </div>
 
       <div style={{ overflow: "hidden", width: "100%", maxWidth: "100%", minWidth: 0, marginRight: 0 }}>
@@ -138,7 +140,7 @@ export default function BirlikteAlSepet() {
 
             return (
               <SwiperSlide key={t.id || i} style={{ height: "auto", boxSizing: "border-box", width: "100%", maxWidth: "100%" }}>
-                <div style={{ display: "flex", alignItems: "center", border: "1px solid #d1d5db", borderRadius: 12, background: "#fff", overflow: "hidden", minHeight: 100, width: "100%", maxWidth: "100%", boxSizing: "border-box" }}>
+                <div style={{ display: "flex", alignItems: "center", border: "1px solid #d1d5db", borderRadius: 12, background: "#fff", overflow: "hidden", minHeight: 100, width: "100%", maxWidth: "100%", boxSizing: "border-box", paddingLeft: 12, paddingRight: 12 }}>
                   {img ? (
                     <div style={{ width: 72, minWidth: 72, height: 72, flexShrink: 0, overflow: "hidden", background: "#f5f5f5" }}>
                       <Image
@@ -165,8 +167,8 @@ export default function BirlikteAlSepet() {
                       {t.name}
                     </Link>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0, overflow: "hidden" }}>
-                      <span style={{ fontSize: 15, fontWeight: 700, color: hasDiscount ? "#0bc15c" : "#3c81b5" }}>₺{Number(final).toLocaleString("tr-TR")}</span>
-                      {hasDiscount && <span style={{ fontSize: 13, color: "#999", textDecoration: "line-through" }}>₺{Number(price).toLocaleString("tr-TR")}</span>}
+                      <span style={{ fontSize: 15, fontWeight: 700, color: hasDiscount ? "#0bc15c" : "#3c81b5" }}>{Number(final).toLocaleString("tr-TR")} TL</span>
+                      {hasDiscount && <span style={{ fontSize: 13, color: "#999", textDecoration: "line-through" }}>{Number(price).toLocaleString("tr-TR")} TL</span>}
                     </div>
                   </div>
 
@@ -177,8 +179,8 @@ export default function BirlikteAlSepet() {
                     style={{
                       flexShrink: 0,
                       minWidth: 80,
-                      margin: "0 8px",
-                      padding: "8px 12px",
+                      margin: "0 0 0 8px",
+                      padding: "4px 10px",
                       borderRadius: 8,
                       background: "var(--primary, #3c81b5)",
                       color: "#fff",

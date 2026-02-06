@@ -15,42 +15,45 @@ export default function CollectionBanner({ banner = null }) {
       <div className="container">
         <div className="tf-banner-collection">
           {/* Desktop Version (>= 1024px) */}
-          <div className="d-none d-lg-block">
+          <div className="d-none d-lg-block w-100">
             <Image
-              className="lazyload"
-              data-src={images?.desktop?.url}
-              alt={title || "img-banner"}
-              loading="lazy"
               src={images?.desktop?.url}
+              alt={title || "img-banner"}
               width={1400}
               height={532}
+              className="w-100 h-auto"
+              style={{ objectFit: "cover" }}
+              sizes="100vw"
               quality={100}
+              loading="lazy"
             />
           </div>
           {/* Tablet Version (768px - 1023px) - Tablet varsa tablet, yoksa desktop */}
-          <div className="d-none d-md-block d-lg-none">
+          <div className="d-none d-md-block d-lg-none w-100">
             <Image
-              className="lazyload"
-              data-src={images?.tablet?.url || images?.desktop?.url}
-              alt={title || "img-banner"}
-              loading="lazy"
               src={images?.tablet?.url || images?.desktop?.url}
+              alt={title || "img-banner"}
               width={1024}
               height={400}
+              className="w-100 h-auto"
+              style={{ objectFit: "cover" }}
+              sizes="100vw"
               quality={100}
+              loading="lazy"
             />
           </div>
           {/* Mobile Version (< 768px) */}
-          <div className="d-block d-md-none">
+          <div className="d-block d-md-none w-100">
             <Image
-              className="lazyload"
-              data-src={images?.mobile?.url}
+              src={images?.mobile?.url || images?.tablet?.url || images?.desktop?.url}
               alt={title || "img-banner"}
-              loading="lazy"
-              src={images?.mobile?.url}
               width={600}
               height={400}
+              className="w-100 h-auto"
+              style={{ objectFit: "cover", maxWidth: "100%" }}
+              sizes="100vw"
               quality={100}
+              loading="lazy"
             />
           </div>
           <div className="box-content">
@@ -69,7 +72,8 @@ export default function CollectionBanner({ banner = null }) {
               {link && (
                 <Link
                   href={link}
-                  className="rounded-full tf-btn btn-primary-main style-3 fw-6 btn-light-icon animate-hover-btn"
+                  className="tf-btn btn-primary-main style-3 fw-6 btn-light-icon animate-hover-btn"
+                  style={{ borderRadius: 12 }}
                 >
                   <span>{button_text || "Shop Collection"}</span>
                 </Link>

@@ -1,21 +1,40 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 /**
  * Maksimum adet sınırına ulaşıldığında gösterilen kırmızı bildirim.
- * Sabit ve merkezi konum (mobil + masaüstü), viewport'a göre her zaman görünür.
+ * Portal ile body'ye render edilir, parent container'dan bağımsızdır.
  */
-export default function MaxQuantityToast({ visible, onHide, autoHideMs = 3000 }) {
+export default function MaxQuantityToast({ visible, onHide, autoHideMs = 3000, maxQuantity = null }) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
   useEffect(() => {
     if (!visible || !onHide) return;
-    const t = setTimeout(onHide, autoHideMs);
-    return () => clearTimeout(t);
-  }, [visible, onHide, autoHideMs]);
+    const t = setTimeout(() => {
+      onHide();
+    }, autoHideMs);
+    return () => {
+      clearTimeout(t);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [visible, autoHideMs]);
 
-  if (!visible) return null;
+  if (!visible || !mounted) {
+    return null;
+  }
 
-  return (
+  const message = maxQuantity != null && maxQuantity > 0 
+    ? `Bu üründen en fazla ${maxQuantity} adet alabilirsiniz.`
+    : "Maksimum adet sınırına ulaştınız.";
+
+  const toastContent = (
     <div
       className="max-quantity-toast"
       role="alert"
@@ -34,9 +53,12 @@ export default function MaxQuantityToast({ visible, onHide, autoHideMs = 3000 })
         boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
         maxWidth: "min(320px, calc(100vw - 32px))",
         width: "max-content",
+        pointerEvents: "none",
       }}
     >
-      Maksimum adet sınırına ulaştınız.
+      {message}
     </div>
   );
+
+  return createPortal(toastContent, document.body);
 }

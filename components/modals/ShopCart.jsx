@@ -36,6 +36,7 @@ export default function ShopCart() {
   // Hangi ürünün hangi action'da loading olduğunu takip et: { itemId: 'increase' | 'decrease' | 'remove' | null }
   const [loadingActions, setLoadingActions] = useState({});
   const [showMaxReachedToast, setShowMaxReachedToast] = useState(false);
+  const [maxQuantityForToast, setMaxQuantityForToast] = useState(null);
 
   // Items değiştiğinde, artık sepette olmayan ürünlerin loading state'ini temizle
   useEffect(() => {
@@ -255,14 +256,14 @@ export default function ShopCart() {
                                           {item.discount_price != null && item.discount_price > 0 && item.discount_price < item.price ? (
                                             <>
                                               <span style={{ color: '#0bc15c', fontWeight: '600', marginRight: '8px' }}>
-                                                ₺{item.discount_price.toLocaleString("tr-TR")}
+                                                {item.discount_price.toLocaleString("tr-TR")} TL
                                               </span>
                                               <span style={{ textDecoration: 'line-through', color: '#999', fontSize: '14px' }}>
-                                                ₺{item.price.toLocaleString("tr-TR")}
+                                                {item.price.toLocaleString("tr-TR")} TL
                                               </span>
                                             </>
                                           ) : (
-                                            <span>₺{item.price.toLocaleString("tr-TR")}</span>
+                                            <span>{item.price.toLocaleString("tr-TR")} TL</span>
                                           )}
                                         </div>
                                         <div className="tf-mini-cart-btns">
@@ -277,7 +278,10 @@ export default function ShopCart() {
                                               minQuantity={minQty}
                                               maxQuantity={maxQty}
                                               initialValue={item.quantity}
-                                              onMaxQuantityReached={() => setShowMaxReachedToast(true)}
+                                              onMaxQuantityReached={() => {
+                                                setMaxQuantityForToast(maxQty);
+                                                setShowMaxReachedToast(true);
+                                              }}
                                             />
                                           </div>
                                           <div
@@ -344,7 +348,7 @@ export default function ShopCart() {
                                               if (campaign.type === 'x_urun_y_tl') {
                                                 const productPiece = campaign.x_product_piece || campaign.xProductPiece || 0;
                                                 const discountValue = campaign.x_discount_value || campaign.xDiscountValue || '0.00';
-                                                campaignMessage = `${productPiece}. ürün ${parseFloat(discountValue).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₺`;
+                                                campaignMessage = `${productPiece}. ürün ${parseFloat(discountValue).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TL`;
                                               }
 
                                               return (
@@ -540,7 +544,7 @@ export default function ShopCart() {
                         {cartTotals.subtotal > 0 && cartTotals.hasAnyDiscount && (
                           <div className="tf-cart-totals-item" style={{ borderTop: 'none', borderBottom: 'none' }}>
                             <div className="tf-cart-total-label fw-6" style={{ fontSize: '14px' }}>Ara Toplam</div>
-                            <div className="tf-cart-total-value fw-6" style={{ fontSize: '14px' }}>₺{cartTotals.subtotal.toLocaleString("tr-TR")}</div>
+                            <div className="tf-cart-total-value fw-6" style={{ fontSize: '14px' }}>{cartTotals.subtotal.toLocaleString("tr-TR")} TL</div>
                           </div>
                         )}
 
@@ -552,7 +556,7 @@ export default function ShopCart() {
                               <div className="tf-cart-totals-item" style={{ borderTop: 'none', borderBottom: 'none' }}>
                                 <div className="tf-cart-total-label fw-6" style={{ fontSize: '14px' }}>Size Özel İndirim</div>
                                 <div className="tf-cart-total-value fw-6" style={{ fontSize: '14px', color: '#0bc15c' }}>
-                                  - ₺{cartTotals.customDiscountAmount.toLocaleString("tr-TR")}
+                                  - {cartTotals.customDiscountAmount.toLocaleString("tr-TR")} TL
                                 </div>
                               </div>
                             )}
@@ -561,7 +565,7 @@ export default function ShopCart() {
                               <div className="tf-cart-totals-item" style={{ borderTop: 'none', borderBottom: 'none' }}>
                                 <div className="tf-cart-total-label fw-6" style={{ fontSize: '14px' }}>Kampanya İndirimi</div>
                                 <div className="tf-cart-total-value fw-6" style={{ fontSize: '14px', color: '#0bc15c' }}>
-                                  - ₺{cartTotals.campaignDiscountAmount.toLocaleString("tr-TR")}
+                                  - {cartTotals.campaignDiscountAmount.toLocaleString("tr-TR")} TL
                                 </div>
                               </div>
                             )}
@@ -593,7 +597,7 @@ export default function ShopCart() {
                                   </button>
                                 </div>
                                 <div className="tf-cart-total-value fw-6" style={{ fontSize: '14px', color: '#0bc15c' }}>
-                                  - ₺{cartTotals.couponDiscountAmount.toLocaleString("tr-TR")}
+                                  - {cartTotals.couponDiscountAmount.toLocaleString("tr-TR")} TL
                                 </div>
                               </div>
                             )}
@@ -602,7 +606,7 @@ export default function ShopCart() {
 
                         <div className="tf-cart-totals-item tf-cart-totals-item-total" >
                           <div className="tf-cart-total-label fw-6" style={{ fontSize: '18px' }}>Toplam</div>
-                          <div className="tf-cart-total-value fw-6" style={{ fontSize: '18px' }}>₺{cartTotals.total.toLocaleString("tr-TR")}</div>
+                          <div className="tf-cart-total-value fw-6" style={{ fontSize: '18px' }}>{cartTotals.total.toLocaleString("tr-TR")} TL</div>
                         </div>
                         {/* Sepet bazlı kampanya mesajları */}
                         {applied_campaigns && applied_campaigns.length > 0 && (() => {
@@ -722,7 +726,7 @@ export default function ShopCart() {
           </div>
         </div>
       </div>
-      <MaxQuantityToast visible={showMaxReachedToast} onHide={() => setShowMaxReachedToast(false)} />
+      <MaxQuantityToast visible={showMaxReachedToast} onHide={() => setShowMaxReachedToast(false)} maxQuantity={maxQuantityForToast} />
     </>
   );
 }

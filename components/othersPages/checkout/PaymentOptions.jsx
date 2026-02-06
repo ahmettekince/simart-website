@@ -288,8 +288,8 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
                         const count = o.installment_count;
                         const monthly = Number(o.monthly_payment);
                         const total = Number(o.total_payment);
-                        const monthlyText = `₺${monthly.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-                        const totalText = `₺${total.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                        const monthlyText = `${monthly.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TL`;
+                        const totalText = `${total.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TL`;
                         return (
                           <label
                             key={count}

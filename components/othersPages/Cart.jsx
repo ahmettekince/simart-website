@@ -126,11 +126,11 @@ export default function Cart() {
                                     <div className="cart-price">
                                       {item.discount_price != null && item.discount_price > 0 && item.discount_price < item.price ? (
                                         <>
-                                          <span style={{ textDecoration: 'line-through', color: '#999', marginRight: '8px' }}>₺{item.price.toLocaleString("tr-TR")}</span>
-                                          <span style={{ color: '#0bc15c', fontWeight: '600' }}>₺{item.discount_price.toLocaleString("tr-TR")}</span>
+                                          <span style={{ textDecoration: 'line-through', color: '#999', marginRight: '8px' }}>{item.price.toLocaleString("tr-TR")} TL</span>
+                                          <span style={{ color: '#0bc15c', fontWeight: '600' }}>{item.discount_price.toLocaleString("tr-TR")} TL</span>
                                         </>
                                       ) : (
-                                        <span>₺{item.price.toLocaleString("tr-TR")}</span>
+                                        <span>{item.price.toLocaleString("tr-TR")} TL</span>
                                       )}
                                     </div>
                                   </td>
@@ -149,7 +149,7 @@ export default function Cart() {
                                     </div>
                                   </td>
                                   <td className="tf-cart-item_total" cart-data-title="Toplam">
-                                    <div className="cart-total" style={{ minWidth: "60px" }}>₺{itemTotal.toLocaleString("tr-TR")}</div>
+                                    <div className="cart-total" style={{ minWidth: "60px" }}>{itemTotal.toLocaleString("tr-TR")} TL</div>
                                   </td>
                                   <td className="tf-cart-item_remove" cart-data-title="">
                                     <button type="button" onClick={() => handleRemoveItem(item.id)} className="remove-cart btn p-0 border-0 bg-transparent" style={{ color: "#dc3545", cursor: "pointer" }} title="Ürünü kaldır" aria-label="Ürünü kaldır">

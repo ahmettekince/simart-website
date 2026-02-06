@@ -182,7 +182,7 @@ export default function GiftSelectionModal({
                   <div style={{ fontSize: "12px", color: "#6b7280" }}>
                     Hediye ürün ·{" "}
                     <span style={{ fontWeight: 600 }}>
-                      ₺{Number(price || 0).toLocaleString("tr-TR")}
+                      {Number(price || 0).toLocaleString("tr-TR")} TL
                     </span>
                   </div>
                 </div>

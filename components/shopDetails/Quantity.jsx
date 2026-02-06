@@ -97,11 +97,13 @@ export default function Quantity({ setQuantity = (value) => { }, minQuantity = 1
       return;
     }
 
-    // Max kontrolü - eğer max'tan fazlaysa max'a çek ve hemen API'ye istek at
+    // Max kontrolü - eğer max'tan fazlaysa max'a çek; sadece değer değiştiyse istek at, her durumda max bildirimi göster
     if (numValue > effectiveMax) {
       const finalValue = effectiveMax;
       setCount(finalValue);
-      setQuantity(finalValue); // Hemen API'ye istek at
+      const currentQty = initialValue !== null && initialValue !== undefined ? initialValue : minQuantity;
+      if (finalValue !== currentQty) setQuantity(finalValue);
+      onMaxQuantityReached?.();
       return;
     }
 
@@ -111,6 +113,7 @@ export default function Quantity({ setQuantity = (value) => { }, minQuantity = 1
 
   const handleInputBlur = (e) => {
     if (isLoading) return;
+    const currentQty = initialValue !== null && initialValue !== undefined ? initialValue : minQuantity;
     // Input'tan çıkıldığında min/max kontrolü yap
     const inputValue = e.target.value;
 
@@ -118,8 +121,8 @@ export default function Quantity({ setQuantity = (value) => { }, minQuantity = 1
     if (inputValue === "" || inputValue === null || inputValue === undefined) {
       const finalValue = minQuantity;
       setCount(finalValue);
-      setQuantity(finalValue); // setQuantity'yi sadece blur'da çağır
-      isUserInputRef.current = false; // Reset flag
+      if (finalValue !== currentQty) setQuantity(finalValue);
+      isUserInputRef.current = false;
       return;
     }
 
@@ -129,8 +132,8 @@ export default function Quantity({ setQuantity = (value) => { }, minQuantity = 1
     if (isNaN(numValue) || numValue < minQuantity) {
       const finalValue = minQuantity;
       setCount(finalValue);
-      setQuantity(finalValue); // setQuantity'yi sadece blur'da çağır
-      isUserInputRef.current = false; // Reset flag
+      if (finalValue !== currentQty) setQuantity(finalValue);
+      isUserInputRef.current = false;
       return;
     }
 
@@ -139,13 +142,21 @@ export default function Quantity({ setQuantity = (value) => { }, minQuantity = 1
     if (numValue > effectiveMax) {
       finalValue = effectiveMax;
       setCount(finalValue);
+      onMaxQuantityReached?.();
     } else {
       setCount(finalValue);
     }
 
-    // setQuantity'yi sadece blur'da çağır (loop'u önlemek için)
-    setQuantity(finalValue);
-    isUserInputRef.current = false; // Reset flag
+    // Sadece sayı gerçekten değiştiyse istek at
+    if (finalValue !== currentQty) setQuantity(finalValue);
+    isUserInputRef.current = false;
+  };
+
+  const handleInputKeyDown = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleInputBlur(e);
+    }
   };
 
   const isMinusDisabled = disabled || isLoading || count === "" || Number(count) <= minQuantity;
@@ -205,6 +216,7 @@ export default function Quantity({ setQuantity = (value) => { }, minQuantity = 1
         pattern="[0-9]*"
         onChange={handleInputChange}
         onBlur={handleInputBlur}
+        onKeyDown={handleInputKeyDown}
         name="number"
         value={count === "" ? "" : count}
         disabled={disabled}

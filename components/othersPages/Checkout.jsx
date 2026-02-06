@@ -750,7 +750,7 @@ export default function Checkout() {
           <div className="checkout-mobile-cart-bar-right">
             {isCartSynced ? (
               <>
-                <span className="checkout-mobile-cart-bar-price">₺{cartTotals.total.toLocaleString("tr-TR")}</span>
+                <span className="checkout-mobile-cart-bar-price">{cartTotals.total.toLocaleString("tr-TR")} TL</span>
                 <span className="checkout-mobile-cart-bar-kdv">KDV dahil</span>
               </>
             ) : (

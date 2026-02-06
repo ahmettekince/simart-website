@@ -1,10 +1,11 @@
 "use client";
-import React from "react";
+import React, { useCallback } from "react";
 import Link from "next/link";
 import { useContextElement } from "@/context/Context";
 import { useCartStore } from "@/stores/cartStore";
 import ProductImageSwiper from "@/components/common/ProductImageSwiper";
 import MaxQuantityToast from "@/components/common/MaxQuantityToast";
+import StarRating from "@/components/common/StarRating";
 import { getProductButtonState } from "@/utils/productStock";
 
 export default function ProductCardSimart({ product }) {
@@ -16,6 +17,12 @@ export default function ProductCardSimart({ product }) {
   const [isAdding, setIsAdding] = React.useState(false);
   const [showSuccess, setShowSuccess] = React.useState(false);
   const [showMaxReachedToast, setShowMaxReachedToast] = React.useState(false);
+  const [maxQuantityForToast, setMaxQuantityForToast] = React.useState(null);
+
+  // onHide callback'ini memoize et - sürekli yeni fonksiyon oluşturmasın
+  const handleHideToast = useCallback(() => {
+    setShowMaxReachedToast(false);
+  }, []);
 
   // -- Veriler --
   const title = product.name || product.title;
@@ -56,13 +63,28 @@ export default function ProductCardSimart({ product }) {
   // -- Buton Metin Mantığı --
   const { buttonText, buttonDisabled } = getProductButtonState(product);
 
-  const existingCartItem = cartItems?.find((it) => it?.product?.id === product?.id || it?.id === product?.id) || null;
-  const rawMax = product?.max_purchase_quantity ?? product?.max_quantity;
+  // Sepetteki mevcut ürünü bul - tüm olası ID alanlarını kontrol et
+  const existingCartItem = React.useMemo(() => {
+    if (!cartItems || !Array.isArray(cartItems) || !product?.id) return null;
+    return cartItems.find((it) =>
+      it?.product?.id === product.id ||
+      it?.id === product.id ||
+      it?.productId === product.id ||
+      (it?.product && it.product.id === product.id)
+    ) || null;
+  }, [cartItems, product?.id]);
+
+  // Max bilgisini önce sepetteki item'dan al, yoksa product'tan al
+  const rawMax = existingCartItem?.max_purchase_quantity ??
+    existingCartItem?.product?.max_purchase_quantity ??
+    existingCartItem?.product?.max_quantity ??
+    product?.max_purchase_quantity ??
+    product?.max_quantity;
   const effectiveMaxLimit = rawMax === 0 || rawMax == null ? 999 : Math.max(1, Number(rawMax));
 
   return (
     <div className="product-card-simart">
-      <MaxQuantityToast visible={showMaxReachedToast} onHide={() => setShowMaxReachedToast(false)} />
+      <MaxQuantityToast visible={showMaxReachedToast} onHide={handleHideToast} maxQuantity={maxQuantityForToast} />
       {/* Üst Kısım: Görsel (Ölçek ve Kalite Korundu) */}
       <div className="card-image-area">
         <ProductImageSwiper
@@ -86,41 +108,14 @@ export default function ProductCardSimart({ product }) {
         </div>
 
         <div className="rating-slot">
-          {rating > 0 && (
-            <div className="rating-wrap">
-              <div className="stars-box">
-                {[...Array(5)].map((_, i) => {
-                  const starValue = i + 1;
-                  const fillPercentage = Math.max(0, Math.min(100, ((rating - i) * 100)));
-                  const isFilled = rating >= starValue;
-                  const isPartial = rating > i && rating < starValue;
-
-                  return (
-                    <div key={i} className="star-wrapper">
-                      <i className="icon-star star-empty" />
-                      {isFilled ? (
-                        <i className="icon-star star-filled" />
-                      ) : isPartial ? (
-                        <i
-                          className="icon-star star-filled star-partial"
-                          style={{ clipPath: `inset(0 ${100 - fillPercentage}% 0 0)` }}
-                        />
-                      ) : null}
-                    </div>
-                  );
-                })}
-              </div>
-              <span className="rating-num">{rating.toFixed(1)}</span>
-              {reviewCount > 0 && <span className="review-num">({reviewCount})</span>}
-            </div>
-          )}
+          <StarRating rating={rating} reviewCount={reviewCount} size="medium" />
         </div>
 
         <div className="price-slot">
           <span className={`price-new fw-bold ${oldPrice ? "price-discount" : "price-normal"}`}>
-            ₺{finalPrice.toLocaleString("tr-TR")}
+            {finalPrice.toLocaleString("tr-TR")} TL
           </span>
-          {oldPrice && <span className="price-old">₺{oldPrice.toLocaleString("tr-TR")}</span>}
+          {oldPrice && <span className="price-old">{oldPrice.toLocaleString("tr-TR")} TL</span>}
         </div>
 
         <div className="button-row">
@@ -128,20 +123,46 @@ export default function ProductCardSimart({ product }) {
             <button
               onClick={async () => {
                 if (isAdding || showSuccess) return;
+
+                // Max kontrolü - eğer max'a ulaşıldıysa toast göster ve istek atma
                 const currentQty = existingCartItem?.quantity || 0;
+                const qtyToAdd = 1;
+
+                // Max kontrolü: mevcut miktar zaten max'a ulaşmışsa
                 if (effectiveMaxLimit < 999 && currentQty >= effectiveMaxLimit) {
+                  setMaxQuantityForToast(effectiveMaxLimit);
                   setShowMaxReachedToast(true);
                   return;
                 }
+
+                // Max kontrolü: eklenecek miktar + mevcut miktar max'ı aşıyorsa
+                if (effectiveMaxLimit < 999 && currentQty + qtyToAdd > effectiveMaxLimit) {
+                  setMaxQuantityForToast(effectiveMaxLimit);
+                  setShowMaxReachedToast(true);
+                  return;
+                }
+
                 setIsAdding(true);
                 try {
-                  const result = await addItem(product, 1, false);
+                  const result = await addItem(product, qtyToAdd, false);
                   if (result?.added) {
                     setShowSuccess(true);
                     setTimeout(() => setShowSuccess(false), 2000);
+                  } else if (result?.error === 'MAX_QUANTITY_REACHED' || result?.error) {
+                    // Store'dan gelen max quantity hatası veya diğer hatalar
+                    const maxQty = result?.maxQuantity || effectiveMaxLimit;
+                    if (maxQty < 999) {
+                      setMaxQuantityForToast(maxQty);
+                      setShowMaxReachedToast(true);
+                    }
                   }
                 } catch (error) {
                   console.error("Sepete ekleme hatası:", error);
+                  // Hata durumunda da max kontrolü yap
+                  if (effectiveMaxLimit < 999) {
+                    setMaxQuantityForToast(effectiveMaxLimit);
+                    setShowMaxReachedToast(true);
+                  }
                 } finally {
                   setIsAdding(false);
                 }
@@ -235,41 +256,6 @@ export default function ProductCardSimart({ product }) {
                     font-weight: bold;
                     color: #000;
                 }
-        .rating-wrap {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-        }
-        .stars-box {
-          display: flex;
-          gap: 2px;
-        }
-        .star-wrapper {
-          position: relative;
-          display: inline-block;
-          font-size: 12px;
-          line-height: 1;
-        }
-        .star-wrapper .star-empty {
-          color: #ddd;
-        }
-        .star-wrapper .star-filled {
-          position: absolute;
-          top: 0;
-          left: 0;
-          color: #f59e0b;
-        }
-        .star-wrapper .star-partial {
-          clip-path: inset(0 0 0 0);
-        }
-        .rating-num {
-          font-size: 13px;
-          font-weight: 600;
-        }
-        .review-num {
-          font-size: 12px;
-          color: #888;
-        }
         .price-old {
           font-size: 13px;
           text-decoration: line-through;
