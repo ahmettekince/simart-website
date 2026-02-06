@@ -147,6 +147,7 @@ export default function BirlikteAlSepet() {
 
       <div style={{ overflow: "hidden", width: "100%", maxWidth: "100%", minWidth: 0, marginRight: 0 }}>
         <Swiper
+          key={`ba-sepet-${targetProducts.length}`}
           modules={[Navigation]}
           spaceBetween={12}
           slidesPerView={1}
@@ -154,7 +155,8 @@ export default function BirlikteAlSepet() {
           navigation={{ prevEl: ".ba-sepet-prev", nextEl: ".ba-sepet-next" }}
           onSlideChange={(swiper) => setActiveIndex(swiper.activeIndex)}
           breakpoints={{
-            768: { slidesPerView: 1.15 },
+            // Tek ürün tam genişlik dolsun diye 2+ ürün varken 1.15
+            768: { slidesPerView: targetProducts.length === 1 ? 1 : 1.15 },
           }}
           style={{ width: "100%", maxWidth: "100%" }}
         >
