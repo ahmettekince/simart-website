@@ -1,4 +1,3 @@
-import Footer from "@/components/footers/Footer";
 import Header from "@/components/headers/Header";
 import Details9 from "@/components/shopDetails/Details9";
 import Products from "@/components/shopDetails/Products";

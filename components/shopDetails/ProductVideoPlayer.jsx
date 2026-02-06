@@ -7,11 +7,6 @@ const VIDEOS = [
   "https://cdn.simart.cloud/uploads/media/2026/02/6985eb4367e6b_1770384195.mp4"
 ];
 
-/**
- * Ürün detay sayfası için basit ve şık video player
- * Sayfa açıldıktan sonra otomatik açılır ve oynatır
- * Birden fazla video desteği (dikey kaydırmalı)
- */
 export default function ProductVideoPlayer() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -19,23 +14,33 @@ export default function ProductVideoPlayer() {
   const [isMuted, setIsMuted] = useState(true); // Otomatik oynatma için varsayılan sessiz başla
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [progress, setProgress] = useState(0);
-  // Yüklenen (görüntülenen) videoları takip et: Sadece 0. index ile başla
-  const [loadedIndices, setLoadedIndices] = useState([0]);
+  // Lazy load: sadece şu an görünen video yüklü olsun (önceki/sonraki önceden indirilmez)
+  const loadedIndices = [activeIndex];
 
   const videoRefs = useRef([]);
   const containerRef = useRef(null);
   const scrollContainerRef = useRef(null);
+  const slideHeightRef = useRef(0);
 
-  // Sayfa yüklendikten sonra (biraz gecikmeli) otomatik aç
+  // Sayfa yüklendikten sonra (biraz gecikmeli) otomatik aç – sadece video varsa
   useEffect(() => {
-    // 2.5 saniye gecikme (istek üzerine artırıldı)
-    const timer = setTimeout(() => {
-      setIsOpen(true);
-    }, 2500);
+    if (VIDEOS.length === 0) return;
+    const timer = setTimeout(() => setIsOpen(true), 2500);
     return () => clearTimeout(timer);
-  }, []);
+  }, [VIDEOS.length]);
 
-  // IntersectionObserver ile aktif videoyu belirle, loop kontrolü ve LAZY LOAD
+  // Scroll container yüksekliğini ölç (slide başına 1 viewport için)
+  useEffect(() => {
+    if (!scrollContainerRef.current) return;
+    const el = scrollContainerRef.current;
+    const updateHeight = () => { slideHeightRef.current = el.clientHeight; };
+    updateHeight();
+    const ro = new ResizeObserver(updateHeight);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [isOpen]);
+
+  // IntersectionObserver: kullanıcı elle kaydırınca aktif videoyu güncelle (tek slide ortada görününce)
   useEffect(() => {
     if (!scrollContainerRef.current) return;
 
@@ -44,21 +49,14 @@ export default function ProductVideoPlayer() {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             const index = Number(entry.target.dataset.index);
-            const isClone = entry.target.dataset.clone === "true";
-
-            // LAZY LOAD: Görüntülenen videoyu yüklenenler listesine ekle
-            setLoadedIndices(prev => {
-              if (prev.includes(index)) return prev;
-              return [...prev, index];
-            });
-
             setActiveIndex(index);
           }
         });
       },
       {
         root: scrollContainerRef.current,
-        threshold: 0.6,
+        threshold: 0.5,
+        rootMargin: "0px",
       }
     );
 
@@ -178,29 +176,24 @@ export default function ProductVideoPlayer() {
   const scrollNext = (e) => {
     e.stopPropagation();
     const container = scrollContainerRef.current;
-    if (!container) return;
+    if (!container || activeIndex >= VIDEOS.length - 1) return;
 
-    if (activeIndex < VIDEOS.length - 1) {
-      // Normal sonraki
-      const nextIndex = activeIndex + 1;
-      const slide = container.querySelector(`.video-slide[data-index="${nextIndex}"]`);
-      if (slide) slide.scrollIntoView({ behavior: "smooth" });
-    }
+    const h = slideHeightRef.current || container.clientHeight;
+    const nextTop = (activeIndex + 1) * h;
+    container.scrollTo({ top: nextTop, behavior: "smooth" });
   };
 
   const scrollPrev = (e) => {
     e.stopPropagation();
     const container = scrollContainerRef.current;
-    if (!container) return;
+    if (!container || activeIndex <= 0) return;
 
-    if (activeIndex > 0) {
-      const prevIndex = activeIndex - 1;
-      const slide = container.querySelector(`.video-slide[data-index="${prevIndex}"]`);
-      if (slide) slide.scrollIntoView({ behavior: "smooth" });
-    }
+    const h = slideHeightRef.current || container.clientHeight;
+    const prevTop = (activeIndex - 1) * h;
+    container.scrollTo({ top: prevTop, behavior: "smooth" });
   };
 
-  if (!isOpen) return null;
+  if (VIDEOS.length === 0 || !isOpen) return null;
 
   return (
     <div className={`product-video-player-wrapper ${isFullscreen ? 'fullscreen' : ''}`}>
@@ -225,7 +218,7 @@ export default function ProductVideoPlayer() {
             onClick={handleToggleFullscreen}
             aria-label="Tam ekran"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
             </svg>
           </button>
@@ -235,13 +228,13 @@ export default function ProductVideoPlayer() {
             aria-label={isMuted ? "Sesi aç" : "Sesi kapat"}
           >
             {isMuted ? (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M11 5L6 9H2v6h4l5 4V5z" />
                 <line x1="23" y1="9" x2="17" y2="15" />
                 <line x1="17" y1="9" x2="23" y2="15" />
               </svg>
             ) : (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path d="M11 5L6 9H2v6h4l5 4V5z" />
                 <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
               </svg>
@@ -252,7 +245,7 @@ export default function ProductVideoPlayer() {
             onClick={handleClose}
             aria-label="Kapat"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
@@ -262,8 +255,10 @@ export default function ProductVideoPlayer() {
         {/* Navigation Arrows (Right Middle) */}
         <div className="product-video-nav-arrows">
           <button
-            className="nav-arrow-btn"
+            type="button"
+            className={`nav-arrow-btn ${activeIndex <= 0 ? "disabled" : ""}`}
             onClick={scrollPrev}
+            disabled={activeIndex <= 0}
             aria-label="Önceki video"
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -271,8 +266,10 @@ export default function ProductVideoPlayer() {
             </svg>
           </button>
           <button
-            className="nav-arrow-btn"
+            type="button"
+            className={`nav-arrow-btn ${activeIndex >= VIDEOS.length - 1 ? "disabled" : ""}`}
             onClick={scrollNext}
+            disabled={activeIndex >= VIDEOS.length - 1}
             aria-label="Sonraki video"
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -300,6 +297,7 @@ export default function ProductVideoPlayer() {
               <video
                 ref={(el) => (videoRefs.current[index] = el)}
                 src={loadedIndices.includes(index) ? url : undefined}
+                preload="none"
                 className="product-video-element"
                 playsInline
                 loop
@@ -313,32 +311,27 @@ export default function ProductVideoPlayer() {
       <style jsx>{`
         .product-video-player-wrapper {
           position: fixed;
-          bottom: 20px;
-          left: 20px;
+          bottom: 1.25rem;
+          left: 1.25rem;
           z-index: 9999;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           animation: slideUpFromBottom 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .product-video-player-wrapper.fullscreen {
-            bottom: 0 !important;
-            left: 0 !important;
-            right: 0 !important;
-            top: 0 !important;
-            width: 100vw !important;
-            height: 100vh !important;
+            inset: 0 !important;
             border-radius: 0 !important;
-            z-index: 2147483647; /* Max z-index */
+            z-index: 2147483647;
             background: #000;
         }
 
         .product-video-player-wrapper.fullscreen .product-video-player-container {
-             width: 100% !important;
-             height: 100% !important;
-             max-width: none !important;
-             aspect-ratio: unset !important;
-             border-radius: 0 !important;
-             box-shadow: none;
+            width: 100%;
+            height: 100%;
+            max-width: none;
+            aspect-ratio: unset;
+            border-radius: 0;
+            box-shadow: none;
         }
 
         @keyframes slideUpFromBottom {
@@ -354,39 +347,44 @@ export default function ProductVideoPlayer() {
 
         .product-video-player-container {
           position: relative;
-          width: 280px;
-          max-width: calc(100vw - 40px);
+          width: 18rem;
+          max-width: calc(100vw - 2.5rem);
           aspect-ratio: 9 / 16;
           background: #000;
-          border-radius: 12px;
+          border-radius: 0.75rem;
           overflow: hidden;
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+          box-shadow: 0 0.5rem 2rem rgba(0, 0, 0, 0.4);
         }
         
         .product-video-scroll-container {
             display: flex;
             flex-direction: column;
-            gap: 15px;
             width: 100%;
             height: 100%;
             overflow-y: auto;
             overflow-x: hidden;
             scroll-snap-type: y mandatory;
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none; /* IE */
-            overscroll-behavior: contain; /* Prevent parent scroll chaining */
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            overscroll-behavior: contain;
         }
         
         .product-video-scroll-container::-webkit-scrollbar {
-            display: none; /* Chrome/Safari */
+            display: none;
         }
         
         .video-slide {
+            flex: 0 0 100%;
             width: 100%;
+            min-height: 100%;
             height: 100%;
             scroll-snap-align: start;
             scroll-snap-stop: always;
             position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
         }
 
         .product-video-progress {
@@ -394,7 +392,7 @@ export default function ProductVideoPlayer() {
           top: 0;
           left: 0;
           right: 0;
-          height: 4px;
+          height: 0.25rem;
           background: rgba(255, 255, 255, 0.2);
           cursor: pointer;
           z-index: 20;
@@ -408,71 +406,70 @@ export default function ProductVideoPlayer() {
 
         .product-video-controls {
           position: absolute;
-          top: 12px;
-          right: 12px;
+          top: 0;
+          right: 0;
+          left: auto;
           display: flex;
-          gap: 8px;
+          flex-direction: row;
+          justify-content: flex-end;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.5rem;
           z-index: 20;
         }
 
         .product-video-control-btn {
-          width: 36px;
-          height: 36px;
+          width: 2.5rem;
+          height: 2.5rem;
           display: flex;
           align-items: center;
           justify-content: center;
-          background: rgba(0, 0, 0, 0.6);
+          background: transparent;
           border: none;
-          border-radius: 6px;
           color: #fff;
           cursor: pointer;
-          transition: all 0.2s;
-          backdrop-filter: blur(10px);
+          transition: opacity 0.2s, transform 0.2s;
+          flex-shrink: 0;
         }
 
         .product-video-control-btn:hover {
-          background: rgba(0, 0, 0, 0.8);
+          opacity: 0.9;
           transform: scale(1.05);
         }
 
         .product-video-control-btn:active {
-          transform: scale(0.95);
+          transform: scale(0.98);
         }
 
         .product-video-control-btn svg {
+          width: 1.25rem;
+          height: 1.25rem;
           stroke: #fff;
+          stroke-width: 2.5;
         }
 
         .product-video-element {
           width: 100%;
           height: 100%;
-          object-fit: contain; /* Fullscreen'de contain iyi, mobilde cover istenebilir ama contain güvenli */
+          object-fit: contain;
           display: block;
-        }
-        
-        /* Video slide'ı mobilde tam oturtmak için */
-        .video-slide {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #000;
         }
 
         .product-video-nav-arrows {
             position: absolute;
-            right: 10px;
+            right: 3%;
             top: 50%;
             transform: translateY(-50%);
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 0.75rem;
             z-index: 25;
-            pointer-events: none; /* Allow click through container where buttons aren't */
+            pointer-events: none;
         }
 
         .nav-arrow-btn {
-            width: 32px;
-            height: 32px;
+            width: 2rem;
+            height: 2rem;
             border-radius: 50%;
             background: rgba(0, 0, 0, 0.4);
             border: 1px solid rgba(255, 255, 255, 0.2);
@@ -482,7 +479,7 @@ export default function ProductVideoPlayer() {
             justify-content: center;
             cursor: pointer;
             pointer-events: auto;
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(0.25rem);
             transition: all 0.2s;
         }
 
@@ -491,9 +488,16 @@ export default function ProductVideoPlayer() {
             transform: scale(1.1);
         }
 
-        .nav-arrow-btn.disabled {
-            opacity: 0.3;
-            cursor: default;
+        .nav-arrow-btn.disabled,
+        .nav-arrow-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .nav-arrow-btn.disabled:hover,
+        .nav-arrow-btn:disabled:hover {
+            background: rgba(0, 0, 0, 0.4);
+            transform: none;
         }
 
         /* Swipe Hint Animation */
@@ -511,8 +515,8 @@ export default function ProductVideoPlayer() {
         }
 
         .swipe-hand {
-            width: 40px;
-            height: 48px;
+            width: 2.5rem;
+            height: 3rem;
             animation: swipeUp 1.5s ease-in-out infinite;
         }
 
@@ -524,37 +528,40 @@ export default function ProductVideoPlayer() {
         }
 
         @keyframes swipeUp {
-            0% { transform: translateY(10px); opacity: 0.5; }
-            50% { transform: translateY(-10px); opacity: 1; }
-            100% { transform: translateY(10px); opacity: 0.5; }
+            0% { transform: translateY(0.625rem); opacity: 0.5; }
+            50% { transform: translateY(-0.625rem); opacity: 1; }
+            100% { transform: translateY(0.625rem); opacity: 0.5; }
         }
 
-        /* Mobilde daha küçük ve toolbar üstünde */
         @media (max-width: 768px) {
           .product-video-player-wrapper {
-            bottom: 95px;
-            left: 12px;
-            right: auto;
+            bottom: 6rem;
+            left: 0.75rem;
           }
 
           .product-video-player-container {
             width: 45vw;
-            max-width: 200px;
-            border-radius: 8px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            max-width: 12.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.3);
           }
 
           .product-video-controls {
-            top: 4px;
-            right: 4px;
-            gap: 4px;
-            transform: scale(0.8);
-            transform-origin: top right;
+            top: 0;
+            right: 0;
+            left: auto;
+            padding: 0.35rem;
+            gap: 0.35rem;
           }
 
           .product-video-control-btn {
-            width: 28px;
-            height: 28px;
+            width: 2rem;
+            height: 2rem;
+          }
+
+          .product-video-control-btn svg {
+            width: 1rem;
+            height: 1rem;
           }
         }
       `}</style>

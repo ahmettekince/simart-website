@@ -989,8 +989,7 @@ export default function Details9({ product }) {
       />
 
       {/* Video Player */}
-      {/* Video Player */}
-      <ProductVideoPlayer />
+      <ProductVideoPlayer influencerVideos={product?.influencer_videos || []} />
     </section>
   );
 }
