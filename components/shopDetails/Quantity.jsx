@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 
-export default function Quantity({ setQuantity = (value) => { }, minQuantity = 1, maxQuantity = null, initialValue = null, disabled = false, isLoading = false }) {
+export default function Quantity({ setQuantity = (value) => { }, minQuantity = 1, maxQuantity = null, initialValue = null, disabled = false, isLoading = false, onMaxQuantityReached = null }) {
   // Global maksimum limit
   const GLOBAL_MAX = 999;
 
@@ -66,7 +66,10 @@ export default function Quantity({ setQuantity = (value) => { }, minQuantity = 1
   const handleIncrease = () => {
     if (disabled || isLoading) return;
     const currentCount = Number(count) || 0;
-    if (currentCount >= effectiveMax) return;
+    if (currentCount >= effectiveMax) {
+      onMaxQuantityReached?.();
+      return;
+    }
     const newCount = currentCount + 1;
     const finalValue = updateCount(newCount);
     setQuantity(finalValue);
@@ -217,12 +220,13 @@ export default function Quantity({ setQuantity = (value) => { }, minQuantity = 1
         onClick={handleIncrease}
         role="button"
         aria-disabled={isPlusDisabled}
-        tabIndex={isPlusDisabled ? -1 : 0}
+        tabIndex={isPlusDisabled && !atMax ? -1 : 0}
         title={atMax ? "Maksimum miktara ulaştınız" : undefined}
         style={{
           opacity: isPlusDisabled ? 0.5 : 1,
           cursor: isPlusDisabled ? "not-allowed" : "pointer",
-          pointerEvents: isPlusDisabled ? "none" : "auto",
+          // Maksimumda da tıklanabilsin ki onMaxQuantityReached bildirimi gösterilebilsin
+          pointerEvents: disabled || isLoading || count === "" ? "none" : "auto",
         }}
       >
         +

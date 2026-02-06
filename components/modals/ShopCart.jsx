@@ -10,6 +10,7 @@ import CartRecommendations from "./CartRecommendations";
 import BirlikteAlSepet from "@/components/common/BirlikteAlSepet";
 import Quantity from "@/components/shopDetails/Quantity";
 import ClearCartButton from "@/components/common/ClearCartButton";
+import MaxQuantityToast from "@/components/common/MaxQuantityToast";
 import { calculateCartTotals } from "@/utils/cartTotals";
 
 export default function ShopCart() {
@@ -34,6 +35,7 @@ export default function ShopCart() {
 
   // Hangi ürünün hangi action'da loading olduğunu takip et: { itemId: 'increase' | 'decrease' | 'remove' | null }
   const [loadingActions, setLoadingActions] = useState({});
+  const [showMaxReachedToast, setShowMaxReachedToast] = useState(false);
 
   // Items değiştiğinde, artık sepette olmayan ürünlerin loading state'ini temizle
   useEffect(() => {
@@ -135,6 +137,7 @@ export default function ShopCart() {
   };
 
   return (
+    <>
     <div className="modal fullRight fade modal-shopping-cart" id="shoppingCart">
       <div className="modal-dialog">
         <div className="modal-content">
@@ -274,6 +277,7 @@ export default function ShopCart() {
                                             minQuantity={minQty}
                                             maxQuantity={maxQty}
                                             initialValue={item.quantity}
+                                            onMaxQuantityReached={() => setShowMaxReachedToast(true)}
                                           />
                                         </div>
                                         <div
@@ -718,5 +722,7 @@ export default function ShopCart() {
         </div>
       </div>
     </div>
+    <MaxQuantityToast visible={showMaxReachedToast} onHide={() => setShowMaxReachedToast(false)} />
+    </>
   );
 }
