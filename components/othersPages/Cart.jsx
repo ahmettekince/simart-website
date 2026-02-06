@@ -7,7 +7,7 @@ import { calculateCartTotals } from "@/utils/cartTotals";
 import Quantity from "@/components/shopDetails/Quantity";
 import OrderSummary from "@/components/othersPages/checkout/OrderSummary";
 import ClearCartButton from "@/components/common/ClearCartButton";
-import CrossSaleCampaigns from "@/components/common/CrossSaleCampaigns";
+import BirlikteAlSepet from "@/components/common/BirlikteAlSepet";
 import { useRouter } from "next/navigation";
 
 export default function Cart() {
@@ -55,7 +55,6 @@ export default function Cart() {
   return (
     <section className="flat-spacing-11">
       <div className="container">
-        {hasCrossSale && <CrossSaleCampaigns />}
         <div className="tf-page-cart-wrap">
           <div className="tf-page-cart-item">
             <div className="d-flex justify-content-between align-items-center mb_20">
@@ -75,6 +74,13 @@ export default function Cart() {
                   </tr>
                 </thead>
                 <tbody>
+                  {hasCrossSale && (
+                    <tr className="tf-cart-item tf-cart-item--cross-sale">
+                      <td colSpan={5} style={{ padding: 0, borderBottom: "1px solid #eee", verticalAlign: "top" }}>
+                        <BirlikteAlSepet />
+                      </td>
+                    </tr>
+                  )}
                   {(() => {
                     const normalItems = items.filter(item => !item.is_gift);
                     const giftItems = items.filter(item => item.is_gift);

@@ -69,6 +69,7 @@ export const useCartStore = create(
         totals: null, // API'den gelen toplam bilgileri (subtotal, discount, tax, total)
         applied_campaigns: [], // Uygulanan kampanyalar
         coupon: null, // Uygulanan kupon bilgisi
+        cross_sale_campaigns: [], // API'den gelen cross-sale kampanyaları (source/target)
         /** Hediye kampanyalı ürün sepete eklenirken hediye seçimi için bekleyen istek (merkezi modal) */
         pendingGiftAdd: null, // { product, quantity, openModal } | null
 
@@ -256,6 +257,7 @@ export const useCartStore = create(
                         totals: null,
                         applied_campaigns: [],
                         coupon: null,
+                        cross_sale_campaigns: [],
                         isSynced: true
                     });
 
@@ -333,6 +335,7 @@ export const useCartStore = create(
                 totals: apiCartData.totals || null,
                 applied_campaigns: apiCartData.applied_campaigns || [],
                 coupon: apiCartData.coupon || null,
+                cross_sale_campaigns: apiCartData.cross_sale_campaigns || [],
                 isSynced: true,
             });
         },

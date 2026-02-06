@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useRef, useEffect, useState, useMemo } from "react";
 import { log } from "@/utils/logger";
 import CartRecommendations from "./CartRecommendations";
-import CrossSaleCampaigns from "@/components/common/CrossSaleCampaigns";
+import BirlikteAlSepet from "@/components/common/BirlikteAlSepet";
 import Quantity from "@/components/shopDetails/Quantity";
 import ClearCartButton from "@/components/common/ClearCartButton";
 import { calculateCartTotals } from "@/utils/cartTotals";
@@ -146,7 +146,6 @@ export default function ShopCart() {
             <span className="icon-close icon-close-popup" data-bs-dismiss="modal" />
           </div>
           <div className="wrap">
-            {hasCrossSale && <CrossSaleCampaigns />}
             {/* Sepette ürün yoksa API'den önerileri göster */}
             {items.length === 0 && (
               <CartRecommendations showWhenEmpty={true} maxItems={10} />
@@ -155,6 +154,11 @@ export default function ShopCart() {
               <div className="tf-mini-cart-main">
                 <div className="tf-mini-cart-sroll">
                   <div className="tf-mini-cart-items">
+                    {hasCrossSale && (
+                      <div className="tf-mini-cart-item " >
+                        <BirlikteAlSepet />
+                      </div>
+                    )}
                     {(() => {
                       // Normal ürünleri ve gift ürünleri ayır
                       const normalItems = items.filter(item => !item.is_gift);

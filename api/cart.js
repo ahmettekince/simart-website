@@ -76,6 +76,9 @@ export async function getCart() {
 
                 // Applied campaigns
                 applied_campaigns: cartData.applied_campaigns || [],
+
+                // Cross-sale campaigns (sepette gösterilecek target ürünler)
+                cross_sale_campaigns: cartData.cross_sale_campaigns || [],
             };
 
             return normalizedCart;

@@ -166,15 +166,6 @@ export default async function page({ params }) {
         </div>
       </div>
       <Details9 product={product} />
-      {hasVariations && allVariations.length > 0 && (
-        <div className="container d-md-none" style={{ marginTop: 0, marginBottom: 24 }}>
-          <BirlikteAlNew
-            variations={allVariations}
-            currentSlug={product.slug}
-            currentCategorySlug={categorySlugForVariations}
-          />
-        </div>
-      )}
       <ShopDetailsTab product={product} />
       {categoryProducts.length > 0 && <Products products={categoryProducts} />}
     </>

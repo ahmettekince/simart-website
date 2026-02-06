@@ -11,22 +11,38 @@ import { openCartModal } from "@/utils/openCartModal";
 
 /**
  * Cross-sale kampanyalarından target ürünleri listeler; sepette ve /sepetim üstünde gösterilir.
- * Sadece target_product kullanılır. "Sepete Ekle" ile sepete eklenir.
+ * Sadece sepette kaynak ürün (source) olan kampanyaların target'ları gösterilir. Birden fazla target kaydırarak görülür.
  */
 export default function CrossSaleCampaigns() {
   const cross_sale_campaigns = useCartStore((state) => state.cross_sale_campaigns);
+  const items = useCartStore((state) => state.items);
   const addItem = useCartStore((state) => state.addItem);
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [addingSlug, setAddingSlug] = useState(null);
 
+  // Sepetteki ürün ID'leri (sadece normal ürünler, hediye hariç)
+  const cartProductIds = useMemo(() => {
+    const ids = new Set();
+    items.forEach((item) => {
+      if (item.is_gift) return;
+      const id = item.productId ?? item.product?.id ?? item.id;
+      if (id != null) ids.add(Number(id));
+    });
+    return ids;
+  }, [items]);
+
+  // Sadece sepette source olan kampanyaların target'ları; target ID'ye göre tekrarsız
   const targetProducts = useMemo(() => {
     if (!Array.isArray(cross_sale_campaigns) || cross_sale_campaigns.length === 0) return [];
     const seen = new Set();
     const list = [];
     cross_sale_campaigns.forEach((c) => {
+      const sourceId = c?.source_product?.id != null ? Number(c.source_product.id) : null;
+      if (sourceId == null || !cartProductIds.has(sourceId)) return;
       const t = c?.target_product;
       if (!t || !t.id || seen.has(t.id)) return;
+      if (cartProductIds.has(Number(t.id))) return;
       seen.add(t.id);
       list.push({
         id: t.id,
@@ -39,7 +55,7 @@ export default function CrossSaleCampaigns() {
       });
     });
     return list;
-  }, [cross_sale_campaigns]);
+  }, [cross_sale_campaigns, cartProductIds]);
 
   const handleAddToCart = async (target) => {
     if (addingSlug || !target?.slug) return;
