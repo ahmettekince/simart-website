@@ -55,3 +55,13 @@ export function stripHtmlForMeta(html, maxLength = 160) {
 
   return text.length > maxLength ? text.slice(0, maxLength - 3) + "..." : text;
 }
+
+/**
+ * HTML içindeki tüm <img> etiketlerine loading="lazy" ekler (açıklama görselleri için).
+ * @param {string} html - HTML string
+ * @returns {string} Güncellenmiş HTML
+ */
+export function addLazyLoadToDescriptionImages(html) {
+  if (!html || typeof html !== "string") return html;
+  return html.replace(/<img\s/gi, '<img loading="lazy" ');
+}

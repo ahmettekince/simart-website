@@ -2,7 +2,7 @@
 import React, { useEffect, useLayoutEffect, useMemo, useState, useRef } from "react";
 import ReactDOM from "react-dom";
 import Link from "next/link";
-import { decodeHtmlEntities } from "@/utils/stripHtml";
+import { decodeHtmlEntities, addLazyLoadToDescriptionImages } from "@/utils/stripHtml";
 import Slider5 from "./sliders/Slider5";
 import { openCartModal } from "@/utils/openCartModal";
 import Image from "next/image";
@@ -528,7 +528,7 @@ export default function Details9({ product }) {
                             lineHeight: "1.6",
                             color: "#333"
                           }}
-                          dangerouslySetInnerHTML={{ __html: decodeHtmlEntities(product.short_description) }}
+                          dangerouslySetInnerHTML={{ __html: addLazyLoadToDescriptionImages(decodeHtmlEntities(product.short_description)) }}
                         />
                       </div>
                     </>

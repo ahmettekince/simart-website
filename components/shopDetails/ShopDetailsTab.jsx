@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
-import { decodeHtmlEntities } from "@/utils/stripHtml";
+import { decodeHtmlEntities, addLazyLoadToDescriptionImages } from "@/utils/stripHtml";
 import Accordion from "@/components/common/Accordion";
 import BirlikteAlNew from "@/components/shopDetails/BirlikteAlNew";
 import InstallmentOptions from "@/components/shopDetails/InstallmentOptions";
@@ -191,7 +191,7 @@ export default function ShopDetailsTab({ product }) {
                 {product?.description && (
                   <div
                     className="product-description-text"
-                    dangerouslySetInnerHTML={{ __html: decodeHtmlEntities(product.description) }}
+                    dangerouslySetInnerHTML={{ __html: addLazyLoadToDescriptionImages(decodeHtmlEntities(product.description)) }}
                   />
                 )}
               </div>
