@@ -7,11 +7,10 @@ import Link from "next/link";
 import { useRef, useEffect, useState, useMemo } from "react";
 import { log } from "@/utils/logger";
 import CartRecommendations from "./CartRecommendations";
+import CrossSaleCampaigns from "@/components/common/CrossSaleCampaigns";
 import Quantity from "@/components/shopDetails/Quantity";
 import ClearCartButton from "@/components/common/ClearCartButton";
 import { calculateCartTotals } from "@/utils/cartTotals";
-
-const ORDER_NOTE_KEY = "cart_order_note";
 
 export default function ShopCart() {
   const { items, updateQuantity, removeItem, applyCoupon, removeCoupon } = useCartStore();
@@ -25,6 +24,8 @@ export default function ShopCart() {
   const totals = useCartStore((state) => state.totals);
   const applied_campaigns = useCartStore((state) => state.applied_campaigns);
   const coupon = useCartStore((state) => state.coupon);
+  const cross_sale_campaigns = useCartStore((state) => state.cross_sale_campaigns);
+  const hasCrossSale = Array.isArray(cross_sale_campaigns) && cross_sale_campaigns.length > 0;
 
   // Totals hesaplamasını useMemo ile memoize et
   const cartTotals = useMemo(() => {
@@ -145,6 +146,7 @@ export default function ShopCart() {
             <span className="icon-close icon-close-popup" data-bs-dismiss="modal" />
           </div>
           <div className="wrap">
+            {hasCrossSale && <CrossSaleCampaigns />}
             {/* Sepette ürün yoksa API'den önerileri göster */}
             {items.length === 0 && (
               <CartRecommendations showWhenEmpty={true} maxItems={10} />

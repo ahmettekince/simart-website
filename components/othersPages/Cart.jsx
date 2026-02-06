@@ -7,6 +7,7 @@ import { calculateCartTotals } from "@/utils/cartTotals";
 import Quantity from "@/components/shopDetails/Quantity";
 import OrderSummary from "@/components/othersPages/checkout/OrderSummary";
 import ClearCartButton from "@/components/common/ClearCartButton";
+import CrossSaleCampaigns from "@/components/common/CrossSaleCampaigns";
 import { useRouter } from "next/navigation";
 
 export default function Cart() {
@@ -16,6 +17,8 @@ export default function Cart() {
   const removeItem = useCartStore((state) => state.removeItem);
   const applied_campaigns = useCartStore((state) => state.applied_campaigns);
   const totals = useCartStore((state) => state.totals);
+  const cross_sale_campaigns = useCartStore((state) => state.cross_sale_campaigns);
+  const hasCrossSale = Array.isArray(cross_sale_campaigns) && cross_sale_campaigns.length > 0;
 
   const [loadingQuantityFor, setLoadingQuantityFor] = React.useState(null);
 
@@ -52,8 +55,7 @@ export default function Cart() {
   return (
     <section className="flat-spacing-11">
       <div className="container">
-
-
+        {hasCrossSale && <CrossSaleCampaigns />}
         <div className="tf-page-cart-wrap">
           <div className="tf-page-cart-item">
             <div className="d-flex justify-content-between align-items-center mb_20">

@@ -72,6 +72,8 @@ export const useCartStore = create(
         /** Hediye kampanyalı ürün sepete eklenirken hediye seçimi için bekleyen istek (merkezi modal) */
         pendingGiftAdd: null, // { product, quantity, openModal } | null
 
+
+
         // Actions
 
         /**
@@ -245,7 +247,7 @@ export const useCartStore = create(
             try {
                 // API'ye istek at
                 const success = await clearCartAPI();
-                
+
                 if (success) {
                     set({
                         items: [],
@@ -256,17 +258,17 @@ export const useCartStore = create(
                         coupon: null,
                         isSynced: true
                     });
-                    
+
                     // Sipariş notunu localStorage'dan da temizle
                     if (typeof window !== 'undefined') {
                         localStorage.removeItem('cart_order_note');
                         localStorage.removeItem('cart_gift_note');
                     }
-                    
+
                     log('[CartStore] clearCart - Store cleared and synced with API');
                     return true;
                 }
-                
+
                 log('[CartStore] clearCart - API failed');
                 return false;
             } catch (error) {

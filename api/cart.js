@@ -441,7 +441,7 @@ export async function applyCoupon(couponCode) {
         if (error.response) {
             // 400 gibi hata durumlarında dönen cevabı direkt consola bas
             console.log("❌ Kupon Uygulama Hatası (400/500):", error.response.data);
-            
+
             log("[API cart.js] applyCoupon error response:", {
                 status: error.response.status,
                 statusText: error.response.statusText,
