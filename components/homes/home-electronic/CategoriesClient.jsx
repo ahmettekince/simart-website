@@ -1,8 +1,10 @@
 "use client";
+import React, { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, Pagination } from "swiper/modules";
+import { Autoplay } from "swiper/modules";
+import NavDotsPill from "@/components/common/NavDotsPill";
 
 const CATEGORY_PLACEHOLDER = "/images/collections/collection-1.jpg";
 
@@ -12,6 +14,10 @@ function getCategoryImageSrc(url) {
 }
 
 export default function CategoriesClient({ categories }) {
+  const swiperRef = useRef(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const total = categories.length;
+
   return (
     <div className="sw-pagination-wrapper categories-pagination-wrapper">
       <Swiper
@@ -25,15 +31,16 @@ export default function CategoriesClient({ categories }) {
           480: { slidesPerView: 3 },
           0: { slidesPerView: 2 },
         }}
-        loop={categories.length > 1}
+        loop={total > 1}
         autoplay={{
           delay: 3000,
           disableOnInteraction: false,
         }}
         speed={600}
         className="tf-sw-collection"
-        modules={[Pagination, Autoplay]}
-        pagination={{ clickable: true, el: ".spd159" }}
+        modules={[Autoplay]}
+        onSwiper={(swiper) => (swiperRef.current = swiper)}
+        onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
       >
         {categories.map((item, index) => (
           <SwiperSlide key={index} style={{ border: "2px solid #f5f5f5", borderRadius: "12px" }}>
@@ -66,7 +73,12 @@ export default function CategoriesClient({ categories }) {
         ))}
       </Swiper>
       <div className="box-sw-navigation">
-        <div className="sw-dots style-2 medium sw-pagination-collection justify-content-center spd159" />
+        <NavDotsPill
+          total={total}
+          activeIndex={activeIndex}
+          onDotClick={(i) => (total > 1 ? swiperRef.current?.slideToLoop?.(i) : swiperRef.current?.slideTo?.(i))}
+          ariaLabel="Kategori slaytları"
+        />
       </div>
     </div>
   );

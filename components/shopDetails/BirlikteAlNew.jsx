@@ -1,14 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation } from "swiper/modules";
+import { Autoplay } from "swiper/modules";
 import "swiper/css";
-import "swiper/css/navigation";
+
+import NavDotsPill from "@/components/common/NavDotsPill";
 
 export default function BirlikteAlNew({ variations = [], currentSlug = null, currentCategorySlug = "urunler" }) {
+    const swiperRef = useRef(null);
     const [activeIndex, setActiveIndex] = useState(0);
     if (!variations?.length) return null;
 
@@ -16,21 +18,30 @@ export default function BirlikteAlNew({ variations = [], currentSlug = null, cur
         <div style={{ marginBottom: 20, width: "100%", maxWidth: "100%", boxSizing: "border-box", overflow: "hidden" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
                 <span style={{ fontSize: 16, fontWeight: 700, color: "#111" }}>Alternatifler</span>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <button type="button" className="ba-prev" aria-label="Önceki">‹</button>
-                    <span style={{ fontSize: 13, color: "#666", minWidth: 40, textAlign: "center" }}>{activeIndex + 1} / {variations.length}</span>
-                    <button type="button" className="ba-next" aria-label="Sonraki">›</button>
+                <div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
+                    <NavDotsPill
+                        total={variations.length}
+                        activeIndex={activeIndex}
+                        onDotClick={(i) => swiperRef.current?.slideToLoop?.(i) ?? swiperRef.current?.slideTo?.(i)}
+                        ariaLabel="Alternatif ürünler"
+                    />
                 </div>
             </div>
             <div className="birlikte-al-viewport" style={{ overflow: "hidden", width: "100%", marginRight: 0 }}>
                 <Swiper
                     className="birlikte-al-swiper"
-                    modules={[Navigation]}
+                    modules={[Autoplay]}
                     spaceBetween={12}
                     slidesPerView={1}
                     slidesPerGroup={1}
-                    navigation={{ prevEl: ".ba-prev", nextEl: ".ba-next" }}
-                    onSlideChange={(swiper) => setActiveIndex(swiper.activeIndex)}
+                    loop={variations.length > 1}
+                    onSwiper={(swiper) => (swiperRef.current = swiper)}
+                    autoplay={
+                        variations.length > 1
+                            ? { delay: 5000, disableOnInteraction: false }
+                            : false
+                    }
+                    onSlideChange={(swiper) => setActiveIndex(swiper.realIndex ?? swiper.activeIndex)}
                     breakpoints={{
                         768: { slidesPerView: 1.15 }
                     }}
@@ -66,7 +77,6 @@ export default function BirlikteAlNew({ variations = [], currentSlug = null, cur
                 </Swiper>
             </div>
             <style jsx>{`
-        .ba-prev, .ba-next { width: 32px; height: 32px; border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; cursor: pointer; font-size: 20px; line-height: 1; color: #333; }
         .birlikte-al-swiper { width: 100% !important; }
         .birlikte-al-slide { height: auto; box-sizing: border-box; flex-shrink: 0; width: 100% !important; }
         @media (min-width: 768px) {

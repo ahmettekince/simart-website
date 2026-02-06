@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation } from "swiper/modules";
+import { Autoplay } from "swiper/modules";
 
+import NavDotsPill from "@/components/common/NavDotsPill";
 import { useCartStore } from "@/stores/cartStore";
 import { openCartModal } from "@/utils/openCartModal";
 
@@ -21,6 +22,7 @@ export default function BirlikteAlSepet() {
   const items = useCartStore((state) => state.items);
   const addItem = useCartStore((state) => state.addItem);
 
+  const swiperRef = useRef(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [addingSlug, setAddingSlug] = useState(null);
 
@@ -91,68 +93,32 @@ export default function BirlikteAlSepet() {
   if (targetProducts.length === 0) return null;
 
   return (
-    <div className="birlikte-al-sepet" style={{ marginBottom: 8, width: "100%", maxWidth: "100%", minWidth: 0, }}>
+    <div className="birlikte-al-sepet" style={{ marginBottom: 4, width: "100%", maxWidth: "100%", minWidth: 0, }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8, minWidth: 0 }}>
         <span style={{ fontSize: 16, fontWeight: 700, color: "#111", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>Sepetinize ekleyebilirsiniz</span>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
-          <button
-            type="button"
-            className="ba-sepet-prev"
-            aria-label="Önceki"
-            style={{
-              width: 32,
-              height: 32,
-              border: "1px solid #e5e7eb",
-              borderRadius: 8,
-              background: "#fff",
-              cursor: "pointer",
-              fontSize: 20,
-              lineHeight: 1,
-              color: "#333",
-              padding: 0,
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            ‹
-          </button>
-          <span style={{ fontSize: 13, color: "#666", minWidth: 40, textAlign: "center" }}>
-            {activeIndex + 1} / {targetProducts.length}
-          </span>
-          <button
-            type="button"
-            className="ba-sepet-next"
-            aria-label="Sonraki"
-            style={{
-              width: 32,
-              height: 32,
-              border: "1px solid #e5e7eb",
-              borderRadius: 8,
-              background: "#fff",
-              cursor: "pointer",
-              fontSize: 20,
-              lineHeight: 1,
-              color: "#333",
-              padding: 0,
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            ›
-          </button>
+        <div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
+          <NavDotsPill
+            total={targetProducts.length}
+            activeIndex={activeIndex}
+            onDotClick={(i) => swiperRef.current?.slideTo?.(i)}
+            ariaLabel="Birlikte al önerileri"
+          />
         </div>
       </div>
 
       <div style={{ overflow: "hidden", width: "100%", maxWidth: "100%", minWidth: 0, marginRight: 0 }}>
         <Swiper
           key={`ba-sepet-${targetProducts.length}`}
-          modules={[Navigation]}
+          modules={[Autoplay]}
           spaceBetween={12}
           slidesPerView={1}
           slidesPerGroup={1}
-          navigation={{ prevEl: ".ba-sepet-prev", nextEl: ".ba-sepet-next" }}
+          onSwiper={(swiper) => (swiperRef.current = swiper)}
+          autoplay={
+            targetProducts.length > 1
+              ? { delay: 5000, disableOnInteraction: false }
+              : false
+          }
           onSlideChange={(swiper) => setActiveIndex(swiper.activeIndex)}
           breakpoints={{
             // Tek ürün tam genişlik dolsun diye 2+ ürün varken 1.15
