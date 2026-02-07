@@ -1,7 +1,6 @@
 import Header from "@/components/headers/Header";
 import DashboardNav from "@/components/othersPages/dashboard/DashboardNav";
 import OrderDetails from "@/components/othersPages/dashboard/OrderDetails";
-import Orders from "@/components/othersPages/dashboard/Orders";
 import React from "react";
 import { checkAuthServer } from "@/utils/authServer";
 import { redirect } from "next/navigation";

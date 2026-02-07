@@ -33,7 +33,7 @@ export default function ShopFilter({ setProducts, products = products1, categori
         <header className="canvas-header">
           <span className="icon-close icon-close-popup" data-bs-dismiss="offcanvas" aria-label="Close" />
         </header>
-        <div className="canvas-body"  style={{ paddingBottom: "0px !important"}}>
+        <div className="canvas-body" style={{ paddingBottom: "0px !important" }}>
           <div className="widget-facet wd-categories">
             <div
               className="facet-title"
@@ -42,7 +42,8 @@ export default function ShopFilter({ setProducts, products = products1, categori
               aria-expanded="true"
               aria-controls="categories"
             >
-              <span>
+              <span className="d-flex align-items-center gap-2">
+                <span className="icon icon-filter" style={{ flexShrink: 0 }} />
                 <b>Kategoriler</b>
               </span>
               <span className="icon icon-arrow-up" />

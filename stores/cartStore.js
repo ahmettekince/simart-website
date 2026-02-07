@@ -376,25 +376,28 @@ export const useCartStore = create(
         applyCoupon: async (couponCode) => {
             if (!couponCode || !couponCode.trim()) {
                 log('[CartStore] applyCoupon: Geçersiz kupon kodu');
-                return false;
+                return { success: false, message: 'Uygulanamadı' };
             }
 
             try {
-                // API'ye istek at
-                const cartData = await applyCouponAPI(couponCode.trim());
+                const result = await applyCouponAPI(couponCode.trim());
 
-                // API başarılı döndüyse, güncel sepeti çek ve store'u güncelle
-                if (cartData) {
-                    get().syncFromAPI(cartData);
-                    log('[CartStore] applyCoupon - Store updated');
-                    return true;
-                } else {
-                    log('[CartStore] applyCoupon: API başarısız oldu');
-                    return false;
+                // API hata objesi döndüyse (success: false)
+                if (result && result.success === false) {
+                    return { success: false, message: result.message || 'Uygulanamadı' };
                 }
+
+                // API başarılı: cartData döndü
+                if (result) {
+                    get().syncFromAPI(result);
+                    log('[CartStore] applyCoupon - Store updated');
+                    return { success: true };
+                }
+
+                return { success: false, message: 'Uygulanamadı' };
             } catch (error) {
                 log('[CartStore] applyCoupon error:', error);
-                return false;
+                return { success: false, message: 'Uygulanamadı' };
             }
         },
 

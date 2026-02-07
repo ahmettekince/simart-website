@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 export default function ScrollTop() {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [scrolled, setScrolled] = useState(0);
-  const [scrollHeight, setScrollHeight] = useState(500);
+  const [scrollHeight, setScrollHeight] = useState(1);
 
   const scrollToTop = () => {
     window.scrollTo({
@@ -16,21 +16,27 @@ export default function ScrollTop() {
   const handleScroll = () => {
     const currentScroll =
       document.body.scrollTop || document.documentElement.scrollTop;
+    const totalScrollHeight = Math.max(
+      1,
+      document.documentElement.scrollHeight - document.documentElement.clientHeight
+    );
     setScrolled(currentScroll);
     setShowScrollTop(window.scrollY >= window.innerHeight);
-    const totalScrollHeight =
-      document.documentElement.scrollHeight -
-      document.documentElement.clientHeight;
     setScrollHeight(totalScrollHeight);
   };
 
   useEffect(() => {
+    handleScroll(); // İlk yüklemede scrollHeight hesapla
     window.addEventListener("scroll", handleScroll);
 
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
   }, []);
+
+  // Sayfa viewport'a sığıyorsa (scroll yok) butonu gösterme
+  const hasScrollableContent = scrollHeight > 1;
+  if (!hasScrollableContent) return null;
 
   return (
     <div

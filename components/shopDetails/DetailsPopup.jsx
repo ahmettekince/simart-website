@@ -1,6 +1,5 @@
 "use client";
 import React, { useState } from "react";
-import Slider1 from "./sliders/Slider1";
 import Image from "next/image";
 import { openCartModal } from "@/utils/openCartModal";
 import CountdownComponent from "../common/Countdown";
@@ -48,7 +47,7 @@ export default function DetailsPopup({ product }) {
                   <SliderWithGalleryPopup
                     handleColor={handleColor}
                     currentColor={currentColor.value}
-                    firstImage={product.imgSrc}
+                    firstImage="https://ecomusnext-themesflat.vercel.app/images/slider/fashion-slideshow-04.jpg"
                   />
                 </div>
               </div>
@@ -59,7 +58,7 @@ export default function DetailsPopup({ product }) {
                 <div className="tf-product-info-list other-image-zoom">
                   <div className="tf-product-info-title">
                     <h5>
-                      {product.title ? product.title : "Cotton jersey top"}
+                      {product.title ? "product.title" : "Şımart Teknoloji"}
                     </h5>
                   </div>
                   <div className="tf-product-info-badges">

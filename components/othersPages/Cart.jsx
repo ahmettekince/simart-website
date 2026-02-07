@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 export default function Cart() {
   const router = useRouter();
   const items = useCartStore((state) => state.items);
+  const isSynced = useCartStore((state) => state.isSynced);
   const updateQuantity = useCartStore((state) => state.updateQuantity);
   const removeItem = useCartStore((state) => state.removeItem);
   const applied_campaigns = useCartStore((state) => state.applied_campaigns);
@@ -52,11 +53,37 @@ export default function Cart() {
     }
   };
 
+  // Sepet henüz API'den yüklenmediyse boş gösterme – önce yükleme göster
+  if (!isSynced) {
+    return (
+      <section className="flat-spacing-11 page-cart-sepetim">
+        <div className="container">
+          <div className="tf-page-cart-wrap">
+            <div className="tf-page-cart-item">
+              <div className="d-flex justify-content-between align-items-center mb_20">
+                <h5 className="fw-5">Sepetteki Ürünler</h5>
+              </div>
+              <div className="text-center py-5">
+                <p className="text-muted mb-0">Sepet yükleniyor...</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
-    <section className="flat-spacing-11">
+    <section className="flat-spacing-11 page-cart-sepetim">
       <div className="container">
-        <div className="tf-page-cart-wrap">
+        <div className="tf-page-cart-wrap layout-2">
           <div className="tf-page-cart-item">
+            {/* Çapraz satış (Birlikte Al) - Sepetteki Ürünler'in üstünde, sadece sol sütunda */}
+            {hasCrossSale && (
+              <div className="mb_24">
+                <BirlikteAlSepet />
+              </div>
+            )}
             <div className="d-flex justify-content-between align-items-center mb_20">
               <h5 className="fw-5">Sepetteki Ürünler</h5>
               <ClearCartButton variant="button" />
@@ -74,13 +101,6 @@ export default function Cart() {
                   </tr>
                 </thead>
                 <tbody>
-                  {hasCrossSale && (
-                    <tr className="tf-cart-item tf-cart-item--cross-sale">
-                      <td colSpan={5} style={{ padding: 0, borderBottom: "1px solid #eee", verticalAlign: "top" }}>
-                        <BirlikteAlSepet />
-                      </td>
-                    </tr>
-                  )}
                   {(() => {
                     const normalItems = items.filter(item => !item.is_gift);
                     const giftItems = items.filter(item => item.is_gift);

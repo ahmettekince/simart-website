@@ -1,4 +1,4 @@
-import Features from "@/components/common/Features";
+import Features from "@/components/homes/home-electronic/Features";
 import Testimonials from "@/components/common/Testimonials";
 import Header from "@/components/headers/Header";
 import Blogs from "@/components/homes/home-electronic/Blogs";
@@ -13,6 +13,7 @@ import { getCategories, getBanners, getCollectionBanner, getCollections } from "
 import { getMenus } from "@/api/menus";
 import { siteConfig } from "@/config/site";
 import { organizationSchema } from "@/lib/schema";
+import DetailsPopup from "@/components/shopDetails/DetailsPopup";
 
 export const metadata = {
   title: "Şımart Teknoloji - Robot Süpürge ve Akıllı Ev Sistemleri",

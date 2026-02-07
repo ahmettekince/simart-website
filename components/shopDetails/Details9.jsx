@@ -369,7 +369,7 @@ export default function Details9({ product }) {
                 <div className="tf-zoom-main" />
                 <div className="tf-product-info-list other-image-zoom">
                   <div className="tf-product-info-title">
-                    <h5>{product.title ? product.title : "Cotton jersey top"}</h5>
+                    <h5 style={{ fontSize: "30px", fontWeight: "600" }}>{product.title ? product.title : "Şımart Teknoloji"}</h5>
                   </div>
 
                   {/* Rating gösterimi: StarRating component + Değerlendirme butonu */}
@@ -620,6 +620,7 @@ export default function Details9({ product }) {
                     }
 
                     .announcement-message {
+                      font-size: 11px;
                       position: absolute;
                       top: 0;
                       left: 0;
@@ -988,8 +989,10 @@ export default function Details9({ product }) {
         soldOut={buttonState.buttonDisabled && buttonState.buttonText === "Stokta Yok"}
       />
 
-      {/* Video Player */}
-      <ProductVideoPlayer influencerVideos={product?.influencer_videos || []} />
+      {/* Video Player - sadece influencer_videos varsa ve doluysa */}
+      {Array.isArray(product?.influencer_videos) && product.influencer_videos.length > 0 && (
+        <ProductVideoPlayer influencerVideos={product.influencer_videos} />
+      )}
     </section>
   );
 }

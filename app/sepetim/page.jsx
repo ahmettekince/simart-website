@@ -1,6 +1,5 @@
 import Header from "@/components/headers/Header";
 import Cart from "@/components/othersPages/Cart";
-import RecentProducts from "@/components/shopDetails/RecentProducts";
 import React from "react";
 
 export const metadata = {
@@ -12,7 +11,7 @@ export default function page() {
     <>
       <Header />
       <Cart />
-      <RecentProducts />
+
     </>
   );
 }

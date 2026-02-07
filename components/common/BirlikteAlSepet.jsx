@@ -8,7 +8,6 @@ import { Autoplay } from "swiper/modules";
 
 import NavDotsPill from "@/components/common/NavDotsPill";
 import { useCartStore } from "@/stores/cartStore";
-import { openCartModal } from "@/utils/openCartModal";
 
 /**
  * Sepet üstünde gösterilen cross-sale alanı.
@@ -81,8 +80,7 @@ export default function BirlikteAlSepet() {
 
     setAddingSlug(target.slug);
     try {
-      const result = await addItem(product, 1, true);
-      if (result?.added) openCartModal();
+      await addItem(product, 1, true);
     } catch (e) {
       console.error("Cross-sale sepete ekleme hatası:", e);
     } finally {

@@ -126,18 +126,19 @@ export default function OrderSummary({
     setCouponSuccess(false);
 
     try {
-      const success = await applyCoupon(couponCode.trim());
+      const result = await applyCoupon(couponCode.trim());
+      const success = result === true || (result && result.success);
       if (success) {
         setCouponSuccess(true);
         setCouponCode("");
-        setTimeout(() => {
-          setCouponSuccess(false);
-        }, 3000);
+        setTimeout(() => setCouponSuccess(false), 3000);
       } else {
-        setCouponError("Kupon kodu geçersiz veya kullanılamıyor.");
+        setCouponError((result && result.message) || "Uygulanamadı");
+        setTimeout(() => setCouponError(""), 4000);
       }
     } catch (error) {
-      setCouponError("Kupon uygulanırken bir hata oluştu.");
+      setCouponError("Uygulanamadı");
+      setTimeout(() => setCouponError(""), 4000);
       console.error("Kupon uygulama hatası:", error);
     } finally {
       setIsApplyingCoupon(false);
@@ -154,9 +155,11 @@ export default function OrderSummary({
       const success = await removeCoupon(coupon.code);
       if (!success) {
         setCouponError("Kupon kaldırılırken bir hata oluştu.");
+        setTimeout(() => setCouponError(""), 4000);
       }
     } catch (error) {
       setCouponError("Kupon kaldırılırken bir hata oluştu.");
+      setTimeout(() => setCouponError(""), 4000);
       console.error("Kupon kaldırma hatası:", error);
     } finally {
       setIsRemovingCoupon(false);
@@ -481,14 +484,12 @@ export default function OrderSummary({
                   className="text_black-2"
                   style={{ margin: 0, padding: 0 }}
                 >
-                  Siparişimin ileri bir tarihte gönderilmesini istiyorum (isteğe bağlı)
+                  Siparişimin ileri bir tarihte kargoya verilmesini istiyorum (isteğe bağlı)
                 </label>
               </div>
               {preferLaterDelivery && (
                 <div style={{ paddingLeft: "26px", marginTop: "8px" }}>
-                  <p className="text_black-2 mb_8" style={{ fontSize: "13px" }}>
-                    Siparişinizin belirlediğiniz tarihte kargoya verilmesi için bir tarih seçin.
-                  </p>
+
                   <input
                     type="date"
                     className="form-control mb_8"
@@ -501,70 +502,78 @@ export default function OrderSummary({
                     style={{ maxWidth: "220px" }}
                   />
                   <p className="text-muted mb_0" style={{ fontSize: "12px" }}>
-                    Resmi bayramlara denk gelirse süre değişiklik gösterebilir.
+                    Resmi tatillere ve pazar günlerine denk gelen siparişlerde süre değişiklik gösterebilir.
                   </p>
                 </div>
               )}
 
             </>
           )}
-          <div className="wd-check-payment" style={{ marginTop: "30px", paddingTop: "30px", borderTop: "1px solid #e5e5e5" }}>
-            {showAgreements && (
-              <div className="mb_20" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-                <div className="box-checkbox fieldset-radio" style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
-                  <input
-                    type="checkbox"
-                    id="check-agreements"
-                    className="tf-check"
-                    checked={acceptedAgreements}
-                    onChange={(e) => onAcceptedAgreementsChange(e.target.checked)}
-                    style={{ marginTop: "3px", flexShrink: 0 }}
-                  />
-                  <label htmlFor="check-agreements" className="text_black-2" style={{ margin: 0, lineHeight: "1.5" }}>
-                    <Link href="/gizlilik-politikasi" target="_blank" style={{ textDecoration: "underline" }}>Gizlilik Politikasını</Link>,{" "}
-                    <Link href="/sartlar-ve-kosullar" target="_blank" style={{ textDecoration: "underline" }}>Şartlar ve Koşulları</Link> ve{" "}
-                    <Link href="/iade-politikasi" target="_blank" style={{ textDecoration: "underline" }}>İade ve Geri Ödeme Politikasını</Link> okudum, kabul ediyorum.
-                  </label>
-                </div>
-                {orderErrors.agreements_accepted && (
-                  <div style={{ marginTop: "8px", fontSize: "12px", color: "#dc3545", width: "100%" }}>
-                    {orderErrors.agreements_accepted[0]}
+          {(showAgreements ||
+            orderErrors?.uzak_satis_sozlesmesi_accepted ||
+            orderErrorMessage ||
+            orderErrors?.delivery_address_id ||
+            orderErrors?.invoice_address_id ||
+            orderErrors?.card_holder_name ||
+            orderErrors?.card_number) && (
+              <div className="wd-check-payment" style={{ marginTop: "30px", paddingTop: "30px", borderTop: "1px solid #e5e5e5" }}>
+                {showAgreements && (
+                  <div className="mb_20" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                    <div className="box-checkbox fieldset-radio" style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
+                      <input
+                        type="checkbox"
+                        id="check-agreements"
+                        className="tf-check"
+                        checked={acceptedAgreements}
+                        onChange={(e) => onAcceptedAgreementsChange(e.target.checked)}
+                        style={{ marginTop: "3px", flexShrink: 0 }}
+                      />
+                      <label htmlFor="check-agreements" className="text_black-2" style={{ margin: 0, lineHeight: "1.5" }}>
+                        <Link href="/gizlilik-politikasi" target="_blank" style={{ textDecoration: "underline" }}>Gizlilik Politikasını</Link>,{" "}
+                        <Link href="/sartlar-ve-kosullar" target="_blank" style={{ textDecoration: "underline" }}>Şartlar ve Koşulları</Link> ve{" "}
+                        <Link href="/iade-politikasi" target="_blank" style={{ textDecoration: "underline" }}>İade ve Geri Ödeme Politikasını</Link> okudum, kabul ediyorum.
+                      </label>
+                    </div>
+                    {orderErrors.agreements_accepted && (
+                      <div style={{ marginTop: "8px", fontSize: "12px", color: "#dc3545", width: "100%" }}>
+                        {orderErrors.agreements_accepted[0]}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {orderErrors.uzak_satis_sozlesmesi_accepted && (
+                  <div style={{ marginTop: "-15px", marginBottom: "15px", fontSize: "12px", color: "#dc3545" }}>
+                    {orderErrors.uzak_satis_sozlesmesi_accepted[0]}
+                  </div>
+                )}
+                {orderErrorMessage && (
+                  <div style={{ marginTop: "15px", marginBottom: "15px", padding: "12px", backgroundColor: "#fee", border: "1px solid #fcc", borderRadius: "6px", fontSize: "14px", color: "#c33" }}>
+                    {orderErrorMessage}
+                  </div>
+                )}
+                {orderErrors.delivery_address_id && (
+                  <div style={{ marginTop: "15px", marginBottom: "15px", padding: "12px", backgroundColor: "#fee", border: "1px solid #fcc", borderRadius: "6px", fontSize: "14px", color: "#c33" }}>
+                    {orderErrors.delivery_address_id[0]}
+                  </div>
+                )}
+                {orderErrors.invoice_address_id && (
+                  <div style={{ marginTop: "15px", marginBottom: "15px", padding: "12px", backgroundColor: "#fee", border: "1px solid #fcc", borderRadius: "6px", fontSize: "14px", color: "#c33" }}>
+                    {orderErrors.invoice_address_id[0]}
+                  </div>
+                )}
+                {orderErrors.card_holder_name && (
+                  <div style={{ marginTop: "15px", marginBottom: "15px", padding: "12px", backgroundColor: "#fee", border: "1px solid #fcc", borderRadius: "6px", fontSize: "14px", color: "#c33" }}>
+                    {orderErrors.card_holder_name[0]}
+                  </div>
+                )}
+                {orderErrors.card_number && (
+                  <div style={{ marginTop: "15px", marginBottom: "15px", padding: "12px", backgroundColor: "#fee", border: "1px solid #fcc", borderRadius: "6px", fontSize: "14px", color: "#c33" }}>
+                    {orderErrors.card_number[0]}
                   </div>
                 )}
               </div>
             )}
-
-            {orderErrors.uzak_satis_sozlesmesi_accepted && (
-              <div style={{ marginTop: "-15px", marginBottom: "15px", fontSize: "12px", color: "#dc3545" }}>
-                {orderErrors.uzak_satis_sozlesmesi_accepted[0]}
-              </div>
-            )}
-            {orderErrorMessage && (
-              <div style={{ marginTop: "15px", marginBottom: "15px", padding: "12px", backgroundColor: "#fee", border: "1px solid #fcc", borderRadius: "6px", fontSize: "14px", color: "#c33" }}>
-                {orderErrorMessage}
-              </div>
-            )}
-            {orderErrors.delivery_address_id && (
-              <div style={{ marginTop: "15px", marginBottom: "15px", padding: "12px", backgroundColor: "#fee", border: "1px solid #fcc", borderRadius: "6px", fontSize: "14px", color: "#c33" }}>
-                {orderErrors.delivery_address_id[0]}
-              </div>
-            )}
-            {orderErrors.invoice_address_id && (
-              <div style={{ marginTop: "15px", marginBottom: "15px", padding: "12px", backgroundColor: "#fee", border: "1px solid #fcc", borderRadius: "6px", fontSize: "14px", color: "#c33" }}>
-                {orderErrors.invoice_address_id[0]}
-              </div>
-            )}
-            {orderErrors.card_holder_name && (
-              <div style={{ marginTop: "15px", marginBottom: "15px", padding: "12px", backgroundColor: "#fee", border: "1px solid #fcc", borderRadius: "6px", fontSize: "14px", color: "#c33" }}>
-                {orderErrors.card_holder_name[0]}
-              </div>
-            )}
-            {orderErrors.card_number && (
-              <div style={{ marginTop: "15px", marginBottom: "15px", padding: "12px", backgroundColor: "#fee", border: "1px solid #fcc", borderRadius: "6px", fontSize: "14px", color: "#c33" }}>
-                {orderErrors.card_number[0]}
-              </div>
-            )}
-          </div>
           <button
             type="button"
             onClick={onSubmitOrder}

@@ -885,6 +885,8 @@ input[type="checkbox"]:checked,
 
 /* Kategoriler modalı - tüm kategoriler görünsün, alttaki boş alan kalkması */
 .canvas-filter {
+  max-width: 380px !important;
+  width: 100% !important;
   height: auto !important;
   max-height: 100vh !important;
   overflow-y: auto;
@@ -1448,6 +1450,11 @@ body.product-detail-page .progress-wrap {
   }
 
   /* 3. satır: fiyat – şimdiki fiyat büyük, eski fiyat küçük; indirimde yeşil */
+  .tf-sticky-atc-price-wrap .price-on-sale,
+  .tf-sticky-atc-price-wrap .compare-at-price {
+    white-space: nowrap;
+  }
+
   .tf-sticky-atc-price-wrap .price-on-sale {
     font-size: 17px;
   }
@@ -1857,6 +1864,19 @@ body.product-detail-page .progress-wrap {
   grid-template-columns: 50% 1fr !important;
 }
 
+/* Sepetim sayfası: Sol sütun ürünler+çapraz satış, sağ sütun özet paneli (layout bozulmasın) */
+@media (min-width: 992px) {
+  .page-cart-sepetim .tf-page-cart-wrap.layout-2 {
+    grid-template: auto / 60% 1fr !important;
+  }
+
+  .page-cart-sepetim .tf-page-cart-wrap .tf-page-cart-footer {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: start;
+  }
+}
+
 /* Sipariş özeti arka plan rengi */
 .odeme-page-layout .tf-page-cart-checkout {
   background-color: #f5f5f5 !important;
@@ -2026,5 +2046,138 @@ body.header-scroll-hide header.header-default {
   td {
     padding: 12px 16px !important;
     vertical-align: middle;
+  }
+}
+
+/* Ürün detay - Değerlendirmeler filtre butonları ve sıralama: mobilde daha küçük */
+@media (max-width: 767px) {
+  .review-filter-row {
+    gap: 10px !important;
+  }
+
+  .review-filter-scroll {
+    gap: 6px !important;
+  }
+
+  .review-filter-btn {
+    padding: 4px 8px !important;
+    font-size: 11px !important;
+    gap: 2px !important;
+  }
+
+  .review-filter-btn .icon-star,
+  .review-filter-btn .icon-check {
+    font-size: 10px !important;
+  }
+
+  .review-filter-btn svg {
+    width: 8px !important;
+    height: 8px !important;
+  }
+
+  .review-sort-select {
+    padding: 4px 22px 4px 8px !important;
+    font-size: 11px !important;
+    max-width: 85px !important;
+    border-radius: 4px !important;
+    background-position: right 6px center !important;
+  }
+}
+
+/* Dashboard bildirim çanı - mavi renk + çalma animasyonu */
+@keyframes bell-ring {
+  0%, 100% { transform: rotate(0deg); }
+  10% { transform: rotate(12deg); }
+  20% { transform: rotate(-12deg); }
+  30% { transform: rotate(10deg); }
+  40% { transform: rotate(-10deg); }
+  50% { transform: rotate(6deg); }
+  60% { transform: rotate(-6deg); }
+  70% { transform: rotate(3deg); }
+  80% { transform: rotate(-3deg); }
+  90% { transform: rotate(1deg); }
+}
+
+.bell-notification-icon {
+  color: #3c81b5 !important;
+  animation: bell-ring 2s ease-in-out infinite;
+  transform-origin: top center;
+}
+
+.my-account-nav .dashboard-nav-profile-slot {
+  margin-top: 4px;
+}
+
+/* Account profile section - sidebar'da nav üstünde, label yok placeholder ile */
+.account-profile-section {
+  width: 100%;
+  border: 1px solid var(--line, #e5e5e5);
+  border-radius: 8px;
+  padding: 16px;
+
+  .account-profile-input {
+    font-size: 13px !important;
+    padding: 8px 12px !important;
+    min-height: 36px !important;
+    height: 36px !important;
+    border: 1px solid var(--line, #e5e5e5) !important;
+    border-radius: 3px;
+    &::placeholder {
+      color: #999;
+    }
+  }
+
+  .account-profile-btn {
+    font-size: 12px !important;
+    padding: 8px 14px !important;
+    min-height: 36px !important;
+  }
+
+  .account-profile-row-2 {
+    @media (max-width: 400px) {
+      grid-template-columns: 1fr !important;
+    }
+  }
+  .account-profile-input[readonly] {
+    background-color: #f5f5f5 !important;
+    cursor: default;
+  }
+}
+
+/* Şifre değiştirme - mobilde satır satır, tablet+ yan yana */
+.account-edit-password-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+
+  @media (max-width: 767px) {
+    flex-direction: column;
+    align-items: stretch;
+    .account-edit-password-input {
+      flex: 1 1 100% !important;
+      min-width: 100% !important;
+    }
+    .account-edit-password-btn {
+      width: 100%;
+    }
+  }
+
+  .account-edit-password-input {
+    flex: 1 1 140px;
+    min-width: 120px;
+    font-size: 14px !important;
+    padding: 10px 14px !important;
+    height: 42px !important;
+    border: 1px solid var(--line, #e5e5e5) !important;
+    border-radius: 4px;
+    &::placeholder {
+      color: #999;
+    }
+  }
+  .account-edit-password-btn {
+    flex-shrink: 0;
+    font-size: 13px !important;
+    padding: 10px 18px !important;
   }
 }

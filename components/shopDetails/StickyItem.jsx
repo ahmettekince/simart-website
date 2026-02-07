@@ -246,6 +246,10 @@ export default function StickyItem({
             max-width: 50px;
           }
         }
+        .tf-sticky-atc-price-wrap .price-on-sale,
+        .tf-sticky-atc-price-wrap .compare-at-price {
+          white-space: nowrap;
+        }
         .tf-sticky-atc-price-wrap .price-on-sale {
           font-size: 17px;
           font-weight: 700;
@@ -289,7 +293,7 @@ export default function StickyItem({
           font-size: 15px;
         }
 
-        /* Mobilde buton sadece yazı kadar + sağdan soldan 10px, sağa yaslı */
+        /* Mobilde buton "Sepete Eklendi" genişliğine göre sabit - animasyonda büyüyüp küçülmesin */
         @media (max-width: 767px) {
           .tf-sticky-atc-btns {
             width: auto;
@@ -297,8 +301,10 @@ export default function StickyItem({
             margin-left: auto;
           }
           .sticky-atc-btn {
+            min-width: 150px;
             width: auto;
-            padding: 0 15px;
+            max-width: 100%;
+            padding: 0 20px;
           }
         }
         .sticky-atc-btn:active:not(:disabled) {

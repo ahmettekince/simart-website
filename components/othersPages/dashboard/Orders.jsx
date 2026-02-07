@@ -11,6 +11,7 @@ export default function Orders() {
   const [detailError, setDetailError] = useState("");
   const [selectedOrderDetail, setSelectedOrderDetail] = useState(null);
   const [isAddressOpen, setIsAddressOpen] = useState(false);
+  const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
   const [isLogsOpen, setIsLogsOpen] = useState(false);
   const [copiedOrderNumber, setCopiedOrderNumber] = useState(null);
 
@@ -86,6 +87,7 @@ export default function Orders() {
     setDetailError("");
     setSelectedOrderDetail(null);
     setIsAddressOpen(false);
+    setIsInvoiceOpen(false);
     setIsLogsOpen(false);
 
     try {
@@ -142,11 +144,18 @@ export default function Orders() {
             {!loading &&
               !error &&
               orders.length > 0 &&
-              orders.map((order) => (
-                <tr className="tf-order-item" key={order.id}>
+              orders.map((order) => {
+                const isPaymentFailed = (order.payment_status_text || "").toLowerCase().includes("başarısız");
+                const displayStatus = isPaymentFailed ? (order.payment_status_text || "Ödeme Başarısız") : (order.status_text || "-");
+                return (
+                <tr
+                  className="tf-order-item"
+                  key={order.id}
+                  style={isPaymentFailed ? { backgroundColor: "rgb(204, 51, 51)", color: "#fff" } : undefined}
+                >
                   <td>{order.order_number}</td>
                   <td>{formatDate(order.created_at)}</td>
-                  <td>{order.payment_status_text ?? order.status_text}</td>
+                  <td>{displayStatus}</td>
                   <td>{formatTotal(order.total)}</td>
                   <td>
                     <button
@@ -158,7 +167,8 @@ export default function Orders() {
                     </button>
                   </td>
                 </tr>
-              ))}
+              );
+              })}
           </tbody>
         </table>
       </div>
@@ -242,15 +252,41 @@ export default function Orders() {
                         {selectedOrderDetail.payment_status_text}
                       </span>
                     </div>
+                    {selectedOrderDetail.subtotal != null && (
+                      <div className="order-detail-row">
+                        <span className="label">Ara Toplam</span>
+                        <span className="value">{formatTotal(selectedOrderDetail.subtotal)}</span>
+                      </div>
+                    )}
+                    {(selectedOrderDetail.campaign_discount_amount ?? 0) > 0 && (
+                      <div className="order-detail-row">
+                        <span className="label">Kampanya İndirimi</span>
+                        <span className="value" style={{ color: "#0bc15c" }}>
+                          -{formatTotal(selectedOrderDetail.campaign_discount_amount)}
+                        </span>
+                      </div>
+                    )}
+                    {(selectedOrderDetail.coupon_discount_amount ?? 0) > 0 && (
+                      <div className="order-detail-row">
+                        <span className="label">Kupon İndirimi{selectedOrderDetail.coupon_code ? ` (${selectedOrderDetail.coupon_code})` : ""}</span>
+                        <span className="value" style={{ color: "#0bc15c" }}>
+                          -{formatTotal(selectedOrderDetail.coupon_discount_amount)}
+                        </span>
+                      </div>
+                    )}
+                    {(selectedOrderDetail.installment_fee ?? 0) > 0 && (
+                      <div className="order-detail-row">
+                        <span className="label">Taksit Ücreti</span>
+                        <span className="value">{formatTotal(selectedOrderDetail.installment_fee)}</span>
+                      </div>
+                    )}
                     <div className="order-detail-row total-row">
                       <span className="label">Toplam</span>
                       <span className="value">{formatTotal(selectedOrderDetail.total)}</span>
                     </div>
                     {selectedOrderDetail.installment_count != null && (
                       <div className="order-detail-row">
-                        <span className="label">
-                          {selectedOrderDetail.installment_count === 1 ? "" : "Taksit"}
-                        </span>
+                        <span className="label">Taksit</span>
                         <span className="value">
                           {selectedOrderDetail.installment_count === 1
                             ? "Tek çekim"
@@ -258,7 +294,40 @@ export default function Orders() {
                         </span>
                       </div>
                     )}
+                    {(selectedOrderDetail.bank_name || selectedOrderDetail.card_brand) && (
+                      <div className="order-detail-row">
+                        <span className="label">Ödeme</span>
+                        <span className="value">
+                          {[selectedOrderDetail.bank_name, selectedOrderDetail.card_brand].filter(Boolean).join(" / ")}
+                          {selectedOrderDetail.card_bin && (
+                            <span className="text-muted" style={{ fontSize: "12px", marginLeft: "4px" }}>
+                              (****{String(selectedOrderDetail.card_bin).slice(-4)})
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                    )}
                   </div>
+
+                  {Array.isArray(selectedOrderDetail.cart_items) && selectedOrderDetail.cart_items.length > 0 && (
+                    <div className="order-detail-section">
+                      <div className="fw-6 mb_10" style={{ fontSize: "14px" }}>Sipariş Ürünleri</div>
+                      <ul className="order-detail-product-list" style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                        {selectedOrderDetail.cart_items.map((item) => (
+                          <li key={item.id} className="order-detail-product-item" style={{ padding: "10px 0", borderBottom: "1px solid #eee", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px" }}>
+                            <div>
+                              <span className="fw-6">{item.product?.name || "Ürün"}</span>
+                              <span className="text-muted" style={{ fontSize: "12px", marginLeft: "6px" }}>x{item.quantity}</span>
+                              {(item.discount_amount ?? 0) > 0 && (
+                                <span className="text-success" style={{ fontSize: "11px", marginLeft: "6px" }}>İndirim: -{formatTotal(item.discount_amount)}</span>
+                              )}
+                            </div>
+                            <span>{formatTotal(item.total)}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
 
                   {selectedOrderDetail.delivery_address && (
                     <div className="order-detail-section">
@@ -292,6 +361,47 @@ export default function Orders() {
                                   <br />
                                 </span>
                               ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {selectedOrderDetail.invoice_address && (
+                    <div className="order-detail-section">
+                      <button
+                        type="button"
+                        className="order-section-toggle"
+                        onClick={() => setIsInvoiceOpen((prev) => !prev)}
+                      >
+                        <span className="fw-6">Fatura Adresi</span>
+                        <span className={`order-section-arrow ${isInvoiceOpen ? "open" : ""}`}>▾</span>
+                      </button>
+                      {isInvoiceOpen && (
+                        <div className="order-detail-address">
+                          {selectedOrderDetail.invoice_address.invoice_type === "company" && (
+                            <div className="mb_8">
+                              <span className="text-muted" style={{ fontSize: "12px" }}>Ünvan: </span>
+                              {selectedOrderDetail.invoice_address.company_name}
+                            </div>
+                          )}
+                          {selectedOrderDetail.invoice_address.tax_number && (
+                            <div className="mb_8">
+                              <span className="text-muted" style={{ fontSize: "12px" }}>Vergi No: </span>
+                              {selectedOrderDetail.invoice_address.tax_number}
+                            </div>
+                          )}
+                          <div className="name">{selectedOrderDetail.invoice_address.full_name}</div>
+                          <div className="phone">{selectedOrderDetail.invoice_address.phone}</div>
+                          <div className="address">
+                            {(selectedOrderDetail.invoice_address.full_address ||
+                              selectedOrderDetail.invoice_address.address_detail ||
+                              "").split("\n").map((line, idx) => (
+                              <span key={idx}>
+                                {line}
+                                <br />
+                              </span>
+                            ))}
                           </div>
                         </div>
                       )}

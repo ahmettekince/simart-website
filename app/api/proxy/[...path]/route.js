@@ -26,33 +26,40 @@ async function handleRequest(request, params, method) {
             const queryString = searchParams.toString();
             finalUrl = queryString ? `${targetUrl}?${queryString}` : targetUrl;
         } else {
-            // POST ve diğer istekler için query parametrelerini body'ye ekle
-            try {
+            const reqContentType = request.headers.get("content-type") || "";
+            const isMultipart = reqContentType.includes("multipart/form-data");
+
+            if (isMultipart) {
+                // FormData: ham body'yi forward et, JSON parse etme
                 const clonedRequest = request.clone();
-                body = await clonedRequest.json();
+                const arrayBuffer = await clonedRequest.arrayBuffer();
+                body = Buffer.from(arrayBuffer);
+                bodyStr = "null"; // İmza için multipart'ta body string kullanılmaz
+            } else {
+                // JSON body
+                try {
+                    const clonedRequest = request.clone();
+                    body = await clonedRequest.json();
 
-                // Query parametrelerini body'ye ekle (varsa)
-                if (searchParams.toString()) {
-                    const queryParams = {};
-                    searchParams.forEach((value, key) => {
-                        queryParams[key] = value;
-                    });
-                    // Body ile birleştir (body öncelikli)
-                    body = { ...queryParams, ...body };
-                }
-
-                bodyStr = JSON.stringify(body);
-            } catch (e) {
-                // Body parse edilemezse, query parametrelerini body olarak kullan
-                if (searchParams.toString()) {
-                    body = {};
-                    searchParams.forEach((value, key) => {
-                        body[key] = value;
-                    });
+                    if (searchParams.toString()) {
+                        const queryParams = {};
+                        searchParams.forEach((value, key) => {
+                            queryParams[key] = value;
+                        });
+                        body = { ...queryParams, ...body };
+                    }
                     bodyStr = JSON.stringify(body);
-                } else {
-                    body = undefined;
-                    bodyStr = "null";
+                } catch (e) {
+                    if (searchParams.toString()) {
+                        body = {};
+                        searchParams.forEach((value, key) => {
+                            body[key] = value;
+                        });
+                        bodyStr = JSON.stringify(body);
+                    } else {
+                        body = undefined;
+                        bodyStr = "null";
+                    }
                 }
             }
         }
@@ -79,12 +86,15 @@ async function handleRequest(request, params, method) {
         const cookieHeader = cookieHeaders.join('; ');
         const userAgent = request.headers.get('user-agent') || request.headers.get('User-Agent');
 
+        const reqContentType = request.headers.get("content-type");
+        const isMultipartReq = reqContentType?.includes("multipart/form-data");
+
         const response = await axios({
             method,
             url: finalUrl,
             headers: {
                 "X-API-Key": apiKey,
-                "Content-Type": "application/json",
+                "Content-Type": isMultipartReq ? reqContentType : "application/json",
                 "X-Signature": signature,
                 "X-Timestamp": timestamp.toString(),
                 ...(userAgent && { "User-Agent": userAgent }),

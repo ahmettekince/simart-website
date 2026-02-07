@@ -21,6 +21,8 @@ export default function ProductVideoPlayer() {
   const containerRef = useRef(null);
   const scrollContainerRef = useRef(null);
   const slideHeightRef = useRef(0);
+  const dragRef = useRef({ isDragging: false, startY: 0, startScrollTop: 0, hasMoved: false });
+  const justDraggedRef = useRef(false);
 
   // Sayfa yüklendikten sonra (biraz gecikmeli) otomatik aç – sadece video varsa
   useEffect(() => {
@@ -142,10 +144,18 @@ export default function ProductVideoPlayer() {
     }
   }, [isFullscreen]);
 
-  const handleClose = () => {
-    // Tüm videoları durdur
+  const handleClose = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
+    }
+    const scrollY = window.scrollY;
     videoRefs.current.forEach(vid => vid && vid.pause());
     setIsOpen(false);
+    const restore = () => window.scrollTo(0, scrollY);
+    requestAnimationFrame(() => requestAnimationFrame(restore));
+    setTimeout(restore, 50);
   };
 
   const handleToggleMute = () => {
@@ -159,7 +169,10 @@ export default function ProductVideoPlayer() {
 
   const handleToggleFullscreen = (e) => {
     if (e) e.stopPropagation();
-    // Nativefullscreen yerine CSS fullscreen (state tabanlı)
+    if (justDraggedRef.current) {
+      justDraggedRef.current = false;
+      return;
+    }
     setIsFullscreen((prev) => !prev);
   };
 
@@ -193,6 +206,39 @@ export default function ProductVideoPlayer() {
     container.scrollTo({ top: prevTop, behavior: "smooth" });
   };
 
+  // Mouse drag ile aşağı/yukarı kaydırma
+  const handleMouseDown = (e) => {
+    if (e.target.closest(".product-video-controls, .product-video-progress, .nav-arrow-btn")) return;
+    const container = scrollContainerRef.current;
+    if (!container) return;
+    dragRef.current = { isDragging: true, startY: e.clientY, startScrollTop: container.scrollTop, hasMoved: false };
+  };
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleMouseMove = (e) => {
+      if (!dragRef.current.isDragging) return;
+      const container = scrollContainerRef.current;
+      if (!container) return;
+      const dy = dragRef.current.startY - e.clientY;
+      if (Math.abs(dy) > 3) dragRef.current.hasMoved = true;
+      container.scrollTop = dragRef.current.startScrollTop + dy;
+    };
+
+    const handleMouseUp = () => {
+      if (dragRef.current.hasMoved) justDraggedRef.current = true;
+      dragRef.current.isDragging = false;
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isOpen]);
+
   if (VIDEOS.length === 0 || !isOpen) return null;
 
   return (
@@ -214,6 +260,7 @@ export default function ProductVideoPlayer() {
         {/* Controls */}
         <div className="product-video-controls" onClick={(e) => e.stopPropagation()}>
           <button
+            type="button"
             className="product-video-control-btn"
             onClick={handleToggleFullscreen}
             aria-label="Tam ekran"
@@ -223,6 +270,7 @@ export default function ProductVideoPlayer() {
             </svg>
           </button>
           <button
+            type="button"
             className="product-video-control-btn"
             onClick={handleToggleMute}
             aria-label={isMuted ? "Sesi aç" : "Sesi kapat"}
@@ -241,6 +289,7 @@ export default function ProductVideoPlayer() {
             )}
           </button>
           <button
+            type="button"
             className="product-video-control-btn"
             onClick={handleClose}
             aria-label="Kapat"
@@ -291,7 +340,11 @@ export default function ProductVideoPlayer() {
         </div>
 
         {/* Video List (Scrollable) */}
-        <div className="product-video-scroll-container" ref={scrollContainerRef}>
+        <div
+          className="product-video-scroll-container"
+          ref={scrollContainerRef}
+          onMouseDown={handleMouseDown}
+        >
           {VIDEOS.map((url, index) => (
             <div key={`original-${index}`} className="video-slide" data-index={index}>
               <video
@@ -347,7 +400,7 @@ export default function ProductVideoPlayer() {
 
         .product-video-player-container {
           position: relative;
-          width: 18rem;
+          width: 14rem;
           max-width: calc(100vw - 2.5rem);
           aspect-ratio: 9 / 16;
           background: #000;
@@ -367,6 +420,11 @@ export default function ProductVideoPlayer() {
             scrollbar-width: none;
             -ms-overflow-style: none;
             overscroll-behavior: contain;
+            cursor: grab;
+        }
+
+        .product-video-scroll-container:active {
+            cursor: grabbing;
         }
         
         .product-video-scroll-container::-webkit-scrollbar {

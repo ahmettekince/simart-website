@@ -96,22 +96,24 @@ export default function ShopCart() {
     setCouponSuccess(false);
 
     try {
-      const success = await applyCoupon(couponCode.trim());
+      const result = await applyCoupon(couponCode.trim());
+      const success = result === true || (result && result.success);
       if (success) {
         setCouponSuccess(true);
         setCouponCode("");
-        setTimeout(() => {
-          setCouponSuccess(false);
-        }, 3000);
+        setTimeout(() => setCouponSuccess(false), 3000);
       } else {
-        setCouponError("Kupon kodu geçersiz veya kullanılamıyor.");
+        setCouponError((result && result.message) || "Uygulanamadı");
+        setTimeout(() => setCouponError(""), 4000);
       }
     } catch (error) {
-      // 400/500 hatası durumunda dönen detayı consola bas
       if (error.response) {
-        console.log("❌ ShopCart Kupon Hatası Detayı:", error.response.data);
+        const msg = error.response?.data?.message;
+        setCouponError((msg && String(msg).trim()) ? msg : "Uygulanamadı");
+      } else {
+        setCouponError("Uygulanamadı");
       }
-      setCouponError("Kupon uygulanırken bir hata oluştu.");
+      setTimeout(() => setCouponError(""), 4000);
       log("Kupon uygulama hatası:", error);
     } finally {
       setIsApplyingCoupon(false);
@@ -128,9 +130,11 @@ export default function ShopCart() {
       const success = await removeCoupon(coupon.code);
       if (!success) {
         setCouponError("Kupon kaldırılırken bir hata oluştu.");
+        setTimeout(() => setCouponError(""), 4000);
       }
     } catch (error) {
       setCouponError("Kupon kaldırılırken bir hata oluştu.");
+      setTimeout(() => setCouponError(""), 4000);
       log("Kupon kaldırma hatası:", error);
     } finally {
       setIsRemovingCoupon(false);
@@ -144,7 +148,7 @@ export default function ShopCart() {
           <div className="modal-content">
             <div className="header">
               <div className="title fw-5">
-                Sepet
+                Sepetim
                 <ClearCartButton variant="inline" />
               </div>
               <span className="icon-close icon-close-popup" data-bs-dismiss="modal" />

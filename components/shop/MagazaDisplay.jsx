@@ -63,12 +63,16 @@ export default function MagazaDisplay({ products: initialProducts = [], categori
 
                     .tf-btn-filter {
                         display: flex;
+                        flex-direction: row;
                         align-items: center;
                         gap: 8px;
                         font-weight: 600;
-                        font-size: 14px;
+                        font-size: 12px;
                         color: #000;
                         text-decoration: none;
+                    }
+                    .tf-btn-filter .icon {
+                        order: -1;
                     }
 
                     .product-grid {

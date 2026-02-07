@@ -118,10 +118,14 @@ export default function ClientLayout({ children }) {
             document.querySelectorAll(".section-image-zoom").forEach((el) => el.classList.remove("zoom-active"));
         }
 
-        // WOW Init
-        const WOW = require("@/utils/wow");
-        const wow = new WOW.default({ mobile: false, live: false });
-        wow.init();
+        // WOW Init - hydration sonrası çalışsın (SSR/client mismatch önlemi)
+        const runWow = () => {
+            const WOW = require("@/utils/wow");
+            const wow = new WOW.default({ mobile: false, live: false });
+            wow.init();
+        };
+        const timer = setTimeout(runWow, 0);
+        return () => clearTimeout(timer);
     }, [pathname]);
 
     useEffect(() => {

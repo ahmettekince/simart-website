@@ -1,13 +1,15 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import apiClient from "@/utils/apiClient";
 import { useAuthStore } from "@/stores/authStore";
 import { siteConfig } from "@/config/site";
 
 export default function Login() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const returnUrl = searchParams.get("returnUrl") || "/";
   const { setAuthenticated } = useAuthStore();
   const recaptchaRef = useRef(null);
   const recaptchaWidgetId = useRef(null);
@@ -116,8 +118,8 @@ export default function Login() {
           setRecaptchaVerified(false);
         }
 
-        // Hemen yönlendir (loader zaten görünüyor)
-        window.location.href = "/";
+        // returnUrl varsa oraya, yoksa ana sayfaya yönlendir
+        window.location.href = returnUrl.startsWith("/") ? returnUrl : "/";
       } else {
         setError(response.data?.message || "Giriş işlemi başarısız oldu.");
       }

@@ -6,6 +6,7 @@ import { decodeHtmlEntities, addLazyLoadToDescriptionImages } from "@/utils/stri
 import Accordion from "@/components/common/Accordion";
 import BirlikteAlNew from "@/components/shopDetails/BirlikteAlNew";
 import InstallmentOptions from "@/components/shopDetails/InstallmentOptions";
+import AddReviewForm from "@/components/shopDetails/AddReviewForm";
 
 const SORT_OPTIONS = [
   { value: "default", label: "Varsayılan" },
@@ -191,7 +192,7 @@ export default function ShopDetailsTab({ product }) {
                 {product?.description && (
                   <div
                     className="product-description-text"
-                    dangerouslySetInnerHTML={{ __html: addLazyLoadToDescriptionImages(decodeHtmlEntities(product.description)) }}
+                    dangerouslySetInnerHTML={{ __html: decodeHtmlEntities(product.description) }}
                   />
                 )}
               </div>
@@ -235,9 +236,9 @@ export default function ShopDetailsTab({ product }) {
                     {product?.reviews?.items?.length > 0 ? (
                       <div className="tf-product-reviews">
                         {/* Sıralama dropdown + Yıldız filtreleri */}
-                        <div className="d-flex flex-wrap justify-content-between align-items-center mb_20" style={{ gap: "16px" }}>
+                        <div className="d-flex flex-wrap justify-content-between align-items-center mb_20 review-filter-row" style={{ gap: "16px" }}>
                           <div
-                            className="d-flex flex-nowrap align-items-center hide-scrollbar"
+                            className="d-flex flex-nowrap align-items-center hide-scrollbar review-filter-scroll"
                             style={{
                               gap: "8px",
                               overflowX: "auto",
@@ -249,6 +250,7 @@ export default function ShopDetailsTab({ product }) {
                           >
                             <button
                               type="button"
+                              className="review-filter-btn"
                               onClick={() => setFilterRating(null)}
                               style={{
                                 padding: "6px 11px",
@@ -274,6 +276,7 @@ export default function ShopDetailsTab({ product }) {
                                 <button
                                   key={star}
                                   type="button"
+                                  className="review-filter-btn"
                                   onClick={() => setFilterRating(filterRating === star ? null : star)}
                                   style={{
                                     padding: "6px 11px",
@@ -305,8 +308,9 @@ export default function ShopDetailsTab({ product }) {
                               ) : null
                             )}
                           </div>
-                          <div style={{ flexShrink: 0 }}>
+                          <div className="review-sort-wrap" style={{ flexShrink: 0 }}>
                             <select
+                              className="review-sort-select"
                               value={sortOrder}
                               onChange={(e) => setSortOrder(e.target.value)}
                               style={{
@@ -441,6 +445,7 @@ export default function ShopDetailsTab({ product }) {
                         <p className="text-muted">Bu ürün için henüz yorum yapılmamış.</p>
                       </div>
                     )}
+                    <AddReviewForm product={product} />
                   </div>
                   {/* Taksit Seçenekleri Tab */}
                   <div

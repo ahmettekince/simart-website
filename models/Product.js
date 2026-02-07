@@ -265,6 +265,7 @@ export class ProductModel {
             // Medya
             video_url: product.video_url || null,
             model_3d_url: product.model_3d_url || null,
+            influencer_videos: product.influencer_videos || [],
 
             // Kategoriler
             categories: categories,

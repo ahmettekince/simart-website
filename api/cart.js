@@ -428,7 +428,6 @@ export async function applyCoupon(couponCode) {
         // API başarılı döndüyse, güncel sepeti çek (1 kez yenile)
         if (response?.data?.status === "success") {
             log("[API cart.js] applyCoupon - Başarılı, sepet yenileniyor...");
-            // Sepeti tekrar çek (güncel haliyle)
             const updatedCart = await getCart();
             log("[API cart.js] applyCoupon - Sepet yenilendi:", {
                 cartId: updatedCart?.cartId,
@@ -438,35 +437,26 @@ export async function applyCoupon(couponCode) {
             return updatedCart;
         }
 
+        // Hata durumu: API'den gelen message'ı kullan, yoksa varsayılan
+        const errMsg = response?.data?.message;
         log("[API cart.js] applyCoupon failed:", response?.data);
-        return null;
+        return { success: false, message: (errMsg && String(errMsg).trim()) ? errMsg : "Uygulanamadı" };
     } catch (error) {
+        const errMsg = error?.response?.data?.message;
+        const fallbackMsg = (errMsg && String(errMsg).trim()) ? errMsg : "Uygulanamadı";
         if (error.response) {
-            // 400 gibi hata durumlarında dönen cevabı direkt consola bas
             console.log("❌ Kupon Uygulama Hatası (400/500):", error.response.data);
-
             log("[API cart.js] applyCoupon error response:", {
                 status: error.response.status,
-                statusText: error.response.statusText,
                 data: error.response.data,
-                url: error.config?.url,
                 fullError: error
             });
-            console.error("[API cart.js] Full error:", error);
         } else if (error.request) {
-            log("[API cart.js] applyCoupon no response:", {
-                request: error.request,
-                fullError: error
-            });
-            console.error("[API cart.js] Request error:", error);
+            log("[API cart.js] applyCoupon no response:", { request: error.request });
         } else {
-            log("[API cart.js] applyCoupon setup error:", {
-                message: error.message,
-                fullError: error
-            });
-            console.error("[API cart.js] Setup error:", error);
+            log("[API cart.js] applyCoupon setup error:", { message: error.message });
         }
-        return null;
+        return { success: false, message: fallbackMsg };
     }
 }
 

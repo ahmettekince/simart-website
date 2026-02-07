@@ -30,10 +30,13 @@ export default function InstallmentOptions({ productSlug }) {
       try {
         const data = await getInstallmentOptions(cleanSlug);
         if (data) {
-          // Filtreleme: Rate 0 olanları göster, ama installment_count: 1 ve rate > 0 olanları gösterme
+          // Filtreleme: "Diğer Banka Kartları" ve "Param" listeye dahil etme; rate 0 olanları göster, installment_count: 1 ve rate > 0 gösterme
+          const excludedBankNames = ["Diğer Banka Kartları", "Param"];
           const filteredData = {
             ...data,
-            banks: data.banks.map((bank) => {
+            banks: data.banks
+              .filter((bank) => !excludedBankNames.includes((bank.bank_name || "").trim()))
+              .map((bank) => {
               const filteredOptions = bank.options.filter((option) => {
                 // Rate 0 olanları göster
                 const rate = parseFloat(option.rate || 0);

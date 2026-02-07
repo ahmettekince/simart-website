@@ -47,16 +47,18 @@ export default function Hero({ banners = [] }) {
             </div>
           </SwiperSlide>
         ))}
-        <div className="wrap-pagination sw-absolute-2">
-          <div className="container d-flex justify-content-center">
-            <NavDotsPill
-              total={total}
-              activeIndex={activeIndex}
-              onDotClick={(i) => swiperRef.current?.slideToLoop?.(i) ?? swiperRef.current?.slideTo?.(i)}
-              ariaLabel="Banner slaytları"
-            />
+        {total > 1 && (
+          <div className="wrap-pagination sw-absolute-2">
+            <div className="container d-flex justify-content-center">
+              <NavDotsPill
+                total={total}
+                activeIndex={activeIndex}
+                onDotClick={(i) => swiperRef.current?.slideToLoop?.(i) ?? swiperRef.current?.slideTo?.(i)}
+                ariaLabel="Banner slaytları"
+              />
+            </div>
           </div>
-        </div>
+        )}
       </Swiper>
     </div>
   );

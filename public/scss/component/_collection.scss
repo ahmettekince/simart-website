@@ -131,6 +131,18 @@
   .collection-inner {
     position: relative;
   }
+  .collection-inner.collection-with-overlay {
+    overflow: hidden;
+    .collection-overlay-text,
+    .collection-overlay-btn {
+      z-index: 2;
+      padding: 0.5rem;
+    }
+    .collection-overlay-text {
+      font-size: 1.2rem;
+      line-height: 1.4;
+    }
+  }
   .collection-image {
     display: block;
   }
@@ -521,11 +533,21 @@
 
 .tf-banner-collection {
   position: relative;
+  overflow: hidden;
   img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     border-radius: 20px;
+  }
+  .banner-overlay-text,
+  .banner-overlay-btn {
+    z-index: 2;
+    padding: 0.5rem;
+  }
+  .banner-overlay-text {
+    font-size: 1.25rem;
+    line-height: 1.4;
   }
   .box-content {
     position: absolute;

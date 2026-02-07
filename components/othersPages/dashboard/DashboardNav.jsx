@@ -1,24 +1,45 @@
 "use client";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import apiClient from "@/utils/apiClient";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuthStore } from "@/stores/authStore";
+import { useReviewStore } from "@/stores/reviewStore";
+import ReviewDashboardModal from "@/components/modals/ReviewDashboardModal";
 
 const accountLinks = [
   { href: "/hesabim", label: "Hesabım" },
   { href: "/siparislerim", label: "Siparişlerim" },
+  { href: "/degerlendirmelerim", label: "Değerlendirmelerim", showCount: true },
   { href: "/adreslerim", label: "Adreslerim" },
   { href: "/kupon-kodlarim", label: "Kupon Kodlarım" },
   { href: "/paylas-simart", label: "Paylaş Şımart" },
 ];
 
-export default function DashboardNav() {
+export default function DashboardNav({ profileSection }) {
   const pathname = usePathname();
-  const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const logout = useAuthStore((state) => state.logout);
+  const reviewableProducts = useReviewStore((s) => s.reviewableProducts);
+  const setReviewableProducts = useReviewStore((s) => s.setReviewableProducts);
+
+  const fetchReviewableProducts = useCallback(async () => {
+    try {
+      const res = await apiClient.get("/customer/reviewable-products");
+      const data = res.data?.data;
+      const list = Array.isArray(data) ? data : [];
+      setReviewableProducts(list);
+    } catch {
+      setReviewableProducts([]);
+    }
+  }, [setReviewableProducts]);
+
+  useEffect(() => {
+    fetchReviewableProducts();
+    const interval = setInterval(fetchReviewableProducts, 60000);
+    return () => clearInterval(interval);
+  }, [fetchReviewableProducts]);
 
   const doLogout = async () => {
     if (isLoggingOut) return;
@@ -40,17 +61,56 @@ export default function DashboardNav() {
     setIsLoggingOut(false);
   };
 
+  const [reviewModalOpen, setReviewModalOpen] = useState(false);
+
   return (
     <>
       <ul className="my-account-nav">
+        {reviewableProducts.length > 0 && (
+          <li key="notification">
+            <button
+              type="button"
+              onClick={() => setReviewModalOpen(true)}
+              className="my-account-nav-item"
+              style={{
+                width: "100%",
+                textAlign: "left",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "12px",
+                font: "inherit",
+                color: "inherit",
+                backgroundColor: "transparent",
+              }}
+            >
+              <span className="bell-notification-icon" style={{ flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }} aria-hidden>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                </svg>
+              </span>
+              <span style={{ flex: 1, lineHeight: 1.3 }}>
+                Yorum yapabileceğiniz {reviewableProducts.length} adet ürün var. Yorum yapın, kupon fırsatı yakalayın!
+              </span>
+            </button>
+          </li>
+        )}
+        {profileSection && (
+          <li key="profile" className="dashboard-nav-profile-slot" style={{ listStyle: "none", margin: 0, padding: 0, border: "none", background: "none" }}>
+            {profileSection}
+          </li>
+        )}
         {accountLinks.map((link, index) => (
           <li key={index}>
             <Link
               href={link.href}
-              className={`my-account-nav-item ${pathname == link.href ? "active" : ""
-                }`}
+              className={`my-account-nav-item ${pathname == link.href ? "active" : ""}`}
             >
               {link.label}
+              {link.showCount && reviewableProducts.length > 0 && (
+                <span style={{ marginLeft: "4px" }}>({reviewableProducts.length})</span>
+              )}
             </Link>
           </li>
         ))}
@@ -135,6 +195,12 @@ export default function DashboardNav() {
           </div>
         </div>
       )}
+
+      <ReviewDashboardModal
+        open={reviewModalOpen}
+        onClose={() => setReviewModalOpen(false)}
+        products={reviewableProducts}
+      />
     </>
   );
 }

@@ -13,6 +13,7 @@ export async function getProducts(params = "") {
         return response.data || [];
     }
 
+    log(response.data);
     log("[API products.js] getProducts failed:", response);
     return [];
 }

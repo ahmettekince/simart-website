@@ -1,16 +1,15 @@
 import Header from "@/components/headers/Header";
-import AccountEdit from "@/components/othersPages/dashboard/AccountEdit";
-import AccountProfileSection from "@/components/othersPages/dashboard/AccountProfileSection";
 import DashboardNav from "@/components/othersPages/dashboard/DashboardNav";
+import MyReviews from "@/components/othersPages/dashboard/MyReviews";
 import React from "react";
 import { checkAuthServer } from "@/utils/authServer";
 import { redirect } from "next/navigation";
 
 export const metadata = {
-  title: "Hesabım - Robot Süpürge ve Akıllı Ev Sistemleri",
-  description: "Şımart Teknoloji hesap yönetim paneli. Kişisel bilgilerinizi güncelleyin, siparişlerinizi görüntüleyin ve hesap ayarlarınızı yönetin.",
-
+  title: "Değerlendirmelerim - Robot Süpürge ve Akıllı Ev Sistemleri",
+  description: "Ürün ve sipariş değerlendirmelerinizi görüntüleyin.",
 };
+
 export default async function page() {
   const isAuthenticated = await checkAuthServer();
 
@@ -26,15 +25,14 @@ export default async function page() {
         <div className="container">
           <div className="row">
             <div className="col-lg-3">
-              <DashboardNav profileSection={<AccountProfileSection />} />
+              <DashboardNav />
             </div>
             <div className="col-lg-9">
-              <AccountEdit />
+              <MyReviews />
             </div>
           </div>
         </div>
       </section>
-
     </>
   );
 }
