@@ -1,6 +1,6 @@
 {
-  "name": "ecoums-next",
-  "version": "0.1.1",
+  "name": "simart-website",
+  "version": "0.0.1",
   "private": true,
   "scripts": {
     "dev": "next dev",

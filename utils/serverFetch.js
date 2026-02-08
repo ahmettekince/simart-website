@@ -66,8 +66,14 @@ export async function serverFetch(endpoint, options = {}) {
             fetchOptions.body = bodyStr;
         }
 
-        // next, cache, retries gibi Next.js özel option'larını kaldır
-        // Ama signal gibi fetch option'larını koru
+        // Next.js cache: production build'de fetch varsayılan cache kullanır.
+        // revalidate: 0 veya cache: 'no-store' geçirilmeli, yoksa build anındaki veri kalır.
+        if (options.cache === "no-store" || options.next?.revalidate === 0) {
+            fetchOptions.cache = "no-store";
+        } else if (options.next) {
+            fetchOptions.next = options.next;
+        }
+
         if (options.signal) {
             fetchOptions.signal = options.signal;
         }

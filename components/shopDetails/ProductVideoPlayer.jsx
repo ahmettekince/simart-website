@@ -1,15 +1,30 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 
-const VIDEOS = [
-  "https://cdn.simart.cloud/uploads/media/2026/02/6985eb44024bb_1770384196.mp4",
-  "https://cdn.simart.cloud/uploads/media/2026/02/6985eb446098e_1770384196.mp4",
-  "https://cdn.simart.cloud/uploads/media/2026/02/6985eb4367e6b_1770384195.mp4"
-];
+/**
+ * influencer_videos'dan URL listesi çıkarır.
+ * Desteklenen formatlar: string[] veya { url?: string, video_url?: string }[]
+ */
+function parseVideoUrls(influencerVideos) {
+  if (!Array.isArray(influencerVideos) || influencerVideos.length === 0) return [];
+  return influencerVideos
+    .map((item) => {
+      if (typeof item === "string") return item;
+      if (item && typeof item === "object") return item.url || item.video_url || null;
+      return null;
+    })
+    .filter(Boolean);
+}
 
-export default function ProductVideoPlayer() {
+export default function ProductVideoPlayer({ influencerVideos = [] }) {
+  const videos = useMemo(() => parseVideoUrls(influencerVideos), [influencerVideos]);
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
+
+  // Videolar değiştiğinde activeIndex sıfırla (ürün değişimi vb.)
+  useEffect(() => {
+    setActiveIndex(0);
+  }, [videos]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true); // Otomatik oynatma için varsayılan sessiz başla
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -26,10 +41,10 @@ export default function ProductVideoPlayer() {
 
   // Sayfa yüklendikten sonra (biraz gecikmeli) otomatik aç – sadece video varsa
   useEffect(() => {
-    if (VIDEOS.length === 0) return;
+    if (videos.length === 0) return;
     const timer = setTimeout(() => setIsOpen(true), 2500);
     return () => clearTimeout(timer);
-  }, [VIDEOS.length]);
+  }, [videos.length]);
 
   // Scroll container yüksekliğini ölç (slide başına 1 viewport için)
   useEffect(() => {
@@ -66,7 +81,7 @@ export default function ProductVideoPlayer() {
     slides.forEach((slide) => observer.observe(slide));
 
     return () => observer.disconnect();
-  }, [isOpen]);
+  }, [isOpen, videos]);
 
   // Aktif videoyu oynat/durdur ve eventleri yönet
   useEffect(() => {
@@ -189,7 +204,7 @@ export default function ProductVideoPlayer() {
   const scrollNext = (e) => {
     e.stopPropagation();
     const container = scrollContainerRef.current;
-    if (!container || activeIndex >= VIDEOS.length - 1) return;
+    if (!container || activeIndex >= videos.length - 1) return;
 
     const h = slideHeightRef.current || container.clientHeight;
     const nextTop = (activeIndex + 1) * h;
@@ -239,7 +254,7 @@ export default function ProductVideoPlayer() {
     };
   }, [isOpen]);
 
-  if (VIDEOS.length === 0 || !isOpen) return null;
+  if (videos.length === 0 || !isOpen) return null;
 
   return (
     <div className={`product-video-player-wrapper ${isFullscreen ? 'fullscreen' : ''}`}>
@@ -301,33 +316,36 @@ export default function ProductVideoPlayer() {
           </button>
         </div>
 
-        {/* Navigation Arrows (Right Middle) */}
-        <div className="product-video-nav-arrows">
-          <button
-            type="button"
-            className={`nav-arrow-btn ${activeIndex <= 0 ? "disabled" : ""}`}
-            onClick={scrollPrev}
-            disabled={activeIndex <= 0}
-            aria-label="Önceki video"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M18 15l-6-6-6 6" />
-            </svg>
-          </button>
-          <button
-            type="button"
-            className={`nav-arrow-btn ${activeIndex >= VIDEOS.length - 1 ? "disabled" : ""}`}
-            onClick={scrollNext}
-            disabled={activeIndex >= VIDEOS.length - 1}
-            aria-label="Sonraki video"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M6 9l6 6 6-6" />
-            </svg>
-          </button>
-        </div>
+        {/* Navigation Arrows (Right Middle) - sadece 2+ video varsa göster */}
+        {videos.length > 1 && (
+          <div className="product-video-nav-arrows">
+            <button
+              type="button"
+              className={`nav-arrow-btn ${activeIndex <= 0 ? "disabled" : ""}`}
+              onClick={scrollPrev}
+              disabled={activeIndex <= 0}
+              aria-label="Önceki video"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 15l-6-6-6 6" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              className={`nav-arrow-btn ${activeIndex >= videos.length - 1 ? "disabled" : ""}`}
+              onClick={scrollNext}
+              disabled={activeIndex >= videos.length - 1}
+              aria-label="Sonraki video"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </button>
+          </div>
+        )}
 
-        {/* Swipe Hint Animation */}
+        {/* Swipe Hint Animation - sadece 2+ video varsa göster */}
+        {videos.length > 1 && (
         <div className="swipe-hint-overlay">
           <div className="swipe-hand">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2">
@@ -338,6 +356,7 @@ export default function ProductVideoPlayer() {
             </svg>
           </div>
         </div>
+        )}
 
         {/* Video List (Scrollable) */}
         <div
@@ -345,7 +364,7 @@ export default function ProductVideoPlayer() {
           ref={scrollContainerRef}
           onMouseDown={handleMouseDown}
         >
-          {VIDEOS.map((url, index) => (
+          {videos.map((url, index) => (
             <div key={`original-${index}`} className="video-slide" data-index={index}>
               <video
                 ref={(el) => (videoRefs.current[index] = el)}
@@ -598,8 +617,8 @@ export default function ProductVideoPlayer() {
           }
 
           .product-video-player-container {
-            width: 45vw;
-            max-width: 12.5rem;
+            width: 38vw;
+            max-width: 11rem;
             border-radius: 0.5rem;
             box-shadow: 0 0.25rem 1rem rgba(0, 0, 0, 0.3);
           }

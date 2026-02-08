@@ -5,6 +5,8 @@ import apiClient from "@/utils/apiClient";
 import { useState, useEffect, useCallback } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { useReviewStore } from "@/stores/reviewStore";
+import { useCustomerStore } from "@/stores/customerStore";
+import AccountProfileSection from "@/components/othersPages/dashboard/AccountProfileSection";
 import ReviewDashboardModal from "@/components/modals/ReviewDashboardModal";
 
 const accountLinks = [
@@ -16,13 +18,24 @@ const accountLinks = [
   { href: "/paylas-simart", label: "Paylaş Şımart" },
 ];
 
-export default function DashboardNav({ profileSection }) {
+export default function DashboardNav({ profileSection: profileSectionProp }) {
   const pathname = usePathname();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const logout = useAuthStore((state) => state.logout);
+  const clearCustomer = useCustomerStore((s) => s.clear);
   const reviewableProducts = useReviewStore((s) => s.reviewableProducts);
   const setReviewableProducts = useReviewStore((s) => s.setReviewableProducts);
+  const fetchCustomer = useCustomerStore((s) => s.fetchCustomer);
+
+  // Hesap sayfasına girildiğinde 1 kerelik customer verisi çek, saatte 1 güncelle
+  useEffect(() => {
+    fetchCustomer();
+    const interval = setInterval(() => fetchCustomer(), 60 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [fetchCustomer]);
+
+  const profileSection = profileSectionProp ?? <AccountProfileSection />;
 
   const fetchReviewableProducts = useCallback(async () => {
     try {
@@ -47,6 +60,7 @@ export default function DashboardNav({ profileSection }) {
     try {
       const response = await apiClient.post("/customer/logout");
       if (response.data?.status === "success" || response.status === 200) {
+        clearCustomer();
         logout();
         document.cookie = "_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
         document.cookie = "_token=; path=/; domain=" + window.location.hostname + "; expires=Thu, 01 Jan 1970 00:00:00 GMT";
@@ -90,7 +104,7 @@ export default function DashboardNav({ profileSection }) {
                   <path d="M13.73 21a2 2 0 0 1-3.46 0" />
                 </svg>
               </span>
-              <span style={{ flex: 1, lineHeight: 1.3 }}>
+              <span style={{ flex: 1, lineHeight: 1.3, color: "#0bc15c" }}>
                 Yorum yapabileceğiniz {reviewableProducts.length} adet ürün var. Yorum yapın, kupon fırsatı yakalayın!
               </span>
             </button>
@@ -147,7 +161,7 @@ export default function DashboardNav({ profileSection }) {
               width: "90%",
               maxWidth: "320px",
               backgroundColor: "#fff",
-              borderRadius: "16px",
+              borderRadius: "12px",
               padding: "30px 25px",
               textAlign: "center",
               boxShadow: "0 20px 40px rgba(0,0,0,0.2)",
@@ -166,7 +180,7 @@ export default function DashboardNav({ profileSection }) {
                   backgroundColor: isLoggingOut ? "#999" : "#333",
                   color: "#fff",
                   border: "none",
-                  borderRadius: "10px",
+                  borderRadius: "12px",
                   fontSize: "14px",
                   fontWeight: "600",
                   cursor: isLoggingOut ? "wait" : "pointer",
@@ -183,7 +197,7 @@ export default function DashboardNav({ profileSection }) {
                   backgroundColor: "#f5f5f5",
                   color: "#333",
                   border: "none",
-                  borderRadius: "10px",
+                  borderRadius: "12px",
                   fontSize: "14px",
                   fontWeight: "600",
                   cursor: isLoggingOut ? "not-allowed" : "pointer",

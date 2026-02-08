@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { getPopups } from "@/api/popup";
+import Countdown from "@/components/common/Countdown";
 
 const STORAGE_KEY = "simart_popup_shown";
 const LOG = "[Popup]";
@@ -121,6 +122,7 @@ export default function NewsletterModal() {
           overflowX: "hidden",
           overflowY: "auto",
         }}
+        onClick={close}
       >
         <div
           className="modal-dialog modal-dialog-centered"
@@ -135,44 +137,42 @@ export default function NewsletterModal() {
           onClick={(e) => e.stopPropagation()}
         >
           <div className="modal-content" style={isFull ? { maxHeight: "calc(100vh - 2.5rem)", overflowY: "auto" } : undefined}>
-            <div className="modal-top">
-              {popup.image ? (
+            {popup.image && (
+              <div className="modal-top">
                 <Image
                   src={popup.image}
-                  alt={popup.title || ""}
+                  alt=""
                   width={938}
                   height={538}
                   unoptimized
                   style={{ width: "100%", height: "auto", display: "block" }}
                 />
-              ) : (
-                <div
-                  style={{
-                    width: "100%",
-                    aspectRatio: "16/9",
-                    background: "#f0f0f0",
-                  }}
+                <span
+                  className="icon icon-close btn-hide-popup"
+                  onClick={close}
+                  style={{ cursor: "pointer" }}
+                />
+              </div>
+            )}
+            <div className="modal-bottom" style={{ position: "relative" }}>
+              {!popup.image && (
+                <span
+                  className="icon icon-close btn-hide-popup"
+                  onClick={close}
+                  style={{ cursor: "pointer", position: "absolute", top: 0, right: 0, zIndex: 10 }}
                 />
               )}
-              <span
-                className="icon icon-close btn-hide-popup"
-                onClick={close}
-                style={{ cursor: "pointer" }}
-              />
-            </div>
-            <div className="modal-bottom">
-              {popup.title && <h4 className="text-center">{popup.title}</h4>}
               {popup.content && (
                 <div
                   className="text-center"
                   dangerouslySetInnerHTML={{ __html: popup.content }}
                 />
               )}
-              <div className="text-center mt-3">
-                <a href="#" onClick={(e) => { e.preventDefault(); close(); }} className="tf-btn btn-line fw-6 btn-hide-popup">
-                  Kapat
-                </a>
-              </div>
+              {popup.end_date && popup.remaining_seconds > 0 && (
+                <div className="text-center mt-3">
+                  <Countdown targetDate={popup.end_date} />
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -683,6 +683,12 @@ input[type="checkbox"]:checked,
   }
 }
 
+
+/* Blog resimleri - border-radius 12px */
+.blog-article-item .article-thumb {
+  border-radius: 12px !important;
+}
+
 .hide-scrollbar {
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -2112,7 +2118,7 @@ body.header-scroll-hide header.header-default {
 .account-profile-section {
   width: 100%;
   border: 1px solid var(--line, #e5e5e5);
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 16px;
 
   .account-profile-input {
@@ -2121,7 +2127,7 @@ body.header-scroll-hide header.header-default {
     min-height: 36px !important;
     height: 36px !important;
     border: 1px solid var(--line, #e5e5e5) !important;
-    border-radius: 3px;
+    border-radius: 12px;
     &::placeholder {
       color: #999;
     }
@@ -2142,6 +2148,19 @@ body.header-scroll-hide header.header-default {
     background-color: #f5f5f5 !important;
     cursor: default;
   }
+
+  /* Telefon + Doğrula/Onayla satırı - input ve buton aynı yükseklikte */
+  .account-profile-phone-row {
+    .account-profile-phone-input,
+    .account-profile-phone-row input,
+    .account-profile-phone-row [class*="tf-field-input"] {
+      height: 44px !important;
+      min-height: 44px !important;
+    }
+    .account-profile-phone-btn.simart-btn {
+      height: 44px;
+    }
+  }
 }
 
 /* Şifre değiştirme - mobilde satır satır, tablet+ yan yana */
@@ -2158,7 +2177,7 @@ body.header-scroll-hide header.header-default {
       flex: 1 1 100% !important;
       min-width: 100% !important;
     }
-    .account-edit-password-btn {
+    .simart-btn {
       width: 100%;
     }
   }
@@ -2170,14 +2189,108 @@ body.header-scroll-hide header.header-default {
     padding: 10px 14px !important;
     height: 42px !important;
     border: 1px solid var(--line, #e5e5e5) !important;
-    border-radius: 4px;
+    border-radius: 12px;
     &::placeholder {
       color: #999;
     }
   }
-  .account-edit-password-btn {
+  .account-edit-password-btn,
+  .simart-btn {
     flex-shrink: 0;
-    font-size: 13px !important;
-    padding: 10px 18px !important;
   }
+}
+
+/* Hesabım sayfası - tüm input, button, select border-radius 12px */
+.account-address,
+.account-edit,
+.account-order,
+.account-reviews,
+.account-wishlist,
+.account-dashboard {
+  input:not([type="checkbox"]):not([type="radio"]),
+  textarea,
+  .tf-field-input,
+  .tf-select,
+  .select-custom .tf-select,
+  .tab-button,
+  .new-address-btn,
+  .tf-btn,
+  button:not(.tab-button) {
+    border-radius: 12px !important;
+  }
+  .select-custom input[type="text"] {
+    border-radius: 12px !important;
+  }
+}
+.list-account-address .show-form-address,
+.list-account-address .edit-form-address,
+.account-address .address-card,
+.account-address .show-form-address,
+.account-address .edit-form-address {
+  border-radius: 12px !important;
+}
+
+/* AccountTabs - değerlendirmeler/adresler tab pill butonları */
+.account-tabs__btn {
+  padding: 10px 20px;
+  border-radius: 12px;
+  border: 2px solid #e5e5e5;
+  background: #fff;
+  color: #666;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.account-tabs__btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+.account-tabs__btn.active {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: #fff;
+}
+.account-tabs__count {
+  font-weight: 600;
+}
+
+/* SimartButton - anasayfa main-cart-btn ile aynı stil */
+.simart-btn {
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: all 0.3s ease;
+  border: 1px solid var(--primary);
+  background: var(--primary);
+  color: #fff;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.simart-btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+.simart-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+.simart-btn--success {
+  background: #10b981 !important;
+  border-color: #10b981 !important;
+}
+.simart-btn--outline {
+  background: #fff !important;
+  color: var(--primary) !important;
+}
+.simart-btn--outline:hover:not(:disabled) {
+  background: #f0f7fc !important;
+  opacity: 1;
 }

@@ -1,6 +1,7 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import apiClient from "@/utils/apiClient";
+import SimartButton from "@/components/common/SimartButton";
 
 export default function AccountEdit() {
   const [passwordData, setPasswordData] = useState({
@@ -9,8 +10,14 @@ export default function AccountEdit() {
     new_password_confirm: "",
   });
   const [isSaving, setIsSaving] = useState(false);
-  const [message, setMessage] = useState("");
+  const [isSaved, setIsSaved] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!isSaved) return;
+    const t = setTimeout(() => setIsSaved(false), 2000);
+    return () => clearTimeout(t);
+  }, [isSaved]);
 
   const getApiErrorMessage = (data) => {
     if (!data) return null;
@@ -29,9 +36,9 @@ export default function AccountEdit() {
       ...prev,
       [name]: value,
     }));
-    // Mesajları temizle
     setMessage("");
     setError("");
+    setIsSaved(false);
   };
 
   const handleSubmit = async (e) => {
@@ -69,8 +76,7 @@ export default function AccountEdit() {
         });
 
         if (passwordResponse.data?.status === "success") {
-          setMessage(passwordResponse.data?.message || "Şifreniz başarıyla değiştirildi.");
-          // Şifre alanlarını temizle
+          setIsSaved(true);
           setPasswordData({
             current_password: "",
             new_password: "",
@@ -110,22 +116,6 @@ export default function AccountEdit() {
           id="form-password-change"
           action="#"
         >
-          {/* Başarı Mesajı */}
-          {message && (
-            <div
-              className="mb_20"
-              style={{
-                padding: "12px 16px",
-                backgroundColor: "#d4edda",
-                border: "1px solid #c3e6cb",
-                borderRadius: "4px",
-                color: "#155724",
-              }}
-            >
-              {message}
-            </div>
-          )}
-
           {/* Hata Mesajı */}
           {error && (
             <div
@@ -170,13 +160,13 @@ export default function AccountEdit() {
               value={passwordData.new_password_confirm}
               onChange={handlePasswordChange}
             />
-            <button
+            <SimartButton
               type="submit"
-              className="tf-btn radius-3 btn-fill animate-hover-btn account-edit-password-btn"
               disabled={isSaving}
+              success={isSaved}
             >
-              {isSaving ? "Kaydediliyor..." : "Değişiklikleri Kaydet"}
-            </button>
+              {isSaving ? "Kaydediliyor" : isSaved ? "Kaydedildi" : "Değişiklikleri Kaydet"}
+            </SimartButton>
           </div>
         </form>
       </div>

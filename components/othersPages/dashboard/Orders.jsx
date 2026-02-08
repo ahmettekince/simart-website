@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import apiClient from "@/utils/apiClient";
+import SimartButton from "@/components/common/SimartButton";
 
 export default function Orders() {
   const [orders, setOrders] = useState([]);
@@ -158,13 +159,12 @@ export default function Orders() {
                   <td>{displayStatus}</td>
                   <td>{formatTotal(order.total)}</td>
                   <td>
-                    <button
+                    <SimartButton
                       type="button"
-                      className="tf-btn btn-fill animate-hover-btn rounded-0 justify-content-center"
                       onClick={() => handleViewOrder(order.order_number)}
                     >
                       Görüntüle
-                    </button>
+                    </SimartButton>
                   </td>
                 </tr>
               );

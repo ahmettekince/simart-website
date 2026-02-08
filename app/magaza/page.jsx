@@ -3,6 +3,8 @@ import MagazaDisplay from "@/components/shop/MagazaDisplay";
 import { getProducts } from "@/api/products";
 import { getCategories } from "@/api/home";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Mağaza - Şımart Teknoloji",
   description: "Şımart Teknoloji mağaza sayfası, tüm ürünlerimizi keşfedin.",

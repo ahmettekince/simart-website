@@ -1,13 +1,12 @@
 "use client";
 import React from "react";
 import { useCartStore } from "@/stores/cartStore";
-import { products1 } from "@/data/products";
 import Image from "next/image";
 import Link from "next/link";
 import { useRef, useEffect, useState, useMemo } from "react";
 import { log } from "@/utils/logger";
-import CartRecommendations from "./CartRecommendations";
 import BirlikteAlSepet from "@/components/common/BirlikteAlSepet";
+import { getCartRecommendations } from "@/api/cart";
 import Quantity from "@/components/shopDetails/Quantity";
 import ClearCartButton from "@/components/common/ClearCartButton";
 import MaxQuantityToast from "@/components/common/MaxQuantityToast";
@@ -37,6 +36,7 @@ export default function ShopCart() {
   const [loadingActions, setLoadingActions] = useState({});
   const [showMaxReachedToast, setShowMaxReachedToast] = useState(false);
   const [maxQuantityForToast, setMaxQuantityForToast] = useState(null);
+  const [recommendations, setRecommendations] = useState([]);
 
   // Items değiştiğinde, artık sepette olmayan ürünlerin loading state'ini temizle
   useEffect(() => {
@@ -51,6 +51,24 @@ export default function ShopCart() {
       return cleaned;
     });
   }, [items]);
+
+  // Sepet boşsa API'den önerileri çek
+  useEffect(() => {
+    if (items.length === 0) {
+      getCartRecommendations()
+        .then((recs) => {
+          if (recs && recs.length > 0) {
+            setRecommendations(recs.slice(0, 10));
+          }
+        })
+        .catch((error) => {
+          console.error("Öneriler yüklenirken hata:", error);
+        });
+    } else {
+      setRecommendations([]);
+    }
+  }, [items.length]);
+
 
   const setQuantity = async (id, quantity, action) => {
     // Minimum 1 kontrolü - 1'den küçük olamaz
@@ -155,8 +173,10 @@ export default function ShopCart() {
             </div>
             <div className="wrap">
               {/* Sepette ürün yoksa API'den önerileri göster */}
-              {items.length === 0 && (
-                <CartRecommendations showWhenEmpty={true} maxItems={10} />
+              {items.length === 0 && recommendations.length > 0 && (
+                <div className="tf-mini-cart-item">
+                  <BirlikteAlSepet title="İlginizi çekebilecekler" products={recommendations} />
+                </div>
               )}
               <div className="tf-mini-cart-wrap">
                 <div className="tf-mini-cart-main">
@@ -711,6 +731,23 @@ export default function ShopCart() {
                         </div>
                       )}
 
+                      {totals?.cart_tips && Array.isArray(totals.cart_tips) && totals.cart_tips.length > 0 && (
+                        <div style={{ marginBottom: "12px" }}>
+                          {totals.cart_tips.map((tip, idx) => (
+                            <div
+                              key={idx}
+                              style={{
+                                marginBottom: "8px",
+                                fontSize: "13px",
+                                color: "#10b981",
+                                lineHeight: "1.5",
+                              }}
+                            >
+                              {tip.message_short || tip.message}
+                            </div>
+                          ))}
+                        </div>
+                      )}
                       <div className="tf-mini-cart-view-checkout">
                         <Link href={`/sepetim`} className="tf-btn btn-outline radius-3 link w-100 justify-content-center">
                           Sepeti Görüntüle

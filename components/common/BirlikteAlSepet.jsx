@@ -10,13 +10,14 @@ import NavDotsPill from "@/components/common/NavDotsPill";
 import { useCartStore } from "@/stores/cartStore";
 
 /**
- * Sepet üstünde gösterilen cross-sale alanı.
- * API'den gelen cross_sale_campaigns içindeki KAMPANYA target ürünleri listeler.
+ * Sepet üstünde gösterilen cross-sale / öneriler alanı.
+ * - cross_sale_campaigns varsa: API'den gelen kampanya target ürünleri listeler
+ * - products prop'u varsa: Direkt ürün listesi gösterilir (İlginizi çekebilecekler için)
  * - Sadece sepette source olan kampanyalar gösterilir
  * - Target ürünler ID bazında tekrarsızdır
  * - Sepette zaten olan target ürünler listelenmez
  */
-export default function BirlikteAlSepet() {
+export default function BirlikteAlSepet({ title = "Sepetinize ekleyebilirsiniz", products = [] }) {
   const cross_sale_campaigns = useCartStore((state) => state.cross_sale_campaigns);
   const items = useCartStore((state) => state.items);
   const addItem = useCartStore((state) => state.addItem);
@@ -36,6 +37,31 @@ export default function BirlikteAlSepet() {
   }, [items]);
 
   const targetProducts = useMemo(() => {
+    // Eğer products prop'u varsa direkt onu kullan (İlginizi çekebilecekler için)
+    if (Array.isArray(products) && products.length > 0) {
+      const seen = new Set();
+      return products.filter((p) => {
+        const id = p?.id || p?.product?.id;
+        if (!id) return false;
+        const numId = Number(id);
+        if (seen.has(numId) || cartProductIds.has(numId)) return false;
+        seen.add(numId);
+        return true;
+      }).map((p) => {
+        const cat = p?.category_slug || p?.product?.categories?.[0]?.slug || p?.product?.primary_category?.slug || "urunler";
+        return {
+          id: p?.id || p?.product?.id,
+          name: p?.name || p?.title || "",
+          slug: p?.slug || p?.product?.slug || "",
+          price: p?.price ?? p?.product?.price ?? 0,
+          final_price: p?.final_price ?? p?.discount_price ?? p?.price ?? p?.product?.final_price ?? p?.product?.discount_price ?? p?.product?.price ?? 0,
+          cover_image: p?.cover_image || p?.product?.cover_image,
+          category_slug: cat,
+        };
+      });
+    }
+
+    // Cross-sale campaigns kullan
     if (!Array.isArray(cross_sale_campaigns) || cross_sale_campaigns.length === 0) return [];
 
     const seen = new Set();
@@ -65,7 +91,7 @@ export default function BirlikteAlSepet() {
     });
 
     return list;
-  }, [cross_sale_campaigns, cartProductIds]);
+  }, [cross_sale_campaigns, cartProductIds, products]);
 
   const handleAddToCart = async (target) => {
     if (addingSlug || !target?.slug) return;
@@ -93,7 +119,7 @@ export default function BirlikteAlSepet() {
   return (
     <div className="birlikte-al-sepet" style={{ marginBottom: 4, width: "100%", maxWidth: "100%", minWidth: 0, }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8, minWidth: 0 }}>
-        <span style={{ fontSize: 16, fontWeight: 700, color: "#111", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>Sepetinize ekleyebilirsiniz</span>
+        <span style={{ fontSize: 16, fontWeight: 700, color: "#111", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title}</span>
         {targetProducts.length > 1 && (
           <div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
             <NavDotsPill
@@ -133,7 +159,7 @@ export default function BirlikteAlSepet() {
             const price = t.price ?? 0;
             const final = t.final_price ?? 0;
             const hasDiscount = final < price && price > 0;
-            const img = t.cover_image?.thumbnail_url || t.cover_image?.url || null;
+            const img = t.cover_image?.thumbnail_url || t.cover_image?.url || t.image || t.imgSrc || t.product?.cover_image?.thumbnail_url || t.product?.cover_image?.url || null;
             const isAdding = addingSlug === t.slug;
 
             return (

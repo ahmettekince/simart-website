@@ -37,7 +37,7 @@ export default function ReviewDashboardBanner() {
           gap: "10px",
         }}
       >
-        <span style={{ fontSize: "14px", color: "#2e7d32", fontWeight: 600 }}>
+        <span style={{ fontSize: "14px", color: "#0bc15c", fontWeight: 600 }}>
           Yorum yapabileceğiniz {reviewableProducts.length} adet ürün var. Yorum yapın, kupon fırsatı yakalayın!
         </span>
         <span style={{ fontSize: "13px", color: "#388e3c", textDecoration: "underline" }}>Yorum Yap →</span>

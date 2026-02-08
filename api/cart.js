@@ -69,6 +69,7 @@ export async function getCart() {
                     taxAmount: parseFloat(cartData.totals?.tax_amount || 0),
                     total: parseFloat(cartData.totals?.total || 0),
                     totalItems: parseInt(cartData.totals?.total_items || 0),
+                    cart_tips: cartData.cart_tips || [],
                 },
 
                 // Coupon bilgisi

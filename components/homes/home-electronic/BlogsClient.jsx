@@ -1,9 +1,9 @@
 "use client";
-import React from "react";
+import React, { useRef, useState } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import Link from "next/link";
 import Image from "next/image";
-import { Navigation, Pagination } from "swiper/modules";
+import NavDotsPill from "@/components/common/NavDotsPill";
 
 export default function BlogsClient({ blogs = [] }) {
     // API'den veri gelmezse hiçbir şey gösterme
@@ -12,6 +12,9 @@ export default function BlogsClient({ blogs = [] }) {
     }
 
     const displayBlogs = blogs;
+    const swiperRef = useRef(null);
+    const [activeIndex, setActiveIndex] = useState(0);
+    const total = displayBlogs.length;
 
     return (
         <section className="flat-spacing-14">
@@ -19,23 +22,20 @@ export default function BlogsClient({ blogs = [] }) {
                 <div className="flat-title wow fadeInUp" data-wow-delay="0s">
                     <span className="title">Blog Yazıları</span>
                 </div>
-                <div className="hover-sw-nav view-default hover-sw-3">
+                <div className="hover-sw-nav view-default hover-sw-3 sw-pagination-wrapper blogs-pagination-wrapper">
                     <Swiper
                         dir="ltr"
                         className="swiper tf-sw-product-sell"
                         slidesPerView={3}
                         spaceBetween={30}
+                        loop={total > 1}
                         breakpoints={{
                             640: { slidesPerView: 2 },
                             768: { slidesPerView: 3 },
                             0: { slidesPerView: 1 },
                         }}
-                        modules={[Navigation, Pagination]}
-                        navigation={{
-                            prevEl: ".snbp157",
-                            nextEl: ".snbn157",
-                        }}
-                        pagination={{ clickable: true, el: ".spd157" }}
+                        onSwiper={(swiper) => (swiperRef.current = swiper)}
+                        onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
                     >
                         {displayBlogs.map((article, index) => {
                             const slug = article.slug || article.title?.toLowerCase().replace(/ /g, "-").replace(/[^\w-]+/g, "");
@@ -47,7 +47,7 @@ export default function BlogsClient({ blogs = [] }) {
                                         className="blog-article-item wow fadeInUp"
                                         data-wow-delay={article.delay || "0s"}
                                     >
-                                        <div className="article-thumb h-460 rounded-0">
+                                        <div className="article-thumb h-460">
                                             <Link href={`/${slug}`}>
                                                 <Image
                                                     className="lazyload"
@@ -87,15 +87,26 @@ export default function BlogsClient({ blogs = [] }) {
                             )
                         })}
                     </Swiper>
-                    <div className="nav-sw nav-next-slider nav-next-product box-icon w_46 round snbp157">
-                        <span className="icon icon-arrow-left" />
-                    </div>
-                    <div className="nav-sw nav-prev-slider nav-prev-product box-icon w_46 round snbn157">
-                        <span className="icon icon-arrow-right" />
-                    </div>
-                    <div className="sw-dots style-2 sw-pagination-product justify-content-center spd157" />
+                    {total > 1 && (
+                        <div className="box-sw-navigation">
+                            <NavDotsPill
+                                total={total}
+                                activeIndex={activeIndex}
+                                onDotClick={(i) => swiperRef.current?.slideToLoop?.(i)}
+                                ariaLabel="Blog slaytları"
+                            />
+                        </div>
+                    )}
                 </div>
             </div>
+            <style jsx global>{`
+                .blogs-pagination-wrapper .box-sw-navigation {
+                    position: static !important;
+                    display: flex !important;
+                    justify-content: center;
+                    margin-top: 16px;
+                }
+            `}</style>
         </section>
     );
 }

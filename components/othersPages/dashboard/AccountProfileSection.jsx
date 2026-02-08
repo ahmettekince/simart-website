@@ -5,6 +5,8 @@ import apiClient from "@/utils/apiClient";
 import { formatPhoneValue } from "@/utils/inputFormatters";
 import CircularLoading from "@/components/common/CircularLoading";
 import PhoneInput from "@/components/common/PhoneInput";
+import SimartButton from "@/components/common/SimartButton";
+import { useCustomerStore } from "@/stores/customerStore";
 
 const getApiErrorMessage = (data) => {
   if (!data) return null;
@@ -18,6 +20,11 @@ const getApiErrorMessage = (data) => {
 };
 
 export default function AccountProfileSection() {
+  const customer = useCustomerStore((s) => s.customer);
+  const isLoading = useCustomerStore((s) => s.isLoading);
+  const storeError = useCustomerStore((s) => s.error);
+  const refreshAfterPhoneVerify = useCustomerStore((s) => s.refreshAfterPhoneVerify);
+
   const [customerData, setCustomerData] = useState({
     first_name: "",
     last_name: "",
@@ -30,38 +37,31 @@ export default function AccountProfileSection() {
   const [codeSent, setCodeSent] = useState(false);
   const [sendCodeLoading, setSendCodeLoading] = useState(false);
   const [verifyLoading, setVerifyLoading] = useState(false);
-  const [phoneMessage, setPhoneMessage] = useState("");
+  const [sendCodeSuccess, setSendCodeSuccess] = useState(false);
+  const [verifySuccess, setVerifySuccess] = useState(false);
   const [phoneError, setPhoneError] = useState("");
   const [profileMessage, setProfileMessage] = useState("");
   const [profileError, setProfileError] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    const fetchCustomerData = async () => {
-      try {
-        const response = await apiClient.get("/customer/me");
-        if (response.data?.status === "success" && response.data?.data?.customer) {
-          const customer = response.data.data.customer;
-          setCustomerData({
-            first_name: customer.first_name || "",
-            last_name: customer.last_name || "",
-            email: customer.email || "",
-          });
-          if (customer.phone) {
-            setCustomerPhone(customer.phone);
-            setPhoneForVerify(customer.phone);
-          }
-          if (customer.phone_verified_at) setPhoneVerifiedAt(customer.phone_verified_at);
-        }
-      } catch {
-        setProfileError("Müşteri bilgileri yüklenirken bir hata oluştu.");
-      } finally {
-        setIsLoading(false);
+    if (customer) {
+      setCustomerData({
+        first_name: customer.first_name || "",
+        last_name: customer.last_name || "",
+        email: customer.email || "",
+      });
+      if (customer.phone) {
+        setCustomerPhone(customer.phone);
+        setPhoneForVerify(customer.phone);
       }
-    };
-    fetchCustomerData();
-  }, []);
+      if (customer.phone_verified_at) setPhoneVerifiedAt(customer.phone_verified_at);
+    }
+  }, [customer]);
+
+  useEffect(() => {
+    if (storeError) setProfileError("Müşteri bilgileri yüklenirken bir hata oluştu.");
+  }, [storeError]);
 
   const handleSendVerificationCode = async () => {
     const phone = formatPhoneValue(phoneForVerify);
@@ -70,14 +70,15 @@ export default function AccountProfileSection() {
       return;
     }
     setPhoneError("");
-    setPhoneMessage("");
     setSendCodeLoading(true);
     try {
       const response = await apiClient.post("/customer/phone/verify", { phone });
       if (response.data?.status === "success") {
-        setPhoneMessage(response.data?.message || "Doğrulama kodu telefonunuza gönderildi.");
-        setCodeSent(true);
-        setTimeout(() => setPhoneMessage(""), 12000);
+        setSendCodeSuccess(true);
+        setTimeout(() => {
+          setSendCodeSuccess(false);
+          setCodeSent(true);
+        }, 1500);
       } else {
         setPhoneError(getApiErrorMessage(response.data) || "Kod gönderilemedi.");
       }
@@ -99,7 +100,6 @@ export default function AccountProfileSection() {
       return;
     }
     setPhoneError("");
-    setPhoneMessage("");
     setVerifyLoading(true);
     try {
       const response = await apiClient.post("/customer/phone/verify", {
@@ -107,16 +107,17 @@ export default function AccountProfileSection() {
         code: verificationCode.trim(),
       });
       if (response.data?.status === "success") {
-        setPhoneMessage(response.data?.message || "Telefon numaranız başarıyla doğrulandı.");
-        setCodeSent(false);
-        setVerificationCode("");
-        setPhoneForVerify("");
-        if (response.data?.data?.phone) setCustomerPhone(response.data.data.phone);
-        if (response.data?.data?.phone_verified_at) setPhoneVerifiedAt(response.data.data.phone_verified_at);
-        const meRes = await apiClient.get("/customer/me");
-        if (meRes.data?.data?.customer?.phone_verified_at) {
-          setPhoneVerifiedAt(meRes.data.data.customer.phone_verified_at);
-        }
+        setVerifySuccess(true);
+        setTimeout(async () => {
+          setVerifySuccess(false);
+          setCodeSent(false);
+          setVerificationCode("");
+          setPhoneForVerify("");
+          if (response.data?.data?.phone) setCustomerPhone(response.data.data.phone);
+          if (response.data?.data?.phone_verified_at) setPhoneVerifiedAt(response.data.data.phone_verified_at);
+          const updated = await refreshAfterPhoneVerify();
+          if (updated?.phone_verified_at) setPhoneVerifiedAt(updated.phone_verified_at);
+        }, 2000);
       } else {
         setPhoneError(getApiErrorMessage(response.data) || "Doğrulama başarısız.");
       }
@@ -142,7 +143,8 @@ export default function AccountProfileSection() {
     }
   };
 
-  if (isLoading) {
+  const showLoading = isLoading && !customer;
+  if (showLoading) {
     return (
       <div className="account-profile-section" style={{ padding: "40px 0", textAlign: "center" }}>
         <CircularLoading text="Hesap bilgileri yükleniyor..." />
@@ -221,14 +223,14 @@ export default function AccountProfileSection() {
             {phoneError}
           </div>
         )}
-        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-end", gap: "8px", marginBottom: "8px" }}>
+        <div className="account-profile-phone-row" style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
           <div style={{ flex: "1 1 120px", minWidth: 0 }}>
             <PhoneInput
               id="phone-verify"
               value={phoneVerifiedAt ? customerPhone : phoneForVerify}
               onChange={setPhoneForVerify}
               placeholder="Telefon"
-              className="tf-field-input tf-input fw-6 account-profile-input"
+              className="tf-field-input tf-input fw-6 account-profile-input account-profile-phone-input"
               disabled={!!phoneVerifiedAt}
             />
           </div>
@@ -241,19 +243,19 @@ export default function AccountProfileSection() {
               Doğrulandı
             </span>
           ) : !codeSent ? (
-            <button
+            <SimartButton
+              className="account-profile-phone-btn"
               type="button"
-              className="tf-btn radius-3 btn-fill animate-hover-btn account-profile-btn"
-              style={{ flexShrink: 0 }}
               onClick={handleSendVerificationCode}
               disabled={sendCodeLoading}
+              success={sendCodeSuccess}
             >
-              {sendCodeLoading ? "..." : "Doğrula"}
-            </button>
+              {sendCodeLoading ? "..." : sendCodeSuccess ? "Gönderildi" : "Doğrula"}
+            </SimartButton>
           ) : (
             <>
               <input
-                className="tf-field-input tf-input fw-6 account-profile-input"
+                className="tf-field-input tf-input fw-6 account-profile-input account-profile-phone-input"
                 placeholder="Kod"
                 type="text"
                 inputMode="numeric"
@@ -265,21 +267,18 @@ export default function AccountProfileSection() {
                 }}
                 style={{ flex: "0 0 70px", minWidth: "60px" }}
               />
-              <button
+              <SimartButton
                 type="button"
-                className="tf-btn radius-3 btn-fill animate-hover-btn account-profile-btn"
-                style={{ flexShrink: 0 }}
+                className="account-profile-phone-btn"
                 onClick={handleVerifyCode}
                 disabled={verifyLoading}
+                success={verifySuccess}
               >
-                {verifyLoading ? "..." : "Onayla"}
-              </button>
+                {verifyLoading ? "..." : verifySuccess ? "Doğrulandı" : "Onayla"}
+              </SimartButton>
             </>
           )}
         </div>
-        {phoneMessage && (
-          <p style={{ fontSize: "12px", color: "#155724", marginTop: "-4px", marginBottom: "16px" }}>{phoneMessage}</p>
-        )}
       </form>
     </div>
   );

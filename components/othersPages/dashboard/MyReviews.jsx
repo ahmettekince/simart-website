@@ -1,20 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import apiClient from "@/utils/apiClient";
 import { useReviewStore } from "@/stores/reviewStore";
 import ReviewDashboardModal from "@/components/modals/ReviewDashboardModal";
-
-const ACCENT_COLOR = "#3c81b5";
-
-const PRODUCT_FILTERS = [
-  { id: "degerlendir", label: "Değerlendir" },
-  { id: "onaylanan", label: "Onaylanan" },
-  { id: "bekleyen", label: "Bekleyen" },
-
-];
+import AccountTabs from "@/components/common/AccountTabs";
 
 function formatReviewDate(iso) {
   if (!iso) return "-";
@@ -63,6 +55,10 @@ export default function MyReviews() {
     setModalProduct(null);
   };
 
+  const handleReviewSuccess = () => {
+    fetchMyReviews();
+  };
+
   const products = activeFilter === "degerlendir" ? reviewableProducts : [];
   const hasProducts = products.length > 0;
   const loading = activeFilter === "degerlendir" && lastFetchedAt === null;
@@ -73,40 +69,19 @@ export default function MyReviews() {
     activeFilter === "bekleyen" ? bekleyenReviews : activeFilter === "onaylanan" ? onaylananReviews : [];
   const hasReviews = filteredReviews.length > 0;
 
+  const reviewTabs = useMemo(
+    () => [
+      { id: "degerlendir", label: "Değerlendir", count: reviewableProducts.length },
+      { id: "onaylanan", label: "Onaylanan", count: onaylananReviews.length },
+      { id: "bekleyen", label: "Bekleyen", count: bekleyenReviews.length },
+    ],
+    [reviewableProducts.length, onaylananReviews.length, bekleyenReviews.length]
+  );
+
   return (
     <div className="my-account-content account-reviews">
       <div className="wrap-account-reviews">
-        {/* Filter buttons */}
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginBottom: "32px" }}>
-          {PRODUCT_FILTERS.map((f) => (
-            <button
-              key={f.id}
-              type="button"
-              onClick={() => setActiveFilter(f.id)}
-              style={{
-                padding: "10px 20px",
-                borderRadius: "8px",
-                border: `2px solid ${activeFilter === f.id ? ACCENT_COLOR : "#e5e5e5"}`,
-                background: "#fff",
-                color: activeFilter === f.id ? ACCENT_COLOR : "#666",
-                fontSize: "14px",
-                fontWeight: 600,
-                cursor: "pointer",
-              }}
-            >
-              {f.label}
-              {f.id === "degerlendir" && reviewableProducts.length > 0 && (
-                <span> ({reviewableProducts.length})</span>
-              )}
-              {f.id === "bekleyen" && bekleyenReviews.length > 0 && (
-                <span> ({bekleyenReviews.length})</span>
-              )}
-              {f.id === "onaylanan" && onaylananReviews.length > 0 && (
-                <span> ({onaylananReviews.length})</span>
-              )}
-            </button>
-          ))}
-        </div>
+        <AccountTabs tabs={reviewTabs} activeTab={activeFilter} onTabChange={setActiveFilter} />
 
         {/* Content */}
         {loading ? (
@@ -148,12 +123,11 @@ export default function MyReviews() {
                     )}
                   </div>
                 </div>
-                <div style={{ padding: "12px 16px", borderTop: "1px solid #e5e5e5" }}>
+                <div style={{ padding: "0 16px 12px 16px" }}>
                   <button
                     type="button"
                     onClick={() => handleReviewClick(p)}
-                    className="tf-btn btn-fill animate-hover-btn"
-                    style={{ width: "100%", backgroundColor: ACCENT_COLOR, borderColor: ACCENT_COLOR, fontSize: "14px" }}
+                    className="main-cart-btn"
                   >
                     Ürünü Değerlendir
                   </button>
@@ -229,18 +203,18 @@ export default function MyReviews() {
                 width: "120px",
                 height: "120px",
                 borderRadius: "50%",
-                backgroundColor: `${ACCENT_COLOR}15`,
+                backgroundColor: "rgba(60, 129, 181, 0.08)",
                 margin: "0 auto 24px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
               }}
             >
-              <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke={ACCENT_COLOR} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="var(--primary, #3c81b5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
               </svg>
             </div>
-            <p style={{ fontSize: "18px", fontWeight: 600, color: ACCENT_COLOR, marginBottom: "24px" }}>
+            <p style={{ fontSize: "18px", fontWeight: 600, color: "var(--primary, #3c81b5)", marginBottom: "24px" }}>
               {activeFilter === "degerlendir"
                 ? "Ürün Değerlendirmeniz Bulunmamaktadır."
                 : activeFilter === "bekleyen"
@@ -253,7 +227,7 @@ export default function MyReviews() {
               <Link
                 href="/magaza"
                 className="tf-btn btn-fill animate-hover-btn radius-4"
-                style={{ backgroundColor: ACCENT_COLOR, borderColor: ACCENT_COLOR }}
+                style={{ backgroundColor: "var(--primary, #3c81b5)", borderColor: "var(--primary, #3c81b5)" }}
               >
                 Alışverişe Devam Et
               </Link>
@@ -268,6 +242,26 @@ export default function MyReviews() {
         onSuccess={handleReviewSuccess}
         products={modalProduct ? [modalProduct] : []}
       />
+      <style jsx global>{`
+        .account-reviews .main-cart-btn {
+          width: 100%;
+          height: 44px;
+          border-radius: 12px;
+          font-size: 13px;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: 1px solid var(--primary);
+          background: var(--primary);
+          color: #fff;
+          cursor: pointer;
+          transition: all 0.3s ease;
+        }
+        .account-reviews .main-cart-btn:hover {
+          opacity: 0.9;
+        }
+      `}</style>
     </div>
   );
 }

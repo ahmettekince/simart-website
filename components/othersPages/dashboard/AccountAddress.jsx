@@ -7,6 +7,8 @@ import { getCities, getDistricts, getNeighborhoods } from "@/api/locations";
 import SearchableSelect from "@/components/common/SearchableSelect";
 import AddAddressButton from "@/components/common/AddAddressButton";
 import PhoneInput from "@/components/common/PhoneInput";
+import SimartButton from "@/components/common/SimartButton";
+import AccountTabs from "@/components/common/AccountTabs";
 import { formatNameInput, filterTcValue, filterTaxNumberValue } from "@/utils/inputFormatters";
 
 export default function AccountAddress() {
@@ -371,7 +373,7 @@ export default function AccountAddress() {
           .address-cards-container {
             grid-template-columns: 1fr !important;
           }
-          .tab-button {
+          .account-address .account-tabs__btn {
             padding: 10px 16px !important;
             font-size: 13px !important;
           }
@@ -381,82 +383,27 @@ export default function AccountAddress() {
           }
         }
         @media (max-width: 480px) {
-          .tab-button {
+          .account-address .account-tabs__btn {
             padding: 8px 12px !important;
             font-size: 12px !important;
           }
         }
       `}} />
       <div className="widget-inner-address" style={{ textAlign: "left" }}>
-        {/* Tab Navigation */}
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "flex-start",
-            marginBottom: "0",
-            gap: "0",
-            borderBottom: "1px solid #e5e5e5",
-            overflowX: "auto",
-            WebkitOverflowScrolling: "touch",
+        <AccountTabs
+          tabs={[
+            { id: "delivery", label: "Teslimat Adreslerim", count: deliveryAddresses.length },
+            { id: "billing", label: "Fatura Adreslerim", count: billingAddresses.length },
+          ]}
+          activeTab={activeTab}
+          onTabChange={(id) => {
+            setActiveTab(id);
+            setactiveEdit(false);
+            setEditingAddress(null);
+            setactiveAdd(false);
           }}
-        >
-          <button
-            className="tab-button"
-            onClick={() => {
-              setActiveTab("delivery");
-              setactiveEdit(false);
-              setEditingAddress(null);
-              setactiveAdd(false);
-            }}
-            style={{
-              padding: "12px 20px",
-              border: "none",
-              backgroundColor: activeTab === "delivery" ? "#f5f5f5" : "#fff",
-              color: "#333",
-              fontSize: "14px",
-              fontWeight: activeTab === "delivery" ? "600" : "500",
-              cursor: "pointer",
-              borderRadius: "8px 8px 0 0",
-              transition: "all 0.2s",
-              borderBottom: activeTab === "delivery" ? "2px solid #333" : "none",
-              boxShadow: activeTab === "delivery" ? "0 -2px 4px rgba(0,0,0,0.05)" : "none",
-              position: "relative",
-              zIndex: activeTab === "delivery" ? 1 : 0,
-              whiteSpace: "nowrap",
-              minWidth: "fit-content",
-            }}
-          >
-            Teslimat Adreslerim
-          </button>
-          <button
-            className="tab-button"
-            onClick={() => {
-              setActiveTab("billing");
-              setactiveEdit(false);
-              setEditingAddress(null);
-              setactiveAdd(false);
-            }}
-            style={{
-              padding: "12px 20px",
-              border: "none",
-              backgroundColor: activeTab === "billing" ? "#f5f5f5" : "#fff",
-              color: "#333",
-              fontSize: "14px",
-              fontWeight: activeTab === "billing" ? "600" : "500",
-              cursor: "pointer",
-              borderRadius: "8px 8px 0 0",
-              transition: "all 0.2s",
-              borderBottom: activeTab === "billing" ? "2px solid #333" : "none",
-              boxShadow: activeTab === "billing" ? "0 -2px 4px rgba(0,0,0,0.05)" : "none",
-              position: "relative",
-              zIndex: activeTab === "billing" ? 1 : 0,
-              whiteSpace: "nowrap",
-              minWidth: "fit-content",
-            }}
-          >
-            Fatura Adreslerim
-          </button>
-        </div>
+          style={{ marginBottom: "20px" }}
+        />
 
         {/* Yeni Adres Butonu */}
         <div style={{ marginTop: "30px", marginBottom: "20px" }}>
@@ -786,12 +733,12 @@ export default function AccountAddress() {
 
           {/* Butonlar */}
           <div className="d-flex align-items-center justify-content-center gap-20">
-            <button type="submit" className="tf-btn btn-fill animate-hover-btn" disabled={isSaving}>
+            <SimartButton type="submit" disabled={isSaving}>
               {isSaving ? "Kaydediliyor..." : "Adresi Ekle"}
-            </button>
-            <button
+            </SimartButton>
+            <SimartButton
               type="button"
-              className="tf-btn btn-fill animate-hover-btn btn-hide-address"
+              className="btn-hide-address"
               onClick={() => {
                 setactiveEdit(false);
                 setEditingAddress(null);
@@ -809,7 +756,7 @@ export default function AccountAddress() {
               }}
             >
               İptal
-            </button>
+            </SimartButton>
           </div>
         </form>
         {/* Adres Kartları */}
@@ -868,7 +815,7 @@ export default function AccountAddress() {
                   style={{
                     backgroundColor: "#fff",
                     border: "1px solid #e5e5e5",
-                    borderRadius: "8px",
+                    borderRadius: "12px",
                     padding: "20px",
                     position: "relative",
                     display: "flex",
@@ -1280,12 +1227,12 @@ export default function AccountAddress() {
 
           {/* Butonlar */}
           <div className="d-flex align-items-center justify-content-center gap-20">
-            <button type="submit" className="tf-btn btn-fill animate-hover-btn" disabled={isSaving}>
+            <SimartButton type="submit" disabled={isSaving}>
               {isSaving ? "Kaydediliyor..." : "Adresi Güncelle"}
-            </button>
-            <button
+            </SimartButton>
+            <SimartButton
               type="button"
-              className="tf-btn btn-fill animate-hover-btn btn-hide-edit-address"
+              className="btn-hide-edit-address"
               onClick={() => {
                 setactiveAdd(false);
                 setSelectedCityId("");
@@ -1301,7 +1248,7 @@ export default function AccountAddress() {
               }}
             >
               İptal
-            </button>
+            </SimartButton>
           </div>
         </form>
       </div>
