@@ -313,7 +313,7 @@ export default function OrderSummary({
               )}
               {couponSuccess && (
                 <div style={{ marginTop: "8px", fontSize: "12px", color: "#0bc15c" }}>
-                  Kupon kodu başarıyla uygulandı!
+                  Kupon kodu başarıyla !
                 </div>
               )}
             </div>

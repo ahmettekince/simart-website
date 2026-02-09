@@ -4,6 +4,8 @@ import { createPortal } from 'react-dom';
 export default function ModelViewerModal({ show, onHide, modelSrc }) {
     const [mounted, setMounted] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [proxyUrl, setProxyUrl] = useState(null);
     const modelRef = useRef(null);
 
     useEffect(() => {
@@ -15,22 +17,57 @@ export default function ModelViewerModal({ show, onHide, modelSrc }) {
         if (show) {
             document.body.style.overflow = 'hidden';
             setLoading(true);
+            setError(null);
         } else {
             document.body.style.overflow = '';
+            setError(null);
         }
         return () => {
             document.body.style.overflow = '';
         };
     }, [show]);
 
+    // Proxy URL oluştur (CORS sorununu çözmek için)
     useEffect(() => {
-        if (!show || !modelSrc) return;
+        if (!show || !modelSrc) {
+            setProxyUrl(null);
+            return;
+        }
+
+        // Eğer URL zaten aynı origin'deyse direkt kullan
+        try {
+            const url = new URL(modelSrc);
+            const isExternal = url.origin !== window.location.origin;
+            
+            if (isExternal) {
+                // External URL için proxy kullan
+                const proxyUrl = `/api/model-proxy?url=${encodeURIComponent(modelSrc)}`;
+                setProxyUrl(proxyUrl);
+            } else {
+                // Aynı origin'deyse direkt kullan
+                setProxyUrl(modelSrc);
+            }
+        } catch (e) {
+            // URL parse edilemezse direkt kullan
+            setProxyUrl(modelSrc);
+        }
+    }, [show, modelSrc]);
+
+    // Setup model-viewer event listeners
+    useEffect(() => {
+        if (!show || !proxyUrl) return;
         let cleanup = null;
         const id = setTimeout(() => {
             const el = modelRef.current?.querySelector?.('model-viewer');
             if (!el) return;
-            const onLoad = () => setLoading(false);
-            const onError = () => setLoading(false);
+            const onLoad = () => {
+                setLoading(false);
+                setError(null);
+            };
+            const onError = () => {
+                setLoading(false);
+                setError('3D model yüklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.');
+            };
             el.addEventListener('load', onLoad);
             el.addEventListener('error', onError);
             cleanup = () => {
@@ -42,7 +79,7 @@ export default function ModelViewerModal({ show, onHide, modelSrc }) {
             clearTimeout(id);
             cleanup?.();
         };
-    }, [show, modelSrc]);
+    }, [show, proxyUrl]);
 
     if (!show || !mounted) return null;
 
@@ -98,7 +135,7 @@ export default function ModelViewerModal({ show, onHide, modelSrc }) {
                 onClick={(e) => e.stopPropagation()}
                 style={{ width: '100%', height: '100%', cursor: 'default', position: 'relative' }}
             >
-                {loading && (
+                {loading && !error && (
                     <div
                         style={{
                             position: 'absolute',
@@ -126,13 +163,49 @@ export default function ModelViewerModal({ show, onHide, modelSrc }) {
                         </div>
                     </div>
                 )}
-                <model-viewer
-                    src={modelSrc}
-                    camera-controls
-                    auto-rotate
-                    reveal="auto"
-                    style={{ width: '100%', height: '100%' }}
-                />
+                {error && (
+                    <div
+                        style={{
+                            position: 'absolute',
+                            inset: 0,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            zIndex: 5,
+                            background: 'rgba(0,0,0,0.8)',
+                        }}
+                    >
+                        <div style={{ textAlign: 'center', color: '#fff', padding: '20px', maxWidth: '400px' }}>
+                            <div style={{ fontSize: 48, marginBottom: '16px' }}>⚠️</div>
+                            <div style={{ fontSize: 16, fontWeight: 600, marginBottom: '8px' }}>Model Yüklenemedi</div>
+                            <div style={{ fontSize: 14, opacity: 0.9, marginBottom: '20px' }}>{error}</div>
+                            <button
+                                onClick={onHide}
+                                style={{
+                                    padding: '10px 20px',
+                                    background: '#fff',
+                                    color: '#000',
+                                    border: 'none',
+                                    borderRadius: '8px',
+                                    fontSize: '14px',
+                                    fontWeight: 600,
+                                    cursor: 'pointer',
+                                }}
+                            >
+                                Kapat
+                            </button>
+                        </div>
+                    </div>
+                )}
+                {!error && proxyUrl && (
+                    <model-viewer
+                        src={proxyUrl}
+                        camera-controls
+                        auto-rotate
+                        reveal="auto"
+                        style={{ width: '100%', height: '100%' }}
+                    />
+                )}
             </div>
             <style>{`
                 @keyframes spin {

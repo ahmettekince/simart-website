@@ -5,14 +5,12 @@ import { useEffect, useRef, useState } from "react";
 import { Navigation, Thumbs } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Gallery, Item } from "react-photoswipe-gallery";
-import ModelViewerModal from "@/components/modals/ModelViewerModal";
 import NavDotsPill from "@/components/common/NavDotsPill";
 
 export default function Slider5({
   currentColor = "Beige",
   handleColor = () => { },
   galleryImages = [],
-  model3dUrl = null,
 }) {
   // Tek kaynak: galleryImages. İlk görsel zaten cover olarak kabul edilir.
   const normalized = Array.isArray(galleryImages)
@@ -46,11 +44,7 @@ export default function Slider5({
         },
       ];
 
-  // 3D Model Mantığı
-  const staticModelUrl = "/images/shop/products/preview_images/dance-bag_3d.glb";
-  const finalModelUrl = model3dUrl || staticModelUrl;
-
-  // Her zaman model ekle (static veya prop'tan gelen)
+  // 3D Model slide'ları kaldırıldı – butonlar artık Details9'da
   // if (finalModelUrl) {
   //   images.push({
   //     id: images.length + 1,
@@ -67,12 +61,10 @@ export default function Slider5({
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
   const swiperRef = useRef(null);
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [activeModelUrl, setActiveModelUrl] = useState(null);
 
-  // Slide değişince: state güncelle + soldaki thumb listesini kaydır ki aktif foto görünsün (önce/sonra farkı belli olsun)
+  // Slide değişince: state güncelle + soldaki thumb listesini kaydır (loop modunda realIndex kullan)
   const handleSlideChange = (swiper) => {
-    const idx = swiper.activeIndex;
+    const idx = swiper.realIndex ?? swiper.activeIndex;
     setActiveSlideIndex(idx);
     handleColor(images[idx]?.dataValue);
     if (thumbsSwiper) {
@@ -170,24 +162,14 @@ export default function Slider5({
     };
   }, []); // Empty dependency array to run only once on mount
 
-  // Model açma fonksiyonu
-  const openModelViewer = (url) => {
-    setActiveModelUrl(url);
-    setIsModalOpen(true);
-  };
-
   return (
     <>
-      <ModelViewerModal
-        show={isModalOpen}
-        onHide={() => setIsModalOpen(false)}
-        modelSrc={activeModelUrl}
-      />
       <Swiper
         dir="ltr"
         direction="vertical"
         spaceBetween={10}
         slidesPerView={5}
+        loop={true}
         className="swiper tf-product-media-thumbs other-image-zoom"
         onSwiper={setThumbsSwiper}
         modules={[Thumbs]}
@@ -205,12 +187,7 @@ export default function Slider5({
       >
         {images.map((slide, index) => (
           <SwiperSlide className="swiper-slide" key={index}>
-            <div className={`item ${slide.is3D ? "position-relative" : ""}`}>
-              {slide.is3D && (
-                <div className="wrap-btn-viewer">
-                  <i className="icon-btn3d"></i>
-                </div>
-              )}
+            <div className="item">
               <Image
                 className="lazyload"
                 data-src={slide.src}
@@ -230,6 +207,7 @@ export default function Slider5({
             style={{ touchAction: "pan-y" }}
             spaceBetween={10}
             slidesPerView={1}
+            loop={true}
             navigation={{
               nextEl: ".swiper-button-next",
               prevEl: ".swiper-button-prev",
@@ -241,59 +219,7 @@ export default function Slider5({
             onSwiper={(swiper) => (swiperRef.current = swiper)}
             onSlideChange={handleSlideChange}
           >
-            {images.map((slide, index) =>
-              slide.isModel ? (
-                <SwiperSlide className="swiper-slide" key={index}>
-                  <div
-                    className="item"
-                    style={{
-                      position: 'relative',
-                      height: '100%',
-                      width: '100%',
-                      aspectRatio: '713 / 1070',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      backgroundColor: '#f5f5f5'
-                    }}
-                  >
-                    {/* Poster Resmi (Arkaplan) */}
-                    {slide.src && slide.src !== "/images/placeholder.jpg" && (
-                      <Image
-                        className="lazyload"
-                        data-src={slide.src}
-                        alt={""}
-                        src={slide.src}
-                        width={slide.width}
-                        height={slide.height}
-                        style={{ position: 'absolute', width: '100%', height: '100%', objectFit: 'cover' }}
-                      />
-                    )}
-
-                    {/* Model Açma Butonu (Merkezde) */}
-                    <button
-                      onClick={() => openModelViewer(slide.modelSrc)}
-                      style={{
-                        zIndex: 20,
-                        padding: '12px 24px',
-                        backgroundColor: 'rgba(0,0,0,0.8)',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '30px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        gap: '8px',
-                        cursor: 'pointer',
-                        backdropFilter: 'blur(5px)'
-                      }}
-                    >
-                      <i className="icon-btn3d" style={{ fontSize: '32px' }}></i>
-                      <span style={{ fontSize: '14px', fontWeight: '600' }}>3D İncele</span>
-                    </button>
-                  </div>
-                </SwiperSlide>
-              ) : (
+            {images.map((slide, index) => (
                 <SwiperSlide className="swiper-slide" key={index}>
                   <Item original={slide.src} thumbnail={slide.src} width={slide.width} height={slide.height}>
                     {({ ref, open }) => (
@@ -312,8 +238,7 @@ export default function Slider5({
                     )}
                   </Item>
                 </SwiperSlide>
-              )
-            )}
+            ))}
             <div className="swiper-button-next button-style-arrow thumbs-next"></div>
             <div className="swiper-button-prev button-style-arrow thumbs-prev"></div>
           </Swiper>

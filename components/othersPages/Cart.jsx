@@ -162,7 +162,7 @@ export default function Cart() {
                                           {item.applied_campaign_ids.map((campaignId) => {
                                             const campaign = applied_campaigns.find(c => c.id === campaignId);
                                             if (!campaign || !(campaign.type === 'x_urun_y_tl' || campaign.type === 'x_alana_y_hediye')) return null;
-                                            return <div key={campaignId} style={{ fontSize: '11px', color: '#10b981', fontWeight: '500', marginTop: '4px', padding: '4px 8px', backgroundColor: '#f0fdf4', borderRadius: '4px', display: 'inline-block' }}>{campaign.name} uygulandı</div>;
+                                            return <div key={campaignId} style={{ fontSize: '11px', color: '#10b981', fontWeight: '500', marginTop: '4px', padding: '4px 8px', backgroundColor: '#f0fdf4', borderRadius: '4px', display: 'inline-block' }}>{campaign.name} </div>;
                                           })}
                                         </div>
                                       )}

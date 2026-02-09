@@ -755,7 +755,7 @@ input[type="checkbox"]:checked,
     min-width: 0;
     max-height: 846px;
     position: relative;
-    overflow: hidden;
+    overflow: visible;
   }
 
   .tf-product-main-with-dots .tf-product-media-main,
@@ -777,6 +777,197 @@ input[type="checkbox"]:checked,
   .tf-product-main-with-dots .swiper-slide .item img {
     max-height: 846px;
     object-fit: cover;
+  }
+}
+
+/* OverlayCtaButton – medya üzerinde overlay CTA butonu (tekrar kullanılabilir) */
+.overlay-cta-btn {
+  position: absolute;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  white-space: nowrap;
+
+  .overlay-cta-btn__icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .overlay-cta-btn__text {
+    font-family: inherit;
+  }
+
+  /* Mavi-beyaz varyantlar */
+  &.overlay-cta-btn--default {
+    background: var(--primary, #3c81b5);
+    color: #fff;
+    border: 1px solid var(--primary, #3c81b5);
+    box-shadow: 0 2px 8px rgba(60, 129, 181, 0.3);
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(60, 129, 181, 0.4);
+    }
+  }
+
+  &.overlay-cta-btn--primary {
+    background: #fff;
+    color: var(--primary, #3c81b5);
+    border: 1px solid var(--primary, #3c81b5);
+    box-shadow: 0 2px 8px rgba(60, 129, 181, 0.2);
+
+    &:hover {
+      background: var(--primary, #3c81b5);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(60, 129, 181, 0.3);
+    }
+  }
+
+  /* Mobil: foto altında, yarısı foto üzerinde yarısı dışında */
+  @media (max-width: 767px) {
+    bottom: 0;
+    transform: translateY(50%);
+
+    &:hover {
+      transform: translateY(50%) scale(1.02);
+    }
+
+    &:active {
+      transform: translateY(50%) scale(0.98);
+    }
+
+    padding: 0px 4px;
+    font-size: 9px;
+
+    &.overlay-cta-btn--right {
+      right: 12px;
+      left: auto;
+    }
+
+    &.overlay-cta-btn--left {
+      left: 12px;
+      right: auto;
+    }
+  }
+
+  /* Desktop: foto içinde */
+  @media (min-width: 768px) {
+    bottom: 12px;
+    transform: none;
+
+    &:hover {
+      transform: scale(1.02);
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+
+    padding: 2px 6px;
+    font-size: 11px;
+
+    &.overlay-cta-btn--right {
+      right: 16px;
+      left: auto;
+    }
+
+    &.overlay-cta-btn--left {
+      left: 16px;
+      right: auto;
+    }
+  }
+}
+
+.tf-product-main-with-dots {
+  position: relative;
+}
+
+/* İncele butonları – protokol satırında inline */
+.tf-product-protocol-cta-buttons .overlay-cta-btn {
+  position: relative !important;
+  transform: none !important;
+  bottom: auto !important;
+  left: auto !important;
+  right: auto !important;
+}
+
+@media (max-width: 767px) {
+  .tf-product-info-protocol>div {
+    justify-content: flex-start;
+  }
+
+  .tf-product-info-protocol .tf-product-protocol-cta-buttons {
+    margin-left: 0 !important;
+    justify-content: flex-start;
+  }
+}
+
+/* Overlay CTA butonları wrapper - yan yana dizilim için (foto üzerinde kullanım) */
+.overlay-cta-buttons-wrapper {
+  position: absolute;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+
+  /* Mobil: foto altında sağa yaslı, yan yana */
+  @media (max-width: 767px) {
+    right: 0px;
+    bottom: 0;
+    left: auto;
+    transform: translateY(50%);
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 2px;
+  }
+
+  /* Desktop: foto içinde, sağa yaslı */
+  @media (min-width: 768px) {
+    right: 16px;
+    bottom: 12px;
+    left: auto;
+    transform: none;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .overlay-cta-btn {
+    position: relative;
+    transform: none !important;
+    margin: 0;
+
+    &:hover {
+      transform: scale(1.02) !important;
+    }
+
+    &:active {
+      transform: scale(0.98) !important;
+    }
+
+    @media (max-width: 767px) {
+      &:hover {
+        transform: scale(1.02) !important;
+      }
+
+      &:active {
+        transform: scale(0.98) !important;
+      }
+    }
   }
 }
 
@@ -837,7 +1028,7 @@ input[type="checkbox"]:checked,
     margin-left: calc(50% - 50vw);
     margin-right: calc(50% - 50vw);
     position: relative;
-    overflow: hidden;
+    overflow: visible;
   }
 
   .tf-main-product .tf-product-media-main {
@@ -865,11 +1056,13 @@ input[type="checkbox"]:checked,
     height: auto !important;
     max-height: none !important;
   }
+
   .tf-product-main-with-dots .tf-product-media-main .swiper-wrapper,
   .tf-product-main-with-dots .tf-product-media-main .swiper-slide,
   .tf-product-main-with-dots .tf-product-media-main .swiper-slide .item {
     height: 100% !important;
   }
+
   .tf-product-main-with-dots .tf-product-media-main .swiper-slide .item img {
     width: 100%;
     height: 100%;
@@ -2624,4 +2817,68 @@ body.header-scroll-hide header.header-default {
       }
     }
   }
+}
+
+/* Cart modal - kampanya badge: mobilde font 1px küçük */
+@media (max-width: 767px) {
+  .tf-cart-campaign-badge {
+    font-size: 10px !important;
+  }
+}
+
+/* Cart modal - hediye ürünü varsa border ana ürünün altında değil, hediye ürünün altında */
+.tf-mini-cart-item-no-border {
+  border-bottom: none !important;
+}
+
+/* Cart modal - hediye ürünleri daha küçük, kompakt */
+.tf-mini-cart-gift-item {
+  border-bottom: none !important;
+  /* Tüm hediye ürünlerin border'ını kaldır */
+  margin: 2px 12px 5px 12px !important;
+  padding: 6px 0 6px 0 !important;
+  gap: 10px !important;
+  align-items: center !important;
+
+  .tf-mini-cart-image.tf-mini-cart-gift-icon {
+    flex-shrink: 0;
+
+    a {
+      width: 56px !important;
+      min-width: 56px !important;
+      height: 56px !important;
+      border: none !important;
+    }
+
+    svg {
+      width: 36px;
+      height: 36px;
+    }
+  }
+
+  .tf-mini-cart-info {
+    .title.link {
+      font-size: 12px !important;
+      line-height: 14px !important;
+    }
+
+    .tf-cart-campaign-badge {
+      font-size: 10px !important;
+      margin-top: 2px !important;
+    }
+  }
+}
+
+/* Hediye ile altındaki ürün arasına ayırıcı (border hediye ürünün üzerinde değil, aralarında) */
+.tf-cart-gift-separator {
+  height: 1px;
+  background: #ccc;
+  margin: 0 12px;
+  flex-shrink: 0;
+}
+
+/* Sepetteki son ürünün altında çizgi olmasın */
+.tf-mini-cart-items .tf-mini-cart-item:last-child,
+.tf-mini-cart-items .tf-mini-cart-item:not(:has(~ .tf-mini-cart-item)) {
+  border-bottom: none !important;
 }

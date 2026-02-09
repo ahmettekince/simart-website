@@ -8,19 +8,13 @@ import { createPortal } from "react-dom";
  */
 export const getEmbedUrl = (url) => {
   if (!url) return "";
-  // Zaten embed ise dokunma
   if (url.includes("/embed/")) return url;
 
-  // watch?v=ID formatı
   const vMatch = url.match(/[?&]v=([^&]+)/);
   if (vMatch && vMatch[1]) {
-    // autoplay=1: Otomatik oynat
-    // rel=0: İlgili videoları gösterme
-    // playsinline=1: Mobilde tam ekran yerine inline oynat (Hata önleyici)
     return `https://www.youtube.com/embed/${vMatch[1]}?autoplay=1&rel=0&playsinline=1`;
   }
 
-  // youtu.be/ID formatı
   const shortMatch = url.match(/youtu\.be\/([^?]+)/);
   if (shortMatch && shortMatch[1]) {
     return `https://www.youtube.com/embed/${shortMatch[1]}?autoplay=1&rel=0&playsinline=1`;
@@ -44,11 +38,8 @@ export default function VideoModal({ isOpen, onClose, videoUrl }) {
     return () => setMounted(false);
   }, []);
 
-  // Modal kapalıysa veya videoUrl yoksa render etme
   if (!isOpen || !videoUrl) return null;
 
-  // Sadece client tarafında portal (body) ile render et
-  // (Next.js SSR hatasını önlemek ve z-index sorunu yaşamamak için)
   if (!mounted) return null;
 
   const embedUrl = getEmbedUrl(videoUrl);
@@ -84,7 +75,7 @@ export default function VideoModal({ isOpen, onClose, videoUrl }) {
           display: flex;
           align-items: center;
           justify-content: center;
-          z-index: 99999; /* Çok yüksek z-index */
+          z-index: 99998;
           padding: 20px;
           animation: fadeIn 0.3s ease-out;
           backdrop-filter: blur(5px);

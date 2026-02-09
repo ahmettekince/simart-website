@@ -6,7 +6,6 @@ import { decodeHtmlEntities, addLazyLoadToDescriptionImages } from "@/utils/stri
 import Accordion from "@/components/common/Accordion";
 import BirlikteAlNew from "@/components/shopDetails/BirlikteAlNew";
 import InstallmentOptions from "@/components/shopDetails/InstallmentOptions";
-import AddReviewForm from "@/components/shopDetails/AddReviewForm";
 
 const SORT_OPTIONS = [
   { value: "default", label: "Varsayılan" },
@@ -445,7 +444,6 @@ export default function ShopDetailsTab({ product }) {
                         <p className="text-muted">Bu ürün için henüz yorum yapılmamış.</p>
                       </div>
                     )}
-                    <AddReviewForm product={product} />
                   </div>
                   {/* Taksit Seçenekleri Tab */}
                   <div

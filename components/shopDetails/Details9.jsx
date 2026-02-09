@@ -18,6 +18,9 @@ import MaxQuantityToast from "@/components/common/MaxQuantityToast";
 import BirlikteAlNew from "./BirlikteAlNew";
 import StarRating from "@/components/common/StarRating";
 import ProductVideoPlayer from "./ProductVideoPlayer";
+import VideoModal from "@/components/common/VideoModal";
+import ModelViewerModal from "@/components/modals/ModelViewerModal";
+import OverlayCtaButton, { YoutubeIcon, ArrowIcon, Model3dIcon } from "@/components/common/OverlayCtaButton";
 
 const TOOLTIP_MAX_WIDTH = 360;
 const TOOLTIP_MARGIN = 16;
@@ -128,6 +131,8 @@ export default function Details9({ product }) {
   const [showSuccess, setShowSuccess] = useState(false);
   const [showMaxReachedToast, setShowMaxReachedToast] = useState(false);
   const [showShortDescription, setShowShortDescription] = useState(false);
+  const [youtubeModalOpen, setYoutubeModalOpen] = useState(false);
+  const [model3dModalOpen, setModel3dModalOpen] = useState(false);
 
   useEffect(() => {
     const check = () => setShowShortDescription(typeof window !== "undefined" && window.innerWidth >= 992);
@@ -353,16 +358,25 @@ export default function Details9({ product }) {
         <div className="container">
           <div className="row">
             <div className="col-md-6">
-              <div className="tf-product-media-wrap ">
+              <div className="tf-product-media-wrap position-relative">
                 <div className="thumbs-slider">
                   <Slider5
                     handleColor={handleColor}
                     currentColor={currentColor.value}
                     galleryImages={product.images || product.gallery_images || []}
-                    model3dUrl={product.model_3d_url}
                   />
                 </div>
               </div>
+              <VideoModal
+                isOpen={youtubeModalOpen}
+                onClose={() => setYoutubeModalOpen(false)}
+                videoUrl={product.video_url || ""}
+              />
+              <ModelViewerModal
+                show={model3dModalOpen}
+                onHide={() => setModel3dModalOpen(false)}
+                modelSrc={product.model_3d_url || product.media?.model_3d_url || ""}
+              />
             </div>
             <div className="col-md-6">
               <div className="tf-product-info-wrap position-relative">
@@ -534,35 +548,62 @@ export default function Details9({ product }) {
                     </>
                   )}
 
-                  {/* Ürün protokolü: "Bu ürün [görsel] ile çalışmaktadır." + (?) ile açıklama */}
-                  {product.product_protocol && (
-                    <div className="tf-product-info-protocol" style={{ marginTop: "16px", marginBottom: "20px" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-                        <span style={{ fontSize: "14px", color: "#333", lineHeight: 1.5 }}>
-                          Bu ürün{" "}
-                          {product.product_protocol.image?.url ? (
-                            <Image
-                              src={product.product_protocol.image.url}
-                              alt={product.product_protocol.image?.alt_text || product.product_protocol.name || "Protokol"}
-                              width={32}
-                              height={32}
-                              style={{ display: "inline-block", verticalAlign: "middle", objectFit: "contain" }}
-                              unoptimized={String(product.product_protocol.image.url).startsWith("http")}
+                  {/* Ürün protokolü + 3D/Video butonları */}
+                  <div className="tf-product-info-protocol" style={{ marginTop: "16px", marginBottom: "20px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                      {product.product_protocol && (
+                        <>
+                          <span style={{ fontSize: "14px", color: "#333", lineHeight: 1.5 }}>
+                            Bu ürün{" "}
+                            {product.product_protocol.image?.url ? (
+                              <Image
+                                src={product.product_protocol.image.url}
+                                alt={product.product_protocol.image?.alt_text || product.product_protocol.name || "Protokol"}
+                                width={32}
+                                height={32}
+                                style={{ display: "inline-block", verticalAlign: "middle", objectFit: "contain" }}
+                                unoptimized={String(product.product_protocol.image.url).startsWith("http")}
+                              />
+                            ) : (
+                              <strong>{product.product_protocol.name}</strong>
+                            )}{" "}
+                            ile çalışmaktadır.
+                          </span>
+                          {product.product_protocol.description && (
+                            <ProductProtocolHelp
+                              description={product.product_protocol.description}
+                              protocolName={product.product_protocol.name}
                             />
-                          ) : (
-                            <strong>{product.product_protocol.name}</strong>
-                          )}{" "}
-                          ile çalışmaktadır.
-                        </span>
-                        {product.product_protocol.description && (
-                          <ProductProtocolHelp
-                            description={product.product_protocol.description}
-                            protocolName={product.product_protocol.name}
-                          />
+                          )}
+                        </>
+                      )}
+                      <div className="tf-product-protocol-cta-buttons" style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", marginLeft: product.product_protocol ? "auto" : 0 }}>
+                        {(product.model_3d_url || product.media?.model_3d_url) && (
+                          <OverlayCtaButton
+                            position="right"
+                            onClick={() => setModel3dModalOpen(true)}
+                            ariaLabel="3D modeli incele"
+                            leftIcon={<Model3dIcon size={14} />}
+                            variant="primary"
+                          >
+                            3D İNCELE
+                          </OverlayCtaButton>
                         )}
+                        <OverlayCtaButton
+                          position="right"
+                          onClick={() => {
+                            if (product.video_url) setYoutubeModalOpen(true);
+                            else if (typeof window !== "undefined") window.alert("Bu ürün için video henüz eklenmemiş.");
+                          }}
+                          ariaLabel="Ürün videosunu izle"
+                          leftIcon={<YoutubeIcon size={16} />}
+                          rightIcon={<ArrowIcon size={12} />}
+                        >
+                          ÜRÜN VİDEOSUNU İZLE
+                        </OverlayCtaButton>
                       </div>
                     </div>
-                  )}
+                  </div>
 
                   <div className="tf-product-info-buy-button">
                     <form onSubmit={(e) => e.preventDefault()} className="">
@@ -947,13 +988,9 @@ export default function Details9({ product }) {
                                               : item.bundle_discount_price}
                                           </div>
                                           <div className="compare-at-price">
-                                            {item.normal_price.toLocaleString("tr-TR")} TL
-                                            {typeof item.normal_price ===
-                                              "number"
-                                              ? item.normal_price.toLocaleString(
-                                                "tr-TR"
-                                              )
-                                              : item.normal_price}
+                                            {typeof item.normal_price === "number"
+                                              ? `${item.normal_price.toLocaleString("tr-TR")} TL`
+                                              : `${item.normal_price} TL`}
                                           </div>
                                         </>
                                       ) : (
