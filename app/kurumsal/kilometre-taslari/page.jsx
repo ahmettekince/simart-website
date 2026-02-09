@@ -1,7 +1,23 @@
 import React from "react";
 import Image from "next/image";
 import Header from "@/components/headers/Header";
-export default function Timelines() {
+import { getTimeline } from "@/api/timeline";
+
+export const metadata = {
+  title: "Kilometre Taşları",
+  description: "Şımart'ın kilometre taşları ve önemli tarihleri",
+};
+
+/** Tarih string'inden yıl çıkarır (örn: "1999-01-25" → "1999") */
+function formatTimelineDate(dateStr) {
+  if (!dateStr || typeof dateStr !== "string") return "";
+  const year = dateStr.split("-")[0];
+  return year || dateStr;
+}
+
+export default async function KilometreTaslariPage() {
+  const items = await getTimeline();
+
   return (
     <>
       <Header />
@@ -11,118 +27,55 @@ export default function Timelines() {
         </div>
       </div>
       <section className="flat-spacing-12">
-      <div className="container">
-        <div className="tf-timeline-wrap position-relative">
-          <div className="tf-timeline-line" />
-          <div className="tf-timeline-item z-2 position-relative">
-            <div className="tf-timeline-inner d-flex align-items-center justify-content-between tf-timeline-content-end">
-              <span className="tf-timeline-time">2020</span>
-              <div className="tf-timeline-content">
-                <div className="tf-timeline-label fw-7">PHASE 1</div>
-                <h4 className="tf-timeline-title">
-                  Inception and Brand Establishment
-                </h4>
-                <div className="tf-timeline-description">
-                  Inception, in the context of brand establishment, refers to
-                  the initial phase of creating and introducing a brand to the
-                  market. It involves laying down the foundational elements that
-                  will define the brand's identity, values, and positioning in
-                  the minds of consumers.
-                </div>
+        <div className="container">
+          <div className="tf-timeline-wrap position-relative">
+            <div className="tf-timeline-line" />
+            {items.length === 0 ? (
+              <div className="text-center py-5 text-muted">
+                Henüz kilometre taşı eklenmemiş.
               </div>
-              <div className="tf-timeline-image">
-                <Image
-                  className="lazyload"
-                  data-=""
-                  alt="image"
-                  src="/images/shop/file/timeline1.jpg"
-                  width={800}
-                  height={593}
-                />
-              </div>
-            </div>
-          </div>
-          <div className="tf-timeline-item z-2 position-relative">
-            <div className="tf-timeline-inner d-flex align-items-center justify-content-between">
-              <span className="tf-timeline-time">2000</span>
-              <div className="tf-timeline-content">
-                <div className="tf-timeline-label fw-7">PHASE 2</div>
-                <h4 className="tf-timeline-title">
-                  Debut Collection and Market Entry
-                </h4>
-                <div className="tf-timeline-description">
-                  Entering the market with a debut collection requires careful
-                  planning, creativity, and perseverance. By following these
-                  steps and staying true to your vision, you can increase your
-                  chances of success in the fashion industry.
-                </div>
-              </div>
-              <div className="tf-timeline-image">
-                <Image
-                  className="lazyload"
-                  data-=""
-                  alt="image"
-                  src="/images/shop/file/timeline2.jpg"
-                  width={800}
-                  height={593}
-                />
-              </div>
-            </div>
-          </div>
-          <div className="tf-timeline-item z-2 position-relative">
-            <div className="tf-timeline-inner d-flex align-items-center justify-content-between tf-timeline-content-end">
-              <span className="tf-timeline-time">2010</span>
-              <div className="tf-timeline-content">
-                <div className="tf-timeline-label fw-7">PHASE 3</div>
-                <h4 className="tf-timeline-title">Growth and Recognition</h4>
-                <div className="tf-timeline-description">
-                  During the Growth and Recognition phase of a brand's journey,
-                  several key elements come into play to propel its expansion
-                  and solidify its position in the market. Here's an outline of
-                  what typically occurs during this phase
-                </div>
-              </div>
-              <div className="tf-timeline-image">
-                <Image
-                  className="lazyload"
-                  data-=""
-                  alt="image"
-                  src="/images/shop/file/timeline3.jpg"
-                  width={800}
-                  height={593}
-                />
-              </div>
-            </div>
-          </div>
-          <div className="tf-timeline-item z-2 position-relative">
-            <div className="tf-timeline-inner d-flex align-items-center justify-content-between">
-              <span className="tf-timeline-time">2024</span>
-              <div className="tf-timeline-content">
-                <div className="tf-timeline-label fw-7">PHASE 4</div>
-                <h4 className="tf-timeline-title">Sustainable Initiatives</h4>
-                <div className="tf-timeline-description">
-                  Sustainable initiatives play a crucial role in the growth and
-                  development of a brand, especially in today's environmentally
-                  conscious and socially responsible market landscape. Here are
-                  some examples of sustainable initiatives that brands may
-                  undertake
-                </div>
-              </div>
-              <div className="tf-timeline-image">
-                <Image
-                  className="lazyload"
-                  data-=""
-                  alt="image"
-                  src="/images/shop/file/timeline4.jpg"
-                  width={800}
-                  height={593}
-                />
-              </div>
-            </div>
+            ) : (
+              items.map((item, idx) => {
+                const media = item?.media;
+                const imageUrl =
+                  media?.url ||
+                  media?.thumbnail_url ||
+                  "/images/shop/file/timeline1.jpg";
+                const isContentEnd = idx % 2 === 0;
+                const dateLabel = formatTimelineDate(item.date);
+
+                return (
+                  <div
+                    key={item.id ?? idx}
+                    className="tf-timeline-item z-2 position-relative"
+                  >
+                    <div
+                      className={`tf-timeline-inner d-flex align-items-center justify-content-between ${isContentEnd ? "tf-timeline-content-end" : ""}`}
+                    >
+                      <span className="tf-timeline-time">{dateLabel}</span>
+                      <div className="tf-timeline-content">
+                        <h4 className="tf-timeline-title">{item.title}</h4>
+                        <div className="tf-timeline-description">
+                          {item.description}
+                        </div>
+                      </div>
+                      <div className="tf-timeline-image">
+                        <Image
+                          className="lazyload"
+                          alt={item.title || "Kilometre taşı"}
+                          src={imageUrl}
+                          width={800}
+                          height={593}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
         </div>
-      </div>
-    </section>
+      </section>
     </>
   );
 }

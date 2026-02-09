@@ -1,10 +1,10 @@
 "use client"
 
-import React, { useRef, useState, useEffect } from "react"
+import React, { useRef, useState } from "react"
 import Image from "next/image"
 import Accordion from "@/components/common/Accordion"
 import apiClient from "@/utils/apiClient"
-import { siteConfig } from "@/config/site"
+import RecaptchaWidget from "@/components/common/RecaptchaWidget"
 
 export function CareerSection({ faqs = [] }) {
     const formRef = useRef()
@@ -16,46 +16,6 @@ export function CareerSection({ faqs = [] }) {
     const [messageLength, setMessageLength] = useState(0)
     const [selectedFile, setSelectedFile] = useState(null)
     const [recaptchaVerified, setRecaptchaVerified] = useState(false)
-    const [recaptchaLoaded, setRecaptchaLoaded] = useState(false)
-    const recaptchaWidgetId = useRef(null)
-
-    // Google reCAPTCHA site key
-    const RECAPTCHA_SITE_KEY = siteConfig.site.recaptchaSiteKey || process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || ""
-
-    useEffect(() => {
-        // reCAPTCHA script'inin yüklenmesini bekle
-        const checkRecaptcha = () => {
-            if (window.grecaptcha && window.grecaptcha.render) {
-                setRecaptchaLoaded(true)
-                // Widget'ı render et
-                if (recaptchaRef.current && !recaptchaRef.current.hasChildNodes()) {
-                    const widgetId = window.grecaptcha.render(recaptchaRef.current, {
-                        sitekey: RECAPTCHA_SITE_KEY,
-                        callback: (token) => {
-                            setRecaptchaVerified(true)
-                        },
-                        'expired-callback': () => {
-                            setRecaptchaVerified(false)
-                        },
-                        'error-callback': () => {
-                            setRecaptchaVerified(false)
-                        }
-                    })
-                    recaptchaWidgetId.current = widgetId
-                }
-            } else {
-                setTimeout(checkRecaptcha, 100)
-            }
-        }
-
-        // Script yüklenmişse direkt kontrol et, değilse bekle
-        if (document.readyState === 'complete') {
-            checkRecaptcha()
-        } else {
-            window.addEventListener('load', checkRecaptcha)
-            return () => window.removeEventListener('load', checkRecaptcha)
-        }
-    }, [RECAPTCHA_SITE_KEY])
 
     const handleShowMessage = () => {
         setShowMessage(true)
@@ -112,10 +72,7 @@ export function CareerSection({ faqs = [] }) {
                 setSelectedFile(null)
                 setMessageLength(0)
                 setRecaptchaVerified(false)
-                // reCAPTCHA'yı resetle
-                if (window.grecaptcha && recaptchaWidgetId.current !== null) {
-                    window.grecaptcha.reset(recaptchaWidgetId.current)
-                }
+                recaptchaRef.current?.reset?.()
             } else {
                 setSuccess(false)
                 setApiMessage(response.data.message || "Bir hata oluştu.")
@@ -220,23 +177,11 @@ export function CareerSection({ faqs = [] }) {
 
                         {/* reCAPTCHA */}
                         <div className="mb_15">
-                            <div ref={recaptchaRef} id="recaptcha-container"></div>
-                            {!recaptchaLoaded && (
-                                <div style={{ fontSize: '12px', color: '#999', marginTop: '8px' }}>
-                                    reCAPTCHA yükleniyor...
-                                </div>
-                            )}
-                            <div className="mt-2" style={{ fontSize: '12px', color: '#666' }}>
-                                <span>reCAPTCHA</span>
-                                <span className="mx-1">•</span>
-                                <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" style={{ color: '#666' }}>
-                                    Gizlilik
-                                </a>
-                                <span className="mx-1">•</span>
-                                <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" style={{ color: '#666' }}>
-                                    Şartlar
-                                </a>
-                            </div>
+                            <RecaptchaWidget
+                                ref={recaptchaRef}
+                                containerId="recaptcha-container-career"
+                                onVerifiedChange={setRecaptchaVerified}
+                            />
                         </div>
 
                         {/* Mesaj */}

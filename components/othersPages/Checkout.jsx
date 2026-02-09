@@ -75,8 +75,6 @@ export default function Checkout() {
   const [orderErrorMessage, setOrderErrorMessage] = useState(""); // Genel hata mesajı
   const [deliveryAddressErrors, setDeliveryAddressErrors] = useState({}); // Teslimat adresi API hataları (alan bazlı)
   const [billingAddressErrors, setBillingAddressErrors] = useState({}); // Fatura adresi API hataları (alan bazlı)
-  const [lastPostRequest, setLastPostRequest] = useState(null); // Son POST isteği bilgisi
-  const [lastPostResponse, setLastPostResponse] = useState(null); // Son POST response bilgisi
 
   // Misafir checkout (login değilse): e-posta, şifre e-postaya gönderilsin (varsayılan işaretli), şifre alanı
   const [guestEmail, setGuestEmail] = useState("");
@@ -512,6 +510,12 @@ export default function Checkout() {
     setOrderErrors({});
     setOrderErrorMessage("");
 
+    // Sepet boşsa işlem yapma
+    if (!items || items.length === 0 || (cartTotals?.total != null && cartTotals.total <= 0)) {
+      setOrderErrorMessage("Sepetinize ürün ekleyin.");
+      return;
+    }
+
     // Misafir: e-posta zorunlu; şifre sadece "e-postaya gönderilsin" işaretsizse zorunlu
     if (!isAuthenticated) {
       const emailTrim = (guestEmail || "").trim();
@@ -634,40 +638,9 @@ export default function Checkout() {
           ...(preferLaterDelivery && preferredDeliveryDate && { preferred_delivery_date: preferredDeliveryDate }),
         };
 
-      // Konsola yazdır (güvenlik için hassas bilgileri gizle)
-      const safeRequestBody = {
-        ...requestBody,
-        card_number: requestBody.card_number ? `${requestBody.card_number.substring(0, 4)}****${requestBody.card_number.substring(requestBody.card_number.length - 4)}` : '',
-        cvv: '***',
-        ...(requestBody.password !== undefined && { password: requestBody.password ? '***' : '(boş)' }),
-      };
-      const requestInfo = {
-        url: "/checkout/validate",
-        method: "POST",
-        body: safeRequestBody,
-        timestamp: new Date().toISOString(),
-      };
-
-      console.log("🚀 POST İsteği Gönderiliyor:", requestInfo);
-      console.log("📦 Tam Request Body (gizli):", requestBody);
-
-      // Sayfada göstermek için state'e kaydet
-      setLastPostRequest(requestInfo);
-
       log("[Checkout] Sipariş gönderiliyor:", requestBody);
 
       const response = await apiClient.post("/checkout/validate", requestBody);
-
-      const responseInfo = {
-        status: response.status,
-        data: response.data,
-        timestamp: new Date().toISOString(),
-      };
-
-      console.log("✅ POST İsteği Başarılı:", responseInfo);
-
-      // Sayfada göstermek için state'e kaydet
-      setLastPostResponse(responseInfo);
 
       log("[Checkout] Sipariş yanıtı:", response.data);
 
@@ -705,24 +678,6 @@ export default function Checkout() {
     } catch (error) {
       log("[Checkout] Sipariş gönderme hatası:", error);
 
-      // Hata response'unu da kaydet
-      if (error.response) {
-        const errorResponseInfo = {
-          status: error.response.status,
-          data: error.response.data,
-          timestamp: new Date().toISOString(),
-        };
-        console.log("❌ POST İsteği Hatası:", errorResponseInfo);
-        setLastPostResponse(errorResponseInfo);
-      } else {
-        console.log("❌ POST İsteği Hatası (Network/Diğer):", error);
-        setLastPostResponse({
-          status: "ERROR",
-          data: { message: error.message || "Bilinmeyen hata" },
-          timestamp: new Date().toISOString(),
-        });
-      }
-
       // API'den gelen hataları parse et
       if (error.response?.data?.errors) {
         const errors = {};
@@ -742,7 +697,8 @@ export default function Checkout() {
   };
 
   return (
-    <section className="flat-spacing-11">
+
+    <>
       {/* Mobil sepet tutarı bar - sadece mobilde görünür; yüklenene kadar skeleton */}
       <div className="checkout-mobile-cart-bar">
         <div className="checkout-mobile-cart-bar-row">
@@ -1794,80 +1750,6 @@ export default function Checkout() {
                           </>
                         );
                       })()}
-
-                      {/* POST İsteği Debug Paneli */}
-                      {(lastPostRequest || lastPostResponse) && (
-                        <div style={{
-                          marginTop: "20px",
-                          padding: "15px",
-                          backgroundColor: "#f8f9fa",
-                          border: "1px solid #dee2e6",
-                          borderRadius: "8px",
-                          fontSize: "12px",
-                          fontFamily: "monospace"
-                        }}>
-                          {lastPostRequest && (
-                            <div style={{ marginBottom: "20px" }}>
-                              <div style={{ fontWeight: "bold", marginBottom: "10px", color: "#495057" }}>
-                                🚀 POST İsteği:
-                              </div>
-                              <div style={{ marginBottom: "5px" }}>
-                                <strong>URL:</strong> {lastPostRequest.url}
-                              </div>
-                              <div style={{ marginBottom: "5px" }}>
-                                <strong>Method:</strong> {lastPostRequest.method}
-                              </div>
-                              <div style={{ marginBottom: "5px" }}>
-                                <strong>Timestamp:</strong> {new Date(lastPostRequest.timestamp).toLocaleString("tr-TR")}
-                              </div>
-                              <div style={{ marginTop: "10px" }}>
-                                <strong>Body:</strong>
-                                <pre style={{
-                                  marginTop: "5px",
-                                  padding: "10px",
-                                  backgroundColor: "#fff",
-                                  border: "1px solid #dee2e6",
-                                  borderRadius: "4px",
-                                  overflow: "auto",
-                                  maxHeight: "200px",
-                                  fontSize: "11px"
-                                }}>
-                                  {JSON.stringify(lastPostRequest.body, null, 2)}
-                                </pre>
-                              </div>
-                            </div>
-                          )}
-
-                          {lastPostResponse && (
-                            <div>
-                              <div style={{ fontWeight: "bold", marginBottom: "10px", color: lastPostResponse.status === 200 ? "#28a745" : "#dc3545" }}>
-                                {lastPostResponse.status === 200 ? "✅ POST Response:" : "❌ POST Response:"}
-                              </div>
-                              <div style={{ marginBottom: "5px" }}>
-                                <strong>Status:</strong> <span style={{ color: lastPostResponse.status === 200 ? "#28a745" : "#dc3545" }}>{lastPostResponse.status}</span>
-                              </div>
-                              <div style={{ marginBottom: "5px" }}>
-                                <strong>Timestamp:</strong> {new Date(lastPostResponse.timestamp).toLocaleString("tr-TR")}
-                              </div>
-                              <div style={{ marginTop: "10px" }}>
-                                <strong>Data:</strong>
-                                <pre style={{
-                                  marginTop: "5px",
-                                  padding: "10px",
-                                  backgroundColor: "#fff",
-                                  border: "1px solid #dee2e6",
-                                  borderRadius: "4px",
-                                  overflow: "auto",
-                                  maxHeight: "300px",
-                                  fontSize: "11px"
-                                }}>
-                                  {JSON.stringify(lastPostResponse.data, null, 2)}
-                                </pre>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
                     </>
                   )}
                 </>
@@ -1900,6 +1782,7 @@ export default function Checkout() {
           </div>
         </div>
       </div>
-    </section>
+    </>
+
   );
 }

@@ -1,15 +1,14 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import apiClient from "@/utils/apiClient";
-import { siteConfig } from "@/config/site";
 import { filterNameValue, formatFirstNameValue, formatLastNameValue } from "@/utils/inputFormatters";
+import RecaptchaWidget from "@/components/common/RecaptchaWidget";
 
 export default function Register() {
   const router = useRouter();
   const recaptchaRef = useRef(null);
-  const recaptchaWidgetId = useRef(null);
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
@@ -25,52 +24,7 @@ export default function Register() {
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
   const [recaptchaVerified, setRecaptchaVerified] = useState(false);
-  const [recaptchaLoaded, setRecaptchaLoaded] = useState(false);
-
-  // Google reCAPTCHA site key
-  const RECAPTCHA_SITE_KEY = siteConfig.site.recaptchaSiteKey || process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "";
-
-  useEffect(() => {
-    // Key yoksa test modunda çalış (otomatik doğrulanmış sayılır)
-    if (!RECAPTCHA_SITE_KEY || RECAPTCHA_SITE_KEY === "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI") {
-      setRecaptchaVerified(true);
-      setRecaptchaLoaded(true);
-      return;
-    }
-
-    // reCAPTCHA script'inin yüklenmesini bekle
-    const checkRecaptcha = () => {
-      if (window.grecaptcha && window.grecaptcha.render) {
-        setRecaptchaLoaded(true);
-        // Widget'ı render et
-        if (recaptchaRef.current && !recaptchaRef.current.hasChildNodes()) {
-          const widgetId = window.grecaptcha.render(recaptchaRef.current, {
-            sitekey: RECAPTCHA_SITE_KEY,
-            callback: (token) => {
-              setRecaptchaVerified(true);
-            },
-            'expired-callback': () => {
-              setRecaptchaVerified(false);
-            },
-            'error-callback': () => {
-              setRecaptchaVerified(false);
-            }
-          });
-          recaptchaWidgetId.current = widgetId;
-        }
-      } else {
-        setTimeout(checkRecaptcha, 100);
-      }
-    };
-
-    // Script yüklenmişse direkt kontrol et, değilse bekle
-    if (document.readyState === 'complete') {
-      checkRecaptcha();
-    } else {
-      window.addEventListener('load', checkRecaptcha);
-      return () => window.removeEventListener('load', checkRecaptcha);
-    }
-  }, [RECAPTCHA_SITE_KEY]);
+  const [recaptchaError, setRecaptchaError] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -122,12 +76,12 @@ export default function Register() {
     setError("");
     setFieldErrors({});
 
-    // reCAPTCHA kontrolü (key varsa)
-    if (RECAPTCHA_SITE_KEY && RECAPTCHA_SITE_KEY !== "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" && !recaptchaVerified) {
-      setError("Lütfen reCAPTCHA'yı tamamlayın.");
+    if (!recaptchaVerified) {
+      setRecaptchaError("Lütfen güvenlik adımını tamamlayın.");
       setIsLoading(false);
       return;
     }
+    setRecaptchaError("");
 
     try {
       // Query parametreleri ile POST isteği gönder
@@ -151,11 +105,8 @@ export default function Register() {
           document.cookie = `DEVICE_ID=${response.data.data.device_id_token}; path=/; max-age=31536000; SameSite=Lax`;
         }
 
-        // reCAPTCHA'yı resetle
-        if (RECAPTCHA_SITE_KEY && window.grecaptcha && recaptchaWidgetId.current !== null) {
-          window.grecaptcha.reset(recaptchaWidgetId.current);
-          setRecaptchaVerified(false);
-        }
+        recaptchaRef.current?.reset?.();
+        setRecaptchaVerified(false);
 
         // 2 saniye sonra yönlendir veya sayfayı yenile
         setTimeout(() => {
@@ -178,7 +129,7 @@ export default function Register() {
         });
 
         setFieldErrors(parsedErrors);
-        
+
         // Eğer errors dizisi boşsa (yani field-specific hata yoksa) genel mesajı göster
         const hasFieldErrors = Object.keys(parsedErrors).length > 0;
         if (!hasFieldErrors && err.response?.data?.message) {
@@ -412,27 +363,21 @@ export default function Register() {
               </div>
 
               {/* reCAPTCHA */}
-              {RECAPTCHA_SITE_KEY && RECAPTCHA_SITE_KEY !== "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" && (
-                <div className="mb_20">
-                  <div ref={recaptchaRef} id="recaptcha-container-register"></div>
-                  {!recaptchaLoaded && (
-                    <div style={{ fontSize: '12px', color: '#999', marginTop: '8px' }}>
-                      reCAPTCHA yükleniyor...
-                    </div>
-                  )}
-                  <div className="mt-2" style={{ fontSize: '12px', color: '#666' }}>
-                    <span>reCAPTCHA</span>
-                    <span className="mx-1">•</span>
-                    <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer" style={{ color: '#666' }}>
-                      Gizlilik
-                    </a>
-                    <span className="mx-1">•</span>
-                    <a href="https://policies.google.com/terms" target="_blank" rel="noopener noreferrer" style={{ color: '#666' }}>
-                      Şartlar
-                    </a>
+              <div className="mb_20">
+                <RecaptchaWidget
+                  ref={recaptchaRef}
+                  containerId="recaptcha-container-register"
+                  onVerifiedChange={(verified) => {
+                    setRecaptchaVerified(verified);
+                    if (verified) setRecaptchaError("");
+                  }}
+                />
+                {recaptchaError && (
+                  <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
+                    {recaptchaError}
                   </div>
-                </div>
-              )}
+                )}
+              </div>
 
               <div className="mb_20">
                 <button

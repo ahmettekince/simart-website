@@ -9,31 +9,40 @@ export default function Accordion({ faqs = faqs1, initialIndex = -1 }) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   useEffect(() => {
     questionRefs.current.forEach((el) => {
-      el.classList.remove("active");
+      el?.classList.remove("active");
     });
     parentRefs.current.forEach((el) => {
-      el.classList.remove("active");
+      el?.classList.remove("active");
     });
     answerRefs.current.forEach((el) => {
-      el.style.height = "0px";
-      el.style.overflow = "hidden";
-      el.style.transition = "all 0.4s ease-in-out";
-      el.style.paddingTop = "0px";
-      el.style.paddingBottom = "0px";
+      if (el) {
+        el.style.height = "0px";
+        el.style.overflow = "hidden";
+        el.style.transition = "all 0.4s ease-in-out";
+        el.style.paddingTop = "0px";
+        el.style.paddingBottom = "0px";
+      }
     });
     if (currentIndex !== -1) {
-      questionRefs.current[currentIndex].classList.add("active");
-      parentRefs.current[currentIndex].classList.add("active");
+      const questionEl = questionRefs.current[currentIndex];
+      if (questionEl) questionEl.classList.add("active");
+
+      const parentEl = parentRefs.current[currentIndex];
+      if (parentEl) parentEl.classList.add("active");
+
       const element = answerRefs.current[currentIndex];
-      element.style.height = element.scrollHeight + "px";
-      element.style.overflow = "hidden";
-      element.style.transition = "all 0.4s ease-in-out";
-      element.style.paddingTop = "22px";
-      element.style.paddingBottom = "22px";
+      if (element) {
+        // Padding (22 top + 22 bottom = 44) eklenmeli, yoksa border-box yüzünden içerik kesilir
+        element.style.height = (element.scrollHeight + 44) + "px";
+        element.style.overflow = "hidden";
+        element.style.transition = "all 0.4s ease-in-out";
+        element.style.paddingTop = "22px";
+        element.style.paddingBottom = "22px";
+      }
     }
   }, [currentIndex]);
   return (
-    <>
+    <div className="flat-accordion style-default has-btns-arrow">
       {faqs.map((toggle, index) => (
         <div
           key={index}
@@ -41,13 +50,13 @@ export default function Accordion({ faqs = faqs1, initialIndex = -1 }) {
           className={`flat-toggle ${currentIndex == index ? "active" : ""}`}
         >
           <div
-            className={`toggle-title ${currentIndex == index ? "active" : ""}`}
+            className={`toggle-title d-flex justify-content-between align-items-center ${currentIndex == index ? "active" : ""}`}
             ref={(el) => (questionRefs.current[index] = el)}
             onClick={() => {
               setCurrentIndex((pre) => (pre == index ? -1 : index));
             }}
           >
-            {toggle.title}
+            <span>{toggle.title}</span>
           </div>
           <div
             className="toggle-content"
@@ -58,6 +67,6 @@ export default function Accordion({ faqs = faqs1, initialIndex = -1 }) {
           </div>
         </div>
       ))}
-    </>
+    </div>
   );
 }

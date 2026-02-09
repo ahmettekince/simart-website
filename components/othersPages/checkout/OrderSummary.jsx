@@ -292,7 +292,7 @@ export default function OrderSummary({
                 <button
                   type="button"
                   onClick={handleApplyCoupon}
-                  className="tf-btn btn-sm radius-3 btn-fill btn-icon animate-hover-btn"
+                  className="tf-btn btn-sm btn-fill btn-icon animate-hover-btn"
                   disabled={isApplyingCoupon || !couponCode.trim()}
                   style={{
                     opacity: isApplyingCoupon || !couponCode.trim() ? 0.6 : 1,
@@ -300,6 +300,7 @@ export default function OrderSummary({
                     whiteSpace: "nowrap",
                     height: "36px",
                     padding: "6px 12px",
+                    borderRadius: "12px",
                   }}
                 >
                   {isApplyingCoupon ? "Uygulanıyor..." : "Uygula"}

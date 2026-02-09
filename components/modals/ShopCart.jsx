@@ -10,6 +10,7 @@ import { getCartRecommendations } from "@/api/cart";
 import Quantity from "@/components/shopDetails/Quantity";
 import ClearCartButton from "@/components/common/ClearCartButton";
 import MaxQuantityToast from "@/components/common/MaxQuantityToast";
+import SimartButton from "@/components/common/SimartButton";
 import { calculateCartTotals } from "@/utils/cartTotals";
 
 export default function ShopCart() {
@@ -706,13 +707,14 @@ export default function ShopCart() {
                             />
                             <button
                               type="submit"
-                              className="tf-btn btn-sm radius-3 btn-fill btn-icon animate-hover-btn"
+                              className="tf-btn btn-sm btn-fill btn-icon animate-hover-btn"
                               disabled={isApplyingCoupon || !couponCode.trim()}
                               style={{
                                 opacity: isApplyingCoupon || !couponCode.trim() ? 0.6 : 1,
                                 cursor: isApplyingCoupon || !couponCode.trim() ? "not-allowed" : "pointer",
                                 height: "36px",
                                 padding: "6px 12px",
+                                borderRadius: "12px",
                               }}
                             >
                               {isApplyingCoupon ? "Uygulanıyor..." : "Uygula"}
@@ -749,15 +751,12 @@ export default function ShopCart() {
                         </div>
                       )}
                       <div className="tf-mini-cart-view-checkout">
-                        <Link href={`/sepetim`} className="tf-btn btn-outline radius-3 link w-100 justify-content-center">
+                        <SimartButton href="/sepetim" variant="outline" style={{ flex: 1, minWidth: 0, display: "flex", justifyContent: "center", alignItems: "center" }}>
                           Sepeti Görüntüle
-                        </Link>
-                        <Link
-                          href={`/odeme`}
-                          className="tf-btn btn-fill animate-hover-btn radius-3 w-100 justify-content-center"
-                        >
-                          <span>Sipariş ver</span>
-                        </Link>
+                        </SimartButton>
+                        <SimartButton href="/odeme" variant="fill" style={{ flex: 1, minWidth: 0, display: "flex", justifyContent: "center", alignItems: "center" }}>
+                          Sipariş ver
+                        </SimartButton>
                       </div>
                     </div>
                   </div>

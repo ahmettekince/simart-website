@@ -149,6 +149,17 @@ export default function ClientLayout({ children }) {
         return () => document.body.classList.remove("product-detail-page");
     }, [pathname]);
 
+    // Ödeme sayfasında alt navbar gizle
+    useEffect(() => {
+        const isOdemePage = pathname === "/odeme";
+        if (isOdemePage) {
+            document.body.classList.add("odeme-page");
+        } else {
+            document.body.classList.remove("odeme-page");
+        }
+        return () => document.body.classList.remove("odeme-page");
+    }, [pathname]);
+
     // Cart'ı API'den sync et (sadece ilk yüklemede)
     useEffect(() => {
         if (typeof window !== "undefined" && !isSynced) {

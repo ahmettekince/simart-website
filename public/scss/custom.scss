@@ -459,6 +459,7 @@ input[type="checkbox"]:checked,
     padding: 5px 9px;
     border-radius: 999px;
     background: rgba(255, 252, 248, 0.85);
+    -webkit-backdrop-filter: blur(6px);
     backdrop-filter: blur(6px);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   }
@@ -858,6 +859,23 @@ input[type="checkbox"]:checked,
     position: relative;
   }
 
+  /* Sabit yükseklik: kaydırınca div’in büyüyüp oturmasını önler (Swiper autoHeight kapatıldı) */
+  .tf-product-main-with-dots .tf-product-media-main {
+    aspect-ratio: 3 / 4;
+    height: auto !important;
+    max-height: none !important;
+  }
+  .tf-product-main-with-dots .tf-product-media-main .swiper-wrapper,
+  .tf-product-main-with-dots .tf-product-media-main .swiper-slide,
+  .tf-product-main-with-dots .tf-product-media-main .swiper-slide .item {
+    height: 100% !important;
+  }
+  .tf-product-main-with-dots .tf-product-media-main .swiper-slide .item img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
   /* Dot'lar fotoğrafın içinde, altta */
   .tf-product-dots-mobile {
     display: flex !important;
@@ -970,6 +988,201 @@ input[type="checkbox"]:checked,
   .cate-name {
     font-weight: 500;
     font-size: 14px;
+  }
+}
+
+/* SSS sidebar ürün listesi hover rengi */
+.sss-product-list {
+  .sss-product-item {
+    font-size: 14px;
+    color: inherit;
+    cursor: pointer;
+    transition: color 0.2s;
+
+    &:hover {
+      color: var(--primary, #1c355e);
+    }
+
+    &.active {
+      font-weight: 600;
+      color: var(--primary, #1c355e);
+    }
+  }
+}
+
+/* SSS sidebar ürün arama alanı */
+.sss-product-search {
+  position: relative;
+  margin-bottom: 12px;
+
+  input.form-control {
+    border-radius: 12px;
+    padding-left: 14px;
+    padding-right: 14px;
+    font-size: 14px;
+  }
+}
+
+.sss-product-search-results {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  margin-top: 4px;
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid var(--line, #eee);
+  max-height: 260px;
+  overflow-y: auto;
+  z-index: 5;
+  padding: 6px 10px;
+
+  .sss-product-search-item {
+    font-size: 13px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    color: #333;
+    border-radius: 6px;
+
+    &:hover {
+      background: rgba(28, 53, 94, 0.03);
+      color: var(--primary, #1c355e);
+    }
+
+    .name {
+      font-weight: 500;
+    }
+
+    .category {
+      font-size: 11px;
+      color: #777;
+    }
+  }
+}
+
+/* SSS varsayılan tab'lar - ürün seçilmediğinde */
+.sss-default-faq .sss-faq-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sss-default-faq .sss-faq-tabs .nav-link {
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--line, #eee);
+  background: #fff;
+  color: var(--primary, #1c355e);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sss-default-faq .sss-faq-tabs .nav-link:hover {
+  border-color: var(--primary, #1c355e);
+  background: rgba(28, 53, 94, 0.05);
+}
+
+.sss-default-faq .sss-faq-tabs .nav-link.active {
+  background: var(--primary, #1c355e);
+  color: #fff;
+  border-color: var(--primary, #1c355e);
+}
+
+.sss-default-faq .sss-faq-content {
+  margin-top: 16px;
+}
+
+/* Destek sayfası düzeni – form mobilde üstte, desktopta altta */
+.support-page-main {
+  width: 100%;
+}
+
+.support-page-layout .support-page-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+.support-faq-wrapper {
+  order: 2;
+}
+
+.support-form-wrapper {
+  order: 1;
+}
+
+@media (min-width: 992px) {
+  .support-page-layout .support-page-grid {
+    flex-direction: column;
+  }
+
+  .support-faq-wrapper {
+    order: 1;
+  }
+
+  .support-form-wrapper {
+    order: 2;
+  }
+}
+
+/* SSS ürün detay alanı - hizalı ve nizami */
+.sss-product-detail {
+  width: 100%;
+}
+
+.tf-accordion-wrap>.content {
+  min-width: 0;
+}
+
+/* Ürün medya kartları - görsel + video + kılavuz (basit, nizami) */
+.product-media-section {
+  .product-media-card {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid var(--line, #eee);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    text-decoration: none;
+    color: inherit;
+    padding: 24px 16px;
+    text-align: center;
+    min-height: 220px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .product-media-card .card-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  .product-media-youtube-icon,
+  .icon-pdf {
+    margin-bottom: 4px;
+  }
+
+  .label {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--primary, #1c355e);
+  }
+
+  .manual-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+  }
+
+  .icon-download {
+    color: var(--primary, #1c355e);
   }
 }
 
@@ -1189,6 +1402,7 @@ input[type="checkbox"]:checked,
 
 .cookie-category-header-clickable {
   cursor: pointer;
+  -webkit-user-select: none;
   user-select: none;
   margin-bottom: 0;
 }
@@ -1808,16 +2022,21 @@ body.product-detail-page .progress-wrap {
   color: #666;
 }
 
-/* Ödeme sayfası - mobilde header ile sepet tutarı arasındaki boşluğu azalt (flat-spacing-11 override) */
+
+/* Ödeme sayfası - boşluk odeme-page-layout padding-top ile veriliyor, flat-spacing-11 üst padding sıfır */
+.odeme-page-layout .flat-spacing-11 {
+  padding-top: 0;
+}
+
 @media (max-width: 768px) {
   .odeme-page-layout .flat-spacing-11 {
-    padding-top: 24px;
+    padding-top: 0;
   }
 }
 
 @media (max-width: 576px) {
   .odeme-page-layout .flat-spacing-11 {
-    padding-top: 20px;
+    padding-top: 0;
   }
 }
 
@@ -1828,6 +2047,7 @@ body.product-detail-page .progress-wrap {
   margin: 0 auto;
   padding-left: 70px;
   padding-right: 70px;
+  padding-top: 60px;
   box-sizing: border-box;
 }
 
@@ -1835,13 +2055,16 @@ body.product-detail-page .progress-wrap {
   .odeme-page-layout {
     padding-left: 50px;
     padding-right: 50px;
+    padding-top: 48px;
   }
 }
 
 @media (max-width: 992px) {
   .odeme-page-layout {
+    max-width: 100%;
     padding-left: 30px;
     padding-right: 30px;
+    padding-top: 40px;
   }
 }
 
@@ -1849,6 +2072,7 @@ body.product-detail-page .progress-wrap {
   .odeme-page-layout {
     padding-left: 28px;
     padding-right: 28px;
+    padding-top: 28px;
   }
 }
 
@@ -1856,6 +2080,7 @@ body.product-detail-page .progress-wrap {
   .odeme-page-layout {
     padding-left: 20px;
     padding-right: 20px;
+    padding-top: 24px;
   }
 }
 
@@ -1868,6 +2093,13 @@ body.product-detail-page .progress-wrap {
 /* Sol alanı küçült, sipariş özeti geniş kalsın */
 .odeme-page-layout .tf-page-cart-wrap.layout-2 {
   grid-template-columns: 50% 1fr !important;
+}
+
+/* Sepetim sayfası - mobilde alt navbar nedeniyle Siparişi Tamamla butonu görünsün */
+@media (max-width: 1150px) {
+  .page-cart-sepetim {
+    padding-bottom: 60px;
+  }
 }
 
 /* Sepetim sayfası: Sol sütun ürünler+çapraz satış, sağ sütun özet paneli (layout bozulmasın) */
@@ -2001,6 +2233,11 @@ body.header-scroll-hide header.header-default {
     display: none !important;
   }
 
+  /* Ödeme sayfasında toolbar'ı gizle */
+  body.odeme-page .tf-toolbar-bottom.type-1150 {
+    display: none !important;
+  }
+
   /* Ürün detay sayfasında sticky bar her zaman en altta, sabit görünür */
   body.product-detail-page .tf-sticky-btn-atc {
     bottom: 0 !important;
@@ -2092,16 +2329,47 @@ body.header-scroll-hide header.header-default {
 
 /* Dashboard bildirim çanı - mavi renk + çalma animasyonu */
 @keyframes bell-ring {
-  0%, 100% { transform: rotate(0deg); }
-  10% { transform: rotate(12deg); }
-  20% { transform: rotate(-12deg); }
-  30% { transform: rotate(10deg); }
-  40% { transform: rotate(-10deg); }
-  50% { transform: rotate(6deg); }
-  60% { transform: rotate(-6deg); }
-  70% { transform: rotate(3deg); }
-  80% { transform: rotate(-3deg); }
-  90% { transform: rotate(1deg); }
+
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  10% {
+    transform: rotate(12deg);
+  }
+
+  20% {
+    transform: rotate(-12deg);
+  }
+
+  30% {
+    transform: rotate(10deg);
+  }
+
+  40% {
+    transform: rotate(-10deg);
+  }
+
+  50% {
+    transform: rotate(6deg);
+  }
+
+  60% {
+    transform: rotate(-6deg);
+  }
+
+  70% {
+    transform: rotate(3deg);
+  }
+
+  80% {
+    transform: rotate(-3deg);
+  }
+
+  90% {
+    transform: rotate(1deg);
+  }
 }
 
 .bell-notification-icon {
@@ -2128,6 +2396,7 @@ body.header-scroll-hide header.header-default {
     height: 36px !important;
     border: 1px solid var(--line, #e5e5e5) !important;
     border-radius: 12px;
+
     &::placeholder {
       color: #999;
     }
@@ -2144,6 +2413,7 @@ body.header-scroll-hide header.header-default {
       grid-template-columns: 1fr !important;
     }
   }
+
   .account-profile-input[readonly] {
     background-color: #f5f5f5 !important;
     cursor: default;
@@ -2151,12 +2421,14 @@ body.header-scroll-hide header.header-default {
 
   /* Telefon + Doğrula/Onayla satırı - input ve buton aynı yükseklikte */
   .account-profile-phone-row {
+
     .account-profile-phone-input,
     .account-profile-phone-row input,
     .account-profile-phone-row [class*="tf-field-input"] {
       height: 44px !important;
       min-height: 44px !important;
     }
+
     .account-profile-phone-btn.simart-btn {
       height: 44px;
     }
@@ -2173,10 +2445,12 @@ body.header-scroll-hide header.header-default {
   @media (max-width: 767px) {
     flex-direction: column;
     align-items: stretch;
+
     .account-edit-password-input {
       flex: 1 1 100% !important;
       min-width: 100% !important;
     }
+
     .simart-btn {
       width: 100%;
     }
@@ -2190,10 +2464,12 @@ body.header-scroll-hide header.header-default {
     height: 42px !important;
     border: 1px solid var(--line, #e5e5e5) !important;
     border-radius: 12px;
+
     &::placeholder {
       color: #999;
     }
   }
+
   .account-edit-password-btn,
   .simart-btn {
     flex-shrink: 0;
@@ -2207,6 +2483,7 @@ body.header-scroll-hide header.header-default {
 .account-reviews,
 .account-wishlist,
 .account-dashboard {
+
   input:not([type="checkbox"]):not([type="radio"]),
   textarea,
   .tf-field-input,
@@ -2218,10 +2495,12 @@ body.header-scroll-hide header.header-default {
   button:not(.tab-button) {
     border-radius: 12px !important;
   }
+
   .select-custom input[type="text"] {
     border-radius: 12px !important;
   }
 }
+
 .list-account-address .show-form-address,
 .list-account-address .edit-form-address,
 .account-address .address-card,
@@ -2242,15 +2521,18 @@ body.header-scroll-hide header.header-default {
   cursor: pointer;
   transition: all 0.2s;
 }
+
 .account-tabs__btn:hover {
   border-color: var(--primary);
   color: var(--primary);
 }
+
 .account-tabs__btn.active {
   border-color: var(--primary);
   color: var(--primary);
   background: #fff;
 }
+
 .account-tabs__count {
   font-weight: 600;
 }
@@ -2275,22 +2557,71 @@ body.header-scroll-hide header.header-default {
   cursor: pointer;
   flex-shrink: 0;
 }
+
 .simart-btn:hover:not(:disabled) {
   opacity: 0.9;
 }
+
 .simart-btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
 }
+
 .simart-btn--success {
   background: #10b981 !important;
   border-color: #10b981 !important;
 }
+
 .simart-btn--outline {
   background: #fff !important;
   color: var(--primary) !important;
 }
+
 .simart-btn--outline:hover:not(:disabled) {
   background: #f0f7fc !important;
   opacity: 1;
+}
+
+/* Product Media Section (Support Page Cards) Fix */
+.product-media-section {
+  .product-media-card {
+    height: 100%;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    background-color: #fff;
+
+    .card-inner {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+
+      img {
+        object-fit: contain;
+      }
+
+      .product-media-youtube-icon,
+      .icon-pdf {
+        display: inline-block;
+      }
+
+      .label {
+        font-size: 16px;
+        color: #3c81b5;
+        font-weight: 500;
+      }
+
+      .manual-title {
+        font-weight: 500;
+        color: #333;
+        max-width: 80%;
+      }
+
+      .simart-btn {
+        min-width: 140px;
+      }
+    }
+  }
 }
