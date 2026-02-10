@@ -10,7 +10,7 @@ const isDevelopment = process.env.NODE_ENV === "development" ||
  * Development ortamında console.log çalıştırır
  */
 export function log(...args) {
-    if (!isDevelopment) {
+    if (isDevelopment) {
         console.log(...args);
     }
 }
