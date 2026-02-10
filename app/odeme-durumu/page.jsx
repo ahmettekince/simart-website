@@ -1,37 +1,19 @@
 
 import React, { Suspense } from "react";
-import { cookies } from "next/headers";
 import PaymentResultContent from "@/components/othersPages/PaymentResultContent";
 
-export default async function PaymentResultPage() {
-    // Cookie'den veriyi oku
-    const cookieStore = await cookies();
-    const paymentCookie = cookieStore.get('payment_result');
-    let postData = {};
-
-    if (paymentCookie) {
-        try {
-            postData = JSON.parse(paymentCookie.value);
-        } catch (e) {
-            console.error("Payment cookie parse error:", e);
-        }
-    }
-
+export default function PaymentResultPage() {
     return (
         <>
             <Suspense fallback={
-                <>
-                    <div className="tf-page-title">
-                        <div className="container-full">
-                            <div className="heading text-center">Ödeme Durumu</div>
-                        </div>
+                <div className="container" style={{ textAlign: "center", padding: "100px 0" }}>
+                    <div className="spinner-border text-primary" role="status">
+                        <span className="visually-hidden">Yükleniyor...</span>
                     </div>
-                    <div className="container" style={{ marginTop: "30px", textAlign: "center" }}>
-                        <p>Yükleniyor...</p>
-                    </div>
-                </>
+                    <p className="mt-3">Sayfa yükleniyor...</p>
+                </div>
             }>
-                <PaymentResultContent initialData={postData} />
+                <PaymentResultContent />
             </Suspense>
         </>
     );
