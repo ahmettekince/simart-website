@@ -1,5 +1,11 @@
 import { NextResponse } from 'next/server';
 
+export async function GET(request) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/odeme-durumu';
+    return NextResponse.redirect(url);
+}
+
 export async function POST(request) {
     try {
         // Form verisini al
@@ -14,9 +20,9 @@ export async function POST(request) {
         // Konsola logla (Debug için)
         console.log('[Payment Result POST] Received data:', data);
 
-        // URL oluştur
+        // URL oluştur (Yeni Sayfa: /odeme-durumu)
         const url = request.nextUrl.clone();
-        url.pathname = '/odeme-sonuc';
+        url.pathname = '/odeme-durumu';
 
         // Response oluştur (Redirect)
         const response = NextResponse.redirect(url, 303); // 303 See Other: POST sonrası GET redirect için ideal
@@ -36,7 +42,7 @@ export async function POST(request) {
         console.error('[Payment Result POST] Error:', error);
         // Hata durumunda da sayfaya yönlendir ama parametresiz
         const url = request.nextUrl.clone();
-        url.pathname = '/odeme-sonuc';
+        url.pathname = '/odeme-durumu';
         return NextResponse.redirect(url, 303);
     }
 }

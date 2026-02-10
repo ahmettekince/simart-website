@@ -4,8 +4,6 @@ import React, { useRef, useState } from "react"
 import Image from "next/image"
 import Accordion from "@/components/common/Accordion"
 import apiClient from "@/utils/apiClient"
-import Accordion from "@/components/common/Accordion"
-import apiClient from "@/utils/apiClient"
 import RecaptchaV3 from "@/components/common/RecaptchaV3"
 
 export function CareerSection({ faqs = [] }) {
