@@ -2882,3 +2882,160 @@ body.header-scroll-hide header.header-default {
 .tf-mini-cart-items .tf-mini-cart-item:not(:has(~ .tf-mini-cart-item)) {
   border-bottom: none !important;
 }
+
+/* Coupon Ticket Style - New Design */
+.coupon-ticket {
+  display: flex;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  min-height: 140px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid #ebebeb;
+
+
+
+  .ticket-left {
+    flex: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: relative;
+    border-right: 2px dashed #e5e7eb;
+    background: #fff;
+
+    /* Perforation semicircles */
+    &::after,
+    &::before {
+      content: '';
+      position: absolute;
+      right: -10px;
+      width: 20px;
+      height: 20px;
+      background-color: #fff;
+      /* Fallback */
+      border-radius: 50%;
+      z-index: 2;
+      border: 1px solid #ebebeb;
+      /* Match card border */
+    }
+
+
+
+    &::after {
+      top: -11px;
+    }
+
+    &::before {
+      bottom: -11px;
+    }
+
+    .brand-name {
+      font-size: 11px;
+      color: #0bc15c;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .coupon-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #111;
+      margin-bottom: 4px;
+      line-height: 1.3;
+    }
+
+    .valid-date {
+      font-size: 12px;
+      color: #999;
+      margin-top: auto;
+    }
+  }
+
+  .ticket-right {
+    width: 130px;
+    background: var(--primary, #3c81b5);
+    /* Brand Blue */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 15px;
+    color: white;
+    position: relative;
+    flex-shrink: 0;
+
+    .discount-val {
+      font-size: 20px;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 4px;
+      color: white;
+    }
+
+    .status-badge {
+      font-size: 11px;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 3px 10px;
+      border-radius: 12px;
+      color: white;
+      margin-bottom: 8px;
+    }
+
+    .coupon-code {
+      font-family: monospace;
+      font-size: 14px;
+      letter-spacing: 1px;
+      opacity: 0.9;
+    }
+
+    /* Right edge cutout */
+    &::after {
+      content: '';
+      position: absolute;
+      right: -10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      background-color: #fff;
+      border-radius: 50%;
+      border: 1px solid #ebebeb;
+    }
+  }
+
+  /* Expired/Used state */
+  &.disabled {
+    filter: grayscale(1);
+    opacity: 0.7;
+
+    .ticket-right {
+      background: #666;
+    }
+  }
+
+  @media (max-width: 575px) {
+    min-height: 120px;
+
+    .ticket-right {
+      width: 100px;
+    }
+
+    .discount-val {
+      font-size: 16px;
+    }
+
+    .ticket-left {
+      padding: 15px;
+    }
+
+    .coupon-title {
+      font-size: 16px;
+    }
+  }
+}

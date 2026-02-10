@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { ProductCard } from "../../otherpagesinveriler/shopCards/ProductCard";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
-import { products1 } from "@/data/products";
 
 export default function Nav({ isArrow = true, textColor = "", Linkfs = "", menuItems: initialMenuItems = [] }) {
   const pathname = usePathname();

@@ -14,7 +14,7 @@ export default function ProductsClient({ products = [] }) {
         <section className="flat-spacing-19">
             <div className="container">
                 <div className="flat-title px-0">
-                    <span className="title wow fadeInUp" data-wow-delay="0s">
+                    <span className="title wow fadeInUp" data-wow-delay="0s" suppressHydrationWarning={true}>
                         İlginizi çekebilecekler
                     </span>
                 </div>

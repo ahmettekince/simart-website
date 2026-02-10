@@ -1,5 +1,4 @@
-
-import React, { Suspense } from "react";
+import { Suspense } from "react";
 import PaymentResultContent from "@/components/othersPages/PaymentResultContent";
 import Header from "@/components/headers/Header";
 

@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, notFound } from "next/navigation";
 
 export default function PaymentResultContent() {
   const searchParams = useSearchParams();
@@ -19,17 +19,22 @@ export default function PaymentResultContent() {
       } catch (e) {
         console.error("Parse error", e);
       }
+      setLoading(false);
     } else {
       // Fallback: URL parametreleri
       const params = {};
       searchParams.forEach((value, key) => {
         params[key] = value;
       });
+
       if (Object.keys(params).length > 0) {
         setResultData(params);
+        setLoading(false);
+      } else {
+        // HİÇBİR VERİ YOKSA -> 404 Sayfasına Git
+        notFound();
       }
     }
-    setLoading(false);
   }, [searchParams]);
 
   if (loading) {
@@ -43,6 +48,9 @@ export default function PaymentResultContent() {
     );
   }
 
+  // Eğer veri yoksa (notFound çalışana kadar boş dönsün)
+  if (!resultData) return null;
+
   // Sonuç Durumunu Belirle
   // Genelde 'status'='success' veya 'MdStatus'='1' başarılıdır.
   const isSuccess = resultData?.status === 'success';
@@ -55,99 +63,80 @@ export default function PaymentResultContent() {
 
   return (
     <>
-      <div className="tf-page-title">
-        <div className="container-full">
-          <div className="heading text-center">Ödeme Sonucu</div>
-        </div>
-      </div>
-
       <div className="container" style={{ marginTop: "30px", marginBottom: "80px" }}>
         <div className="row justify-content-center">
           <div className="col-lg-8 col-md-10">
-            {resultData ? (
+            <div style={{
+              backgroundColor: "#fff",
+              padding: "40px",
+              borderRadius: "16px",
+              boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
+              border: "1px solid #f0f0f0",
+              textAlign: "center"
+            }}>
+              {/* İKON */}
               <div style={{
-                backgroundColor: "#fff",
-                padding: "40px",
-                borderRadius: "16px",
-                boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
-                border: "1px solid #f0f0f0",
-                textAlign: "center"
+                width: "80px",
+                height: "80px",
+                borderRadius: "50%",
+                background: isSuccess ? "linear-gradient(135deg, #4CAF50 0%, #43A047 100%)" : "linear-gradient(135deg, #e53935 0%, #c62828 100%)",
+                color: "#fff",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                margin: "0 auto 25px",
+                fontSize: "40px",
+                boxShadow: isSuccess ? "0 4px 15px rgba(76, 175, 80, 0.3)" : "0 4px 15px rgba(229, 57, 53, 0.3)"
               }}>
-                {/* İKON */}
+                <i className={isSuccess ? "icon-check" : "icon-close"}></i>
+              </div>
+
+              {/* BAŞLIK */}
+              <h2 style={{ marginBottom: "15px", color: "#333", fontWeight: "700" }}>
+                {isSuccess ? "Siparişiniz Tamamlandı!" : "Siparişiniz Tamamlanamadı"}
+              </h2>
+
+              {/* MESAJ */}
+              <p style={{ color: "#666", fontSize: "16px", lineHeight: "1.6", marginBottom: "30px", maxWidth: "80%", margin: "0 auto 30px" }}>
+                {displayMessage}
+              </p>
+
+              {/* SİPARİŞ NUMARASI KUTUSU */}
+              {orderNumber !== "-" && (
                 <div style={{
-                  width: "80px",
-                  height: "80px",
-                  borderRadius: "50%",
-                  background: isSuccess ? "linear-gradient(135deg, #4CAF50 0%, #43A047 100%)" : "linear-gradient(135deg, #e53935 0%, #c62828 100%)",
-                  color: "#fff",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  margin: "0 auto 25px",
-                  fontSize: "40px",
-                  boxShadow: isSuccess ? "0 4px 15px rgba(76, 175, 80, 0.3)" : "0 4px 15px rgba(229, 57, 53, 0.3)"
+                  background: "#f8f9fa",
+                  padding: "15px 25px",
+                  borderRadius: "8px",
+                  display: "inline-block",
+                  marginBottom: "35px",
+                  border: "1px dashed #ced4da"
                 }}>
-                  <i className={isSuccess ? "icon-check" : "icon-close"}></i>
+                  <span style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "5px", textTransform: "uppercase", letterSpacing: "1px" }}>
+                    Sipariş Numarası
+                  </span>
+                  <span style={{ fontSize: "20px", fontWeight: "bold", color: "#333", fontFamily: "monospace" }}>
+                    {orderNumber}
+                  </span>
                 </div>
+              )}
 
-                {/* BAŞLIK */}
-                <h2 style={{ marginBottom: "15px", color: "#333", fontWeight: "700" }}>
-                  {isSuccess ? "Siparişiniz Tamamlandı!" : "Siparişiniz Tamamlanamadı"}
-                </h2>
-
-                {/* MESAJ */}
-                <p style={{ color: "#666", fontSize: "16px", lineHeight: "1.6", marginBottom: "30px", maxWidth: "80%", margin: "0 auto 30px" }}>
-                  {displayMessage}
-                </p>
-
-                {/* SİPARİŞ NUMARASI KUTUSU */}
-                {orderNumber !== "-" && (
-                  <div style={{
-                    background: "#f8f9fa",
-                    padding: "15px 25px",
-                    borderRadius: "8px",
-                    display: "inline-block",
-                    marginBottom: "35px",
-                    border: "1px dashed #ced4da"
-                  }}>
-                    <span style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "5px", textTransform: "uppercase", letterSpacing: "1px" }}>
-                      Sipariş Numarası
-                    </span>
-                    <span style={{ fontSize: "20px", fontWeight: "bold", color: "#333", fontFamily: "monospace" }}>
-                      {orderNumber}
-                    </span>
-                  </div>
-                )}
-
-                {/* BUTONLAR */}
-                <div style={{ display: "flex", gap: "15px", justifyContent: "center", flexWrap: "wrap" }}>
-                  <Link href="/" className="tf-btn btn-fill radius-3 animate-hover-btn">
-                    Ana Sayfaya Dön
+              {/* BUTONLAR */}
+              <div style={{ display: "flex", gap: "15px", justifyContent: "center", flexWrap: "wrap" }}>
+                <Link href="/" className="tf-btn btn-fill radius-3 animate-hover-btn">
+                  Ana Sayfaya Dön
+                </Link>
+                {isSuccess && (
+                  <Link href="/hesabim/siparislerim" className="tf-btn btn-line radius-3">
+                    Siparişlerimi Görüntüle
                   </Link>
-                  {isSuccess && (
-                    <Link href="/hesabim/siparislerim" className="tf-btn btn-line radius-3">
-                      Siparişlerimi Görüntüle
-                    </Link>
-                  )}
-                  {!isSuccess && (
-                    <Link href="/odeme" className="tf-btn btn-line radius-3">
-                      Tekrar Dene
-                    </Link>
-                  )}
-                </div>
+                )}
+                {!isSuccess && (
+                  <Link href="/odeme" className="tf-btn btn-line radius-3">
+                    Tekrar Dene
+                  </Link>
+                )}
               </div>
-            ) : (
-              // SONUÇ BULUNAMADI DURUMU
-              <div style={{ textAlign: "center", padding: "60px 40px", backgroundColor: "#fff", borderRadius: "16px", border: "1px solid #eee" }}>
-                <div style={{ fontSize: "40px", marginBottom: "20px" }}>🔍</div>
-                <h4 style={{ marginBottom: "15px" }}>Sonuç Bulunamadı</h4>
-                <p style={{ color: "#777", marginBottom: "20px" }}>
-                  Ödeme işlemiyle ilgili herhangi bir sonuç bilgisine ulaşılamadı.
-                  Lütfen siparişlerinizi kontrol ediniz.
-                </p>
-                <Link href="/" className="tf-btn btn-line">Ana Sayfaya Dön</Link>
-              </div>
-            )}
+            </div>
           </div>
         </div>
       </div>

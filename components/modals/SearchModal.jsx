@@ -100,10 +100,9 @@ export default function SearchModal() {
   // Fiyat formatı
   const formatPrice = (price) => {
     return new Intl.NumberFormat("tr-TR", {
-      style: "currency",
-      currency: "TRY",
       minimumFractionDigits: 0,
-    }).format(price);
+      maximumFractionDigits: 2,
+    }).format(price) + " TL";
   };
 
   // Görsel URL'i al
@@ -199,18 +198,18 @@ export default function SearchModal() {
                                 size="small"
                               />
                             </div>
-                            <div className="tf-product-info-price" style={{ marginTop: "4px" }}>
+                            <div className="tf-product-info-price" style={{ marginTop: "4px", display: "flex", alignItems: "center", gap: "8px" }}>
                               {product.discount_price && product.discount_price < product.price ? (
                                 <>
-                                  <div className="compare-at-price">
-                                    {formatPrice(product.price)}
-                                  </div>
-                                  <div className="price-on-sale fw-6">
+                                  <div className="price-on-sale fw-6" style={{ color: "#0bc15c", fontWeight: "700" }}>
                                     {formatPrice(product.final_price || product.discount_price)}
+                                  </div>
+                                  <div className="compare-at-price" style={{ textDecoration: "line-through", color: "#999", fontSize: "0.9em" }}>
+                                    {formatPrice(product.price)}
                                   </div>
                                 </>
                               ) : (
-                                <div className="price fw-6">
+                                <div className="price fw-6" style={{ color: "var(--primary)", fontWeight: "700" }}>
                                   {formatPrice(product.final_price || product.price)}
                                 </div>
                               )}

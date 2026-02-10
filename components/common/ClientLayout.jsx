@@ -181,7 +181,7 @@ export default function ClientLayout({ children }) {
     }, [isSynced]); // syncFromAPI'yı dependency'den çıkardık
 
     return (
-        <Context>
+        <>
             <div id="wrapper">{children}</div>
             <HomesModal />
             <ShopCart />
@@ -200,6 +200,6 @@ export default function ClientLayout({ children }) {
             </div> */}
             <CookieConsentBanner />
             <Analytics />
-        </Context>
+        </>
     );
 }

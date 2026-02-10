@@ -1,6 +1,6 @@
 import Features from "@/components/homes/home-electronic/Features";
 import HomeReviews from "@/components/common/HomeReviews";
-// import Testimonials from "@/components/common/Testimonials";
+import CampaignTab from "@/components/common/CampaignTab";
 import Header from "@/components/headers/Header";
 import Blogs from "@/components/homes/home-electronic/Blogs";
 import Categories from "@/components/homes/home-electronic/Categories";
@@ -14,7 +14,6 @@ import { getCategories, getBanners, getCollectionBanner, getCollections, getRevi
 import { getMenus } from "@/api/menus";
 import { siteConfig } from "@/config/site";
 import { organizationSchema } from "@/lib/schema";
-import DetailsPopup from "@/components/shopDetails/DetailsPopup";
 
 export const metadata = {
   title: "Şımart Teknoloji - Robot Süpürge ve Akıllı Ev Sistemleri",
@@ -79,7 +78,7 @@ export default async function Home() {
         {/* <Countdown /> */}
         <Products />
         <HomeReviews reviews={reviews} />
-        {/* <Testimonials /> */}
+        <CampaignTab />
         <Blogs />
         <Features />
       </div>

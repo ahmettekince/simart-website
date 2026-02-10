@@ -1,6 +1,15 @@
+import Header from "@/components/headers/Header";
 import DashboardNav from "@/components/othersPages/dashboard/DashboardNav";
+import Coupons from "@/components/othersPages/dashboard/Coupons";
+import React from "react";
 import { checkAuthServer } from "@/utils/authServer";
 import { redirect } from "next/navigation";
+
+export const metadata = {
+  title: "Kupon Kodlarım - Robot Süpürge ve Akıllı Ev Sistemleri",
+  description:
+    "Hesabınıza tanımlı indirim kuponlarını görüntüleyin, durumlarını kontrol edin ve uygun sepet tutarlarında kullanın.",
+};
 
 export default async function page() {
   const isAuthenticated = await checkAuthServer();
@@ -11,6 +20,8 @@ export default async function page() {
 
   return (
     <>
+      <Header />
+
       <section className="flat-spacing-11">
         <div className="container">
           <div className="row">
@@ -18,6 +29,7 @@ export default async function page() {
               <DashboardNav />
             </div>
             <div className="col-lg-9">
+              <Coupons />
             </div>
           </div>
         </div>
@@ -25,3 +37,4 @@ export default async function page() {
     </>
   );
 }
+

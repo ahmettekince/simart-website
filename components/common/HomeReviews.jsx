@@ -67,6 +67,12 @@ export default function HomeReviews({ reviews = [] }) {
                                         <div className="text" style={{ flex: 1, marginBottom: '15px' }}>
                                             "{review.comment}"
                                         </div>
+                                        <div className="author" style={{ marginBottom: '15px' }}>
+                                            <div className="name" style={{ fontWeight: '600' }}>
+                                                {review.customer?.full_name ||
+                                                    (review.customer?.first_name ? `${review.customer.first_name} ${review.customer.last_name || ''}` : "Misafir Kullanıcı")}
+                                            </div>
+                                        </div>
 
                                         {review.product && (
                                             <div className="product" style={{ marginTop: 'auto', borderTop: '1px solid #eee', paddingTop: '15px' }}>

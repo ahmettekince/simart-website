@@ -1,7 +1,6 @@
 "use client";
 import React, { useCallback } from "react";
 import Link from "next/link";
-import { useContextElement } from "@/context/Context";
 import { useCartStore } from "@/stores/cartStore";
 import ProductImageSwiper from "@/components/common/ProductImageSwiper";
 import MaxQuantityToast from "@/components/common/MaxQuantityToast";
@@ -9,10 +8,7 @@ import StarRating from "@/components/common/StarRating";
 import { getProductButtonState } from "@/utils/productStock";
 
 export default function ProductCardSimart({ product }) {
-  const context = useContextElement();
-  const addToWishlist = context?.addToWishlist || (() => { });
-  const isAddedtoWishlist = context?.isAddedtoWishlist || (() => false);
-  const { addItem, isInCart } = useCartStore();
+  const { addItem } = useCartStore();
   const cartItems = useCartStore((s) => s.items);
   const [isAdding, setIsAdding] = React.useState(false);
   const [showSuccess, setShowSuccess] = React.useState(false);
@@ -31,7 +27,6 @@ export default function ProductCardSimart({ product }) {
   const rating = product.rating || product.average_rating || 0;
   const reviewCount = product.reviews_count || product.review_count || 0;
   const productSlug = product.slug || product.id;
-  const isAdded = isAddedtoWishlist(product.id);
 
   // Kategori slug'ını al (ilk kategoriden)
   const getCategorySlug = () => {
