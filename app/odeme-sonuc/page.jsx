@@ -1,7 +1,7 @@
 
 import React, { Suspense } from "react";
 import PaymentResultContent from "@/components/othersPages/PaymentResultContent";
-import Header from "@/components/layout/Header";
+import Header from "@/components/headers/Header";
 
 export default function PaymentResultPage() {
   return (
