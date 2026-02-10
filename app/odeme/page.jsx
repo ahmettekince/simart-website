@@ -3,8 +3,8 @@ import Checkout from "@/components/othersPages/Checkout";
 import React from "react";
 
 export const metadata = {
-  title: "Ödeme || Ecomus - Ultimate Nextjs Ecommerce Template",
-  description: "Ecomus - Ultimate Nextjs Ecommerce Template",
+  title: "Ödeme | Şımart Teknoloji",
+  description: "Şımart Teknoloji",
 };
 export default function page() {
   return (

@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { getPopups } from "@/api/popup";
 import Countdown from "@/components/common/Countdown";
+import { log } from "@/utils/logger";
 
 const STORAGE_KEY = "simart_popup_shown";
 const LOG = "[Popup]";
@@ -19,16 +20,16 @@ export default function NewsletterModal() {
   useEffect(() => {
     let ok = true;
     (async () => {
-      console.log(LOG, "1. Fetch başladı, pathname:", pathname);
+      log(LOG, "1. Fetch başladı, pathname:", pathname);
       try {
         const list = await getPopups();
-        console.log(LOG, "2. API yanıtı:", list?.length ?? 0, "adet", list);
+        log(LOG, "2. API yanıtı:", list?.length ?? 0, "adet", list);
         if (!ok || !list?.length) return;
         const sorted = [...list].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
         let shownIds = [];
         try {
           shownIds = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || "[]");
-        } catch {}
+        } catch { }
         const toShow = [];
         for (const p of sorted) {
           const pages = p.show_on_pages || ["all"];
@@ -44,10 +45,10 @@ export default function NewsletterModal() {
           if (p.display_frequency === "once" && Array.isArray(shownIds) && shownIds.includes(p.id)) continue;
           toShow.push(p);
         }
-        console.log(LOG, "6. Gösterilecek popup sayısı:", toShow.length, toShow.map((p) => p.id));
+        log(LOG, "6. Gösterilecek popup sayısı:", toShow.length, toShow.map((p) => p.id));
         setQueue(toShow);
       } catch (e) {
-        console.error(LOG, "HATA:", e);
+        log(LOG, "HATA:", e);
       }
     })();
     return () => { ok = false; };
@@ -62,7 +63,7 @@ export default function NewsletterModal() {
     if (!popup) return;
     const delay = hasShownRef.current ? 300 : 1500;
     hasShownRef.current = true;
-    console.log(LOG, "8. Popup set edildi,", delay, "ms sonra gösterilecek:", popup.id);
+    log(LOG, "8. Popup set edildi,", delay, "ms sonra gösterilecek:", popup.id);
     const t = setTimeout(() => {
       setVisible(true);
       if (popup.display_frequency === "once") {
@@ -70,7 +71,7 @@ export default function NewsletterModal() {
           const ids = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || "[]");
           if (!ids.includes(popup.id)) ids.push(popup.id);
           sessionStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
-        } catch {}
+        } catch { }
       }
     }, delay);
     return () => clearTimeout(t);

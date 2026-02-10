@@ -308,198 +308,208 @@ export default function ShopCart() {
 
                         return (
                           <>
-                            {groupedItems.map(({ normalItem, giftItems: relatedGifts }, groupIndex) => (
-                              <React.Fragment key={normalItem.id || groupIndex}>
-                                {/* Normal Ürün */}
-                                {(() => {
-                                  const item = normalItem;
-                                  const categorySlug =
-                                    item.product?.categories?.[0]?.slug || item.product?.primary_category?.slug || "urunler";
-                                  const productSlug = item.slug || item.id;
-                                  const productUrl = `/magaza/${categorySlug}/${productSlug}`;
-                                  const imageUrl =
-                                    item.image ||
-                                    item.product?.cover_image?.url ||
-                                    item.product?.images?.[0] ||
-                                    "/images/placeholder.jpg";
-                                  const isLoading = loadingActions[item.id];
-                                  const isLoadingDecrease = isLoading === 'decrease';
-                                  const isLoadingIncrease = isLoading === 'increase';
-                                  const isAnyLoading = !!isLoading;
-                                  const rawMax =
-                                    item.max_purchase_quantity ?? item.product?.max_purchase_quantity ?? item.product?.max_quantity ?? null;
-                                  const parsedMax = rawMax === null || rawMax === undefined ? null : Number(rawMax);
-                                  // maxQuantity = 0 ise sınırsız (null), değilse o değere kadar sınırlı
-                                  const maxQty = parsedMax === 0 ? null : (Number.isFinite(parsedMax) ? parsedMax : null);
-                                  const minQty = item.min_purchase_quantity ?? item.product?.min_purchase_quantity ?? 1;
-                                  // Bu ürün için kampanya mesajlarını al
-                                  const itemCampaignMessages = getCampaignMessagesForProduct(item);
+                            {groupedItems.map(({ normalItem, giftItems: relatedGifts }, groupIndex) => {
+                              const isLastGroup = groupIndex === groupedItems.length - 1;
+                              const isReallyLast = isLastGroup && unlinkedGifts.length === 0 && tierGifts.length === 0;
 
-                                  return (
-                                    <div key={item.id} className={`tf-mini-cart-item ${isAnyLoading ? "disabled-item" : ""} ${relatedGifts.length > 0 ? "tf-mini-cart-item-no-border" : ""}`}>
-                                      <div className="tf-mini-cart-image">
-                                        <Link href={productUrl}>
-                                          <Image
-                                            alt={item.name}
-                                            src={imageUrl}
-                                            width={668}
-                                            height={932}
-                                            style={{ objectFit: "cover" }}
-                                          />
-                                        </Link>
-                                      </div>
-                                      <div className="tf-mini-cart-info">
-                                        <Link className="title link" href={productUrl}>
-                                          {item.name}
-                                        </Link>
-                                        <div className="price fw-6">
-                                          {item.discount_price != null && item.discount_price > 0 && item.discount_price < item.price ? (
-                                            <>
-                                              <span style={{ color: '#0bc15c', fontWeight: '600', marginRight: '8px' }}>
-                                                {item.discount_price.toLocaleString("tr-TR")} TL
-                                              </span>
-                                              <span style={{ textDecoration: 'line-through', color: '#999', fontSize: '14px' }}>
-                                                {item.price.toLocaleString("tr-TR")} TL
-                                              </span>
-                                            </>
-                                          ) : (
-                                            <span style={{ color: 'var(--primary, #3c81b5)' }}>{item.price.toLocaleString("tr-TR")} TL</span>
-                                          )}
-                                        </div>
-                                        <div className="tf-mini-cart-btns">
-                                          <div className={`wg-quantity small ${isAnyLoading ? "disabled" : ""}`} style={{ pointerEvents: isAnyLoading ? "none" : "auto" }}>
-                                            <Quantity
-                                              isLoading={isAnyLoading}
-                                              setQuantity={(qty) => {
-                                                if (isAnyLoading) return;
-                                                const clamped = maxQty != null && maxQty > 0 ? Math.min(Math.max(Number(qty) || 0, minQty), maxQty) : Math.max(Number(qty) || 0, minQty);
-                                                if (clamped >= minQty) setQuantity(item.id, clamped, 'change');
-                                              }}
-                                              minQuantity={minQty}
-                                              maxQuantity={maxQty}
-                                              initialValue={item.quantity}
-                                              onMaxQuantityReached={() => {
-                                                setMaxQuantityForToast(maxQty);
-                                                setShowMaxReachedToast(true);
-                                              }}
+                              return (
+                                <React.Fragment key={normalItem.id || groupIndex}>
+                                  {/* Normal Ürün */}
+                                  {(() => {
+                                    const item = normalItem;
+                                    const categorySlug =
+                                      item.product?.categories?.[0]?.slug || item.product?.primary_category?.slug || "urunler";
+                                    const productSlug = item.slug || item.id;
+                                    const productUrl = `/magaza/${categorySlug}/${productSlug}`;
+                                    const imageUrl =
+                                      item.image ||
+                                      item.product?.cover_image?.url ||
+                                      item.product?.images?.[0] ||
+                                      "/images/placeholder.jpg";
+                                    const isLoading = loadingActions[item.id];
+                                    const isLoadingDecrease = isLoading === 'decrease';
+                                    const isLoadingIncrease = isLoading === 'increase';
+                                    const isAnyLoading = !!isLoading;
+                                    const rawMax =
+                                      item.max_purchase_quantity ?? item.product?.max_purchase_quantity ?? item.product?.max_quantity ?? null;
+                                    const parsedMax = rawMax === null || rawMax === undefined ? null : Number(rawMax);
+                                    // maxQuantity = 0 ise sınırsız (null), değilse o değere kadar sınırlı
+                                    const maxQty = parsedMax === 0 ? null : (Number.isFinite(parsedMax) ? parsedMax : null);
+                                    const minQty = item.min_purchase_quantity ?? item.product?.min_purchase_quantity ?? 1;
+                                    // Bu ürün için kampanya mesajlarını al
+                                    const itemCampaignMessages = getCampaignMessagesForProduct(item);
+
+                                    return (
+                                      <div key={item.id} className={`tf-mini-cart-item ${isAnyLoading ? "disabled-item" : ""} ${relatedGifts.length > 0 ? "tf-mini-cart-item-no-border" : ""}`}>
+                                        <div className="tf-mini-cart-image">
+                                          <Link href={productUrl}>
+                                            <Image
+                                              alt={item.name}
+                                              src={imageUrl}
+                                              width={668}
+                                              height={932}
+                                              style={{ objectFit: "cover" }}
                                             />
-                                          </div>
-                                          <div
-                                            className="tf-mini-cart-remove"
-                                            style={{
-                                              cursor: isAnyLoading ? "not-allowed" : "pointer",
-                                              opacity: isAnyLoading ? 0.5 : 1,
-                                              display: 'inline-flex',
-                                              alignItems: 'center',
-                                              gap: '6px'
-                                            }}
-                                            onClick={() => {
-                                              if (!isAnyLoading) {
-                                                handleRemoveItem(item.id);
-                                              }
-                                            }}
-                                          >
-                                            {loadingActions[item.id] === 'remove' ? (
-                                              <div className="spinner-border spinner-border-sm" role="status" style={{
-                                                width: '10px',
-                                                height: '10px',
-                                                borderWidth: '1.5px',
-                                                borderColor: '#3c81b5',
-                                                borderRightColor: 'transparent'
-                                              }}>
-                                                <span className="visually-hidden">Yükleniyor...</span>
-                                              </div>
+                                          </Link>
+                                        </div>
+                                        <div className="tf-mini-cart-info">
+                                          <Link className="title link" href={productUrl}>
+                                            {item.name}
+                                          </Link>
+                                          <div className="price fw-6">
+                                            {item.discount_price != null && item.discount_price > 0 && item.discount_price < item.price ? (
+                                              <>
+                                                <span style={{ color: '#0bc15c', fontWeight: '600', marginRight: '8px' }}>
+                                                  {item.discount_price.toLocaleString("tr-TR")} TL
+                                                </span>
+                                                <span style={{ textDecoration: 'line-through', color: '#999', fontSize: '14px' }}>
+                                                  {item.price.toLocaleString("tr-TR")} TL
+                                                </span>
+                                              </>
                                             ) : (
-                                              <svg
-                                                width="14"
-                                                height="14"
-                                                viewBox="0 0 24 24"
-                                                fill="none"
-                                                stroke="currentColor"
-                                                strokeWidth="2"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                                aria-label="Kaldır"
-                                                role="img"
-                                              >
-                                                <polyline points="3 6 5 6 21 6" />
-                                                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                                                <path d="M10 11v6" />
-                                                <path d="M14 11v6" />
-                                                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-                                              </svg>
+                                              <span style={{ color: 'var(--primary, #3c81b5)' }}>{item.price.toLocaleString("tr-TR")} TL</span>
                                             )}
                                           </div>
+                                          <div className="tf-mini-cart-btns">
+                                            <div className={`wg-quantity small ${isAnyLoading ? "disabled" : ""}`} style={{ pointerEvents: isAnyLoading ? "none" : "auto" }}>
+                                              <Quantity
+                                                isLoading={isAnyLoading}
+                                                setQuantity={(qty) => {
+                                                  if (isAnyLoading) return;
+                                                  const clamped = maxQty != null && maxQty > 0 ? Math.min(Math.max(Number(qty) || 0, minQty), maxQty) : Math.max(Number(qty) || 0, minQty);
+                                                  if (clamped >= minQty) setQuantity(item.id, clamped, 'change');
+                                                }}
+                                                minQuantity={minQty}
+                                                maxQuantity={maxQty}
+                                                initialValue={item.quantity}
+                                                onMaxQuantityReached={() => {
+                                                  setMaxQuantityForToast(maxQty);
+                                                  setShowMaxReachedToast(true);
+                                                }}
+                                              />
+                                            </div>
+                                            <div
+                                              className="tf-mini-cart-remove"
+                                              style={{
+                                                cursor: isAnyLoading ? "not-allowed" : "pointer",
+                                                opacity: isAnyLoading ? 0.5 : 1,
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '6px'
+                                              }}
+                                              onClick={() => {
+                                                if (!isAnyLoading) {
+                                                  handleRemoveItem(item.id);
+                                                }
+                                              }}
+                                            >
+                                              {loadingActions[item.id] === 'remove' ? (
+                                                <div className="spinner-border spinner-border-sm" role="status" style={{
+                                                  width: '10px',
+                                                  height: '10px',
+                                                  borderWidth: '1.5px',
+                                                  borderColor: '#3c81b5',
+                                                  borderRightColor: 'transparent'
+                                                }}>
+                                                  <span className="visually-hidden">Yükleniyor...</span>
+                                                </div>
+                                              ) : (
+                                                <svg
+                                                  width="14"
+                                                  height="14"
+                                                  viewBox="0 0 24 24"
+                                                  fill="none"
+                                                  stroke="currentColor"
+                                                  strokeWidth="2"
+                                                  strokeLinecap="round"
+                                                  strokeLinejoin="round"
+                                                  aria-label="Kaldır"
+                                                  role="img"
+                                                >
+                                                  <polyline points="3 6 5 6 21 6" />
+                                                  <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                                                  <path d="M10 11v6" />
+                                                  <path d="M14 11v6" />
+                                                  <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                                                </svg>
+                                              )}
+                                            </div>
+                                          </div>
+                                          {/* Ürün bazlı kampanya mesajları */}
+                                          {itemCampaignMessages.length > 0 && (
+                                            <div style={{ marginTop: '8px' }}>
+                                              {itemCampaignMessages.map(({ campaign, message, isNextTier }, idx) => (
+                                                <div key={`product-campaign-${campaign.id || idx}`} className="tf-cart-campaign-badge" style={{ fontSize: '11px', color: isNextTier ? '#dc3545' : '#0bc15c', marginTop: '4px', lineHeight: '1.4' }}>
+                                                  {message}
+                                                </div>
+                                              ))}
+                                            </div>
+                                          )}
                                         </div>
-                                        {/* Ürün bazlı kampanya mesajları */}
-                                        {itemCampaignMessages.length > 0 && (
-                                          <div style={{ marginTop: '8px' }}>
-                                            {itemCampaignMessages.map(({ campaign, message, isNextTier }, idx) => (
-                                              <div key={`product-campaign-${campaign.id || idx}`} className="tf-cart-campaign-badge" style={{ fontSize: '11px', color: isNextTier ? '#dc3545' : '#0bc15c', marginTop: '4px', lineHeight: '1.4' }}>
-                                                {message}
-                                              </div>
-                                            ))}
-                                          </div>
-                                        )}
                                       </div>
-                                    </div>
-                                  );
-                                })()}
+                                    );
+                                  })()}
 
-                                {/* Gift Ürünleri */}
-                                {relatedGifts.map((giftItem, giftIndex) => {
-                                  const categorySlug =
-                                    giftItem.product?.categories?.[0]?.slug || giftItem.product?.primary_category?.slug || "urunler";
-                                  const productSlug = giftItem.slug || giftItem.id;
-                                  const productUrl = `/magaza/${categorySlug}/${productSlug}`;
-                                  const imageUrl =
-                                    giftItem.image ||
-                                    giftItem.product?.cover_image?.url ||
-                                    giftItem.product?.images?.[0] ||
-                                    "/images/placeholder.jpg";
-                                  const giftCampaign = resolveGiftCampaign(giftItem);
-                                  const giftSourceNames = (giftItem.applied_campaign_ids && applied_campaigns
-                                    ? giftItem.applied_campaign_ids
-                                      .map((cid) => applied_campaigns.find((c) => c.id === cid)?.name)
-                                      .filter(Boolean)
-                                    : []
-                                  );
-                                  return (
-                                    <div key={`gift-${giftItem.id}-${giftIndex}`} className="tf-mini-cart-item tf-mini-cart-gift-item" style={{
-                                      paddingLeft: '10px',
-                                      backgroundColor: '#f5f5f5',
-                                      borderRadius: '12px',
-                                    }}>
-                                      <div className="tf-mini-cart-image tf-mini-cart-gift-icon">
-                                        <Link href={productUrl} style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>
-                                          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style={{ width: '36px', height: '36px' }}>
-                                            <path d="M20 12v10H4V12M22 7H2v5h20V7zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" stroke="var(--primary, #3c81b5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                          </svg>
-                                        </Link>
+                                  {/* Gift Ürünleri */}
+                                  {relatedGifts.map((giftItem, giftIndex) => {
+                                    const categorySlug =
+                                      giftItem.product?.categories?.[0]?.slug || giftItem.product?.primary_category?.slug || "urunler";
+                                    const productSlug = giftItem.slug || giftItem.id;
+                                    const productUrl = `/magaza/${categorySlug}/${productSlug}`;
+                                    const imageUrl =
+                                      giftItem.image ||
+                                      giftItem.product?.cover_image?.url ||
+                                      giftItem.product?.images?.[0] ||
+                                      "/images/placeholder.jpg";
+                                    const giftCampaign = resolveGiftCampaign(giftItem);
+                                    const giftSourceNames = (giftItem.applied_campaign_ids && applied_campaigns
+                                      ? giftItem.applied_campaign_ids
+                                        .map((cid) => applied_campaigns.find((c) => c.id === cid)?.name)
+                                        .filter(Boolean)
+                                      : []
+                                    );
+                                    const isLastGift = giftIndex === relatedGifts.length - 1;
+                                    const shouldRemoveBorder = isReallyLast && isLastGift;
+
+                                    return (
+                                      <div key={`gift-${giftItem.id}-${giftIndex}`} className="tf-mini-cart-item tf-mini-cart-gift-item" style={{
+                                        paddingLeft: '10px',
+                                        backgroundColor: '#f5f5f5',
+                                        borderRadius: '12px',
+                                        borderBottom: shouldRemoveBorder ? 'none' : undefined,
+                                        marginBottom: shouldRemoveBorder ? '0' : undefined,
+                                      }}>
+                                        <div className="tf-mini-cart-image tf-mini-cart-gift-icon">
+                                          <Link href={productUrl} style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>
+                                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style={{ width: '36px', height: '36px' }}>
+                                              <path d="M20 12v10H4V12M22 7H2v5h20V7zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" stroke="var(--primary, #3c81b5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                            </svg>
+                                          </Link>
+                                        </div>
+                                        <div className="tf-mini-cart-info">
+                                          <Link className="title link" href={productUrl} style={{ fontSize: '13px' }}>
+                                            {giftItem.name} x{giftItem.quantity}
+                                          </Link>
+                                          {giftSourceNames.length > 0 ? (
+                                            <div className="tf-cart-campaign-badge" style={{ fontSize: '11px', color: '#0bc15c', marginTop: '4px' }}>
+                                              {giftSourceNames.join(", ")}
+                                            </div>
+                                          ) : giftCampaign?.applied_tier?.min_cart_amount ? (
+                                            <div className="tf-cart-campaign-badge" style={{ fontSize: '11px', color: '#0bc15c', marginTop: '4px' }}>
+                                              {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString("tr-TR")} Sepet Tutarına Özel Hediye
+                                            </div>
+                                          ) : null}
+                                        </div>
                                       </div>
-                                      <div className="tf-mini-cart-info">
-                                        <Link className="title link" href={productUrl} style={{ fontSize: '13px' }}>
-                                          {giftItem.name} x{giftItem.quantity}
-                                        </Link>
-                                        {giftSourceNames.length > 0 ? (
-                                          <div className="tf-cart-campaign-badge" style={{ fontSize: '11px', color: '#0bc15c', marginTop: '4px' }}>
-                                            {giftSourceNames.join(", ")}
-                                          </div>
-                                        ) : giftCampaign?.applied_tier?.min_cart_amount ? (
-                                          <div className="tf-cart-campaign-badge" style={{ fontSize: '11px', color: '#0bc15c', marginTop: '4px' }}>
-                                            {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString("tr-TR")} Sepet Tutarına Özel Hediye
-                                          </div>
-                                        ) : null}
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                                {/* Hediye grubu ile sonraki ürün arasına ayırıcı */}
-                                {relatedGifts.length > 0 && (
-                                  <div className="tf-cart-gift-separator" aria-hidden="true" />
-                                )}
-                              </React.Fragment >
-                            ))}
+                                    );
+                                  })}
+                                  {/* Hediye grubu ile sonraki ürün arasına ayırıcı */}
+                                  {relatedGifts.length > 0 && !isReallyLast && (
+                                    <div className="tf-cart-gift-separator" aria-hidden="true" />
+                                  )}
+                                </React.Fragment >
+                              );
+                            })}
                             {unlinkedGifts.map((giftItem, giftIndex) => {
                               const categorySlug =
                                 giftItem.product?.categories?.[0]?.slug || giftItem.product?.primary_category?.slug || "urunler";

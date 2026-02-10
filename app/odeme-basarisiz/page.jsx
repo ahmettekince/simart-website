@@ -3,8 +3,8 @@ import PaymentFailure from "@/components/othersPages/PaymentFailure";
 import React from "react";
 
 export const metadata = {
-  title: "Payment Failure || Ecomus - Ultimate Nextjs Ecommerce Template",
-  description: "Ecomus - Ultimate Nextjs Ecommerce Template",
+  title: "Ödeme Başarısız | Şımart Teknoloji",
+  description: "Şımart Teknoloji",
 };
 export default function page() {
   return (
@@ -12,7 +12,7 @@ export default function page() {
       <Header />
       <div className="tf-page-title">
         <div className="container-full">
-          <div className="heading text-center">Payment Failure</div>
+          <div className="heading text-center">Ödeme Başarısız</div>
         </div>
       </div>
 

@@ -1,5 +1,6 @@
 import Features from "@/components/homes/home-electronic/Features";
-import Testimonials from "@/components/common/Testimonials";
+import HomeReviews from "@/components/common/HomeReviews";
+// import Testimonials from "@/components/common/Testimonials";
 import Header from "@/components/headers/Header";
 import Blogs from "@/components/homes/home-electronic/Blogs";
 import Categories from "@/components/homes/home-electronic/Categories";
@@ -9,7 +10,7 @@ import Hero from "@/components/homes/home-electronic/Hero";
 import Products from "@/components/homes/home-electronic/Products";
 
 import React from "react";
-import { getCategories, getBanners, getCollectionBanner, getCollections } from "@/api/home";
+import { getCategories, getBanners, getCollectionBanner, getCollections, getReviews } from "@/api/home";
 import { getMenus } from "@/api/menus";
 import { siteConfig } from "@/config/site";
 import { organizationSchema } from "@/lib/schema";
@@ -46,12 +47,13 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [menuItems, banners, categories, collectionBanner, collections] = await Promise.all([
+  const [menuItems, banners, categories, collectionBanner, collections, reviews] = await Promise.all([
     getMenus(),
     getBanners(),
     getCategories(),
     getCollectionBanner(),
     getCollections(),
+    getReviews(),
   ]);
 
   const organizationJsonLd = organizationSchema({
@@ -76,7 +78,8 @@ export default async function Home() {
         <Collections collections={collections} />
         {/* <Countdown /> */}
         <Products />
-        <Testimonials />
+        <HomeReviews reviews={reviews} />
+        {/* <Testimonials /> */}
         <Blogs />
         <Features />
       </div>

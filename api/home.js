@@ -154,6 +154,45 @@ export async function getCollections() {
 }
 
 /**
+ * Anasayfa için yorumları getirir.
+ * @returns {Promise<Array>} Yorumlar array'i
+ */
+export async function getReviews() {
+    try {
+        const response = await serverFetch("/reviews", {
+            method: "GET",
+            next: { revalidate: 3600 } // 1 saat cache
+        });
+
+        if (!response) {
+            log("[API home.js] getReviews: API response is null");
+            return [];
+        }
+
+        if (response?.status === "success") {
+            const reviews = response.data?.reviews || [];
+            if (reviews.length > 0) {
+                log(`[API home.js] getReviews success: ${reviews.length} review(s) loaded`);
+            }
+            return reviews;
+        }
+
+        log("[API home.js] getReviews failed:", {
+            status: response?.status,
+            message: response?.message,
+            response: response,
+        });
+        return [];
+    } catch (error) {
+        log("[API home.js] getReviews exception:", {
+            message: error.message,
+            stack: error.stack,
+        });
+        return [];
+    }
+}
+
+/**
  * Topbar verilerini getirir.
  * @returns {Promise<Object>} { data: Array, isActive: boolean }
  */

@@ -92,6 +92,14 @@ export const useCartStore = create(
          * @param {Object} [options] - Opsiyonel ek alanlar (selectedGiftProductId, campaignId vb.)
          */
         addItem: async (product, quantity = 1, openModal = false, options = null) => {
+            log('[CartStore] addItem: Request started', {
+                productName: product?.name,
+                productId: product?.id,
+                slug: product?.slug,
+                quantity,
+                options
+            });
+
             if (!product || !product.id) {
                 log('[CartStore] addItem: Geçersiz ürün objesi');
                 return { added: false, error: 'Geçersiz ürün' };
@@ -105,24 +113,24 @@ export const useCartStore = create(
 
             // Max quantity kontrolü - sepetteki mevcut miktarı kontrol et
             const state = get();
-            const existingItem = state.items.find(item => 
-                item?.product?.id === product.id || 
+            const existingItem = state.items.find(item =>
+                item?.product?.id === product.id ||
                 item?.id === product.id ||
                 item?.productId === product.id ||
                 (item?.product && item.product.id === product.id)
             );
-            
+
             const currentQty = existingItem?.quantity || 0;
             // Max bilgisini önce sepetteki item'dan al (daha güncel), yoksa product'tan al
-            const rawMax = existingItem?.max_purchase_quantity ?? 
-                          existingItem?.product?.max_purchase_quantity ?? 
-                          existingItem?.product?.max_quantity ??
-                          product.max_purchase_quantity ?? 
-                          product.max_quantity ?? 
-                          null;
+            const rawMax = existingItem?.max_purchase_quantity ??
+                existingItem?.product?.max_purchase_quantity ??
+                existingItem?.product?.max_quantity ??
+                product.max_purchase_quantity ??
+                product.max_quantity ??
+                null;
             const parsedMax = rawMax === null || rawMax === undefined ? null : Number(rawMax);
             const maxQty = parsedMax === 0 || parsedMax === null ? null : (Number.isFinite(parsedMax) ? parsedMax : null);
-            
+
             if (maxQty != null && maxQty > 0) {
                 // Eğer mevcut miktar + eklenecek miktar max'ı aşıyorsa, ekleme yapma
                 if (currentQty + quantity > maxQty) {
@@ -136,15 +144,26 @@ export const useCartStore = create(
             const hasGiftSelected = options && (options.selectedGiftProductId != null || options.selected_gift_product_id != null);
 
             if (hasGiftCampaigns && !hasGiftSelected) {
+                log('[CartStore] addItem: Pending gift selection, pausing add');
                 set({ pendingGiftAdd: { product, quantity, openModal } });
                 return { added: false };
             }
 
             try {
+                log('[CartStore] addItem: Calling addToCartAPI...', { productSlug, quantity });
                 const cartData = await addToCartAPI(productSlug, quantity, options || {});
+
+                log('[CartStore] addItem: API response received', {
+                    success: !!cartData,
+                    hasItems: !!cartData?.items,
+                    itemsCount: cartData?.items?.length
+                });
 
                 if (cartData) {
                     get().syncFromAPI(cartData);
+                    log('[CartStore] addItem: State update successful (syncFromAPI completed)', {
+                        newItemsCount: get().items.length
+                    });
                     log('[CartStore] addItem - Store updated');
 
                     if (openModal) {
@@ -156,10 +175,10 @@ export const useCartStore = create(
                     }
                     return { added: true };
                 }
-                log('[CartStore] addItem: API başarısız oldu');
+                log('[CartStore] addItem: API failed (cartData is null/undefined)');
                 return { added: false };
             } catch (error) {
-                log('[CartStore] addItem error:', error);
+                log('[CartStore] addItem exception caught:', error);
                 return { added: false };
             }
         },

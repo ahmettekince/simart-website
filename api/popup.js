@@ -1,17 +1,18 @@
 import apiClient from "@/utils/apiClient";
+import { log } from "@/utils/logger";
 
 export async function getPopups() {
   try {
     const res = await apiClient.get("/popup");
-    console.log("[Popup API] Ham yanıt:", res?.data);
+    log("[Popup API] Ham yanıt:", res?.data);
     if (res.data?.status === "success" && Array.isArray(res.data?.data)) {
-      console.log("[Popup API] Başarılı,", res.data.data.length, "adet döndü");
+      log("[Popup API] Başarılı,", res.data.data.length, "adet döndü");
       return res.data.data;
     }
-    console.log("[Popup API] Geçersiz format veya boş");
+    log("[Popup API] Geçersiz format veya boş");
     return [];
   } catch (e) {
-    console.error("[Popup API] İstek hatası:", e);
+    log("[Popup API] İstek hatası:", e);
     return [];
   }
 }
