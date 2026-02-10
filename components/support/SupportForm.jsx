@@ -6,9 +6,11 @@ import apiClient from "@/utils/apiClient";
 import { siteConfig } from "@/config/site";
 import SearchableSelect from "@/components/common/SearchableSelect";
 import PhoneInput from "@/components/common/PhoneInput";
+import RecaptchaV3 from "@/components/common/RecaptchaV3";
 
 export default function SupportForm() {
   const formRef = useRef();
+  const executeRecaptchaRef = useRef(null);
   const [success, setSuccess] = useState(true);
   const [showMessage, setShowMessage] = useState(false);
 
@@ -57,11 +59,36 @@ export default function SupportForm() {
     const formData = new FormData(e.target);
     const data = {
       full_name: formData.get("full_name"),
-      email: formData.get("email"),
       phone: formData.get("phone"),
       product_id: formData.get("product_id"),
       message: formData.get("message"),
     };
+
+    // V3: Token al
+    let token = null;
+    if (executeRecaptchaRef.current) {
+      try {
+        token = await executeRecaptchaRef.current();
+      } catch (e) {
+        console.error("reCAPTCHA hatası:", e);
+        setSuccess(false);
+        setApiMessage("Güvenlik doğrulaması yapılamadı.");
+        handleShowMessage();
+        setLoading(false);
+        return;
+      }
+    }
+
+    if (!token) {
+      setSuccess(false);
+      setApiMessage("Lütfen güvenlik adımını tamamlayın.");
+      handleShowMessage();
+      setLoading(false);
+      return;
+    }
+
+    // Token ekle
+    data["g-recaptcha-response"] = token;
 
     try {
       const response = await apiClient.post("/contact", null, { params: data });
@@ -188,6 +215,13 @@ export default function SupportForm() {
                     </button>
                   </div>
                 </form>
+                {/* reCAPTCHA V3 */}
+                <RecaptchaV3
+                  onVerify={(executeFn) => {
+                    executeRecaptchaRef.current = executeFn;
+                  }}
+                  action="support"
+                />
               </div>
             </div>
           </div>

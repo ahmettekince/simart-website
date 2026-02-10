@@ -37,15 +37,7 @@ export default function Faq2({ faqs, loading = false, selectedProduct, selectedC
         {/* YouTube + Kullanım kılavuzu */}
         <ProductMediaSection product={selectedProduct} />
 
-        {/* Ürüne ait sıkça sorulan sorular */}
-        <h6 className="sss-faq-title mb_20 fw-6">Sıkça Sorulan Sorular</h6>
-        {!faqs || faqs.length === 0 ? (
-          <p className="text-muted mb_60">Bu üründe henüz soru bulunmuyor.</p>
-        ) : (
-          <div className="flat-accordion style-default has-btns-arrow mb_60">
-            <Accordion faqs={faqs} initialIndex={-1} />
-          </div>
-        )}
+
       </div>
     );
   }

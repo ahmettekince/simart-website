@@ -5,9 +5,11 @@ import React, { useRef, useState } from "react";
 import apiClient from "@/utils/apiClient";
 import { siteConfig } from "@/config/site";
 import { formatPhoneValue } from "@/utils/inputFormatters";
+import RecaptchaV3 from "@/components/common/RecaptchaV3";
 
 export default function ContactForm() {
   const formRef = useRef();
+  const executeRecaptchaRef = useRef(null);
   const [success, setSuccess] = useState(true);
   const [showMessage, setShowMessage] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -42,6 +44,32 @@ export default function ContactForm() {
       phone: formatPhoneValue(phone) || phone,
       message: formData.get("message"),
     };
+
+    // V3: Token al
+    let token = null;
+    if (executeRecaptchaRef.current) {
+      try {
+        token = await executeRecaptchaRef.current();
+      } catch (e) {
+        console.error("reCAPTCHA hatası:", e);
+        setSuccess(false);
+        setApiMessage("Güvenlik doğrulaması yapılamadı.");
+        handleShowMessage();
+        setLoading(false);
+        return;
+      }
+    }
+
+    if (!token) {
+      setSuccess(false);
+      setApiMessage("Lütfen güvenlik adımını tamamlayın.");
+      handleShowMessage();
+      setLoading(false);
+      return;
+    }
+
+    // Token ekle
+    data["g-recaptcha-response"] = token;
 
     try {
       const response = await apiClient.post("/contact", null, { params: data });
@@ -158,6 +186,13 @@ export default function ContactForm() {
                   </button>
                 </div>
               </form>
+              {/* reCAPTCHA V3 */}
+              <RecaptchaV3
+                onVerify={(executeFn) => {
+                  executeRecaptchaRef.current = executeFn;
+                }}
+                action="contact"
+              />
             </div>
           </div>
           <div className="tf-content-left">

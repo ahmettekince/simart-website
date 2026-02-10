@@ -4,11 +4,13 @@ import React, { useRef, useState } from "react"
 import Image from "next/image"
 import Accordion from "@/components/common/Accordion"
 import apiClient from "@/utils/apiClient"
-import RecaptchaWidget from "@/components/common/RecaptchaWidget"
+import Accordion from "@/components/common/Accordion"
+import apiClient from "@/utils/apiClient"
+import RecaptchaV3 from "@/components/common/RecaptchaV3"
 
 export function CareerSection({ faqs = [] }) {
     const formRef = useRef()
-    const recaptchaRef = useRef(null)
+    const executeRecaptchaRef = useRef(null)
     const [loading, setLoading] = useState(false)
     const [success, setSuccess] = useState(false)
     const [showMessage, setShowMessage] = useState(false)
@@ -35,10 +37,24 @@ export function CareerSection({ faqs = [] }) {
 
     const sendCareerApplication = async (e) => {
         e.preventDefault()
-        
-        if (!recaptchaVerified) {
+
+        // V3: Token al
+        let token = null;
+        if (executeRecaptchaRef.current) {
+            try {
+                token = await executeRecaptchaRef.current();
+            } catch (e) {
+                console.error("reCAPTCHA hatası:", e);
+                setSuccess(false)
+                setApiMessage("Güvenlik doğrulaması yapılamadı.")
+                handleShowMessage()
+                return
+            }
+        }
+
+        if (!token) {
             setSuccess(false)
-            setApiMessage("Lütfen reCAPTCHA'yı tamamlayın.")
+            setApiMessage("Lütfen güvenlik adımını tamamlayın.")
             handleShowMessage()
             return
         }
@@ -62,6 +78,7 @@ export function CareerSection({ faqs = [] }) {
             const response = await apiClient.post("/career", data, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
+                    'x-recaptcha-token': token // Token'ı header olarak gönderiyoruz (veya body'ye ekleyebilirsiniz)
                 },
             })
 
@@ -71,8 +88,10 @@ export function CareerSection({ faqs = [] }) {
                 e.target.reset()
                 setSelectedFile(null)
                 setMessageLength(0)
-                setRecaptchaVerified(false)
-                recaptchaRef.current?.reset?.()
+                setSelectedFile(null)
+                setMessageLength(0)
+                // setRecaptchaVerified(false)
+                // recaptchaRef.current?.reset?.()
             } else {
                 setSuccess(false)
                 setApiMessage(response.data.message || "Bir hata oluştu.")
@@ -175,14 +194,13 @@ export function CareerSection({ faqs = [] }) {
                             </div>
                         </div>
 
-                        {/* reCAPTCHA */}
-                        <div className="mb_15">
-                            <RecaptchaWidget
-                                ref={recaptchaRef}
-                                containerId="recaptcha-container-career"
-                                onVerifiedChange={setRecaptchaVerified}
-                            />
-                        </div>
+                        {/* reCAPTCHA V3 */}
+                        <RecaptchaV3
+                            onVerify={(executeFn) => {
+                                executeRecaptchaRef.current = executeFn;
+                            }}
+                            action="career"
+                        />
 
                         {/* Mesaj */}
                         <div className={`tfSubscribeMsg ${showMessage ? "active" : ""}`}>

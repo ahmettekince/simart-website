@@ -4,11 +4,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import apiClient from "@/utils/apiClient";
 import { filterNameValue, formatFirstNameValue, formatLastNameValue } from "@/utils/inputFormatters";
-import RecaptchaWidget from "@/components/common/RecaptchaWidget";
+import RecaptchaV3 from "@/components/common/RecaptchaV3";
 
 export default function Register() {
   const router = useRouter();
-  const recaptchaRef = useRef(null);
+  const executeRecaptchaRef = useRef(null);
   const [formData, setFormData] = useState({
     first_name: "",
     last_name: "",
@@ -76,7 +76,20 @@ export default function Register() {
     setError("");
     setFieldErrors({});
 
-    if (!recaptchaVerified) {
+    // V3: Token al
+    let token = null;
+    if (executeRecaptchaRef.current) {
+      try {
+        token = await executeRecaptchaRef.current();
+      } catch (e) {
+        console.error("reCAPTCHA hatası:", e);
+        setRecaptchaError("Güvenlik doğrulaması yapılamadı.");
+        setIsLoading(false);
+        return;
+      }
+    }
+
+    if (!token) {
       setRecaptchaError("Lütfen güvenlik adımını tamamlayın.");
       setIsLoading(false);
       return;
@@ -93,6 +106,7 @@ export default function Register() {
           password: formData.password,
           terms_accepted: agreements.termsAccepted,
           newsletter_subscription: agreements.newsletterSubscription,
+          "g-recaptcha-response": token, // V3 token'ını gönder
         },
       });
 
@@ -105,8 +119,8 @@ export default function Register() {
           document.cookie = `DEVICE_ID=${response.data.data.device_id_token}; path=/; max-age=31536000; SameSite=Lax`;
         }
 
-        recaptchaRef.current?.reset?.();
-        setRecaptchaVerified(false);
+        // recaptchaRef.current?.reset?.(); // V3'te reset gerekmez
+        // setRecaptchaVerified(false);
 
         // 2 saniye sonra yönlendir veya sayfayı yenile
         setTimeout(() => {
@@ -362,22 +376,18 @@ export default function Register() {
                 </div>
               </div>
 
-              {/* reCAPTCHA */}
-              <div className="mb_20">
-                <RecaptchaWidget
-                  ref={recaptchaRef}
-                  containerId="recaptcha-container-register"
-                  onVerifiedChange={(verified) => {
-                    setRecaptchaVerified(verified);
-                    if (verified) setRecaptchaError("");
-                  }}
-                />
-                {recaptchaError && (
-                  <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
-                    {recaptchaError}
-                  </div>
-                )}
-              </div>
+              {/* reCAPTCHA V3 (Gizli) */}
+              <RecaptchaV3
+                onVerify={(executeFn) => {
+                  executeRecaptchaRef.current = executeFn;
+                }}
+                action="register"
+              />
+              {recaptchaError && (
+                <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px", marginBottom: "15px" }}>
+                  {recaptchaError}
+                </div>
+              )}
 
               <div className="mb_20">
                 <button

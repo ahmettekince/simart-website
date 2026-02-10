@@ -2,16 +2,22 @@
 import React, { useEffect, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 
-export default function PaymentResultContent() {
+export default function PaymentResultContent({ initialData }) {
   const searchParams = useSearchParams();
 
+  // Eğer initialData varsa (server'dan cookie ile geldiyse) onu kullan
+  // Yoksa fallback olarak searchParams'a bak (eski yöntem)
   const postData = useMemo(() => {
+    if (initialData && Object.keys(initialData).length > 0) {
+      return initialData;
+    }
+
     const params = {};
     searchParams.forEach((value, key) => {
       params[key] = value;
     });
     return params;
-  }, [searchParams]);
+  }, [searchParams, initialData]);
 
   useEffect(() => {
     // Konsola tıpkı PHP print_r gibi bas
