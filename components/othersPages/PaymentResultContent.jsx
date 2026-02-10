@@ -16,13 +16,11 @@ export default function PaymentResultContent() {
       try {
         const parsed = JSON.parse(storedData);
         setResultData(parsed);
-        // İsteğe bağlı: Veriyi okuduktan sonra silmek isterseniz:
-        // sessionStorage.removeItem("payment_result_storage");
       } catch (e) {
         console.error("Parse error", e);
       }
     } else {
-      // Fallback: Eğer session boşsa, belki URL parametreleri vardır (eski usul)
+      // Fallback: URL parametreleri
       const params = {};
       searchParams.forEach((value, key) => {
         params[key] = value;
@@ -36,14 +34,24 @@ export default function PaymentResultContent() {
 
   if (loading) {
     return (
-      <div className="container" style={{ textAlign: "center", padding: "100px 0" }}>
+      <div style={{ textAlign: "center", padding: "80px 0" }}>
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Yükleniyor...</span>
         </div>
-        <p className="mt-3">Sonuç alınıyor...</p>
+        <p className="mt-3 text-secondary">Sonuç kontrol ediliyor...</p>
       </div>
     );
   }
+
+  // Sonuç Durumunu Belirle
+  // Genelde 'status'='success' veya 'MdStatus'='1' başarılıdır.
+  const isSuccess = resultData?.status === 'success';
+
+  // Mesaj önceliği: bank_code_message > message > Genel hata
+  const displayMessage = resultData?.bank_code_message || resultData?.message || (isSuccess ? "Ödeme işleminiz başarıyla gerçekleşti." : "Ödeme işlemi sırasında bir hata oluştu.");
+
+  // Sipariş Numarası
+  const orderNumber = resultData?.order_number || resultData?.OrderId || "-";
 
   return (
     <>
@@ -53,67 +61,91 @@ export default function PaymentResultContent() {
         </div>
       </div>
 
-      <div className="container" style={{ marginTop: "30px", marginBottom: "50px" }}>
+      <div className="container" style={{ marginTop: "30px", marginBottom: "80px" }}>
         <div className="row justify-content-center">
-          <div className="col-lg-8">
+          <div className="col-lg-8 col-md-10">
             {resultData ? (
               <div style={{
                 backgroundColor: "#fff",
-                padding: "30px",
-                borderRadius: "12px",
-                boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
-                border: "1px solid #eee"
+                padding: "40px",
+                borderRadius: "16px",
+                boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
+                border: "1px solid #f0f0f0",
+                textAlign: "center"
               }}>
-                <div style={{ textAlign: "center", marginBottom: "30px" }}>
-                  {/* Basit bir ikon (Başarılı/Başarısız durumuna göre değişebilir) */}
+                {/* İKON */}
+                <div style={{
+                  width: "80px",
+                  height: "80px",
+                  borderRadius: "50%",
+                  background: isSuccess ? "linear-gradient(135deg, #4CAF50 0%, #43A047 100%)" : "linear-gradient(135deg, #e53935 0%, #c62828 100%)",
+                  color: "#fff",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  margin: "0 auto 25px",
+                  fontSize: "40px",
+                  boxShadow: isSuccess ? "0 4px 15px rgba(76, 175, 80, 0.3)" : "0 4px 15px rgba(229, 57, 53, 0.3)"
+                }}>
+                  <i className={isSuccess ? "icon-check" : "icon-close"}></i>
+                </div>
+
+                {/* BAŞLIK */}
+                <h2 style={{ marginBottom: "15px", color: "#333", fontWeight: "700" }}>
+                  {isSuccess ? "Siparişiniz Tamamlandı!" : "Siparişiniz Tamamlanamadı"}
+                </h2>
+
+                {/* MESAJ */}
+                <p style={{ color: "#666", fontSize: "16px", lineHeight: "1.6", marginBottom: "30px", maxWidth: "80%", margin: "0 auto 30px" }}>
+                  {displayMessage}
+                </p>
+
+                {/* SİPARİŞ NUMARASI KUTUSU */}
+                {orderNumber !== "-" && (
                   <div style={{
-                    width: "60px",
-                    height: "60px",
-                    borderRadius: "50%",
-                    background: resultData.status === 'success' || resultData.MdStatus === '1' ? "#e8f5e9" : "#fff3e0",
-                    color: resultData.status === 'success' || resultData.MdStatus === '1' ? "#2e7d32" : "#ef6c00",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    margin: "0 auto 15px",
-                    fontSize: "30px"
+                    background: "#f8f9fa",
+                    padding: "15px 25px",
+                    borderRadius: "8px",
+                    display: "inline-block",
+                    marginBottom: "35px",
+                    border: "1px dashed #ced4da"
                   }}>
-                    {resultData.status === 'success' || resultData.MdStatus === '1' ? '✓' : '!'}
+                    <span style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "5px", textTransform: "uppercase", letterSpacing: "1px" }}>
+                      Sipariş Numarası
+                    </span>
+                    <span style={{ fontSize: "20px", fontWeight: "bold", color: "#333", fontFamily: "monospace" }}>
+                      {orderNumber}
+                    </span>
                   </div>
-                  <h3 style={{ marginBottom: "10px" }}>İşlem Sonucu Alındı</h3>
-                  <p style={{ color: "#666" }}>Ödeme sağlayıcısından dönen sonuç detayları aşağıdadır.</p>
-                </div>
+                )}
 
-                <div className="table-responsive">
-                  <table className="table table-bordered table-striped" style={{ fontSize: "14px" }}>
-                    <thead>
-                      <tr>
-                        <th style={{ width: "35%" }}>Parametre</th>
-                        <th>Değer</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Object.entries(resultData).map(([key, value]) => (
-                        <tr key={key}>
-                          <td style={{ fontWeight: "600", color: "#555" }}>{key}</td>
-                          <td style={{ wordBreak: "break-all" }}>{String(value)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-
-                <div style={{ marginTop: "30px", textAlign: "center" }}>
+                {/* BUTONLAR */}
+                <div style={{ display: "flex", gap: "15px", justifyContent: "center", flexWrap: "wrap" }}>
                   <Link href="/" className="tf-btn btn-fill radius-3 animate-hover-btn">
                     Ana Sayfaya Dön
                   </Link>
+                  {isSuccess && (
+                    <Link href="/hesabim/siparislerim" className="tf-btn btn-line radius-3">
+                      Siparişlerimi Görüntüle
+                    </Link>
+                  )}
+                  {!isSuccess && (
+                    <Link href="/odeme" className="tf-btn btn-line radius-3">
+                      Tekrar Dene
+                    </Link>
+                  )}
                 </div>
               </div>
             ) : (
-              <div style={{ textAlign: "center", padding: "40px", backgroundColor: "#f8f9fa", borderRadius: "8px" }}>
-                <h4>Sonuç Bulunamadı</h4>
-                <p>Ödeme sonucu görüntülenemedi veya geçersiz bir işlem yapıldı.</p>
-                <Link href="/" className="tf-btn btn-line mt-3">Ana Sayfaya Dön</Link>
+              // SONUÇ BULUNAMADI DURUMU
+              <div style={{ textAlign: "center", padding: "60px 40px", backgroundColor: "#fff", borderRadius: "16px", border: "1px solid #eee" }}>
+                <div style={{ fontSize: "40px", marginBottom: "20px" }}>🔍</div>
+                <h4 style={{ marginBottom: "15px" }}>Sonuç Bulunamadı</h4>
+                <p style={{ color: "#777", marginBottom: "20px" }}>
+                  Ödeme işlemiyle ilgili herhangi bir sonuç bilgisine ulaşılamadı.
+                  Lütfen siparişlerinizi kontrol ediniz.
+                </p>
+                <Link href="/" className="tf-btn btn-line">Ana Sayfaya Dön</Link>
               </div>
             )}
           </div>
