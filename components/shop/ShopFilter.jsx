@@ -1,11 +1,10 @@
 "use client";
-import { products1 } from "@/data/products";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
 
-export default function ShopFilter({ setProducts, products = products1, categories = [] }) {
+export default function ShopFilter({ categories = [] }) {
   const pathname = usePathname();
 
   // Route değiştiğinde offcanvas'ı tamamen temizle

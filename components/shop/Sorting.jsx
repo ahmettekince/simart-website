@@ -1,5 +1,4 @@
 "use client";
-import { sortingOptions } from "@/data/shop";
 import React, { useEffect, useState } from "react";
 
 export default function Sorting({ products = [], setFinalSorted }) {

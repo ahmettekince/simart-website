@@ -1,9 +1,6 @@
 "use client";
-import { options } from "@/data/singleProductOptions";
 import Image from "next/image";
 import React, { useEffect, useState, useRef, useMemo } from "react";
-import { products4 } from "@/data/products";
-import { useContextElement } from "@/context/Context";
 import { useCartStore } from "@/stores/cartStore";
 import { getProductButtonState } from "@/utils/productStock";
 import MaxQuantityToast from "@/components/common/MaxQuantityToast";
@@ -11,12 +8,9 @@ import MaxQuantityToast from "@/components/common/MaxQuantityToast";
 export default function StickyItem({
   product = null,
   quantity = 1,
-  setQuantity = () => { },
-  minQuantity = 1,
   maxQuantity = null,
   soldOut = false
 }) {
-  const { addProductToCart, isAddedToCartProducts } = useContextElement();
   const { addItem } = useCartStore();
   const cartItems = useCartStore((s) => s.items);
   const [isAdding, setIsAdding] = useState(false);
