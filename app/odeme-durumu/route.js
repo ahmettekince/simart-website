@@ -9,8 +9,7 @@ export async function POST(req) {
             data[key] = value;
         }
 
-        // JSON verisini oluştur ve XSS'e karşı sanitize et (Script injection önlemi)
-        // </script> gibi yapıların çalışmaması için < karakterini unicode'a çeviriyoruz.
+        // JSON verisini oluştur ve XSS'e karşı sanitize et
         const safeJsonData = JSON.stringify(data).replace(/</g, '\\u003c');
 
         // Ara katman HTML'i
@@ -35,15 +34,15 @@ export async function POST(req) {
           try {
             // Güvenli veriyi al
             var data = ${safeJsonData};
-            // Session Storage'a kaydet (Sadece bu sekme açıkken yaşar)
+            // Session Storage'a kaydet
             sessionStorage.setItem('payment_result_storage', JSON.stringify(data));
           } catch (e) {
             console.error('Storage error', e);
           }
 
-          // Yönlendir
+          // Yönlendir -> /odeme-sonuc
           setTimeout(function() {
-            window.location.href = '/odeme-durumu';
+            window.location.href = '/odeme-sonuc';
           }, 300);
         </script>
       </body>
@@ -64,6 +63,6 @@ export async function POST(req) {
 }
 
 export async function GET(req) {
-    const url = new URL('/odeme-durumu', req.url);
+    const url = new URL('/odeme-sonuc', req.url);
     return NextResponse.redirect(url);
 }
