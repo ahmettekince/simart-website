@@ -16,8 +16,48 @@ export default async function Header({
   Linkfs = "",
   menuItems = [],
 }) {
-  const resolvedMenuItems =
+  const activeMenuItems =
     menuItems && menuItems.length > 0 ? menuItems : await getMenus();
+
+  // Kurumsal menü sıralaması
+  const corporateOrder = [
+    "hikayemiz",
+    "kilometre-taslari",
+    "sertifikalar",
+    "odullerimiz",
+    "etkinliklerimiz",
+    "basinda-biz",
+    "kariyer",
+  ];
+
+  const resolvedMenuItems = activeMenuItems.map((item) => {
+    // İçinde "hikayemiz" geçen alt menü varsa, bu Kurumsal menüsüdür
+    if (item.children && item.children.some((c) => c.url?.includes("hikayemiz"))) {
+      const sortedChildren = [...item.children].sort((a, b) => {
+        const getSlug = (url) => {
+          if (!url) return "";
+          // url sonundaki slug'ı al (örn: /kurumsal/hikayemiz -> hikayemiz)
+          const parts = url.split("/").filter(Boolean);
+          return parts[parts.length - 1];
+        };
+
+        const slugA = getSlug(a.url);
+        const slugB = getSlug(b.url);
+
+        const indexA = corporateOrder.indexOf(slugA);
+        const indexB = corporateOrder.indexOf(slugB);
+
+        // Listede olmayanlar en sona
+        const valA = indexA === -1 ? 999 : indexA;
+        const valB = indexB === -1 ? 999 : indexB;
+
+        return valA - valB;
+      });
+
+      return { ...item, children: sortedChildren };
+    }
+    return item;
+  });
 
   return (
     <>

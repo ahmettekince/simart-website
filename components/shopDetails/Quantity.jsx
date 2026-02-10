@@ -9,7 +9,7 @@ export default function Quantity({ setQuantity = (value) => { }, minQuantity = 1
   // maxQuantity = 0 ise sınırsız (null), değilse o değere kadar sınırlı
   const parsedMax = maxQuantity === null || maxQuantity === undefined ? null : Number(maxQuantity);
   let effectiveMax = parsedMax === 0 || parsedMax === null ? GLOBAL_MAX : Math.min(parsedMax, GLOBAL_MAX);
-  
+
   // initialValue varsa onu kullan, yoksa minQuantity kullan
   const [count, setCount] = useState(initialValue !== null && initialValue !== undefined ? initialValue : minQuantity);
 
@@ -78,7 +78,7 @@ export default function Quantity({ setQuantity = (value) => { }, minQuantity = 1
   const handleInputChange = (e) => {
     if (disabled || isLoading) return;
     isUserInputRef.current = true; // Kullanıcı input'a dokundu
-    
+
     // Sadece rakamlara izin ver (regex ile temizle)
     const inputValue = e.target.value.replace(/\D/g, "");
 

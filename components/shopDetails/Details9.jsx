@@ -5,6 +5,7 @@ import Link from "next/link";
 import { decodeHtmlEntities, addLazyLoadToDescriptionImages } from "@/utils/stripHtml";
 import Slider5 from "./sliders/Slider5";
 import Image from "next/image";
+import { colors } from "@/data/singleProductOptions";
 import CountdownComponent from "../common/Countdown";
 import StickyItem from "./StickyItem";
 import Quantity from "./Quantity";

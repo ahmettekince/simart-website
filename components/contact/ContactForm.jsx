@@ -72,7 +72,7 @@ export default function ContactForm() {
     data["g-recaptcha-response"] = token;
 
     try {
-      const response = await apiClient.post("/contact", null, { params: data });
+      const response = await apiClient.post("/contact", data);
 
       if (response.data.status === "success") {
         setSuccess(true);
@@ -105,7 +105,7 @@ export default function ContactForm() {
           <div className="tf-content-right">
             <h5 className="mb_20">Bizimle iletişime geçin</h5>
             <div>
-              <form ref={formRef} onSubmit={sendMail} className="form-contact" id="contactform">
+              <form ref={formRef} onSubmit={sendMail} className="form-contact" id="contactform" noValidate>
                 <div className="d-flex gap-15 mb_15">
                   <fieldset className="w-100">
                     <input type="text" name="full_name" id="name" required placeholder="İsim Soyisim *" />

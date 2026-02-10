@@ -60,7 +60,7 @@ export default function SupportForm() {
     const data = {
       full_name: formData.get("full_name"),
       phone: formData.get("phone"),
-      product_id: formData.get("product_id"),
+      product: products.find((p) => String(p.id) === String(selectedProductId))?.name || "",
       message: formData.get("message"),
     };
 
@@ -91,7 +91,7 @@ export default function SupportForm() {
     data["g-recaptcha-response"] = token;
 
     try {
-      const response = await apiClient.post("/contact", null, { params: data });
+      const response = await apiClient.post("/support-requests", null, { params: data });
 
       if (response.data.status === "success") {
         setSuccess(true);
@@ -130,7 +130,7 @@ export default function SupportForm() {
             <div className="support-form-inner">
               <h5 className="mb_20">Bizimle iletişime geçin</h5>
               <div>
-                <form ref={formRef} onSubmit={sendMail} className="form-contact" id="contactform">
+                <form ref={formRef} onSubmit={sendMail} className="form-contact" id="contactform" noValidate>
                   <div className="d-flex gap-15 mb_15">
                     <fieldset className="w-100">
                       <input type="text" name="full_name" id="name" required placeholder="İsim Soyisim *" />
@@ -138,19 +138,7 @@ export default function SupportForm() {
                         <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>{fieldErrors.full_name[0]}</div>
                       )}
                     </fieldset>
-                    <fieldset className="w-100">
-                      <input
-                        type="email"
-                        autoComplete="abc@xyz.com"
-                        name="email"
-                        id="email"
-                        required
-                        placeholder="E-Posta *"
-                      />
-                      {fieldErrors.email && (
-                        <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>{fieldErrors.email[0]}</div>
-                      )}
-                    </fieldset>
+
                   </div>
                   <div className="mb_15">
                     <fieldset className="w-100">
@@ -179,8 +167,8 @@ export default function SupportForm() {
                         required
                         searchPlaceholder="Ürün ara..."
                       />
-                      {fieldErrors.product_id && (
-                        <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>{fieldErrors.product_id[0]}</div>
+                      {fieldErrors.product_name && (
+                        <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>{fieldErrors.product_name[0]}</div>
                       )}
                     </fieldset>
                   </div>

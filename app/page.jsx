@@ -1,6 +1,5 @@
 import Features from "@/components/homes/home-electronic/Features";
 import HomeReviews from "@/components/common/HomeReviews";
-import CampaignTab from "@/components/common/CampaignTab";
 import Header from "@/components/headers/Header";
 import Blogs from "@/components/homes/home-electronic/Blogs";
 import Categories from "@/components/homes/home-electronic/Categories";
@@ -71,14 +70,11 @@ export default async function Home() {
       <div className="color-primary-15">
         <Header textClass={"text-black"} menuItems={menuItems} />
         <Hero banners={banners} />
-        {/* <Marquee /> */}
         <Categories categories={categories} />
         <CollectionBanner banner={collectionBanner} />
         <Collections collections={collections} />
-        {/* <Countdown /> */}
         <Products />
         <HomeReviews reviews={reviews} />
-        <CampaignTab />
         <Blogs />
         <Features />
       </div>

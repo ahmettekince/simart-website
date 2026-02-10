@@ -107,7 +107,7 @@ export default function AddReviewForm({ product, onReviewAdded, orderId }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="add-review-form" style={{ marginTop: "20px", paddingTop: "20px", borderTop: "1px solid #eee", maxWidth: "480px" }}>
+    <form onSubmit={handleSubmit} className="add-review-form" style={{ marginTop: "20px", paddingTop: "20px", borderTop: "1px solid #eee", maxWidth: "480px" }} noValidate>
       <div style={{ marginBottom: "14px" }}>
         <label style={{ display: "block", marginBottom: "6px", fontSize: "13px", color: "#555" }}>Puanınız</label>
         <div className="d-flex" style={{ gap: "4px" }}>

@@ -350,8 +350,9 @@ export const useCartStore = create(
                     apiItemId: apiItem.id, // API'deki item ID'si (güncelleme/silme için)
                     name: apiItem.product.name || '',
                     slug: apiItem.product.slug || '',
-                    price: apiItem.unitPrice, // Normal fiyat
-                    discount_price: apiItem.discountAmount > 0 ? apiItem.discountAmount : null, // İndirimli fiyat (eğer varsa)
+                    price: apiItem.price ?? apiItem.product?.price ?? apiItem.unitPrice ?? 0, // Normal fiyat
+                    discount_price: apiItem.discount_price ?? apiItem.product?.discount_price ?? null, // Ürün indirim fiyatı
+                    discount_amount: apiItem.discountAmount ?? null, // İndirim tutarı
                     quantity: apiItem.quantity,
                     image: imageUrl,
                     is_gift: apiItem.is_gift || false,

@@ -151,7 +151,7 @@ export default function Login() {
             <div id="login">
               <h5 className="mb_36">Giriş Yap</h5>
               <div>
-                <form onSubmit={handleLogin} name="login-form" method="post">
+                <form onSubmit={handleLogin} name="login-form" method="post" noValidate>
                   {/* Başarı Mesajı */}
                   {message && (
                     <div

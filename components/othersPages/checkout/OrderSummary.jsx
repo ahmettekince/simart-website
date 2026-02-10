@@ -43,6 +43,115 @@ export default function OrderSummary({
   const { applyCoupon, removeCoupon } = useCartStore();
   const coupon = useCartStore((state) => state.coupon);
   const isCartSynced = useCartStore((state) => state.isSynced);
+  /* Logic copied and adapted from ShopCart.jsx for Campaign and Gift display */
+  const applied_campaigns = useCartStore((state) => state.applied_campaigns);
+
+  // Normal items and gift items separation
+  const normalItems = items.filter(item => !item.is_gift);
+  const giftItems = items.filter(item => item.is_gift);
+
+  const giftCampaignById = new Map();
+  const resolveGiftCampaign = (giftItem) => {
+    if (!applied_campaigns || applied_campaigns.length === 0) return null;
+    const key = giftItem.id || giftItem.productId || giftItem.product?.id;
+    if (giftCampaignById.has(key)) return giftCampaignById.get(key);
+    const giftProductId = giftItem.productId || giftItem.product?.id;
+    const found = applied_campaigns.find((campaign) => {
+      const isApplied = giftItem.applied_campaign_ids?.includes(campaign.id);
+      const isGiftMatch = campaign.gift_items?.some(
+        (gift) => gift.product_id === giftProductId
+      );
+      return isApplied || isGiftMatch;
+    }) || null;
+    giftCampaignById.set(key, found);
+    return found;
+  };
+
+  const tierGifts = giftItems.filter(
+    (giftItem) => resolveGiftCampaign(giftItem)?.applied_tier?.min_cart_amount
+  );
+  const nonTierGifts = giftItems.filter(
+    (giftItem) => !resolveGiftCampaign(giftItem)?.applied_tier?.min_cart_amount
+  );
+
+  // Link gifts to source products
+  const linkedGiftIds = new Set();
+  const groupedItems = normalItems.map(normalItem => {
+    const relatedGifts = nonTierGifts.filter((giftItem) => {
+      const hasLink = Array.isArray(giftItem.source_product_ids) &&
+        giftItem.source_product_ids.includes(normalItem.productId);
+      if (hasLink && !linkedGiftIds.has(giftItem.id)) {
+        linkedGiftIds.add(giftItem.id);
+        return true;
+      }
+      return false;
+    });
+    return { normalItem, giftItems: relatedGifts };
+  });
+  const unlinkedGifts = nonTierGifts.filter((giftItem) => !linkedGiftIds.has(giftItem.id));
+
+  // Determine cart-based campaigns
+  const cartBasedCampaigns = applied_campaigns && applied_campaigns.length > 0 ? (() => {
+    const productBasedCampaignIds = new Set();
+    items.forEach(item => {
+      if (item.applied_campaign_ids && Array.isArray(item.applied_campaign_ids)) {
+        item.applied_campaign_ids.forEach(id => productBasedCampaignIds.add(id));
+      }
+    });
+
+    return applied_campaigns.filter(campaign => {
+      const isProductBasedType = campaign.type === 'x_urun_y_tl' || campaign.type === 'x_alana_y_hediye';
+      const isNotInAnyProduct = !productBasedCampaignIds.has(campaign.id);
+      const hasNextTier = campaign.next_tier?.message;
+      return !isProductBasedType && (isNotInAnyProduct || hasNextTier);
+    });
+  })() : [];
+
+  const findTargetProductForCampaign = (campaign) => {
+    if (!campaign.name) return null;
+    const match = campaign.name.match(/alana\s+([^0-9]+?)(?:\s+\d+|\s+Kampanyası|$)/i);
+    if (match && match[1]) {
+      const productNameInMessage = match[1].trim();
+      return normalItems.find(item => {
+        const itemName = (item.name || '').toLowerCase();
+        const searchName = productNameInMessage.toLowerCase();
+        return itemName.includes(searchName) || searchName.includes(itemName);
+      });
+    }
+    return null;
+  };
+
+  const getCampaignMessagesForProduct = (productItem) => {
+    const messages = [];
+    cartBasedCampaigns
+      .filter(campaign => {
+        const targetProduct = findTargetProductForCampaign(campaign);
+        return targetProduct && targetProduct.id === productItem.id;
+      })
+      .forEach(campaign => {
+        messages.push({
+          campaign,
+          message: campaign.next_tier?.message || `${campaign.name} `,
+          isNextTier: !!campaign.next_tier?.message
+        });
+      });
+
+    if (productItem.applied_campaign_ids && Array.isArray(productItem.applied_campaign_ids) && applied_campaigns) {
+      productItem.applied_campaign_ids.forEach(campaignId => {
+        const campaign = applied_campaigns.find(c => c.id === campaignId);
+        if (campaign && campaign.type === 'x_al_y_ode') {
+          if (!messages.some(m => m.campaign.id === campaign.id)) {
+            messages.push({
+              campaign,
+              message: `${campaign.name} `,
+              isNextTier: false
+            });
+          }
+        }
+      });
+    }
+    return messages;
+  };
 
   // Sayfa yüklendiğinde localStorage'dan hediye notunu oku (sipariş notu localStorage'dan okunmayacak)
   useEffect(() => {
@@ -202,39 +311,221 @@ export default function OrderSummary({
         <form onSubmit={(e) => e.preventDefault()} className="tf-page-cart-checkout widget-wrap-checkout">
           {showProductList && (
             <ul className="wrap-checkout-product">
-              {items.map((item, i) => {
-                // Kategori slug'ını al
-                const categorySlug =
-                  item.product?.categories?.[0]?.slug || item.product?.primary_category?.slug || "urunler";
-                const productSlug = item.slug || item.id;
-                const productUrl = `/magaza/${categorySlug}/${productSlug}`;
-
-                // Görsel URL'i al
-                const imageUrl =
-                  item.image ||
-                  item.product?.cover_image?.url ||
-                  item.product?.images?.[0] ||
-                  "/images/placeholder.jpg";
-
-                // Fiyat hesapla (indirimli fiyat varsa onu kullan)
-                const itemPrice = item.discount_price || item.price || 0;
-                const itemTotal = itemPrice * item.quantity;
+              {groupedItems.map(({ normalItem, giftItems: relatedGifts }, groupIndex) => {
 
                 return (
-                  <li key={i} className="checkout-product-item">
-                    <figure className="img-product">
-                      <Link href={productUrl}>
-                        <Image alt={item.name || "Ürün"} src={imageUrl} width={720} height={1005} />
+                  <li key={normalItem.id || groupIndex} style={{ display: 'block', borderBottom: '1px solid #e5e5e5', paddingBottom: '15px', marginBottom: '15px' }}>
+                    {/* Normal Ürün */}
+                    {(() => {
+                      const item = normalItem;
+                      const categorySlug =
+                        item.product?.categories?.[0]?.slug || item.product?.primary_category?.slug || "urunler";
+                      const productSlug = item.slug || item.id;
+                      const productUrl = `/magaza/${categorySlug}/${productSlug}`;
+                      const imageUrl =
+                        item.image ||
+                        item.product?.cover_image?.url ||
+                        item.product?.images?.[0] ||
+                        "/images/placeholder.jpg";
+                      const itemPrice = item.discount_price || item.price || 0;
+                      const itemTotal = itemPrice * item.quantity;
+                      const itemCampaignMessages = getCampaignMessagesForProduct(item);
+
+                      return (
+                        <div className="checkout-product-item" style={{ borderBottom: 'none', paddingBottom: 0, marginBottom: 0 }}>
+                          <figure className="img-product">
+                            <Link href={productUrl}>
+                              <Image alt={item.name || "Ürün"} src={imageUrl} width={720} height={1005} />
+                            </Link>
+                            <span className="quantity">{item.quantity}</span>
+                          </figure>
+                          <div className="content">
+                            <div className="info">
+                              <Link href={productUrl} className="name">
+                                {item.name}
+                              </Link>
+                              {/* Ürün bazlı kampanya mesajları */}
+                              {itemCampaignMessages.length > 0 && (
+                                <div style={{ marginTop: '4px' }}>
+                                  {itemCampaignMessages.map(({ campaign, message, isNextTier }, idx) => (
+                                    <div key={`product-campaign-${campaign.id || idx}`} style={{ fontSize: '11px', color: isNextTier ? '#dc3545' : '#0bc15c', lineHeight: '1.4' }}>
+                                      {message}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                            <span className="price">
+                              {item.discount_price != null && item.discount_price > 0 && item.discount_price < item.price ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                                  <span style={{ color: '#0bc15c', fontWeight: '600', whiteSpace: 'nowrap' }}>
+                                    {itemTotal.toLocaleString("tr-TR")} TL
+                                  </span>
+                                  <span style={{ textDecoration: 'line-through', color: '#999', fontSize: '12px', whiteSpace: 'nowrap' }}>
+                                    {(item.price * item.quantity).toLocaleString("tr-TR")} TL
+                                  </span>
+                                </div>
+                              ) : (
+                                <span style={{ color: '#3c81b5', fontWeight: '600', whiteSpace: 'nowrap' }}>{itemTotal.toLocaleString("tr-TR")} TL</span>
+                              )}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {/* Linked Gifts */}
+                    {relatedGifts.map((giftItem, giftIndex) => {
+                      const categorySlug =
+                        giftItem.product?.categories?.[0]?.slug || giftItem.product?.primary_category?.slug || "urunler";
+                      const productSlug = giftItem.slug || giftItem.id;
+                      const productUrl = `/magaza/${categorySlug}/${productSlug}`;
+                      const giftSourceNames = (giftItem.applied_campaign_ids && applied_campaigns
+                        ? giftItem.applied_campaign_ids
+                          .map((cid) => applied_campaigns.find((c) => c.id === cid)?.name)
+                          .filter(Boolean)
+                        : []
+                      );
+                      const giftCampaign = resolveGiftCampaign(giftItem);
+
+                      return (
+                        <div key={`gift-${giftItem.id}-${giftIndex}`} style={{
+                          marginTop: '10px',
+                          backgroundColor: '#f5f5f5',
+                          padding: '12px',
+                          borderRadius: '12px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '12px'
+                        }}>
+                          <div className="img-product" style={{ width: '40px', height: '40px', flexShrink: 0 }}>
+                            <Link href={productUrl} style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '36px', height: '36px' }}>
+                                <path d="M20 12v10H4V12M22 7H2v5h20V7zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" stroke="var(--primary, #3c81b5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                              </svg>
+                            </Link>
+                          </div>
+                          <div className="content" style={{ flex: 1 }}>
+                            <div className="info">
+                              <Link href={productUrl} className="name" style={{ fontSize: '13px', fontWeight: '500', color: '#141414', lineHeight: '1.4', display: 'block', marginBottom: '2px' }}>
+                                {giftItem.name} <span style={{ color: '#0bc15c', fontWeight: 'bold' }}>x{giftItem.quantity}</span>
+                              </Link>
+                              {giftSourceNames.length > 0 ? (
+                                <div style={{ fontSize: '11px', color: '#0bc15c' }}>
+                                  {giftSourceNames.join(", ")}
+                                </div>
+                              ) : giftCampaign?.applied_tier?.min_cart_amount ? (
+                                <div style={{ fontSize: '11px', color: '#0bc15c' }}>
+                                  {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString("tr-TR")} Sepet Tutarına Özel Hediye
+                                </div>
+                              ) : null}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </li>
+                );
+              })}
+
+              {/* Unlinked Gifts */}
+              {unlinkedGifts.map((giftItem, giftIndex) => {
+                const categorySlug =
+                  giftItem.product?.categories?.[0]?.slug || giftItem.product?.primary_category?.slug || "urunler";
+                const productSlug = giftItem.slug || giftItem.id;
+                const productUrl = `/magaza/${categorySlug}/${productSlug}`;
+                const giftSourceNames = (giftItem.applied_campaign_ids && applied_campaigns
+                  ? giftItem.applied_campaign_ids
+                    .map((cid) => applied_campaigns.find((c) => c.id === cid)?.name)
+                    .filter(Boolean)
+                  : []
+                );
+                const giftCampaign = resolveGiftCampaign(giftItem);
+
+                return (
+                  <li key={`gift-unlinked-${giftItem.id}-${giftIndex}`} style={{
+                    marginBottom: '10px',
+                    backgroundColor: '#f5f5f5',
+                    padding: '12px',
+                    borderRadius: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px'
+                  }}>
+                    <div className="img-product" style={{ width: '40px', height: '40px', flexShrink: 0 }}>
+                      <Link href={productUrl} style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '36px', height: '36px' }}>
+                          <path d="M20 12v10H4V12M22 7H2v5h20V7zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" stroke="var(--primary, #3c81b5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
                       </Link>
-                      <span className="quantity">{item.quantity}</span>
-                    </figure>
-                    <div className="content">
+                    </div>
+                    <div className="content" style={{ flex: 1 }}>
                       <div className="info">
-                        <Link href={productUrl} className="name">
-                          {item.name}
+                        <Link href={productUrl} className="name" style={{ fontSize: '13px', fontWeight: '500', color: '#141414', lineHeight: '1.4', display: 'block', marginBottom: '2px' }}>
+                          {giftItem.name} <span style={{ color: '#0bc15c', fontWeight: 'bold' }}>x{giftItem.quantity}</span>
                         </Link>
+                        {giftSourceNames.length > 0 ? (
+                          <div style={{ fontSize: '11px', color: '#0bc15c' }}>
+                            {giftSourceNames.join(", ")}
+                          </div>
+                        ) : giftCampaign?.applied_tier?.min_cart_amount ? (
+                          <div style={{ fontSize: '11px', color: '#0bc15c' }}>
+                            {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString("tr-TR")} Sepet Tutarına özel indirim
+                          </div>
+                        ) : null}
                       </div>
-                      <span className="price">{itemTotal.toLocaleString("tr-TR")} TL</span>
+                    </div>
+                  </li>
+                );
+              })}
+
+              {/* Tier Gifts */}
+              {tierGifts.map((giftItem, giftIndex) => {
+                const categorySlug =
+                  giftItem.product?.categories?.[0]?.slug || giftItem.product?.primary_category?.slug || "urunler";
+                const productSlug = giftItem.slug || giftItem.id;
+                const productUrl = `/magaza/${categorySlug}/${productSlug}`;
+                const giftSourceNames = (giftItem.applied_campaign_ids && applied_campaigns
+                  ? giftItem.applied_campaign_ids
+                    .map((cid) => applied_campaigns.find((c) => c.id === cid)?.name)
+                    .filter(Boolean)
+                  : []
+                );
+                const giftCampaign = resolveGiftCampaign(giftItem);
+
+                return (
+                  <li key={`gift-tier-${giftItem.id}-${giftIndex}`} style={{
+                    marginBottom: '10px',
+                    backgroundColor: '#f5f5f5',
+                    padding: '12px',
+                    borderRadius: '12px',
+                    borderLeft: '3px solid #0bc15c',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px'
+                  }}>
+                    <div className="img-product" style={{ width: '40px', height: '40px', flexShrink: 0 }}>
+                      <Link href={productUrl} style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ width: '36px', height: '36px' }}>
+                          <path d="M20 12v10H4V12M22 7H2v5h20V7zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" stroke="var(--primary, #3c81b5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </Link>
+                    </div>
+                    <div className="content" style={{ flex: 1 }}>
+                      <div className="info">
+                        <Link href={productUrl} className="name" style={{ fontSize: '13px', fontWeight: '500', color: '#141414', lineHeight: '1.4', display: 'block', marginBottom: '2px' }}>
+                          {giftItem.name} <span style={{ color: '#0bc15c', fontWeight: 'bold' }}>x{giftItem.quantity}</span>
+                        </Link>
+                        {giftSourceNames.length > 0 ? (
+                          <div style={{ fontSize: '11px', color: '#0bc15c' }}>
+                            {giftSourceNames.join(", ")}
+                          </div>
+                        ) : giftCampaign?.applied_tier?.min_cart_amount ? (
+                          <div style={{ fontSize: '11px', color: '#0bc15c' }}>
+                            {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString("tr-TR")} Sepet Tutarına Özel Hediye
+                          </div>
+                        ) : null}
+                      </div>
                     </div>
                   </li>
                 );
@@ -384,6 +675,43 @@ export default function OrderSummary({
                 </h6>
               </div>
             )}
+
+            {/* Sepet bazlı kampanya mesajları */}
+            {applied_campaigns && applied_campaigns.length > 0 && (() => {
+              // Ürünle eşleşmeyen kampanyaları bul (fallback)
+              const unmatchedCampaigns = cartBasedCampaigns.filter(campaign => {
+                const match = campaign.name?.match(/alana\s+([^0-9]+?)(?:\s+\d+|\s+Kampanyası|$)/i);
+                if (match && match[1]) {
+                  const productNameInMessage = match[1].trim().toLowerCase();
+                  return !normalItems.some(item => {
+                    const itemName = (item.name || '').toLowerCase();
+                    return itemName.includes(productNameInMessage) || productNameInMessage.includes(itemName);
+                  });
+                }
+                return true;
+              });
+
+              if (unmatchedCampaigns.length === 0) return null;
+
+              return (
+                <div style={{ marginTop: '8px' }}>
+                  {unmatchedCampaigns.map((campaign, idx) => {
+                    if (campaign.next_tier?.message) {
+                      return (
+                        <div key={`next-tier-${campaign.id || idx}`} style={{ color: '#dc3545', fontSize: '11px', lineHeight: '1.4', marginBottom: '4px' }}>
+                          {campaign.next_tier.message}
+                        </div>
+                      );
+                    }
+                    return (
+                      <div key={`cart-campaign-${campaign.id || idx}`} style={{ color: '#0bc15c', fontSize: '11px', lineHeight: '1.4', marginBottom: '4px' }}>
+                        {campaign.name}
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </div>
 
           <div className="d-flex justify-content-between" style={{ borderTop: "1px solid #e5e5e5", paddingTop: "10px", marginTop: "10px" }}>

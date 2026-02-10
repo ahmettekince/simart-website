@@ -17,7 +17,7 @@ export default function Register() {
             />
           </div>
           <div className="tf-login-form">
-            <form onSubmit={(e) => e.preventDefault()} className="">
+            <form onSubmit={(e) => e.preventDefault()} className="" noValidate>
               <div className="tf-field style-1">
                 <input
                   className="tf-field-input tf-input"

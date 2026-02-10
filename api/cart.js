@@ -8,8 +8,12 @@ import { log } from "@/utils/logger";
 export async function getCart() {
     try {
         const response = await apiClient.get("/cart", {
-            validateStatus: (status) => status === 200 || status === 404,
+            validateStatus: (status) => status === 200 || status === 404
+
+
         });
+        console.log("[API cart.js] getCart failed:", response.data);
+
 
         if (response.status === 404) {
             return null;
@@ -36,8 +40,10 @@ export async function getCart() {
                         id: item.id, // API item ID'si
                         productId: item.product?.id || item.product_id,
                         quantity: item.quantity || 1,
-                        unitPrice: parseFloat(item.unit_price || 0),
-                        discountAmount: parseFloat(item.discount_amount || 0),
+                        unitPrice: parseFloat(item.unit_price || item.unit_final || 0),
+                        price: item.price ?? item.product?.price ?? null,
+                        discount_price: item.discount_price ?? item.product?.discount_price ?? null,
+                        discountAmount: item.discount_amount != null ? parseFloat(item.discount_amount) : null,
                         taxAmount: parseFloat(item.tax_amount || 0),
                         total: parseFloat(item.total || 0),
                         is_gift: item.is_gift || false,
@@ -55,6 +61,8 @@ export async function getCart() {
                                 item.product?.max_purchase_quantity ??
                                 item.product?.max_quantity ??
                                 null,
+                            price: item.product?.price ?? item.price ?? null,
+                            discount_price: item.product?.discount_price ?? item.discount_price ?? null,
                         }
                     };
                 }),
@@ -69,7 +77,7 @@ export async function getCart() {
                     taxAmount: parseFloat(cartData.totals?.tax_amount || 0),
                     total: parseFloat(cartData.totals?.total || 0),
                     totalItems: parseInt(cartData.totals?.total_items || 0),
-                    cart_tips: cartData.cart_tips || [],
+                    cart_tips: cartData.cart_tips || cartData.totals?.cart_tips || [],
                 },
 
                 // Coupon bilgisi
@@ -84,6 +92,7 @@ export async function getCart() {
 
             return normalizedCart;
         }
+
 
         log("[API cart.js] getCart failed:", response?.data);
         return null;

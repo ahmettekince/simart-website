@@ -22,6 +22,7 @@ export default function Login() {
               onSubmit={(e) => e.preventDefault()}
               className=""
               acceptCharset="utf-8"
+              noValidate
             >
               <div className="tf-field style-1">
                 <input

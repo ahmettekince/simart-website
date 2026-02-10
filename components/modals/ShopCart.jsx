@@ -41,10 +41,10 @@ export default function ShopCart() {
 
   // Items değiştiğinde, artık sepette olmayan ürünlerin loading state'ini temizle
   useEffect(() => {
-    const currentItemIds = new Set(items.map(item => String(item.id)));
-    setLoadingActions(prev => {
+    const currentItemIds = new Set(items.map((item) => String(item.id)));
+    setLoadingActions((prev) => {
       const cleaned = {};
-      Object.keys(prev).forEach(itemId => {
+      Object.keys(prev).forEach((itemId) => {
         if (currentItemIds.has(String(itemId))) {
           cleaned[itemId] = prev[itemId];
         }
@@ -70,7 +70,6 @@ export default function ShopCart() {
     }
   }, [items.length]);
 
-
   const setQuantity = async (id, quantity, action) => {
     // Minimum 1 kontrolü - 1'den küçük olamaz
     if (quantity < 1 || loadingActions[id]) return;
@@ -91,7 +90,7 @@ export default function ShopCart() {
 
   const handleRemoveItem = async (id) => {
     if (loadingActions[id]) return;
-    setLoadingActions((prev) => ({ ...prev, [id]: 'remove' }));
+    setLoadingActions((prev) => ({ ...prev, [id]: "remove" }));
     try {
       await removeItem(id);
     } catch (error) {
@@ -103,8 +102,6 @@ export default function ShopCart() {
       });
     }
   };
-
-
 
   const handleApplyCoupon = async (e) => {
     e.preventDefault();
@@ -128,7 +125,7 @@ export default function ShopCart() {
     } catch (error) {
       if (error.response) {
         const msg = error.response?.data?.message;
-        setCouponError((msg && String(msg).trim()) ? msg : "Uygulanamadı");
+        setCouponError(msg && String(msg).trim() ? msg : "Uygulanamadı");
       } else {
         setCouponError("Uygulanamadı");
       }
@@ -184,14 +181,14 @@ export default function ShopCart() {
                   <div className="tf-mini-cart-sroll">
                     <div className="tf-mini-cart-items">
                       {hasCrossSale && (
-                        <div className="tf-mini-cart-item " >
+                        <div className="tf-mini-cart-item ">
                           <BirlikteAlSepet />
                         </div>
                       )}
                       {(() => {
                         // Normal ürünleri ve gift ürünleri ayır
-                        const normalItems = items.filter(item => !item.is_gift);
-                        const giftItems = items.filter(item => item.is_gift);
+                        const normalItems = items.filter((item) => !item.is_gift);
+                        const giftItems = items.filter((item) => item.is_gift);
 
                         const giftCampaignById = new Map();
                         const resolveGiftCampaign = (giftItem) => {
@@ -199,29 +196,31 @@ export default function ShopCart() {
                           const key = giftItem.id || giftItem.productId || giftItem.product?.id;
                           if (giftCampaignById.has(key)) return giftCampaignById.get(key);
                           const giftProductId = giftItem.productId || giftItem.product?.id;
-                          const found = applied_campaigns.find((campaign) => {
-                            const isApplied = giftItem.applied_campaign_ids?.includes(campaign.id);
-                            const isGiftMatch = campaign.gift_items?.some(
-                              (gift) => gift.product_id === giftProductId
-                            );
-                            return isApplied || isGiftMatch;
-                          }) || null;
+                          const found =
+                            applied_campaigns.find((campaign) => {
+                              const isApplied = giftItem.applied_campaign_ids?.includes(campaign.id);
+                              const isGiftMatch = campaign.gift_items?.some(
+                                (gift) => gift.product_id === giftProductId,
+                              );
+                              return isApplied || isGiftMatch;
+                            }) || null;
                           giftCampaignById.set(key, found);
                           return found;
                         };
 
                         const tierGifts = giftItems.filter(
-                          (giftItem) => resolveGiftCampaign(giftItem)?.applied_tier?.min_cart_amount
+                          (giftItem) => resolveGiftCampaign(giftItem)?.applied_tier?.min_cart_amount,
                         );
                         const nonTierGifts = giftItems.filter(
-                          (giftItem) => !resolveGiftCampaign(giftItem)?.applied_tier?.min_cart_amount
+                          (giftItem) => !resolveGiftCampaign(giftItem)?.applied_tier?.min_cart_amount,
                         );
 
                         // Gift ürünleri, source_product_ids'e göre normal ürünlerin altına yerleştir
                         const linkedGiftIds = new Set();
-                        const groupedItems = normalItems.map(normalItem => {
+                        const groupedItems = normalItems.map((normalItem) => {
                           const relatedGifts = nonTierGifts.filter((giftItem) => {
-                            const hasLink = Array.isArray(giftItem.source_product_ids) &&
+                            const hasLink =
+                              Array.isArray(giftItem.source_product_ids) &&
                               giftItem.source_product_ids.includes(normalItem.productId);
                             if (hasLink && !linkedGiftIds.has(giftItem.id)) {
                               linkedGiftIds.add(giftItem.id);
@@ -234,21 +233,25 @@ export default function ShopCart() {
                         const unlinkedGifts = nonTierGifts.filter((giftItem) => !linkedGiftIds.has(giftItem.id));
 
                         // Sepet bazlı kampanyaları bul ve hangi ürünle ilişkili olduğunu belirle
-                        const cartBasedCampaigns = applied_campaigns && applied_campaigns.length > 0 ? (() => {
-                          const productBasedCampaignIds = new Set();
-                          items.forEach(item => {
-                            if (item.applied_campaign_ids && Array.isArray(item.applied_campaign_ids)) {
-                              item.applied_campaign_ids.forEach(id => productBasedCampaignIds.add(id));
-                            }
-                          });
+                        const cartBasedCampaigns =
+                          applied_campaigns && applied_campaigns.length > 0
+                            ? (() => {
+                                const productBasedCampaignIds = new Set();
+                                items.forEach((item) => {
+                                  if (item.applied_campaign_ids && Array.isArray(item.applied_campaign_ids)) {
+                                    item.applied_campaign_ids.forEach((id) => productBasedCampaignIds.add(id));
+                                  }
+                                });
 
-                          return applied_campaigns.filter(campaign => {
-                            const isProductBasedType = campaign.type === 'x_urun_y_tl' || campaign.type === 'x_alana_y_hediye';
-                            const isNotInAnyProduct = !productBasedCampaignIds.has(campaign.id);
-                            const hasNextTier = campaign.next_tier?.message;
-                            return !isProductBasedType && (isNotInAnyProduct || hasNextTier);
-                          });
-                        })() : [];
+                                return applied_campaigns.filter((campaign) => {
+                                  const isProductBasedType =
+                                    campaign.type === "x_urun_y_tl" || campaign.type === "x_alana_y_hediye";
+                                  const isNotInAnyProduct = !productBasedCampaignIds.has(campaign.id);
+                                  const hasNextTier = campaign.next_tier?.message;
+                                  return !isProductBasedType && (isNotInAnyProduct || hasNextTier);
+                                });
+                              })()
+                            : [];
 
                         // Kampanya mesajından ürün adını bul ve sepetteki ürünle eşleştir
                         const findTargetProductForCampaign = (campaign) => {
@@ -259,8 +262,8 @@ export default function ShopCart() {
                           if (match && match[1]) {
                             const productNameInMessage = match[1].trim();
                             // Sepetteki ürünlerden bu adı içeren ürünü bul
-                            return normalItems.find(item => {
-                              const itemName = (item.name || '').toLowerCase();
+                            return normalItems.find((item) => {
+                              const itemName = (item.name || "").toLowerCase();
                               const searchName = productNameInMessage.toLowerCase();
                               return itemName.includes(searchName) || searchName.includes(itemName);
                             });
@@ -274,29 +277,33 @@ export default function ShopCart() {
 
                           // 1. Sepet bazlı kampanyalar (mesajından ürün adını parse ederek)
                           cartBasedCampaigns
-                            .filter(campaign => {
+                            .filter((campaign) => {
                               const targetProduct = findTargetProductForCampaign(campaign);
                               return targetProduct && targetProduct.id === productItem.id;
                             })
-                            .forEach(campaign => {
+                            .forEach((campaign) => {
                               messages.push({
                                 campaign,
                                 message: campaign.next_tier?.message || `${campaign.name} `,
-                                isNextTier: !!campaign.next_tier?.message
+                                isNextTier: !!campaign.next_tier?.message,
                               });
                             });
 
                           // 2. Ürün bazlı kampanyalar (x_al_y_ode gibi - applied_campaign_ids'den)
-                          if (productItem.applied_campaign_ids && Array.isArray(productItem.applied_campaign_ids) && applied_campaigns) {
-                            productItem.applied_campaign_ids.forEach(campaignId => {
-                              const campaign = applied_campaigns.find(c => c.id === campaignId);
-                              if (campaign && campaign.type === 'x_al_y_ode') {
+                          if (
+                            productItem.applied_campaign_ids &&
+                            Array.isArray(productItem.applied_campaign_ids) &&
+                            applied_campaigns
+                          ) {
+                            productItem.applied_campaign_ids.forEach((campaignId) => {
+                              const campaign = applied_campaigns.find((c) => c.id === campaignId);
+                              if (campaign && campaign.type === "x_al_y_ode") {
                                 // Bu kampanya zaten mesajlarda yoksa ekle
-                                if (!messages.some(m => m.campaign.id === campaign.id)) {
+                                if (!messages.some((m) => m.campaign.id === campaign.id)) {
                                   messages.push({
                                     campaign,
                                     message: `${campaign.name} `,
-                                    isNextTier: false
+                                    isNextTier: false,
                                   });
                                 }
                               }
@@ -318,7 +325,9 @@ export default function ShopCart() {
                                   {(() => {
                                     const item = normalItem;
                                     const categorySlug =
-                                      item.product?.categories?.[0]?.slug || item.product?.primary_category?.slug || "urunler";
+                                      item.product?.categories?.[0]?.slug ||
+                                      item.product?.primary_category?.slug ||
+                                      "urunler";
                                     const productSlug = item.slug || item.id;
                                     const productUrl = `/magaza/${categorySlug}/${productSlug}`;
                                     const imageUrl =
@@ -327,20 +336,49 @@ export default function ShopCart() {
                                       item.product?.images?.[0] ||
                                       "/images/placeholder.jpg";
                                     const isLoading = loadingActions[item.id];
-                                    const isLoadingDecrease = isLoading === 'decrease';
-                                    const isLoadingIncrease = isLoading === 'increase';
+                                    const isLoadingDecrease = isLoading === "decrease";
+                                    const isLoadingIncrease = isLoading === "increase";
                                     const isAnyLoading = !!isLoading;
                                     const rawMax =
-                                      item.max_purchase_quantity ?? item.product?.max_purchase_quantity ?? item.product?.max_quantity ?? null;
+                                      item.max_purchase_quantity ??
+                                      item.product?.max_purchase_quantity ??
+                                      item.product?.max_quantity ??
+                                      null;
                                     const parsedMax = rawMax === null || rawMax === undefined ? null : Number(rawMax);
                                     // maxQuantity = 0 ise sınırsız (null), değilse o değere kadar sınırlı
-                                    const maxQty = parsedMax === 0 ? null : (Number.isFinite(parsedMax) ? parsedMax : null);
-                                    const minQty = item.min_purchase_quantity ?? item.product?.min_purchase_quantity ?? 1;
+                                    const maxQty =
+                                      parsedMax === 0 ? null : Number.isFinite(parsedMax) ? parsedMax : null;
+                                    const minQty =
+                                      item.min_purchase_quantity ?? item.product?.min_purchase_quantity ?? 1;
                                     // Bu ürün için kampanya mesajlarını al
                                     const itemCampaignMessages = getCampaignMessagesForProduct(item);
 
+                                    const discountAmount = item.discount_amount ?? item.discountAmount ?? null;
+                                    const discountPrice = item.discount_price ?? item.discountPrice ?? null;
+                                    const regularPrice = item.price ?? item.product?.price ?? null;
+
+                                    let displayRegularPrice = null;
+                                    let displayDiscountPrice = null;
+
+                                    if (discountAmount != null && discountPrice != null && discountAmount < discountPrice) {
+                                      displayRegularPrice = discountPrice;
+                                      displayDiscountPrice = discountAmount;
+                                    } else if (discountAmount != null && regularPrice != null) {
+                                      displayRegularPrice = regularPrice;
+                                      displayDiscountPrice = discountAmount;
+                                    } else if (regularPrice != null) {
+                                      displayRegularPrice = regularPrice;
+                                    } else if (discountPrice != null) {
+                                      displayRegularPrice = discountPrice;
+                                    } else if (discountAmount != null) {
+                                      displayRegularPrice = discountAmount;
+                                    }
+
                                     return (
-                                      <div key={item.id} className={`tf-mini-cart-item ${isAnyLoading ? "disabled-item" : ""} ${relatedGifts.length > 0 ? "tf-mini-cart-item-no-border" : ""}`}>
+                                      <div
+                                        key={item.id}
+                                        className={`tf-mini-cart-item ${isAnyLoading ? "disabled-item" : ""} ${relatedGifts.length > 0 ? "tf-mini-cart-item-no-border" : ""}`}
+                                      >
                                         <div className="tf-mini-cart-image">
                                           <Link href={productUrl}>
                                             <Image
@@ -357,27 +395,45 @@ export default function ShopCart() {
                                             {item.name}
                                           </Link>
                                           <div className="price fw-6">
-                                            {item.discount_price != null && item.discount_price > 0 && item.discount_price < item.price ? (
+                                            {displayDiscountPrice != null &&
+                                            displayRegularPrice != null &&
+                                            displayDiscountPrice < displayRegularPrice ? (
                                               <>
-                                                <span style={{ color: '#0bc15c', fontWeight: '600', marginRight: '8px' }}>
-                                                  {item.discount_price.toLocaleString("tr-TR")} TL
+                                                <span
+                                                  style={{ color: "#0bc15c", fontWeight: "600", marginRight: "8px" }}
+                                                >
+                                                  {displayDiscountPrice.toLocaleString("tr-TR")} TL
                                                 </span>
-                                                <span style={{ textDecoration: 'line-through', color: '#999', fontSize: '14px' }}>
-                                                  {item.price.toLocaleString("tr-TR")} TL
+                                                <span
+                                                  style={{
+                                                    textDecoration: "line-through",
+                                                    color: "#999",
+                                                    fontSize: "14px",
+                                                  }}
+                                                >
+                                                  {displayRegularPrice.toLocaleString("tr-TR")} TL
                                                 </span>
                                               </>
                                             ) : (
-                                              <span style={{ color: 'var(--primary, #3c81b5)' }}>{item.price.toLocaleString("tr-TR")} TL</span>
+                                              <span style={{ color: "var(--primary, #3c81b5)" }}>
+                                                {(displayRegularPrice ?? 0).toLocaleString("tr-TR")} TL
+                                              </span>
                                             )}
                                           </div>
                                           <div className="tf-mini-cart-btns">
-                                            <div className={`wg-quantity small ${isAnyLoading ? "disabled" : ""}`} style={{ pointerEvents: isAnyLoading ? "none" : "auto" }}>
+                                            <div
+                                              className={`wg-quantity small ${isAnyLoading ? "disabled" : ""}`}
+                                              style={{ pointerEvents: isAnyLoading ? "none" : "auto" }}
+                                            >
                                               <Quantity
                                                 isLoading={isAnyLoading}
                                                 setQuantity={(qty) => {
                                                   if (isAnyLoading) return;
-                                                  const clamped = maxQty != null && maxQty > 0 ? Math.min(Math.max(Number(qty) || 0, minQty), maxQty) : Math.max(Number(qty) || 0, minQty);
-                                                  if (clamped >= minQty) setQuantity(item.id, clamped, 'change');
+                                                  const clamped =
+                                                    maxQty != null && maxQty > 0
+                                                      ? Math.min(Math.max(Number(qty) || 0, minQty), maxQty)
+                                                      : Math.max(Number(qty) || 0, minQty);
+                                                  if (clamped >= minQty) setQuantity(item.id, clamped, "change");
                                                 }}
                                                 minQuantity={minQty}
                                                 maxQuantity={maxQty}
@@ -393,9 +449,9 @@ export default function ShopCart() {
                                               style={{
                                                 cursor: isAnyLoading ? "not-allowed" : "pointer",
                                                 opacity: isAnyLoading ? 0.5 : 1,
-                                                display: 'inline-flex',
-                                                alignItems: 'center',
-                                                gap: '6px'
+                                                display: "inline-flex",
+                                                alignItems: "center",
+                                                gap: "6px",
                                               }}
                                               onClick={() => {
                                                 if (!isAnyLoading) {
@@ -403,14 +459,18 @@ export default function ShopCart() {
                                                 }
                                               }}
                                             >
-                                              {loadingActions[item.id] === 'remove' ? (
-                                                <div className="spinner-border spinner-border-sm" role="status" style={{
-                                                  width: '10px',
-                                                  height: '10px',
-                                                  borderWidth: '1.5px',
-                                                  borderColor: '#3c81b5',
-                                                  borderRightColor: 'transparent'
-                                                }}>
+                                              {loadingActions[item.id] === "remove" ? (
+                                                <div
+                                                  className="spinner-border spinner-border-sm"
+                                                  role="status"
+                                                  style={{
+                                                    width: "10px",
+                                                    height: "10px",
+                                                    borderWidth: "1.5px",
+                                                    borderColor: "#3c81b5",
+                                                    borderRightColor: "transparent",
+                                                  }}
+                                                >
                                                   <span className="visually-hidden">Yükleniyor...</span>
                                                 </div>
                                               ) : (
@@ -437,9 +497,18 @@ export default function ShopCart() {
                                           </div>
                                           {/* Ürün bazlı kampanya mesajları */}
                                           {itemCampaignMessages.length > 0 && (
-                                            <div style={{ marginTop: '8px' }}>
+                                            <div style={{ marginTop: "8px" }}>
                                               {itemCampaignMessages.map(({ campaign, message, isNextTier }, idx) => (
-                                                <div key={`product-campaign-${campaign.id || idx}`} className="tf-cart-campaign-badge" style={{ fontSize: '11px', color: isNextTier ? '#dc3545' : '#0bc15c', marginTop: '4px', lineHeight: '1.4' }}>
+                                                <div
+                                                  key={`product-campaign-${campaign.id || idx}`}
+                                                  className="tf-cart-campaign-badge"
+                                                  style={{
+                                                    fontSize: "11px",
+                                                    color: isNextTier ? "#dc3545" : "#0bc15c",
+                                                    marginTop: "4px",
+                                                    lineHeight: "1.4",
+                                                  }}
+                                                >
                                                   {message}
                                                 </div>
                                               ))}
@@ -453,7 +522,9 @@ export default function ShopCart() {
                                   {/* Gift Ürünleri */}
                                   {relatedGifts.map((giftItem, giftIndex) => {
                                     const categorySlug =
-                                      giftItem.product?.categories?.[0]?.slug || giftItem.product?.primary_category?.slug || "urunler";
+                                      giftItem.product?.categories?.[0]?.slug ||
+                                      giftItem.product?.primary_category?.slug ||
+                                      "urunler";
                                     const productSlug = giftItem.slug || giftItem.id;
                                     const productUrl = `/magaza/${categorySlug}/${productSlug}`;
                                     const imageUrl =
@@ -462,41 +533,75 @@ export default function ShopCart() {
                                       giftItem.product?.images?.[0] ||
                                       "/images/placeholder.jpg";
                                     const giftCampaign = resolveGiftCampaign(giftItem);
-                                    const giftSourceNames = (giftItem.applied_campaign_ids && applied_campaigns
-                                      ? giftItem.applied_campaign_ids
-                                        .map((cid) => applied_campaigns.find((c) => c.id === cid)?.name)
-                                        .filter(Boolean)
-                                      : []
-                                    );
+                                    const giftSourceNames =
+                                      giftItem.applied_campaign_ids && applied_campaigns
+                                        ? giftItem.applied_campaign_ids
+                                            .map((cid) => applied_campaigns.find((c) => c.id === cid)?.name)
+                                            .filter(Boolean)
+                                        : [];
                                     const isLastGift = giftIndex === relatedGifts.length - 1;
                                     const shouldRemoveBorder = isReallyLast && isLastGift;
 
                                     return (
-                                      <div key={`gift-${giftItem.id}-${giftIndex}`} className="tf-mini-cart-item tf-mini-cart-gift-item" style={{
-                                        paddingLeft: '10px',
-                                        backgroundColor: '#f5f5f5',
-                                        borderRadius: '12px',
-                                        borderBottom: shouldRemoveBorder ? 'none' : undefined,
-                                        marginBottom: shouldRemoveBorder ? '0' : undefined,
-                                      }}>
+                                      <div
+                                        key={`gift-${giftItem.id}-${giftIndex}`}
+                                        className="tf-mini-cart-item tf-mini-cart-gift-item"
+                                        style={{
+                                          paddingLeft: "10px",
+                                          backgroundColor: "#f5f5f5",
+                                          borderRadius: "12px",
+                                          borderBottom: shouldRemoveBorder ? "none" : undefined,
+                                          marginBottom: shouldRemoveBorder ? "0" : undefined,
+                                        }}
+                                      >
                                         <div className="tf-mini-cart-image tf-mini-cart-gift-icon">
-                                          <Link href={productUrl} style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>
-                                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style={{ width: '36px', height: '36px' }}>
-                                              <path d="M20 12v10H4V12M22 7H2v5h20V7zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" stroke="var(--primary, #3c81b5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                          <Link
+                                            href={productUrl}
+                                            style={{
+                                              display: "flex",
+                                              alignItems: "center",
+                                              justifyContent: "center",
+                                              width: "100%",
+                                              height: "100%",
+                                            }}
+                                          >
+                                            <svg
+                                              viewBox="0 0 24 24"
+                                              fill="none"
+                                              xmlns="http://www.w3.org/2000/svg"
+                                              aria-hidden="true"
+                                              style={{ width: "36px", height: "36px" }}
+                                            >
+                                              <path
+                                                d="M20 12v10H4V12M22 7H2v5h20V7zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"
+                                                stroke="var(--primary, #3c81b5)"
+                                                strokeWidth="1.5"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                              />
                                             </svg>
                                           </Link>
                                         </div>
                                         <div className="tf-mini-cart-info">
-                                          <Link className="title link" href={productUrl} style={{ fontSize: '13px' }}>
+                                          <Link className="title link" href={productUrl} style={{ fontSize: "13px" }}>
                                             {giftItem.name} x{giftItem.quantity}
                                           </Link>
                                           {giftSourceNames.length > 0 ? (
-                                            <div className="tf-cart-campaign-badge" style={{ fontSize: '11px', color: '#0bc15c', marginTop: '4px' }}>
+                                            <div
+                                              className="tf-cart-campaign-badge"
+                                              style={{ fontSize: "11px", color: "#0bc15c", marginTop: "4px" }}
+                                            >
                                               {giftSourceNames.join(", ")}
                                             </div>
                                           ) : giftCampaign?.applied_tier?.min_cart_amount ? (
-                                            <div className="tf-cart-campaign-badge" style={{ fontSize: '11px', color: '#0bc15c', marginTop: '4px' }}>
-                                              {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString("tr-TR")} Sepet Tutarına Özel Hediye
+                                            <div
+                                              className="tf-cart-campaign-badge"
+                                              style={{ fontSize: "11px", color: "#0bc15c", marginTop: "4px" }}
+                                            >
+                                              {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString(
+                                                "tr-TR",
+                                              )}{" "}
+                                              Sepet Tutarına Özel Hediye
                                             </div>
                                           ) : null}
                                         </div>
@@ -507,12 +612,14 @@ export default function ShopCart() {
                                   {relatedGifts.length > 0 && !isReallyLast && (
                                     <div className="tf-cart-gift-separator" aria-hidden="true" />
                                   )}
-                                </React.Fragment >
+                                </React.Fragment>
                               );
                             })}
                             {unlinkedGifts.map((giftItem, giftIndex) => {
                               const categorySlug =
-                                giftItem.product?.categories?.[0]?.slug || giftItem.product?.primary_category?.slug || "urunler";
+                                giftItem.product?.categories?.[0]?.slug ||
+                                giftItem.product?.primary_category?.slug ||
+                                "urunler";
                               const productSlug = giftItem.slug || giftItem.id;
                               const productUrl = `/magaza/${categorySlug}/${productSlug}`;
                               const imageUrl =
@@ -521,47 +628,79 @@ export default function ShopCart() {
                                 giftItem.product?.images?.[0] ||
                                 "/images/placeholder.jpg";
                               const giftCampaign = resolveGiftCampaign(giftItem);
-                              const giftSourceNames = (giftItem.applied_campaign_ids && applied_campaigns
-                                ? giftItem.applied_campaign_ids
-                                  .map((cid) => applied_campaigns.find((c) => c.id === cid)?.name)
-                                  .filter(Boolean)
-                                : []
-                              );
+                              const giftSourceNames =
+                                giftItem.applied_campaign_ids && applied_campaigns
+                                  ? giftItem.applied_campaign_ids
+                                      .map((cid) => applied_campaigns.find((c) => c.id === cid)?.name)
+                                      .filter(Boolean)
+                                  : [];
                               return (
-                                <div key={`gift-unlinked-${giftItem.id}-${giftIndex}`} className="tf-mini-cart-item tf-mini-cart-gift-item" style={{
-                                  paddingLeft: '10px',
-                                  backgroundColor: '#f5f5f5'
-                                }}>
+                                <div
+                                  key={`gift-unlinked-${giftItem.id}-${giftIndex}`}
+                                  className="tf-mini-cart-item tf-mini-cart-gift-item"
+                                  style={{
+                                    paddingLeft: "10px",
+                                    backgroundColor: "#f5f5f5",
+                                  }}
+                                >
                                   <div className="tf-mini-cart-image tf-mini-cart-gift-icon">
-                                    <Link href={productUrl} style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>
-                                      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style={{ width: '36px', height: '36px' }}>
-                                        <path d="M20 12v10H4V12M22 7H2v5h20V7zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" stroke="var(--primary, #3c81b5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                    <Link
+                                      href={productUrl}
+                                      style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        width: "100%",
+                                        height: "100%",
+                                      }}
+                                    >
+                                      <svg
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        aria-hidden="true"
+                                        style={{ width: "36px", height: "36px" }}
+                                      >
+                                        <path
+                                          d="M20 12v10H4V12M22 7H2v5h20V7zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"
+                                          stroke="var(--primary, #3c81b5)"
+                                          strokeWidth="1.5"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                        />
                                       </svg>
                                     </Link>
                                   </div>
                                   <div className="tf-mini-cart-info">
-                                    <Link className="title link" href={productUrl} style={{ fontSize: '13px' }}>
+                                    <Link className="title link" href={productUrl} style={{ fontSize: "13px" }}>
                                       {giftItem.name} x{giftItem.quantity}
                                     </Link>
                                     {giftSourceNames.length > 0 ? (
-                                      <div className="tf-cart-campaign-badge" style={{ fontSize: '11px', color: '#0bc15c', marginTop: '4px' }}>
+                                      <div
+                                        className="tf-cart-campaign-badge"
+                                        style={{ fontSize: "11px", color: "#0bc15c", marginTop: "4px" }}
+                                      >
                                         {giftSourceNames.join(", ")}
                                       </div>
                                     ) : giftCampaign?.applied_tier?.min_cart_amount ? (
-                                      <div className="tf-cart-campaign-badge" style={{ fontSize: '11px', color: '#0bc15c', marginTop: '4px' }}>
-                                        {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString("tr-TR")} Sepet Tutarına özel indirim
+                                      <div
+                                        className="tf-cart-campaign-badge"
+                                        style={{ fontSize: "11px", color: "#0bc15c", marginTop: "4px" }}
+                                      >
+                                        {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString("tr-TR")}{" "}
+                                        Sepet Tutarına özel indirim
                                       </div>
                                     ) : null}
                                   </div>
                                 </div>
                               );
                             })}
-                            {unlinkedGifts.length > 0 && (
-                              <div className="tf-cart-gift-separator" aria-hidden="true" />
-                            )}
+                            {unlinkedGifts.length > 0 && <div className="tf-cart-gift-separator" aria-hidden="true" />}
                             {tierGifts.map((giftItem, giftIndex) => {
                               const categorySlug =
-                                giftItem.product?.categories?.[0]?.slug || giftItem.product?.primary_category?.slug || "urunler";
+                                giftItem.product?.categories?.[0]?.slug ||
+                                giftItem.product?.primary_category?.slug ||
+                                "urunler";
                               const productSlug = giftItem.slug || giftItem.id;
                               const productUrl = `/magaza/${categorySlug}/${productSlug}`;
                               const imageUrl =
@@ -570,45 +709,75 @@ export default function ShopCart() {
                                 giftItem.product?.images?.[0] ||
                                 "/images/placeholder.jpg";
                               const giftCampaign = resolveGiftCampaign(giftItem);
-                              const giftSourceNames = (giftItem.applied_campaign_ids && applied_campaigns
-                                ? giftItem.applied_campaign_ids
-                                  .map((cid) => applied_campaigns.find((c) => c.id === cid)?.name)
-                                  .filter(Boolean)
-                                : []
-                              );
+                              const giftSourceNames =
+                                giftItem.applied_campaign_ids && applied_campaigns
+                                  ? giftItem.applied_campaign_ids
+                                      .map((cid) => applied_campaigns.find((c) => c.id === cid)?.name)
+                                      .filter(Boolean)
+                                  : [];
                               return (
-                                <div key={`gift-tier-${giftItem.id}-${giftIndex}`} className="tf-mini-cart-item tf-mini-cart-gift-item" style={{
-                                  paddingLeft: '10px',
-                                  borderLeft: '3px solid #0bc15c',
-                                  backgroundColor: '#f5f5f5'
-                                }}>
+                                <div
+                                  key={`gift-tier-${giftItem.id}-${giftIndex}`}
+                                  className="tf-mini-cart-item tf-mini-cart-gift-item"
+                                  style={{
+                                    paddingLeft: "10px",
+                                    borderLeft: "3px solid #0bc15c",
+                                    backgroundColor: "#f5f5f5",
+                                  }}
+                                >
                                   <div className="tf-mini-cart-image tf-mini-cart-gift-icon">
-                                    <Link href={productUrl} style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "100%" }}>
-                                      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style={{ width: '36px', height: '36px' }}>
-                                        <path d="M20 12v10H4V12M22 7H2v5h20V7zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z" stroke="var(--primary, #3c81b5)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                                    <Link
+                                      href={productUrl}
+                                      style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        width: "100%",
+                                        height: "100%",
+                                      }}
+                                    >
+                                      <svg
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        aria-hidden="true"
+                                        style={{ width: "36px", height: "36px" }}
+                                      >
+                                        <path
+                                          d="M20 12v10H4V12M22 7H2v5h20V7zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"
+                                          stroke="var(--primary, #3c81b5)"
+                                          strokeWidth="1.5"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                        />
                                       </svg>
                                     </Link>
                                   </div>
                                   <div className="tf-mini-cart-info">
-                                    <Link className="title link" href={productUrl} style={{ fontSize: '13px' }}>
+                                    <Link className="title link" href={productUrl} style={{ fontSize: "13px" }}>
                                       {giftItem.name} x{giftItem.quantity}
                                     </Link>
                                     {giftSourceNames.length > 0 ? (
-                                      <div className="tf-cart-campaign-badge" style={{ fontSize: '11px', color: '#0bc15c', marginTop: '4px' }}>
+                                      <div
+                                        className="tf-cart-campaign-badge"
+                                        style={{ fontSize: "11px", color: "#0bc15c", marginTop: "4px" }}
+                                      >
                                         {giftSourceNames.join(", ")}
                                       </div>
                                     ) : giftCampaign?.applied_tier?.min_cart_amount ? (
-                                      <div className="tf-cart-campaign-badge" style={{ fontSize: '11px', color: '#0bc15c', marginTop: '4px' }}>
-                                        {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString("tr-TR")} Sepet Tutarına Özel Hediye
+                                      <div
+                                        className="tf-cart-campaign-badge"
+                                        style={{ fontSize: "11px", color: "#0bc15c", marginTop: "4px" }}
+                                      >
+                                        {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString("tr-TR")}{" "}
+                                        Sepet Tutarına Özel Hediye
                                       </div>
                                     ) : null}
                                   </div>
                                 </div>
                               );
                             })}
-                            {tierGifts.length > 0 && (
-                              <div className="tf-cart-gift-separator" aria-hidden="true" />
-                            )}
+                            {tierGifts.length > 0 && <div className="tf-cart-gift-separator" aria-hidden="true" />}
                           </>
                         );
                       })()}
@@ -635,65 +804,90 @@ export default function ShopCart() {
                 {items.length > 0 && (
                   <div className="tf-mini-cart-bottom">
                     <div className="tf-mini-cart-tool"></div>
-                    <div className="tf-mini-cart-bottom-wrap" style={{ backgroundColor: '#f5f5f5', boxShadow: '1px 1px 1px 1px black' }}>
+                    <div
+                      className="tf-mini-cart-bottom-wrap"
+                      style={{ backgroundColor: "#f5f5f5", boxShadow: "1px 1px 1px 1px black" }}
+                    >
                       <div className="tf-cart-totals-discounts">
                         {/* Ara Toplam - Sadece indirim varsa göster */}
                         {cartTotals.subtotal > 0 && cartTotals.hasAnyDiscount && (
-                          <div className="tf-cart-totals-item" style={{ borderTop: 'none', borderBottom: 'none' }}>
-                            <div className="tf-cart-total-label fw-6" style={{ fontSize: '14px' }}>Ara Toplam</div>
-                            <div className="tf-cart-total-value fw-6" style={{ fontSize: '14px' }}>{cartTotals.subtotal.toLocaleString("tr-TR")} TL</div>
+                          <div className="tf-cart-totals-item" style={{ borderTop: "none", borderBottom: "none" }}>
+                            <div className="tf-cart-total-label fw-6" style={{ fontSize: "14px" }}>
+                              Ara Toplam
+                            </div>
+                            <div className="tf-cart-total-value fw-6" style={{ fontSize: "14px" }}>
+                              {cartTotals.subtotal.toLocaleString("tr-TR")} TL
+                            </div>
                           </div>
                         )}
 
                         {/* İndirimler Section - Sadece indirim varsa göster */}
-                        {(cartTotals.customDiscountAmount > 0 || cartTotals.campaignDiscountAmount > 0 || cartTotals.couponDiscountAmount > 0) && (
+                        {(cartTotals.customDiscountAmount > 0 ||
+                          cartTotals.campaignDiscountAmount > 0 ||
+                          cartTotals.couponDiscountAmount > 0) && (
                           <div>
                             {/* Size özel indirim */}
                             {cartTotals.customDiscountAmount > 0 && (
-                              <div className="tf-cart-totals-item" style={{ borderTop: 'none', borderBottom: 'none' }}>
-                                <div className="tf-cart-total-label fw-6" style={{ fontSize: '14px' }}>Size Özel İndirim</div>
-                                <div className="tf-cart-total-value fw-6" style={{ fontSize: '14px', color: '#0bc15c' }}>
+                              <div className="tf-cart-totals-item" style={{ borderTop: "none", borderBottom: "none" }}>
+                                <div className="tf-cart-total-label fw-6" style={{ fontSize: "14px" }}>
+                                  Size Özel İndirim
+                                </div>
+                                <div
+                                  className="tf-cart-total-value fw-6"
+                                  style={{ fontSize: "14px", color: "#0bc15c" }}
+                                >
                                   - {cartTotals.customDiscountAmount.toLocaleString("tr-TR")} TL
                                 </div>
                               </div>
                             )}
                             {/* Kampanya İndirimi */}
                             {cartTotals.campaignDiscountAmount > 0 && (
-                              <div className="tf-cart-totals-item" style={{ borderTop: 'none', borderBottom: 'none' }}>
-                                <div className="tf-cart-total-label fw-6" style={{ fontSize: '14px' }}>Kampanya İndirimi</div>
-                                <div className="tf-cart-total-value fw-6" style={{ fontSize: '14px', color: '#0bc15c' }}>
+                              <div className="tf-cart-totals-item" style={{ borderTop: "none", borderBottom: "none" }}>
+                                <div className="tf-cart-total-label fw-6" style={{ fontSize: "14px" }}>
+                                  Kampanya İndirimi
+                                </div>
+                                <div
+                                  className="tf-cart-total-value fw-6"
+                                  style={{ fontSize: "14px", color: "#0bc15c" }}
+                                >
                                   - {cartTotals.campaignDiscountAmount.toLocaleString("tr-TR")} TL
                                 </div>
                               </div>
                             )}
                             {/* Kupon İndirimi */}
                             {cartTotals.couponDiscountAmount > 0 && coupon && coupon.code && (
-                              <div className="tf-cart-totals-item" style={{ borderTop: 'none', borderBottom: 'none' }}>
-                                <div className="tf-cart-total-label fw-6" style={{ fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <div className="tf-cart-totals-item" style={{ borderTop: "none", borderBottom: "none" }}>
+                                <div
+                                  className="tf-cart-total-label fw-6"
+                                  style={{ fontSize: "14px", display: "flex", alignItems: "center", gap: "8px" }}
+                                >
                                   <span>Kupon İndirimi:</span>
                                   {coupon.code && (
-                                    <span style={{ fontWeight: '600', color: '#333' }}>{coupon.code}</span>
+                                    <span style={{ fontWeight: "600", color: "#333" }}>{coupon.code}</span>
                                   )}
                                   <button
                                     type="button"
                                     onClick={handleRemoveCoupon}
                                     disabled={isRemovingCoupon}
                                     style={{
-                                      fontSize: '12px',
-                                      color: '#dc3545',
-                                      background: 'none',
-                                      border: 'none',
-                                      cursor: isRemovingCoupon ? 'not-allowed' : 'pointer',
-                                      padding: '2px 4px',
+                                      fontSize: "12px",
+                                      color: "#dc3545",
+                                      background: "none",
+                                      border: "none",
+                                      cursor: isRemovingCoupon ? "not-allowed" : "pointer",
+                                      padding: "2px 4px",
                                       opacity: isRemovingCoupon ? 0.5 : 1,
-                                      textDecoration: 'underline',
-                                      fontWeight: '600',
+                                      textDecoration: "underline",
+                                      fontWeight: "600",
                                     }}
                                   >
-                                    {isRemovingCoupon ? 'Kaldırılıyor...' : 'Kaldır'}
+                                    {isRemovingCoupon ? "Kaldırılıyor..." : "Kaldır"}
                                   </button>
                                 </div>
-                                <div className="tf-cart-total-value fw-6" style={{ fontSize: '14px', color: '#0bc15c' }}>
+                                <div
+                                  className="tf-cart-total-value fw-6"
+                                  style={{ fontSize: "14px", color: "#0bc15c" }}
+                                >
                                   - {cartTotals.couponDiscountAmount.toLocaleString("tr-TR")} TL
                                 </div>
                               </div>
@@ -701,63 +895,88 @@ export default function ShopCart() {
                           </div>
                         )}
 
-                        <div className="tf-cart-totals-item tf-cart-totals-item-total" >
-                          <div className="tf-cart-total-label fw-6" style={{ fontSize: '18px' }}>Toplam</div>
-                          <div className="tf-cart-total-value fw-6" style={{ fontSize: '18px' }}>{cartTotals.total.toLocaleString("tr-TR")} TL</div>
+                        <div className="tf-cart-totals-item tf-cart-totals-item-total">
+                          <div className="tf-cart-total-label fw-6" style={{ fontSize: "18px" }}>
+                            Toplam
+                          </div>
+                          <div className="tf-cart-total-value fw-6" style={{ fontSize: "18px" }}>
+                            {cartTotals.total.toLocaleString("tr-TR")} TL
+                          </div>
                         </div>
                         {/* Sepet bazlı kampanya mesajları - Sadece ürünle eşleşmeyenler için (fallback) */}
-                        {applied_campaigns && applied_campaigns.length > 0 && (() => {
-                          const normalItems = items.filter(item => !item.is_gift);
-                          // Tüm ürün bazlı kampanya ID'lerini topla
-                          const productBasedCampaignIds = new Set();
-                          items.forEach(item => {
-                            if (item.applied_campaign_ids && Array.isArray(item.applied_campaign_ids)) {
-                              item.applied_campaign_ids.forEach(id => productBasedCampaignIds.add(id));
-                            }
-                          });
+                        {applied_campaigns &&
+                          applied_campaigns.length > 0 &&
+                          (() => {
+                            const normalItems = items.filter((item) => !item.is_gift);
+                            // Tüm ürün bazlı kampanya ID'lerini topla
+                            const productBasedCampaignIds = new Set();
+                            items.forEach((item) => {
+                              if (item.applied_campaign_ids && Array.isArray(item.applied_campaign_ids)) {
+                                item.applied_campaign_ids.forEach((id) => productBasedCampaignIds.add(id));
+                              }
+                            });
 
-                          // Sepet bazlı kampanyaları filtrele (ürün bazlı olmayanlar)
-                          const cartBasedCampaigns = applied_campaigns.filter(campaign => {
-                            const isProductBasedType = campaign.type === 'x_urun_y_tl' || campaign.type === 'x_alana_y_hediye';
-                            const isNotInAnyProduct = !productBasedCampaignIds.has(campaign.id);
-                            const hasNextTier = campaign.next_tier?.message;
-                            return !isProductBasedType && (isNotInAnyProduct || hasNextTier);
-                          });
+                            // Sepet bazlı kampanyaları filtrele (ürün bazlı olmayanlar)
+                            const cartBasedCampaigns = applied_campaigns.filter((campaign) => {
+                              const isProductBasedType =
+                                campaign.type === "x_urun_y_tl" || campaign.type === "x_alana_y_hediye";
+                              const isNotInAnyProduct = !productBasedCampaignIds.has(campaign.id);
+                              const hasNextTier = campaign.next_tier?.message;
+                              return !isProductBasedType && (isNotInAnyProduct || hasNextTier);
+                            });
 
-                          // Ürünle eşleşmeyen kampanyaları bul (fallback - ürün yanında gösterilemeyenler)
-                          const unmatchedCampaigns = cartBasedCampaigns.filter(campaign => {
-                            const match = campaign.name?.match(/alana\s+([^0-9]+?)(?:\s+\d+|\s+Kampanyası|$)/i);
-                            if (match && match[1]) {
-                              const productNameInMessage = match[1].trim().toLowerCase();
-                              return !normalItems.some(item => {
-                                const itemName = (item.name || '').toLowerCase();
-                                return itemName.includes(productNameInMessage) || productNameInMessage.includes(itemName);
-                              });
-                            }
-                            return true; // Parse edilemeyen kampanyalar fallback'e gider
-                          });
-
-                          if (unmatchedCampaigns.length === 0) return null;
-
-                          return (
-                            <div style={{ marginTop: '8px' }}>
-                              {unmatchedCampaigns.map((campaign, idx) => {
-                                if (campaign.next_tier?.message) {
+                            // Ürünle eşleşmeyen kampanyaları bul (fallback - ürün yanında gösterilemeyenler)
+                            const unmatchedCampaigns = cartBasedCampaigns.filter((campaign) => {
+                              const match = campaign.name?.match(/alana\s+([^0-9]+?)(?:\s+\d+|\s+Kampanyası|$)/i);
+                              if (match && match[1]) {
+                                const productNameInMessage = match[1].trim().toLowerCase();
+                                return !normalItems.some((item) => {
+                                  const itemName = (item.name || "").toLowerCase();
                                   return (
-                                    <div key={`next-tier-${campaign.id || idx}`} style={{ color: '#dc3545', fontSize: '11px', lineHeight: '1.4', marginBottom: '4px' }}>
-                                      {campaign.next_tier.message}
+                                    itemName.includes(productNameInMessage) || productNameInMessage.includes(itemName)
+                                  );
+                                });
+                              }
+                              return true; // Parse edilemeyen kampanyalar fallback'e gider
+                            });
+
+                            if (unmatchedCampaigns.length === 0) return null;
+
+                            return (
+                              <div style={{ marginTop: "8px" }}>
+                                {unmatchedCampaigns.map((campaign, idx) => {
+                                  if (campaign.next_tier?.message) {
+                                    return (
+                                      <div
+                                        key={`next-tier-${campaign.id || idx}`}
+                                        style={{
+                                          color: "#dc3545",
+                                          fontSize: "11px",
+                                          lineHeight: "1.4",
+                                          marginBottom: "4px",
+                                        }}
+                                      >
+                                        {campaign.next_tier.message}
+                                      </div>
+                                    );
+                                  }
+                                  return (
+                                    <div
+                                      key={`cart-campaign-${campaign.id || idx}`}
+                                      style={{
+                                        color: "#0bc15c",
+                                        fontSize: "11px",
+                                        lineHeight: "1.4",
+                                        marginBottom: "4px",
+                                      }}
+                                    >
+                                      {campaign.name}
                                     </div>
                                   );
-                                }
-                                return (
-                                  <div key={`cart-campaign-${campaign.id || idx}`} style={{ color: '#0bc15c', fontSize: '11px', lineHeight: '1.4', marginBottom: '4px' }}>
-                                    {campaign.name}
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          );
-                        })()}
+                                })}
+                              </div>
+                            );
+                          })()}
                       </div>
 
                       {/* Kupon Kodu - Sadece kupon yoksa göster */}
@@ -770,7 +989,7 @@ export default function ShopCart() {
                               value={couponCode}
                               onChange={(e) => {
                                 // Boşlukları temizle ve tek kelime olarak al
-                                const value = e.target.value.replace(/\s/g, '').toUpperCase();
+                                const value = e.target.value.replace(/\s/g, "").toUpperCase();
                                 setCouponCode(value);
                                 setCouponError("");
                                 setCouponSuccess(false);
@@ -778,7 +997,11 @@ export default function ShopCart() {
                               style={{
                                 width: "100%",
                                 padding: "0 80px 0 15px", // Sağdan pay bırak
-                                border: couponError ? "1px solid #dc3545" : couponSuccess ? "1px solid #0bc15c" : "1px solid #e5e5e5",
+                                border: couponError
+                                  ? "1px solid #dc3545"
+                                  : couponSuccess
+                                    ? "1px solid #0bc15c"
+                                    : "1px solid #e5e5e5",
                                 borderRadius: "6px",
                                 fontSize: "14px",
                                 height: "42px",
@@ -801,16 +1024,14 @@ export default function ShopCart() {
                                 opacity: isApplyingCoupon || !couponCode.trim() ? 0.6 : 1,
                                 cursor: isApplyingCoupon || !couponCode.trim() ? "not-allowed" : "pointer",
                                 lineHeight: "32px",
-                                border: "none"
+                                border: "none",
                               }}
                             >
                               {isApplyingCoupon ? "..." : "Uygula"}
                             </button>
                           </form>
                           {couponError && (
-                            <div style={{ marginTop: "8px", fontSize: "12px", color: "#dc3545" }}>
-                              {couponError}
-                            </div>
+                            <div style={{ marginTop: "8px", fontSize: "12px", color: "#dc3545" }}>{couponError}</div>
                           )}
                           {couponSuccess && (
                             <div style={{ marginTop: "8px", fontSize: "12px", color: "#0bc15c" }}>
@@ -838,10 +1059,30 @@ export default function ShopCart() {
                         </div>
                       )}
                       <div className="tf-mini-cart-view-checkout">
-                        <SimartButton href="/sepetim" variant="outline" style={{ flex: 1, minWidth: 0, display: "flex", justifyContent: "center", alignItems: "center" }}>
+                        <SimartButton
+                          href="/sepetim"
+                          variant="outline"
+                          style={{
+                            flex: 1,
+                            minWidth: 0,
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                          }}
+                        >
                           Sepeti Görüntüle
                         </SimartButton>
-                        <SimartButton href="/odeme" variant="fill" style={{ flex: 1, minWidth: 0, display: "flex", justifyContent: "center", alignItems: "center" }}>
+                        <SimartButton
+                          href="/odeme"
+                          variant="fill"
+                          style={{
+                            flex: 1,
+                            minWidth: 0,
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                          }}
+                        >
                           Sipariş ver
                         </SimartButton>
                       </div>
@@ -852,8 +1093,12 @@ export default function ShopCart() {
             </div>
           </div>
         </div>
-      </div >
-      <MaxQuantityToast visible={showMaxReachedToast} onHide={() => setShowMaxReachedToast(false)} maxQuantity={maxQuantityForToast} />
+      </div>
+      <MaxQuantityToast
+        visible={showMaxReachedToast}
+        onHide={() => setShowMaxReachedToast(false)}
+        maxQuantity={maxQuantityForToast}
+      />
     </>
   );
 }

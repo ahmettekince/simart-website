@@ -179,7 +179,7 @@ export default function Register() {
             </p>
           </div>
           <div>
-            <form onSubmit={handleSubmit} className="" id="register-form">
+            <form onSubmit={handleSubmit} className="" id="register-form" noValidate>
               {/* Başarı Mesajı */}
               {message && (
                 <div

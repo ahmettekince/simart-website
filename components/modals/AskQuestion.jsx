@@ -17,7 +17,7 @@ export default function AskQuestion() {
             />
           </div>
           <div className="overflow-y-auto">
-            <form onSubmit={(e) => e.preventDefault()} className="">
+            <form onSubmit={(e) => e.preventDefault()} className="" noValidate>
               <fieldset className="">
                 <label htmlFor="">Adınız Soyadınız *</label>
                 <input
