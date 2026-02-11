@@ -63,5 +63,24 @@ export function stripHtmlForMeta(html, maxLength = 160) {
  */
 export function addLazyLoadToDescriptionImages(html) {
   if (!html || typeof html !== "string") return html;
-  return html.replace(/<img\s/gi, '<img loading="lazy" ');
+  // Hem resimlere lazy load ekle
+  let processed = html.replace(/<img\s/gi, '<img loading="lazy" ');
+
+  // Videoları işle: 
+  // 1. Controls'leri kaldır
+  // 2. playsinline, autoplay, muted, loop ekle (animasyon gibi çalışması için)
+  processed = processed.replace(/<video\s([^>]*)>/gi, (match, attrs) => {
+    // Mevcut baz etiketleri temizle ve zorunlu olanları ekle
+    let cleanAttrs = attrs
+      .replace(/\bcontrols\b/gi, '')
+      .replace(/\bplaysinline\b/gi, '')
+      .replace(/\bwebkit-playsinline\b/gi, '')
+      .replace(/\bautoplay\b/gi, '')
+      .replace(/\bmuted\b/gi, '')
+      .replace(/\bloop\b/gi, '');
+
+    return `<video ${cleanAttrs.trim()} playsinline webkit-playsinline autoplay muted loop>`;
+  });
+
+  return processed;
 }

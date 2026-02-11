@@ -12,12 +12,14 @@ import Quantity from "./Quantity";
 import { useCartStore } from "@/stores/cartStore";
 import { getProductButtonState } from "@/utils/productStock";
 import MaxQuantityToast from "@/components/common/MaxQuantityToast";
+import ErrorToast from "@/components/common/ErrorToast";
 import BirlikteAlNew from "./BirlikteAlNew";
 import StarRating from "@/components/common/StarRating";
 import ProductVideoPlayer from "./ProductVideoPlayer";
 import VideoModal from "@/components/common/VideoModal";
 import ModelViewerModal from "@/components/modals/ModelViewerModal";
-import OverlayCtaButton, { YoutubeIcon, ArrowIcon, Model3dIcon } from "@/components/common/OverlayCtaButton";
+import OverlayCtaButton, { Model3dIcon, PlayIcon, ArrowIcon } from "@/components/common/OverlayCtaButton";
+
 
 const TOOLTIP_MAX_WIDTH = 360;
 const TOOLTIP_MARGIN = 16;
@@ -130,6 +132,8 @@ export default function Details9({ product }) {
   const [showShortDescription, setShowShortDescription] = useState(false);
   const [youtubeModalOpen, setYoutubeModalOpen] = useState(false);
   const [model3dModalOpen, setModel3dModalOpen] = useState(false);
+  const [showErrorToast, setShowErrorToast] = useState(false);
+  const [errorToastMessage, setErrorToastMessage] = useState("");
 
   useEffect(() => {
     const check = () => setShowShortDescription(typeof window !== "undefined" && window.innerWidth >= 992);
@@ -237,12 +241,35 @@ export default function Details9({ product }) {
   // Min/Max: API ne veriyorsa onu uygula
   // max_purchase_quantity = 0 ise sınırsız (null), değilse o değere kadar sınırlı
   const minQuantity = Number.isFinite(product?.min_purchase_quantity) ? Number(product.min_purchase_quantity) : 1;
-  const rawMax =
+  const rawMaxPurchase =
     product?.max_purchase_quantity === null || product?.max_purchase_quantity === undefined
       ? null
       : Number(product.max_purchase_quantity);
-  // 0 ise sınırsız (null), değilse o değeri kullan
-  const maxQuantity = rawMax === 0 ? null : (rawMax === null || Number.isNaN(rawMax) ? null : Math.max(rawMax, minQuantity));
+
+  const stockQuantity = (!product?.unlimited_stock && product?.stock_quantity != null)
+    ? Number(product.stock_quantity)
+    : null;
+
+  // Final max quantity (ikisi arasından en küçük olanı, ama 0 (unlimited) durumuna dikkat ederek)
+  const maxQuantity = useMemo(() => {
+    let limit = rawMaxPurchase === 0 ? null : rawMaxPurchase;
+
+    // Ön sipariş ürünlerinde stok limitini dikkate alma
+    if (!product?.is_pre_order && stockQuantity !== null) {
+      if (limit === null) limit = stockQuantity;
+      else limit = Math.min(limit, stockQuantity);
+    }
+
+    return limit === null ? null : Math.max(limit, minQuantity);
+  }, [rawMaxPurchase, stockQuantity, minQuantity, product?.is_pre_order]);
+
+  const isStockLimiting = useMemo(() => {
+    if (product?.is_pre_order) return false;
+    if (stockQuantity === null) return false;
+    if (rawMaxPurchase === 0 || rawMaxPurchase === null) return true;
+    return stockQuantity <= rawMaxPurchase;
+  }, [stockQuantity, rawMaxPurchase, product?.is_pre_order]);
+
   const [quantity, setQuantity] = useState(minQuantity);
 
   const existingCartItem = useMemo(() => {
@@ -341,16 +368,23 @@ export default function Details9({ product }) {
       if (result?.added) {
         setShowSuccess(true);
         setTimeout(() => setShowSuccess(false), 2000);
+      } else if (!result?.isGiftSelection) {
+        // Hediye seçimi için duraklatılmadıysa ve eklenemediyse hata göster
+        setErrorToastMessage(result?.message || "Sepete eklenirken bir hata oluştu.");
+        setShowErrorToast(true);
       }
     } catch (error) {
       console.error("Sepete ekleme hatası:", error);
+      setErrorToastMessage(error?.message || "Sistemsel bir hata oluştu. Lütfen tekrar deneyin.");
+      setShowErrorToast(true);
     } finally {
       setIsAdding(false);
     }
   };
   return (
     <section className=" pt_0" style={{ maxWidth: "100vw", overflow: "clip" }}>
-      <MaxQuantityToast visible={showMaxReachedToast} onHide={() => setShowMaxReachedToast(false)} maxQuantity={maxQuantity} />
+      <MaxQuantityToast visible={showMaxReachedToast} onHide={() => setShowMaxReachedToast(false)} maxQuantity={maxQuantity} isStockLimit={isStockLimiting} />
+      <ErrorToast visible={showErrorToast} onHide={() => setShowErrorToast(false)} message={errorToastMessage} />
       <div className="tf-main-product section-image-zoom">
         <div className="container">
           <div className="row">
@@ -361,6 +395,9 @@ export default function Details9({ product }) {
                     handleColor={handleColor}
                     currentColor={currentColor.value}
                     galleryImages={product.images || product.gallery_images || []}
+                    product={product}
+                    onOpenModel3d={() => setModel3dModalOpen(true)}
+                    onOpenVideo={() => setYoutubeModalOpen(true)}
                   />
                 </div>
               </div>
@@ -421,7 +458,6 @@ export default function Details9({ product }) {
                       </div>
                     )}
 
-                  {/* Fiyat - sadece PC’de (mobilde sticky bar’da) */}
                   <div className="tf-product-info-price d-none d-lg-block" style={{ marginBottom: "16px" }}>
                     <span className="price-on-sale" style={{ fontSize: "20px", fontWeight: "700", color: originalPrice ? "#0bc15c" : "var(--primary, #3c81b5)" }}>
                       {Number(finalPrice).toLocaleString("tr-TR")} TL
@@ -460,21 +496,13 @@ export default function Details9({ product }) {
                   </div>
 
                   {timeBasedDiscount && countdownTargetDate && (
-                    <div className="tf-product-info-countdown">
-                      <div className="countdown-wrap">
-                        <div className="countdown-title">
-                          <i className="icon-time tf-ani-tada" />
-                          <p>İNDİRİM BİTMEDEN SATIN ALIN</p>
-                        </div>
-                        <div className="tf-countdown style-1">
-                          <div className="js-countdown">
-                            <CountdownComponent
-                              labels="Gün :,Saat :,Dakika :,Saniye"
-                              targetDate={countdownTargetDate}
-                            />
-                          </div>
-                        </div>
-                      </div>
+                    <div className="tf-product-info-countdown" style={{ marginBottom: "24px" }}>
+                      <CountdownComponent
+                        targetDate={countdownTargetDate}
+                        variant="soft"
+                        title="Sınırlı Süre için geçerli"
+                        subtitle="İndirim bitmeden hemen satın alın!"
+                      />
                     </div>
                   )}
                   {/* Birlikte Al - desktop: burada; mobil: açıklama (tab) alanından sonra (sayfada) */}
@@ -491,6 +519,51 @@ export default function Details9({ product }) {
                       />
                     </div>
                   )}
+
+                  {/* Desktop Medya Butonları (Kısa açıklamanın üstünde) */}
+                  <div className="d-none d-md-flex" style={{ gap: "10px", marginTop: "16px", marginBottom: "20px", flexWrap: "wrap" }}>
+                    {(product.model_3d_url || product.media?.model_3d_url) && (
+                      <OverlayCtaButton
+                        variant="primary"
+                        onClick={() => setModel3dModalOpen(true)}
+                        leftIcon={<Model3dIcon size={12} />}
+                        className="static-cta"
+                      >
+                        3D GÖRÜNTÜLEME
+                      </OverlayCtaButton>
+                    )}
+                    {product.video_url && (
+                      <OverlayCtaButton
+                        onClick={() => setYoutubeModalOpen(true)}
+                        leftIcon={<PlayIcon size={14} />}
+                        rightIcon={<ArrowIcon size={10} />}
+                        className="static-cta"
+                      >
+                        ÜRÜN VİDEOSUNU İZLE
+                      </OverlayCtaButton>
+                    )}
+                  </div>
+
+                  <style jsx global>{`
+                    .static-cta {
+                      position: static !important;
+                      transform: none !important;
+                      width: auto !important;
+                      padding-top: 9px !important;
+                      padding-bottom: 9px !important;
+                      padding-left: 19px !important;
+                      padding-right: 19px !important;
+                      font-size: 14px !important;
+                    }
+                    .static-cta .overlay-cta-btn__icon--left svg {
+                      width: 16px !important;
+                      height: 16px !important;
+                    }
+                    .static-cta .overlay-cta-btn__icon--right svg {
+                      width: 12px !important;
+                      height: 12px !important;
+                    }
+                  `}</style>
 
                   {/* Kısa Açıklama - sadece desktop (mobilde render etme) */}
                   {showShortDescription && product.short_description && (
@@ -545,7 +618,7 @@ export default function Details9({ product }) {
                     </>
                   )}
 
-                  {/* Ürün protokolü + 3D/Video butonları */}
+                  {/* Ürün protokolü */}
                   <div className="tf-product-info-protocol" style={{ marginTop: "16px", marginBottom: "20px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
                       {product.product_protocol && (
@@ -574,33 +647,12 @@ export default function Details9({ product }) {
                           )}
                         </>
                       )}
-                      <div className="tf-product-protocol-cta-buttons" style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", marginLeft: product.product_protocol ? "auto" : 0 }}>
-                        {(product.model_3d_url || product.media?.model_3d_url) && (
-                          <OverlayCtaButton
-                            position="right"
-                            onClick={() => setModel3dModalOpen(true)}
-                            ariaLabel="3D modeli incele"
-                            leftIcon={<Model3dIcon size={14} />}
-                            variant="primary"
-                          >
-                            3D İNCELE
-                          </OverlayCtaButton>
-                        )}
-                        <OverlayCtaButton
-                          position="right"
-                          onClick={() => {
-                            if (product.video_url) setYoutubeModalOpen(true);
-                            else if (typeof window !== "undefined") window.alert("Bu ürün için video henüz eklenmemiş.");
-                          }}
-                          ariaLabel="Ürün videosunu izle"
-                          leftIcon={<YoutubeIcon size={16} />}
-                          rightIcon={<ArrowIcon size={12} />}
-                        >
-                          ÜRÜN VİDEOSUNU İZLE
-                        </OverlayCtaButton>
-                      </div>
                     </div>
                   </div>
+
+
+
+
 
                   <div className="tf-product-info-buy-button">
                     <form onSubmit={(e) => e.preventDefault()} className="">
@@ -621,26 +673,11 @@ export default function Details9({ product }) {
                         </button>
 
                       </div>
-
-                      {/* <div className="w-100">
-                        <a href="#" className="btns-full">
-                          Sepete Ekle{" "}
-                          <Image
-                            alt="image"
-                            src="/images/payments/paypal.png"
-                            width={64}
-                            height={18}
-                          />
-                        </a>
-                        <a href="#" className="payment-more-option">
-                          Daha fazla ödeme seçeneği
-                        </a>
-                      </div> */}
                     </form>
                   </div>
 
                   <style jsx global>{`
-                    /* Trendyol tarzı animasyonlu mesajlar */
+                   
                     .product-status-content {
                       position: relative;
                       display: flex;
@@ -650,15 +687,8 @@ export default function Details9({ product }) {
                       min-height: 24px;
                     }
 
-                    .announcement-messages-wrapper {
-                      position: relative;
-                      flex: 1;
-                      overflow: hidden;
-                      min-height: 24px;
-                    }
-
                     .announcement-message {
-                      font-size: 11px;
+                      font-size: 13px;
                       position: absolute;
                       top: 0;
                       left: 0;
@@ -850,65 +880,7 @@ export default function Details9({ product }) {
                     }
                   `}</style>
                   <div className="tf-product-info-extra-link">
-                    {/* <a
-                      href="#compare_color"
-                      data-bs-toggle="modal"
-                      className="tf-product-extra-icon"
-                    >
-                      <div className="icon">
-                        <Image
-                          alt="image"
-                          src="/images/item/compare.svg"
-                          width={20}
-                          height={20}
-                        />
-                      </div>
-                      <div className="text fw-6">Compare color</div>
-                    </a> */}
-                    {/* <a href="#ask_question" data-bs-toggle="modal" className="tf-product-extra-icon">
-                      <div className="icon">
-                        <i className="icon-question" />
-                      </div>
-                      <div className="text fw-6">Soru sor</div>
-                    </a> */}
-                    {/* <a href="#delivery_return" data-bs-toggle="modal" className="tf-product-extra-icon">
-                      <div className="icon">
-                        <svg
-                          className="d-inline-block"
-                          xmlns="http://www.w3.org/2000/svg"
-                          width={22}
-                          height={18}
-                          viewBox="0 0 22 18"
-                          fill="currentColor"
-                        >
-                          <path d="M21.7872 10.4724C21.7872 9.73685 21.5432 9.00864 21.1002 8.4217L18.7221 5.27043C18.2421 4.63481 17.4804 4.25532 16.684 4.25532H14.9787V2.54885C14.9787 1.14111 13.8334 0 12.4255 0H9.95745V1.69779H12.4255C12.8948 1.69779 13.2766 2.07962 13.2766 2.54885V14.5957H8.15145C7.80021 13.6052 6.85421 12.8936 5.74468 12.8936C4.63515 12.8936 3.68915 13.6052 3.33792 14.5957H2.55319C2.08396 14.5957 1.70213 14.2139 1.70213 13.7447V2.54885C1.70213 2.07962 2.08396 1.69779 2.55319 1.69779H9.95745V0H2.55319C1.14528 0 0 1.14111 0 2.54885V13.7447C0 15.1526 1.14528 16.2979 2.55319 16.2979H3.33792C3.68915 17.2884 4.63515 18 5.74468 18C6.85421 18 7.80021 17.2884 8.15145 16.2979H13.423C13.7742 17.2884 14.7202 18 15.8297 18C16.9393 18 17.8853 17.2884 18.2365 16.2979H21.7872V10.4724ZM16.684 5.95745C16.9494 5.95745 17.2034 6.08396 17.3634 6.29574L19.5166 9.14894H14.9787V5.95745H16.684ZM5.74468 16.2979C5.27545 16.2979 4.89362 15.916 4.89362 15.4468C4.89362 14.9776 5.27545 14.5957 5.74468 14.5957C6.21392 14.5957 6.59575 14.9776 6.59575 15.4468C6.59575 15.916 6.21392 16.2979 5.74468 16.2979ZM15.8298 16.2979C15.3606 16.2979 14.9787 15.916 14.9787 15.4468C14.9787 14.9776 15.3606 14.5957 15.8298 14.5957C16.299 14.5957 16.6809 14.9776 16.6809 15.4468C16.6809 15.916 16.299 16.2979 15.8298 16.2979ZM18.2366 14.5957C17.8853 13.6052 16.9393 12.8936 15.8298 12.8936C15.5398 12.8935 15.252 12.943 14.9787 13.04V10.8511H20.0851V14.5957H18.2366Z" />
-                        </svg>
-                      </div>
-                      <div className="text fw-6">Teslimat &amp; İade</div>
-                    </a> */}
-                    {/* <a href="#share_social" data-bs-toggle="modal" className="tf-product-extra-icon" title="Paylaş" aria-label="Paylaş">
-                      <div className="icon">
-                        <i className="icon-share" />
 
-                      </div>
-                      <div className="text fw-6">Paylaş</div>
-                    </a> */}
-                    {/* <a
-                      href={`https://api.whatsapp.com/send?phone=${(siteConfig?.contact?.phone?.whatsapp?.tel || "905526428208").replace(/\D/g, "")}&text=${encodeURIComponent(
-                        `${product?.name || product?.title || "Ürün"} hakkında bilgi almak istiyorum.`
-                      )}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="tf-product-extra-icon"
-                      aria-label="WhatsApp ile soru sor"
-                    >
-                      <div className="icon tf-whatsapp-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-                        </svg>
-                      </div>
-                      <div className="text fw-6">WhatsApp</div>
-                    </a> */}
 
                   </div>
 
@@ -1020,6 +992,7 @@ export default function Details9({ product }) {
         setQuantity={setQuantity}
         minQuantity={minQuantity}
         maxQuantity={maxQuantity}
+        isStockLimit={isStockLimiting}
         soldOut={buttonState.buttonDisabled && buttonState.buttonText === "Stokta Yok"}
       />
 

@@ -8,6 +8,8 @@ import { Autoplay } from "swiper/modules";
 
 import NavDotsPill from "@/components/common/NavDotsPill";
 import { useCartStore } from "@/stores/cartStore";
+import MaxQuantityToast from "@/components/common/MaxQuantityToast";
+import ErrorToast from "@/components/common/ErrorToast";
 
 /**
  * Sepet üstünde gösterilen cross-sale / öneriler alanı.
@@ -25,6 +27,11 @@ export default function BirlikteAlSepet({ title = "Sepetinize ekleyebilirsiniz",
   const swiperRef = useRef(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [addingSlug, setAddingSlug] = useState(null);
+  const [showMaxReachedToast, setShowMaxReachedToast] = useState(false);
+  const [maxQuantityForToast, setMaxQuantityForToast] = useState(null);
+  const [isStockLimitForToast, setIsStockLimitForToast] = useState(false);
+  const [showErrorToast, setShowErrorToast] = useState(false);
+  const [errorToastMessage, setErrorToastMessage] = useState("");
 
   const cartProductIds = useMemo(() => {
     const ids = new Set();
@@ -57,6 +64,7 @@ export default function BirlikteAlSepet({ title = "Sepetinize ekleyebilirsiniz",
           final_price: p?.final_price ?? p?.discount_price ?? p?.price ?? p?.product?.final_price ?? p?.product?.discount_price ?? p?.product?.price ?? 0,
           cover_image: p?.cover_image || p?.product?.cover_image,
           category_slug: cat,
+          is_pre_order: p?.is_pre_order || p?.product?.is_pre_order || false,
         };
       });
     }
@@ -87,6 +95,10 @@ export default function BirlikteAlSepet({ title = "Sepetinize ekleyebilirsiniz",
         final_price: t.final_price ?? t.discount_price ?? t.price ?? 0,
         cover_image: t.cover_image,
         category_slug: t.category_slug || t.primary_category?.slug || "urunler",
+        stock_quantity: t.stock_quantity,
+        unlimited_stock: t.unlimited_stock,
+        max_purchase_quantity: t.max_purchase_quantity || t.max_quantity,
+        is_pre_order: t.is_pre_order || false,
       });
     });
 
@@ -96,19 +108,59 @@ export default function BirlikteAlSepet({ title = "Sepetinize ekleyebilirsiniz",
   const handleAddToCart = async (target) => {
     if (addingSlug || !target?.slug) return;
 
+    // Bulunan ürünü sepetteki miktarıyla karşılaştır
+    const itemInCart = items.find(it => (it.productId || it.product?.id || it.id) === target.id);
+    const currentQty = itemInCart?.quantity || 0;
+
+    // Ürün verilerini hazırla
     const product = {
       id: target.id,
       slug: target.slug,
       name: target.name,
       price: target.final_price,
       cover_image: target.cover_image,
+      stock_quantity: target.stock_quantity,
+      unlimited_stock: target.unlimited_stock,
+      max_purchase_quantity: target.max_purchase_quantity || target.max_quantity,
+      is_pre_order: target.is_pre_order || false
     };
+
+    // Limit kontrolü
+    const purchaseLimit = Number(product.max_purchase_quantity) || 0;
+    const stockLimit = (!product.unlimited_stock && product.stock_quantity != null) ? Number(product.stock_quantity) : null;
+
+    let effectiveLimit = purchaseLimit === 0 ? null : purchaseLimit;
+    if (!product.is_pre_order && stockLimit !== null) {
+      if (effectiveLimit === null) effectiveLimit = stockLimit;
+      else effectiveLimit = Math.min(effectiveLimit, stockLimit);
+    }
+
+    if (effectiveLimit !== null && effectiveLimit > 0 && currentQty >= effectiveLimit) {
+      const isStockLimiting = !product.is_pre_order && stockLimit !== null && (purchaseLimit === 0 || stockLimit <= purchaseLimit);
+      setMaxQuantityForToast(effectiveLimit);
+      setIsStockLimitForToast(isStockLimiting);
+      setShowMaxReachedToast(true);
+      return;
+    }
 
     setAddingSlug(target.slug);
     try {
-      await addItem(product, 1, true);
+      const result = await addItem(product, 1, true);
+      if (result && !result.added) {
+        if (result.error === 'MAX_QUANTITY_REACHED' || result.message?.includes('stok')) {
+          const limit = result.maxQuantity || effectiveLimit;
+          setMaxQuantityForToast(limit);
+          setIsStockLimitForToast(true); // Genelde sepet üstünde limit hatası stoktandır
+          setShowMaxReachedToast(true);
+        } else {
+          setErrorToastMessage(result.message || "Sepete eklenirken bir hata oluştu.");
+          setShowErrorToast(true);
+        }
+      }
     } catch (e) {
       console.error("Cross-sale sepete ekleme hatası:", e);
+      setErrorToastMessage(e.message || "Sistemsel bir hata oluştu.");
+      setShowErrorToast(true);
     } finally {
       setAddingSlug(null);
     }
@@ -118,6 +170,8 @@ export default function BirlikteAlSepet({ title = "Sepetinize ekleyebilirsiniz",
 
   return (
     <div className="birlikte-al-sepet" style={{ marginBottom: 4, width: "100%", maxWidth: "100%", minWidth: 0, }}>
+      <MaxQuantityToast visible={showMaxReachedToast} onHide={() => setShowMaxReachedToast(false)} maxQuantity={maxQuantityForToast} isStockLimit={isStockLimitForToast} />
+      <ErrorToast visible={showErrorToast} onHide={() => setShowErrorToast(false)} message={errorToastMessage} />
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8, minWidth: 0 }}>
         <span style={{ fontSize: 16, fontWeight: 700, color: "#111", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title}</span>
         {targetProducts.length > 1 && (

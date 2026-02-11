@@ -12,6 +12,7 @@ import ClearCartButton from "@/components/common/ClearCartButton";
 import MaxQuantityToast from "@/components/common/MaxQuantityToast";
 import SimartButton from "@/components/common/SimartButton";
 import { calculateCartTotals } from "@/utils/cartTotals";
+import ErrorToast from "@/components/common/ErrorToast";
 
 export default function ShopCart() {
   const { items, updateQuantity, removeItem, applyCoupon, removeCoupon } = useCartStore();
@@ -37,6 +38,9 @@ export default function ShopCart() {
   const [loadingActions, setLoadingActions] = useState({});
   const [showMaxReachedToast, setShowMaxReachedToast] = useState(false);
   const [maxQuantityForToast, setMaxQuantityForToast] = useState(null);
+  const [isStockLimitForToast, setIsStockLimitForToast] = useState(false);
+  const [showErrorToast, setShowErrorToast] = useState(false);
+  const [errorToastMessage, setErrorToastMessage] = useState("");
   const [recommendations, setRecommendations] = useState([]);
 
   // Items değiştiğinde, artık sepette olmayan ürünlerin loading state'ini temizle
@@ -76,9 +80,15 @@ export default function ShopCart() {
 
     setLoadingActions((prev) => ({ ...prev, [id]: action }));
     try {
-      await updateQuantity(id, quantity);
+      const result = await updateQuantity(id, quantity);
+      if (result && result.error) {
+        setErrorToastMessage(result.message || "Miktar güncellenirken bir hata oluştu.");
+        setShowErrorToast(true);
+      }
     } catch (error) {
       console.error("Miktar güncelleme hatası:", error);
+      setErrorToastMessage(error?.message || "Sistemsel bir hata oluştu.");
+      setShowErrorToast(true);
     } finally {
       setLoadingActions((prev) => {
         const newState = { ...prev };
@@ -159,6 +169,8 @@ export default function ShopCart() {
 
   return (
     <>
+      <MaxQuantityToast visible={showMaxReachedToast} onHide={() => setShowMaxReachedToast(false)} maxQuantity={maxQuantityForToast} isStockLimit={isStockLimitForToast} />
+      <ErrorToast visible={showErrorToast} onHide={() => setShowErrorToast(false)} message={errorToastMessage} />
       <div className="modal fullRight fade modal-shopping-cart" id="shoppingCart">
         <div className="modal-dialog">
           <div className="modal-content">
@@ -236,21 +248,21 @@ export default function ShopCart() {
                         const cartBasedCampaigns =
                           applied_campaigns && applied_campaigns.length > 0
                             ? (() => {
-                                const productBasedCampaignIds = new Set();
-                                items.forEach((item) => {
-                                  if (item.applied_campaign_ids && Array.isArray(item.applied_campaign_ids)) {
-                                    item.applied_campaign_ids.forEach((id) => productBasedCampaignIds.add(id));
-                                  }
-                                });
+                              const productBasedCampaignIds = new Set();
+                              items.forEach((item) => {
+                                if (item.applied_campaign_ids && Array.isArray(item.applied_campaign_ids)) {
+                                  item.applied_campaign_ids.forEach((id) => productBasedCampaignIds.add(id));
+                                }
+                              });
 
-                                return applied_campaigns.filter((campaign) => {
-                                  const isProductBasedType =
-                                    campaign.type === "x_urun_y_tl" || campaign.type === "x_alana_y_hediye";
-                                  const isNotInAnyProduct = !productBasedCampaignIds.has(campaign.id);
-                                  const hasNextTier = campaign.next_tier?.message;
-                                  return !isProductBasedType && (isNotInAnyProduct || hasNextTier);
-                                });
-                              })()
+                              return applied_campaigns.filter((campaign) => {
+                                const isProductBasedType =
+                                  campaign.type === "x_urun_y_tl" || campaign.type === "x_alana_y_hediye";
+                                const isNotInAnyProduct = !productBasedCampaignIds.has(campaign.id);
+                                const hasNextTier = campaign.next_tier?.message;
+                                return !isProductBasedType && (isNotInAnyProduct || hasNextTier);
+                              });
+                            })()
                             : [];
 
                         // Kampanya mesajından ürün adını bul ve sepetteki ürünle eşleştir
@@ -339,15 +351,25 @@ export default function ShopCart() {
                                     const isLoadingDecrease = isLoading === "decrease";
                                     const isLoadingIncrease = isLoading === "increase";
                                     const isAnyLoading = !!isLoading;
-                                    const rawMax =
+                                    const purchaseLimit =
                                       item.max_purchase_quantity ??
                                       item.product?.max_purchase_quantity ??
                                       item.product?.max_quantity ??
                                       null;
-                                    const parsedMax = rawMax === null || rawMax === undefined ? null : Number(rawMax);
-                                    // maxQuantity = 0 ise sınırsız (null), değilse o değere kadar sınırlı
-                                    const maxQty =
-                                      parsedMax === 0 ? null : Number.isFinite(parsedMax) ? parsedMax : null;
+                                    const parsedPurchaseLimit = purchaseLimit === null || purchaseLimit === undefined ? null : Number(purchaseLimit);
+
+                                    const stockLimit = (!item.product?.unlimited_stock && item.product?.stock_quantity != null)
+                                      ? Number(item.product.stock_quantity)
+                                      : null;
+
+                                    let maxQty = parsedPurchaseLimit === 0 ? null : (parsedPurchaseLimit != null ? Number(parsedPurchaseLimit) : null);
+                                    if (!item.product?.is_pre_order && stockLimit !== null) {
+                                      if (maxQty === null) maxQty = stockLimit;
+                                      else maxQty = Math.min(maxQty, stockLimit);
+                                    }
+
+                                    const isStockLimiting = !item.product?.is_pre_order && stockLimit !== null && (parsedPurchaseLimit === null || parsedPurchaseLimit === 0 || stockLimit <= parsedPurchaseLimit);
+
                                     const minQty =
                                       item.min_purchase_quantity ?? item.product?.min_purchase_quantity ?? 1;
                                     // Bu ürün için kampanya mesajlarını al
@@ -396,8 +418,8 @@ export default function ShopCart() {
                                           </Link>
                                           <div className="price fw-6">
                                             {displayDiscountPrice != null &&
-                                            displayRegularPrice != null &&
-                                            displayDiscountPrice < displayRegularPrice ? (
+                                              displayRegularPrice != null &&
+                                              displayDiscountPrice < displayRegularPrice ? (
                                               <>
                                                 <span
                                                   style={{ color: "#0bc15c", fontWeight: "600", marginRight: "8px" }}
@@ -440,6 +462,7 @@ export default function ShopCart() {
                                                 initialValue={item.quantity}
                                                 onMaxQuantityReached={() => {
                                                   setMaxQuantityForToast(maxQty);
+                                                  setIsStockLimitForToast(isStockLimiting);
                                                   setShowMaxReachedToast(true);
                                                 }}
                                               />
@@ -536,8 +559,8 @@ export default function ShopCart() {
                                     const giftSourceNames =
                                       giftItem.applied_campaign_ids && applied_campaigns
                                         ? giftItem.applied_campaign_ids
-                                            .map((cid) => applied_campaigns.find((c) => c.id === cid)?.name)
-                                            .filter(Boolean)
+                                          .map((cid) => applied_campaigns.find((c) => c.id === cid)?.name)
+                                          .filter(Boolean)
                                         : [];
                                     const isLastGift = giftIndex === relatedGifts.length - 1;
                                     const shouldRemoveBorder = isReallyLast && isLastGift;
@@ -631,8 +654,8 @@ export default function ShopCart() {
                               const giftSourceNames =
                                 giftItem.applied_campaign_ids && applied_campaigns
                                   ? giftItem.applied_campaign_ids
-                                      .map((cid) => applied_campaigns.find((c) => c.id === cid)?.name)
-                                      .filter(Boolean)
+                                    .map((cid) => applied_campaigns.find((c) => c.id === cid)?.name)
+                                    .filter(Boolean)
                                   : [];
                               return (
                                 <div
@@ -712,8 +735,8 @@ export default function ShopCart() {
                               const giftSourceNames =
                                 giftItem.applied_campaign_ids && applied_campaigns
                                   ? giftItem.applied_campaign_ids
-                                      .map((cid) => applied_campaigns.find((c) => c.id === cid)?.name)
-                                      .filter(Boolean)
+                                    .map((cid) => applied_campaigns.find((c) => c.id === cid)?.name)
+                                    .filter(Boolean)
                                   : [];
                               return (
                                 <div
@@ -825,75 +848,75 @@ export default function ShopCart() {
                         {(cartTotals.customDiscountAmount > 0 ||
                           cartTotals.campaignDiscountAmount > 0 ||
                           cartTotals.couponDiscountAmount > 0) && (
-                          <div>
-                            {/* Size özel indirim */}
-                            {cartTotals.customDiscountAmount > 0 && (
-                              <div className="tf-cart-totals-item" style={{ borderTop: "none", borderBottom: "none" }}>
-                                <div className="tf-cart-total-label fw-6" style={{ fontSize: "14px" }}>
-                                  Size Özel İndirim
-                                </div>
-                                <div
-                                  className="tf-cart-total-value fw-6"
-                                  style={{ fontSize: "14px", color: "#0bc15c" }}
-                                >
-                                  - {cartTotals.customDiscountAmount.toLocaleString("tr-TR")} TL
-                                </div>
-                              </div>
-                            )}
-                            {/* Kampanya İndirimi */}
-                            {cartTotals.campaignDiscountAmount > 0 && (
-                              <div className="tf-cart-totals-item" style={{ borderTop: "none", borderBottom: "none" }}>
-                                <div className="tf-cart-total-label fw-6" style={{ fontSize: "14px" }}>
-                                  Kampanya İndirimi
-                                </div>
-                                <div
-                                  className="tf-cart-total-value fw-6"
-                                  style={{ fontSize: "14px", color: "#0bc15c" }}
-                                >
-                                  - {cartTotals.campaignDiscountAmount.toLocaleString("tr-TR")} TL
-                                </div>
-                              </div>
-                            )}
-                            {/* Kupon İndirimi */}
-                            {cartTotals.couponDiscountAmount > 0 && coupon && coupon.code && (
-                              <div className="tf-cart-totals-item" style={{ borderTop: "none", borderBottom: "none" }}>
-                                <div
-                                  className="tf-cart-total-label fw-6"
-                                  style={{ fontSize: "14px", display: "flex", alignItems: "center", gap: "8px" }}
-                                >
-                                  <span>Kupon İndirimi:</span>
-                                  {coupon.code && (
-                                    <span style={{ fontWeight: "600", color: "#333" }}>{coupon.code}</span>
-                                  )}
-                                  <button
-                                    type="button"
-                                    onClick={handleRemoveCoupon}
-                                    disabled={isRemovingCoupon}
-                                    style={{
-                                      fontSize: "12px",
-                                      color: "#dc3545",
-                                      background: "none",
-                                      border: "none",
-                                      cursor: isRemovingCoupon ? "not-allowed" : "pointer",
-                                      padding: "2px 4px",
-                                      opacity: isRemovingCoupon ? 0.5 : 1,
-                                      textDecoration: "underline",
-                                      fontWeight: "600",
-                                    }}
+                            <div>
+                              {/* Size özel indirim */}
+                              {cartTotals.customDiscountAmount > 0 && (
+                                <div className="tf-cart-totals-item" style={{ borderTop: "none", borderBottom: "none" }}>
+                                  <div className="tf-cart-total-label fw-6" style={{ fontSize: "14px" }}>
+                                    Size Özel İndirim
+                                  </div>
+                                  <div
+                                    className="tf-cart-total-value fw-6"
+                                    style={{ fontSize: "14px", color: "#0bc15c" }}
                                   >
-                                    {isRemovingCoupon ? "Kaldırılıyor..." : "Kaldır"}
-                                  </button>
+                                    - {cartTotals.customDiscountAmount.toLocaleString("tr-TR")} TL
+                                  </div>
                                 </div>
-                                <div
-                                  className="tf-cart-total-value fw-6"
-                                  style={{ fontSize: "14px", color: "#0bc15c" }}
-                                >
-                                  - {cartTotals.couponDiscountAmount.toLocaleString("tr-TR")} TL
+                              )}
+                              {/* Kampanya İndirimi */}
+                              {cartTotals.campaignDiscountAmount > 0 && (
+                                <div className="tf-cart-totals-item" style={{ borderTop: "none", borderBottom: "none" }}>
+                                  <div className="tf-cart-total-label fw-6" style={{ fontSize: "14px" }}>
+                                    Kampanya İndirimi
+                                  </div>
+                                  <div
+                                    className="tf-cart-total-value fw-6"
+                                    style={{ fontSize: "14px", color: "#0bc15c" }}
+                                  >
+                                    - {cartTotals.campaignDiscountAmount.toLocaleString("tr-TR")} TL
+                                  </div>
                                 </div>
-                              </div>
-                            )}
-                          </div>
-                        )}
+                              )}
+                              {/* Kupon İndirimi */}
+                              {cartTotals.couponDiscountAmount > 0 && coupon && coupon.code && (
+                                <div className="tf-cart-totals-item" style={{ borderTop: "none", borderBottom: "none" }}>
+                                  <div
+                                    className="tf-cart-total-label fw-6"
+                                    style={{ fontSize: "14px", display: "flex", alignItems: "center", gap: "8px" }}
+                                  >
+                                    <span>Kupon İndirimi:</span>
+                                    {coupon.code && (
+                                      <span style={{ fontWeight: "600", color: "#333" }}>{coupon.code}</span>
+                                    )}
+                                    <button
+                                      type="button"
+                                      onClick={handleRemoveCoupon}
+                                      disabled={isRemovingCoupon}
+                                      style={{
+                                        fontSize: "12px",
+                                        color: "#dc3545",
+                                        background: "none",
+                                        border: "none",
+                                        cursor: isRemovingCoupon ? "not-allowed" : "pointer",
+                                        padding: "2px 4px",
+                                        opacity: isRemovingCoupon ? 0.5 : 1,
+                                        textDecoration: "underline",
+                                        fontWeight: "600",
+                                      }}
+                                    >
+                                      {isRemovingCoupon ? "Kaldırılıyor..." : "Kaldır"}
+                                    </button>
+                                  </div>
+                                  <div
+                                    className="tf-cart-total-value fw-6"
+                                    style={{ fontSize: "14px", color: "#0bc15c" }}
+                                  >
+                                    - {cartTotals.couponDiscountAmount.toLocaleString("tr-TR")} TL
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
 
                         <div className="tf-cart-totals-item tf-cart-totals-item-total">
                           <div className="tf-cart-total-label fw-6" style={{ fontSize: "18px" }}>

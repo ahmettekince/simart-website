@@ -1,6 +1,14 @@
 "use client";
 import React, { useEffect, useState } from "react";
 
+const sortingOptions = [
+  { text: "Önerilen Sıralama" },
+  { text: "Alfabetik, A-Z" },
+  { text: "Alfabetik, Z-A" },
+  { text: "En düşük fiyat" },
+  { text: "En yüksek fiyat" },
+];
+
 export default function Sorting({ products = [], setFinalSorted }) {
   const [selectedOptions, setSelectedOptions] = useState(sortingOptions[0]);
 

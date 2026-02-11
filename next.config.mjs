@@ -4,24 +4,12 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '**.simart.me',
-      },
-      {
-        protocol: 'https',
-        hostname: '**.simart.cloud',
+        hostname: '**',
       },
       {
         protocol: 'http',
-        hostname: 'localhost',
-      },
-      {
-        protocol: 'http',
-        hostname: '**.simart.cloud',
-      },
-      {
-        protocol: 'http',
-        hostname: '**.simart.me',
-      },
+        hostname: '**',
+      }
     ],
     // Next.js 16 için gerekli: kullanılan kalite değerlerini tanımla
     qualities: [75, 90, 100],

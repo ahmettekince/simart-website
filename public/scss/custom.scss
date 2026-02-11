@@ -783,110 +783,109 @@ input[type="checkbox"]:checked,
 /* OverlayCtaButton – medya üzerinde overlay CTA butonu (tekrar kullanılabilir) */
 .overlay-cta-btn {
   position: absolute;
-  z-index: 4;
+  z-index: 5;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 8px 14px;
+  gap: 5px;
+  padding: 6px 12px;
   border: none;
-  border-radius: 12px;
+  border-radius: 99px;
   color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.3px;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.1px;
   text-transform: uppercase;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
   white-space: nowrap;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 
   .overlay-cta-btn__icon {
     display: inline-flex;
     flex-shrink: 0;
     align-items: center;
     justify-content: center;
+
+    svg {
+      width: 13px;
+      height: 13px;
+    }
   }
 
   .overlay-cta-btn__text {
     font-family: inherit;
+    line-height: 1;
   }
 
-  /* Mavi-beyaz varyantlar */
+  /* Trendyol Tarzı Turuncu-Pembe Gradient */
   &.overlay-cta-btn--default {
-    background: var(--primary, #3c81b5);
+    background: linear-gradient(270deg, #ff5e9e 0%, #ff9000 100%);
     color: #fff;
-    border: 1px solid var(--primary, #3c81b5);
-    box-shadow: 0 2px 8px rgba(60, 129, 181, 0.3);
 
     &:hover {
-      box-shadow: 0 4px 12px rgba(60, 129, 181, 0.4);
+      box-shadow: 0 4px 12px rgba(255, 94, 158, 0.3);
+      opacity: 0.95;
     }
   }
 
+  /* 3D İncele için Beyaz/Mavi varyant */
   &.overlay-cta-btn--primary {
     background: #fff;
     color: var(--primary, #3c81b5);
     border: 1px solid var(--primary, #3c81b5);
-    box-shadow: 0 2px 8px rgba(60, 129, 181, 0.2);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 
     &:hover {
       background: var(--primary, #3c81b5);
       color: #fff;
-      box-shadow: 0 4px 12px rgba(60, 129, 181, 0.3);
+      box-shadow: 0 3px 8px rgba(60, 129, 181, 0.12);
     }
   }
 
-  /* Mobil: foto altında, yarısı foto üzerinde yarısı dışında */
+  /* Mobil: Fotoğrafın alt kenarında, yarısı üzerinde yarısı dışında */
   @media (max-width: 767px) {
-    bottom: 0;
+    bottom: 0px;
     transform: translateY(50%);
+    padding: 4px 10px;
+    font-size: 9px;
+    gap: 4px;
+
+    .overlay-cta-btn__icon svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    &:hover {
+      transform: translateY(50%) scale(1.01);
+    }
+
+    &.overlay-cta-btn--right {
+      right: 15px;
+    }
+
+    &.overlay-cta-btn--left {
+      left: 15px;
+    }
+  }
+
+  /* Desktop: Fotoğrafın alt kenarında, yarısı üzerinde yarısı dışında */
+  @media (min-width: 768px) {
+    bottom: 0px;
+    transform: translateY(50%);
+    padding: 6px 12px;
+    font-size: 10px;
 
     &:hover {
       transform: translateY(50%) scale(1.02);
     }
 
-    &:active {
-      transform: translateY(50%) scale(0.98);
-    }
-
-    padding: 0px 4px;
-    font-size: 9px;
-
     &.overlay-cta-btn--right {
-      right: 12px;
-      left: auto;
+      right: 20px;
     }
 
     &.overlay-cta-btn--left {
-      left: 12px;
-      right: auto;
-    }
-  }
-
-  /* Desktop: foto içinde */
-  @media (min-width: 768px) {
-    bottom: 12px;
-    transform: none;
-
-    &:hover {
-      transform: scale(1.02);
-    }
-
-    &:active {
-      transform: scale(0.98);
-    }
-
-    padding: 2px 6px;
-    font-size: 11px;
-
-    &.overlay-cta-btn--right {
-      right: 16px;
-      left: auto;
-    }
-
-    &.overlay-cta-btn--left {
-      left: 16px;
-      right: auto;
+      left: 20px;
     }
   }
 }
@@ -933,7 +932,7 @@ input[type="checkbox"]:checked,
     flex-direction: row;
     flex-wrap: nowrap;
     align-items: center;
-    gap: 2px;
+    gap: 4px;
   }
 
   /* Desktop: foto içinde, sağa yaslı */

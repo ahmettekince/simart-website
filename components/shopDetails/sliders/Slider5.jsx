@@ -6,11 +6,15 @@ import { Navigation, Thumbs } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Gallery, Item } from "react-photoswipe-gallery";
 import NavDotsPill from "@/components/common/NavDotsPill";
+import OverlayCtaButton, { Model3dIcon, PlayIcon, ArrowIcon } from "@/components/common/OverlayCtaButton";
 
 export default function Slider5({
   currentColor = "Beige",
   handleColor = () => { },
   galleryImages = [],
+  product = {},
+  onOpenModel3d = () => { },
+  onOpenVideo = () => { },
 }) {
   // Tek kaynak: galleryImages. İlk görsel zaten cover olarak kabul edilir.
   const normalized = Array.isArray(galleryImages)
@@ -201,7 +205,7 @@ export default function Slider5({
         ))}
       </Swiper>
       <Gallery>
-        <div className="tf-product-main-with-dots">
+        <div className="tf-product-main-with-dots" style={{ border: "1px solid #f5f5f5", borderRadius: "8px" }}>
           <Swiper
             dir="ltr"
             style={{ touchAction: "pan-y" }}
@@ -220,24 +224,24 @@ export default function Slider5({
             onSlideChange={handleSlideChange}
           >
             {images.map((slide, index) => (
-                <SwiperSlide className="swiper-slide" key={index}>
-                  <Item original={slide.src} thumbnail={slide.src} width={slide.width} height={slide.height}>
-                    {({ ref, open }) => (
-                      <a onClick={open} className="item">
-                        <Image
-                          ref={ref}
-                          className="tf-image-zoom lazyload"
-                          data-zoom={slide.src}
-                          data-src={slide.src}
-                          alt="image"
-                          src={slide.src}
-                          width={slide.width}
-                          height={slide.height}
-                        />
-                      </a>
-                    )}
-                  </Item>
-                </SwiperSlide>
+              <SwiperSlide className="swiper-slide" key={index}>
+                <Item original={slide.src} thumbnail={slide.src} width={slide.width} height={slide.height}>
+                  {({ ref, open }) => (
+                    <a onClick={open} className="item">
+                      <Image
+                        ref={ref}
+                        className="tf-image-zoom lazyload"
+                        data-zoom={slide.src}
+                        data-src={slide.src}
+                        alt="image"
+                        src={slide.src}
+                        width={slide.width}
+                        height={slide.height}
+                      />
+                    </a>
+                  )}
+                </Item>
+              </SwiperSlide>
             ))}
             <div className="swiper-button-next button-style-arrow thumbs-next"></div>
             <div className="swiper-button-prev button-style-arrow thumbs-prev"></div>
@@ -252,6 +256,31 @@ export default function Slider5({
               />
             </div>
           )}
+          {/* Trendyol tarzı medya overlay butonları - Mobilde kalsın, desktopta Details9 üstten hallediyor */}
+          <div className="overlay-cta-buttons-wrapper d-md-none">
+            {(product.model_3d_url || product.media?.model_3d_url) && (
+              <OverlayCtaButton
+                position="right"
+                onClick={onOpenModel3d}
+                ariaLabel="3D modeli incele"
+                leftIcon={<Model3dIcon size={12} />}
+                variant="primary"
+              >
+                3D GÖRÜNTÜLEME
+              </OverlayCtaButton>
+            )}
+            {product.video_url && (
+              <OverlayCtaButton
+                position="right"
+                onClick={onOpenVideo}
+                ariaLabel="Ürün videosunu izle"
+                leftIcon={<PlayIcon size={14} />}
+                rightIcon={<ArrowIcon size={10} />}
+              >
+                ÜRÜN VİDEOSUNU İZLE
+              </OverlayCtaButton>
+            )}
+          </div>
         </div>
       </Gallery>
     </>

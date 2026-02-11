@@ -28,49 +28,49 @@ export default function Announcmentbar({ bgColor = "bg_violet" }) {
       <div className="wrap-announcement-bar">
         <div className="box-sw-announcement-bar speed-1">
           <div className="announcement-bar-item">
-            <p>FREE SHIPPING AND RETURNS</p>
+            <p></p>
           </div>
           <div className="announcement-bar-item">
-            <p>NEW SEASON, NEW STYLES: FASHION SALE YOU CAN'T MISS</p>
+            <p></p>
           </div>
           <div className="announcement-bar-item">
-            <p>LIMITED TIME OFFER: FASHION SALE YOU CAN'T RESIST</p>
+            <p></p>
           </div>
           <div className="announcement-bar-item">
-            <p>FREE SHIPPING AND RETURNS</p>
+            <p></p>
           </div>
           <div className="announcement-bar-item">
-            <p>NEW SEASON, NEW STYLES: FASHION SALE YOU CAN'T MISS</p>
+            <p></p>
           </div>
           <div className="announcement-bar-item">
-            <p>LIMITED TIME OFFER: FASHION SALE YOU CAN'T RESIST</p>
+            <p></p>
           </div>
           <div className="announcement-bar-item">
-            <p>FREE SHIPPING AND RETURNS</p>
+            <p></p>
           </div>
           <div className="announcement-bar-item">
-            <p>NEW SEASON, NEW STYLES: FASHION SALE YOU CAN'T MISS</p>
+            <p></p>
           </div>
           <div className="announcement-bar-item">
-            <p>LIMITED TIME OFFER: FASHION SALE YOU CAN'T RESIST</p>
+            <p></p>
           </div>
           <div className="announcement-bar-item">
-            <p>FREE SHIPPING AND RETURNS</p>
+            <p></p>
           </div>
           <div className="announcement-bar-item">
-            <p>NEW SEASON, NEW STYLES: FASHION SALE YOU CAN'T MISS</p>
+            <p></p>
           </div>
           <div className="announcement-bar-item">
-            <p>LIMITED TIME OFFER: FASHION SALE YOU CAN'T RESIST</p>
+            <p></p>
           </div>
           <div className="announcement-bar-item">
-            <p>FREE SHIPPING AND RETURNS</p>
+            <p></p>
           </div>
           <div className="announcement-bar-item">
-            <p>NEW SEASON, NEW STYLES: FASHION SALE YOU CAN'T MISS</p>
+            <p></p>
           </div>
           <div className="announcement-bar-item">
-            <p>LIMITED TIME OFFER: FASHION SALE YOU CAN'T RESIST</p>
+            <p></p>
           </div>
         </div>
       </div>

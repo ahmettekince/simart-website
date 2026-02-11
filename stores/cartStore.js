@@ -108,7 +108,7 @@ export const useCartStore = create(
             const productSlug = product.slug || '';
             if (!productSlug) {
                 log('[CartStore] addItem: Ürün slug\'ı bulunamadı');
-                return { added: false, error: 'Ürün slug\'ı bulunamadı' };
+                return { added: false, message: 'Ürün bilgisi eksik (slug bulunamadı)' };
             }
 
             // Max quantity kontrolü - sepetteki mevcut miktarı kontrol et
@@ -135,7 +135,7 @@ export const useCartStore = create(
                 // Eğer mevcut miktar + eklenecek miktar max'ı aşıyorsa, ekleme yapma
                 if (currentQty + quantity > maxQty) {
                     log(`[CartStore] addItem: Max quantity limit reached. Current: ${currentQty}, Adding: ${quantity}, Max: ${maxQty}`);
-                    return { added: false, error: 'MAX_QUANTITY_REACHED', maxQuantity: maxQty };
+                    return { added: false, message: `Bu üründen en fazla ${maxQty} adet alabilirsiniz.`, errorType: 'MAX_REACHED' };
                 }
             }
 
@@ -143,29 +143,18 @@ export const useCartStore = create(
             const hasGiftCampaigns = Array.isArray(campaigns) && campaigns.length > 0;
             const hasGiftSelected = options && (options.selectedGiftProductId != null || options.selected_gift_product_id != null);
 
-            if (hasGiftCampaigns && !hasGiftSelected) {
+            if (hasGiftCampaigns && !hasGiftSelected && !existingItem) {
                 log('[CartStore] addItem: Pending gift selection, pausing add');
                 set({ pendingGiftAdd: { product, quantity, openModal } });
-                return { added: false };
+                return { added: false, isGiftSelection: true };
             }
 
             try {
-                log('[CartStore] addItem: Calling addToCartAPI...', { productSlug, quantity });
-                const cartData = await addToCartAPI(productSlug, quantity, options || {});
+                const result = await addToCartAPI(productSlug, quantity, options || {});
 
-                log('[CartStore] addItem: API response received', {
-                    success: !!cartData,
-                    hasItems: !!cartData?.items,
-                    itemsCount: cartData?.items?.length
-                });
-
-                if (cartData) {
-                    get().syncFromAPI(cartData);
-                    log('[CartStore] addItem: State update successful (syncFromAPI completed)', {
-                        newItemsCount: get().items.length
-                    });
-                    log('[CartStore] addItem - Store updated');
-
+                if (result?.success) {
+                    get().syncFromAPI(result.cart);
+                    // ... logs ...
                     if (openModal) {
                         if (typeof window !== 'undefined') {
                             setTimeout(() => {
@@ -175,11 +164,11 @@ export const useCartStore = create(
                     }
                     return { added: true };
                 }
-                log('[CartStore] addItem: API failed (cartData is null/undefined)');
-                return { added: false };
+                log('[CartStore] addItem: API failed', result?.message);
+                return { added: false, message: result?.message };
             } catch (error) {
                 log('[CartStore] addItem exception caught:', error);
-                return { added: false };
+                return { added: false, message: "Sistemsel bir hata oluştu." };
             }
         },
 

@@ -4,11 +4,13 @@ import React, { useEffect, useState, useRef, useMemo } from "react";
 import { useCartStore } from "@/stores/cartStore";
 import { getProductButtonState } from "@/utils/productStock";
 import MaxQuantityToast from "@/components/common/MaxQuantityToast";
+import ErrorToast from "@/components/common/ErrorToast";
 
 export default function StickyItem({
   product = null,
   quantity = 1,
   maxQuantity = null,
+  isStockLimit = false,
   soldOut = false
 }) {
   const { addItem } = useCartStore();
@@ -16,6 +18,8 @@ export default function StickyItem({
   const [isAdding, setIsAdding] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showMaxReachedToast, setShowMaxReachedToast] = useState(false);
+  const [showErrorToast, setShowErrorToast] = useState(false);
+  const [errorToastMessage, setErrorToastMessage] = useState("");
   const [isVisible, setIsVisible] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const stickyRef = useRef(null);
@@ -114,8 +118,8 @@ export default function StickyItem({
     if (product.discount_price) return product.price || null;
     return null;
   }, [product]);
-  const totalPrice = finalPrice * quantity;
-  const totalOriginalPrice = originalPrice ? originalPrice * quantity : null;
+  const totalPrice = finalPrice;
+  const totalOriginalPrice = originalPrice;
 
   const existingCartItem = product && cartItems?.find((it) => it?.product?.id === product?.id || it?.id === product?.id);
   const effectiveMaxLimit = maxQuantity === null || maxQuantity === 0 ? 999 : Math.max(1, Number(maxQuantity));
@@ -136,6 +140,9 @@ export default function StickyItem({
         if (result?.added) {
           setShowSuccess(true);
           setTimeout(() => setShowSuccess(false), 2000);
+        } else {
+          setErrorToastMessage(result?.message || "Sepete eklenirken bir hata oluştu.");
+          setShowErrorToast(true);
         }
       } else {
         addProductToCart(displayProduct.id);
@@ -144,6 +151,8 @@ export default function StickyItem({
       }
     } catch (error) {
       console.error("Sepete ekleme hatası:", error);
+      setErrorToastMessage(error?.message || "Sistemsel bir hata oluştu. Lütfen tekrar deneyin.");
+      setShowErrorToast(true);
     } finally {
       setIsAdding(false);
     }
@@ -151,7 +160,8 @@ export default function StickyItem({
 
   return (
     <div className={`tf-sticky-btn-atc ${isVisible ? "show" : ""}`} ref={stickyRef}>
-      <MaxQuantityToast visible={showMaxReachedToast} onHide={() => setShowMaxReachedToast(false)} maxQuantity={maxQuantity} />
+      <MaxQuantityToast visible={showMaxReachedToast} onHide={() => setShowMaxReachedToast(false)} maxQuantity={maxQuantity} isStockLimit={isStockLimit} />
+      <ErrorToast visible={showErrorToast} onHide={() => setShowErrorToast(false)} message={errorToastMessage} />
       <div className="container">
         <div className="tf-height-observer w-100 d-flex align-items-center">
           <div className="tf-sticky-atc-image d-none d-md-flex">

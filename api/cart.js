@@ -152,33 +152,22 @@ export async function addToCart(productSlug, quantity = 1, options = {}) {
 
         const response = await apiClient.post("/cart/items", payload);
 
-        // addToCart API'si sadece success mesajı döndürüyor, cart data'sı yok
-        // Bu yüzden başarılı olduğunda cart'ı tekrar çekiyoruz
         if (response?.data?.status === "success") {
-            // Sepeti tekrar çek (güncel haliyle)
             const updatedCart = await getCart();
-            return updatedCart;
+            return { success: true, cart: updatedCart };
         }
 
         log("[API cart.js] addToCart failed:", response?.data);
-        return null;
+        return { success: false, message: response?.data?.message || "Sepete eklenirken bir hata oluştu." };
     } catch (error) {
         if (error.response) {
             log("[API cart.js] addToCart error response:", {
                 status: error.response.status,
-                statusText: error.response.statusText,
                 data: error.response.data,
-                url: error.config?.url,
             });
-            console.error("[API cart.js] Full error:", error);
-        } else if (error.request) {
-            log("[API cart.js] addToCart no response:", error.request);
-            console.error("[API cart.js] Request error:", error);
-        } else {
-            log("[API cart.js] addToCart setup error:", error.message);
-            console.error("[API cart.js] Setup error:", error);
+            return { success: false, message: error.response.data?.message || "Sepete eklenirken bir hata oluştu." };
         }
-        return null;
+        return { success: false, message: "Ağ hatası veya sistemsel bir sorun oluştu." };
     }
 }
 

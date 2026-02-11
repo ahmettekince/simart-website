@@ -9,6 +9,8 @@ import OrderSummary from "@/components/othersPages/checkout/OrderSummary";
 import ClearCartButton from "@/components/common/ClearCartButton";
 import BirlikteAlSepet from "@/components/common/BirlikteAlSepet";
 import { useRouter } from "next/navigation";
+import MaxQuantityToast from "@/components/common/MaxQuantityToast";
+import ErrorToast from "@/components/common/ErrorToast";
 
 export default function Cart() {
   const router = useRouter();
@@ -22,6 +24,11 @@ export default function Cart() {
   const hasCrossSale = Array.isArray(cross_sale_campaigns) && cross_sale_campaigns.length > 0;
 
   const [loadingQuantityFor, setLoadingQuantityFor] = React.useState(null);
+  const [showMaxReachedToast, setShowMaxReachedToast] = React.useState(false);
+  const [maxQuantityForToast, setMaxQuantityForToast] = React.useState(null);
+  const [isStockLimitForToast, setIsStockLimitForToast] = React.useState(false);
+  const [showErrorToast, setShowErrorToast] = React.useState(false);
+  const [errorToastMessage, setErrorToastMessage] = React.useState("");
 
   // Totals hesaplamasını useMemo ile memoize et
   const cartTotals = useMemo(() => {
@@ -36,9 +43,15 @@ export default function Cart() {
     if (quantity >= 1) {
       setLoadingQuantityFor(id);
       try {
-        await updateQuantity(id, quantity);
+        const result = await updateQuantity(id, quantity);
+        if (result && result.error) {
+          setErrorToastMessage(result.message || "Miktar güncellenirken bir hata oluştu.");
+          setShowErrorToast(true);
+        }
       } catch (error) {
         console.error("Miktar güncelleme hatası:", error);
+        setErrorToastMessage(error?.message || "Sistemsel bir hata oluştu.");
+        setShowErrorToast(true);
       } finally {
         setLoadingQuantityFor(null);
       }
@@ -75,6 +88,8 @@ export default function Cart() {
 
   return (
     <section className="flat-spacing-11 page-cart-sepetim">
+      <MaxQuantityToast visible={showMaxReachedToast} onHide={() => setShowMaxReachedToast(false)} maxQuantity={maxQuantityForToast} isStockLimit={isStockLimitForToast} />
+      <ErrorToast visible={showErrorToast} onHide={() => setShowErrorToast(false)} message={errorToastMessage} />
       <div className="container">
         <div className="tf-page-cart-wrap layout-2">
           <div className="tf-page-cart-item">
@@ -147,21 +162,21 @@ export default function Cart() {
                     const cartBasedCampaigns =
                       applied_campaigns && applied_campaigns.length > 0
                         ? (() => {
-                            const productBasedCampaignIds = new Set();
-                            items.forEach((item) => {
-                              if (item.applied_campaign_ids && Array.isArray(item.applied_campaign_ids)) {
-                                item.applied_campaign_ids.forEach((id) => productBasedCampaignIds.add(id));
-                              }
-                            });
+                          const productBasedCampaignIds = new Set();
+                          items.forEach((item) => {
+                            if (item.applied_campaign_ids && Array.isArray(item.applied_campaign_ids)) {
+                              item.applied_campaign_ids.forEach((id) => productBasedCampaignIds.add(id));
+                            }
+                          });
 
-                            return applied_campaigns.filter((campaign) => {
-                              const isProductBasedType =
-                                campaign.type === "x_urun_y_tl" || campaign.type === "x_alana_y_hediye";
-                              const isNotInAnyProduct = !productBasedCampaignIds.has(campaign.id);
-                              const hasNextTier = campaign.next_tier?.message;
-                              return !isProductBasedType && (isNotInAnyProduct || hasNextTier);
-                            });
-                          })()
+                          return applied_campaigns.filter((campaign) => {
+                            const isProductBasedType =
+                              campaign.type === "x_urun_y_tl" || campaign.type === "x_alana_y_hediye";
+                            const isNotInAnyProduct = !productBasedCampaignIds.has(campaign.id);
+                            const hasNextTier = campaign.next_tier?.message;
+                            return !isProductBasedType && (isNotInAnyProduct || hasNextTier);
+                          });
+                        })()
                         : [];
 
                     const findTargetProductForCampaign = (campaign) => {
@@ -250,13 +265,25 @@ export default function Cart() {
                                 "urunler";
                               const minQty =
                                 Number(item.min_purchase_quantity ?? item.product?.min_purchase_quantity ?? 1) || 1;
-                              const rawMax =
+                              const purchaseLimit =
                                 item.max_purchase_quantity ??
                                 item.product?.max_purchase_quantity ??
                                 item.product?.max_quantity ??
                                 null;
-                              const parsedMax = rawMax === null || rawMax === undefined ? null : Number(rawMax);
-                              const maxQty = parsedMax === 0 ? null : Number.isFinite(parsedMax) ? parsedMax : null;
+                              const parsedPurchaseLimit = purchaseLimit === null || purchaseLimit === undefined ? null : Number(purchaseLimit);
+
+                              const stockLimit = (!item.product?.unlimited_stock && item.product?.stock_quantity != null)
+                                ? Number(item.product.stock_quantity)
+                                : null;
+
+                              let maxQty = parsedPurchaseLimit === 0 ? null : (parsedPurchaseLimit != null ? Number(parsedPurchaseLimit) : null);
+                              if (!item.product?.is_pre_order && stockLimit !== null) {
+                                if (maxQty === null) maxQty = stockLimit;
+                                else maxQty = Math.min(maxQty, stockLimit);
+                              }
+
+                              const isStockLimiting = !item.product?.is_pre_order && stockLimit !== null && (parsedPurchaseLimit === null || parsedPurchaseLimit === 0 || stockLimit <= parsedPurchaseLimit);
+
                               const itemCampaignMessages = getCampaignMessagesForProduct(item);
                               const hasGifts = relatedGifts.length > 0;
 
@@ -316,8 +343,8 @@ export default function Cart() {
                                   >
                                     <div className="cart-price">
                                       {displayDiscountPrice != null &&
-                                      displayRegularPrice != null &&
-                                      displayDiscountPrice < displayRegularPrice ? (
+                                        displayRegularPrice != null &&
+                                        displayDiscountPrice < displayRegularPrice ? (
                                         <>
                                           <span
                                             style={{
@@ -349,6 +376,11 @@ export default function Cart() {
                                         initialValue={item.quantity}
                                         minQuantity={minQty}
                                         maxQuantity={maxQty}
+                                        onMaxQuantityReached={() => {
+                                          setMaxQuantityForToast(maxQty);
+                                          setIsStockLimitForToast(isStockLimiting);
+                                          setShowMaxReachedToast(true);
+                                        }}
                                       />
                                       {item.applied_campaign_ids?.length > 0 && applied_campaigns && (
                                         <div style={{ marginTop: "8px" }}>
@@ -433,8 +465,8 @@ export default function Cart() {
                               const giftSourceNames =
                                 giftItem.applied_campaign_ids && applied_campaigns
                                   ? giftItem.applied_campaign_ids
-                                      .map((cid) => applied_campaigns.find((c) => c.id === cid)?.name)
-                                      .filter(Boolean)
+                                    .map((cid) => applied_campaigns.find((c) => c.id === cid)?.name)
+                                    .filter(Boolean)
                                   : [];
                               const giftCampaign = resolveGiftCampaign(giftItem);
                               const isLastGift = giftIndex === relatedGifts.length - 1;
@@ -542,8 +574,8 @@ export default function Cart() {
                           const giftSourceNames =
                             giftItem.applied_campaign_ids && applied_campaigns
                               ? giftItem.applied_campaign_ids
-                                  .map((cid) => applied_campaigns.find((c) => c.id === cid)?.name)
-                                  .filter(Boolean)
+                                .map((cid) => applied_campaigns.find((c) => c.id === cid)?.name)
+                                .filter(Boolean)
                               : [];
                           const giftCampaign = resolveGiftCampaign(giftItem);
 
@@ -648,8 +680,8 @@ export default function Cart() {
                           const giftSourceNames =
                             giftItem.applied_campaign_ids && applied_campaigns
                               ? giftItem.applied_campaign_ids
-                                  .map((cid) => applied_campaigns.find((c) => c.id === cid)?.name)
-                                  .filter(Boolean)
+                                .map((cid) => applied_campaigns.find((c) => c.id === cid)?.name)
+                                .filter(Boolean)
                               : [];
                           const giftCampaign = resolveGiftCampaign(giftItem);
 

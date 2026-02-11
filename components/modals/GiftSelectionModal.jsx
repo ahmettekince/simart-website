@@ -154,24 +154,12 @@ export default function GiftSelectionModal({
                   />
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  {gift._campaignName && (
-                    <div
-                      style={{
-                        fontSize: "11px",
-                        color: "#16a34a",
-                        marginBottom: 2,
-                        fontWeight: 600,
-                      }}
-                    >
-                      {gift._campaignName}
-                    </div>
-                  )}
                   <div
                     style={{
-                      fontSize: "13px",
+                      fontSize: "14px",
                       fontWeight: 600,
                       color: "#111827",
-                      marginBottom: 2,
+                      marginBottom: 4,
                       whiteSpace: "nowrap",
                       textOverflow: "ellipsis",
                       overflow: "hidden",
@@ -179,11 +167,18 @@ export default function GiftSelectionModal({
                   >
                     {gift.name}
                   </div>
-                  <div style={{ fontSize: "12px", color: "#6b7280" }}>
-                    Hediye ürün ·{" "}
-                    <span style={{ fontWeight: 600 }}>
-                      {Number(price || 0).toLocaleString("tr-TR")} TL
+                  <div style={{ fontSize: "12px", color: "#6b7280", display: "flex", gap: "8px", alignItems: "center" }}>
+                    <span style={{ backgroundColor: "#f3f4f6", padding: "2px 6px", borderRadius: "4px", fontWeight: 600, color: "#4b5563" }}>
+                      {gift.gift_quantity || 1} Adet
                     </span>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <span style={{ textDecoration: "line-through", color: "#9ca3af" }}>
+                        {(Number(price || 0) * (gift.gift_quantity || 1)).toLocaleString("tr-TR")} TL
+                      </span>
+                      <span style={{ fontWeight: 700, color: "#16a34a" }}>
+                        0 TL
+                      </span>
+                    </div>
                   </div>
                 </div>
                 <div

@@ -1,23 +1,32 @@
 "use client";
 import React, { useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCartStore } from "@/stores/cartStore";
 import ProductImageSwiper from "@/components/common/ProductImageSwiper";
 import MaxQuantityToast from "@/components/common/MaxQuantityToast";
+import ErrorToast from "@/components/common/ErrorToast";
 import StarRating from "@/components/common/StarRating";
 import { getProductButtonState } from "@/utils/productStock";
 
 export default function ProductCardSimart({ product }) {
+  const router = useRouter();
   const { addItem } = useCartStore();
   const cartItems = useCartStore((s) => s.items);
   const [isAdding, setIsAdding] = React.useState(false);
   const [showSuccess, setShowSuccess] = React.useState(false);
   const [showMaxReachedToast, setShowMaxReachedToast] = React.useState(false);
   const [maxQuantityForToast, setMaxQuantityForToast] = React.useState(null);
+  const [showErrorToast, setShowErrorToast] = React.useState(false);
+  const [errorToastMessage, setErrorToastMessage] = React.useState("");
 
   // onHide callback'ini memoize et - sürekli yeni fonksiyon oluşturmasın
   const handleHideToast = useCallback(() => {
     setShowMaxReachedToast(false);
+  }, []);
+
+  const handleHideErrorToast = useCallback(() => {
+    setShowErrorToast(false);
   }, []);
 
   // -- Veriler --
@@ -54,6 +63,7 @@ export default function ProductCardSimart({ product }) {
     return "urunler";
   };
   const categorySlug = getCategorySlug();
+  const detailUrl = `/magaza/${categorySlug}/${productSlug}`;
 
   // -- Buton Metin Mantığı --
   const { buttonText, buttonDisabled } = getProductButtonState(product);
@@ -75,11 +85,33 @@ export default function ProductCardSimart({ product }) {
     existingCartItem?.product?.max_quantity ??
     product?.max_purchase_quantity ??
     product?.max_quantity;
-  const effectiveMaxLimit = rawMax === 0 || rawMax == null ? 999 : Math.max(1, Number(rawMax));
+
+  const stockLimit = (!product?.unlimited_stock && product?.stock_quantity != null)
+    ? Number(product.stock_quantity)
+    : null;
+
+  const effectiveMaxLimit = React.useMemo(() => {
+    let limit = rawMax === 0 || rawMax == null ? null : Number(rawMax);
+    // Ön siparişte stok limitini görmezden gel
+    if (!product?.is_pre_order && stockLimit !== null) {
+      if (limit === null) limit = stockLimit;
+      else limit = Math.min(limit, stockLimit);
+    }
+    return limit === null ? 999 : Math.max(1, limit);
+  }, [rawMax, stockLimit, product?.is_pre_order]);
+
+  const isStockLimitTriggered = React.useMemo(() => {
+    if (product?.is_pre_order) return false;
+    if (stockLimit === null) return false;
+    let purchaseLimit = rawMax === 0 || rawMax == null ? null : Number(rawMax);
+    if (purchaseLimit === null) return true;
+    return stockLimit <= purchaseLimit;
+  }, [rawMax, stockLimit, product?.is_pre_order]);
 
   return (
     <div className="product-card-simart">
-      <MaxQuantityToast visible={showMaxReachedToast} onHide={handleHideToast} maxQuantity={maxQuantityForToast} />
+      <MaxQuantityToast visible={showMaxReachedToast} onHide={handleHideToast} maxQuantity={maxQuantityForToast} isStockLimit={isStockLimitTriggered} />
+      <ErrorToast visible={showErrorToast} onHide={handleHideErrorToast} message={errorToastMessage} />
       {/* Üst Kısım: Görsel (Ölçek ve Kalite Korundu) */}
       <div className="card-image-area">
         <ProductImageSwiper
@@ -97,7 +129,7 @@ export default function ProductCardSimart({ product }) {
       {/* Alt Kısım: Bilgiler */}
       <div className="card-content-area">
         <div className="title-slot">
-          <Link href={`/magaza/${categorySlug}/${productSlug}`} className="product-title">
+          <Link href={detailUrl} className="product-title">
             {title}
           </Link>
         </div>
@@ -118,6 +150,12 @@ export default function ProductCardSimart({ product }) {
             <button
               onClick={async () => {
                 if (isAdding || showSuccess) return;
+
+                // Ön sipariş ise ürün detayına yönlendir
+                if (product.is_pre_order) {
+                  router.push(detailUrl);
+                  return;
+                }
 
                 // Max kontrolü - eğer max'a ulaşıldıysa toast göster ve istek atma
                 const currentQty = existingCartItem?.quantity || 0;
@@ -150,14 +188,15 @@ export default function ProductCardSimart({ product }) {
                       setMaxQuantityForToast(maxQty);
                       setShowMaxReachedToast(true);
                     }
+                  } else {
+                    // Diğer hata durumlarını sağ üstte göster
+                    setErrorToastMessage(result?.message || "Sepete eklenirken bir hata oluştu.");
+                    setShowErrorToast(true);
                   }
                 } catch (error) {
                   console.error("Sepete ekleme hatası:", error);
-                  // Hata durumunda da max kontrolü yap
-                  if (effectiveMaxLimit < 999) {
-                    setMaxQuantityForToast(effectiveMaxLimit);
-                    setShowMaxReachedToast(true);
-                  }
+                  setErrorToastMessage(error?.message || "Sistemsel bir hata oluştu. Lütfen tekrar deneyin.");
+                  setShowErrorToast(true);
                 } finally {
                   setIsAdding(false);
                 }
