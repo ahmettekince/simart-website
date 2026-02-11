@@ -48,20 +48,6 @@ export default function Slider5({
         },
       ];
 
-  // 3D Model slide'ları kaldırıldı – butonlar artık Details9'da
-  // if (finalModelUrl) {
-  //   images.push({
-  //     id: images.length + 1,
-  //     src: images[0]?.src || "/images/placeholder.jpg",
-  //     modelSrc: finalModelUrl,
-  //     alt: "3D Model",
-  //     width: 713,
-  //     height: 1070,
-  //     dataValue: currentColor?.toLowerCase?.() || "beige",
-  //     is3D: true,
-  //     isModel: true,
-  //   });
-  // }
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
   const swiperRef = useRef(null);
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
@@ -191,7 +177,7 @@ export default function Slider5({
       >
         {images.map((slide, index) => (
           <SwiperSlide className="swiper-slide" key={index}>
-            <div className="item">
+            <div className="item" style={{ border: "1px solid #f5f5f5", borderRadius: "8px" }}>
               <Image
                 className="lazyload"
                 data-src={slide.src}

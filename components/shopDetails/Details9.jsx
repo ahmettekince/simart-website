@@ -459,14 +459,46 @@ export default function Details9({ product }) {
                     )}
 
                   <div className="tf-product-info-price d-none d-lg-block" style={{ marginBottom: "16px" }}>
-                    <span className="price-on-sale" style={{ fontSize: "20px", fontWeight: "700", color: originalPrice ? "#0bc15c" : "var(--primary, #3c81b5)" }}>
-                      {Number(finalPrice).toLocaleString("tr-TR")} TL
-                    </span>
-                    {originalPrice != null && originalPrice > finalPrice && (
-                      <span className="compare-at-price" style={{ fontSize: "15px", color: "#999", textDecoration: "line-through", marginLeft: "8px" }}>
-                        {Number(originalPrice).toLocaleString("tr-TR")} TL
-                      </span>
-                    )}
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", flexWrap: "nowrap" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                        <span className="price-on-sale" style={{ fontSize: "20px", fontWeight: "700", color: originalPrice ? "#0bc15c" : "var(--primary, #3c81b5)" }}>
+                          {Number(finalPrice).toLocaleString("tr-TR")} TL
+                        </span>
+                        {originalPrice != null && originalPrice > finalPrice && (
+                          <span className="compare-at-price" style={{ fontSize: "16px", color: "#999", textDecoration: "line-through" }}>
+                            {Number(originalPrice).toLocaleString("tr-TR")} TL
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Ürün protokolü - sağa yaslanmış */}
+                      {product.product_protocol && (
+                        <div style={{ display: "flex", alignItems: "center", gap: "4px", flexShrink: 0 }}>
+                          <span style={{ fontSize: "14px", color: "#666", lineHeight: 1.5, whiteSpace: "nowrap" }}>
+                            Bu ürün{" "}
+                            {product.product_protocol.image?.url ? (
+                              <Image
+                                src={product.product_protocol.image.url}
+                                alt={product.product_protocol.image?.alt_text || product.product_protocol.name || "Protokol"}
+                                width={20}
+                                height={20}
+                                style={{ display: "inline-block", verticalAlign: "middle", objectFit: "contain", marginLeft: "2px", marginRight: "2px" }}
+                                unoptimized={String(product.product_protocol.image.url).startsWith("http")}
+                              />
+                            ) : (
+                              <strong>{product.product_protocol.name}</strong>
+                            )}{" "}
+                            ile çalışmaktadır.
+                          </span>
+                          {product.product_protocol.description && (
+                            <ProductProtocolHelp
+                              description={product.product_protocol.description}
+                              protocolName={product.product_protocol.name}
+                            />
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <div className="tf-product-info-badges">
@@ -562,7 +594,7 @@ export default function Details9({ product }) {
                     .static-cta .overlay-cta-btn__icon--right svg {
                       width: 12px !important;
                       height: 12px !important;
-                    }
+    }
                   `}</style>
 
                   {/* Kısa Açıklama - sadece desktop (mobilde render etme) */}
@@ -617,38 +649,6 @@ export default function Details9({ product }) {
                       </div>
                     </>
                   )}
-
-                  {/* Ürün protokolü */}
-                  <div className="tf-product-info-protocol" style={{ marginTop: "16px", marginBottom: "20px" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
-                      {product.product_protocol && (
-                        <>
-                          <span style={{ fontSize: "14px", color: "#333", lineHeight: 1.5 }}>
-                            Bu ürün{" "}
-                            {product.product_protocol.image?.url ? (
-                              <Image
-                                src={product.product_protocol.image.url}
-                                alt={product.product_protocol.image?.alt_text || product.product_protocol.name || "Protokol"}
-                                width={32}
-                                height={32}
-                                style={{ display: "inline-block", verticalAlign: "middle", objectFit: "contain" }}
-                                unoptimized={String(product.product_protocol.image.url).startsWith("http")}
-                              />
-                            ) : (
-                              <strong>{product.product_protocol.name}</strong>
-                            )}{" "}
-                            ile çalışmaktadır.
-                          </span>
-                          {product.product_protocol.description && (
-                            <ProductProtocolHelp
-                              description={product.product_protocol.description}
-                              protocolName={product.product_protocol.name}
-                            />
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </div>
 
 
 

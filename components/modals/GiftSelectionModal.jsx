@@ -173,7 +173,7 @@ export default function GiftSelectionModal({
                     </span>
                     <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                       <span style={{ textDecoration: "line-through", color: "#9ca3af" }}>
-                        {(Number(price || 0) * (gift.gift_quantity || 1)).toLocaleString("tr-TR")} TL
+                        {gift.gift_quantity || 1} x {Number(price || 0).toLocaleString("tr-TR")} TL
                       </span>
                       <span style={{ fontWeight: 700, color: "#16a34a" }}>
                         0 TL

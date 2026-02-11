@@ -6,7 +6,7 @@ import Image from "next/image";
 import { useAuthStore } from "@/stores/authStore";
 import apiClient from "@/utils/apiClient";
 
-const MAX_IMAGES = 5;
+const MAX_IMAGES = 3;
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 

@@ -142,22 +142,16 @@ export default function ShopDetailsTab({ product }) {
     return product?.discount_price || product?.price || 0;
   }, [product?.time_based_discounts, product?.discount_price, product?.price]);
 
-  // Sıra: Değerlendirmeler, Taksit Seçenekleri, (varsa) Teknik, (varsa) SSS, Kargo, İade. Açıklama tab'ı yok.
+  // Sıra: Değerlendirmeler, Teknik Özellikler, Taksit Seçenekleri
   const tabIds = [
     ...(reviewCount > 0 ? ["reviews"] : []),
-    "installment",
     ...(hasTechSpecs ? ["tech"] : []),
-    ...(hasFaq ? ["faq"] : []),
-    "kargo",
-    "return",
+    "installment",
   ];
   const tabs = [
     ...(reviewCount > 0 ? [{ title: `Değerlendirmeler (${reviewCount})`, active: false }] : []),
-    { title: "Taksit Seçenekleri", active: false },
     ...(hasTechSpecs ? [{ title: "Teknik Özellikler", active: false }] : []),
-    ...(hasFaq ? [{ title: "Sıkça Sorulan Sorular", active: false }] : []),
-
-
+    { title: "Taksit Seçenekleri", active: false },
   ];
 
   const indexOf = (id) => { const i = tabIds.indexOf(id); return i >= 0 ? i + 1 : null; };
@@ -447,14 +441,7 @@ export default function ShopDetailsTab({ product }) {
                       )}
                     </div>
                   )}
-                  {/* Taksit Seçenekleri Tab */}
-                  <div
-                    className={`widget-content-inner ${currentTab === installmentTabIndex ? "active" : ""}`}
-                  >
-                    <InstallmentOptions productSlug={product?.slug} />
-                  </div>
-
-
+                  {/* Teknik Özellikler Tab */}
                   {hasTechSpecs && (
                     <div
                       className={`widget-content-inner ${currentTab === techSpecsTabIndex ? "active" : ""}`}
@@ -499,6 +486,13 @@ export default function ShopDetailsTab({ product }) {
                       </div>
                     </div>
                   )}
+
+                  {/* Taksit Seçenekleri Tab */}
+                  <div
+                    className={`widget-content-inner ${currentTab === installmentTabIndex ? "active" : ""}`}
+                  >
+                    <InstallmentOptions productSlug={product?.slug} />
+                  </div>
                 </div>
               </div>
             </div>

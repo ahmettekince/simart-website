@@ -140,8 +140,15 @@ export default function StickyItem({
         if (result?.added) {
           setShowSuccess(true);
           setTimeout(() => setShowSuccess(false), 2000);
-        } else {
-          setErrorToastMessage(result?.message || "Sepete eklenirken bir hata oluştu.");
+        } else if (result?.isGiftSelection) {
+          // Hediye seçimi için modal açılacak, hata gösterme
+          return;
+        } else if (result?.errorType === 'MAX_REACHED') {
+          // Max quantity hatası için özel toast göster
+          setShowMaxReachedToast(true);
+        } else if (result?.message) {
+          // Sadece mesaj varsa hata göster
+          setErrorToastMessage(result.message);
           setShowErrorToast(true);
         }
       } else {
@@ -163,7 +170,7 @@ export default function StickyItem({
       <MaxQuantityToast visible={showMaxReachedToast} onHide={() => setShowMaxReachedToast(false)} maxQuantity={maxQuantity} isStockLimit={isStockLimit} />
       <ErrorToast visible={showErrorToast} onHide={() => setShowErrorToast(false)} message={errorToastMessage} />
       <div className="container">
-        <div className="tf-height-observer w-100 d-flex align-items-center">
+        <div className="tf-height-observer">
           <div className="tf-sticky-atc-image d-none d-md-flex">
             {productImage && (
               <Image
@@ -188,7 +195,6 @@ export default function StickyItem({
               )}
             </div>
           </div>
-          <div className="tf-sticky-atc-spacer" />
           <div className="tf-sticky-atc-infos">
             <form onSubmit={(e) => e.preventDefault()} className="">
               <div className="tf-sticky-atc-btns">
@@ -219,6 +225,12 @@ export default function StickyItem({
         </div>
       </div>
       <style jsx>{`
+        .tf-height-observer {
+          display: flex;
+          align-items: center;
+          width: 100%;
+        }
+        
         .tf-sticky-atc-image {
           flex-shrink: 0;
           margin-right: 12px;
@@ -229,35 +241,33 @@ export default function StickyItem({
           border-radius: 8px;
           object-fit: cover;
         }
+        
+        .tf-sticky-atc-mid {
+          flex-shrink: 0;
+          margin-right: 12px;
+        }
+        
+        .tf-sticky-atc-title-line {
+          margin: 0 0 4px 0;
+          font-size: 14px;
+          font-weight: 500;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 250px;
+        }
+        
         .tf-sticky-atc-price-wrap {
           display: flex;
           flex-direction: column;
           gap: 2px;
-          flex-shrink: 0;
         }
-        .tf-sticky-atc-spacer {
-          flex: 0 0 10px;
-          width: 10px;
-          min-width: 10px;
-          max-width: 10px;
-        }
-        /* Mobil/tablet: fiyat ile buton arası 50px */
-        @media (max-width: 991px) {
-          .tf-sticky-atc-spacer {
-            flex: 0 0 50px;
-            width: 50px;
-            min-width: 50px;
-            max-width: 50px;
-          }
-        }
-        .tf-sticky-atc-price-wrap .price-on-sale,
-        .tf-sticky-atc-price-wrap .compare-at-price {
-          white-space: nowrap;
-        }
+        
         .tf-sticky-atc-price-wrap .price-on-sale {
           font-size: 17px;
           font-weight: 700;
           color: var(--primary, #1c355e);
+          white-space: nowrap;
         }
         .tf-sticky-atc-price-wrap.has-discount .price-on-sale {
           color: #0bc15c;
@@ -266,51 +276,37 @@ export default function StickyItem({
           font-size: 13px;
           color: #999;
           text-decoration: line-through;
+          white-space: nowrap;
         }
+        
+        .tf-sticky-atc-infos {
+          margin-left: auto;
+        }
+        
         .tf-sticky-atc-btns {
-          display: flex;
-          align-items: center;
           width: 100%;
         }
 
-        /* Sticky bar kendi butonu - responsive */
         .sticky-atc-btn {
           width: 100%;
-          min-width: 0;
           display: flex;
           align-items: center;
           justify-content: center;
           position: relative;
           border: none;
-          border-radius: 10px;
+          border-radius: 8px;
           font-weight: 600;
           white-space: nowrap;
           overflow: hidden;
-          text-overflow: ellipsis;
           cursor: pointer;
-          transition: background 0.2s, color 0.2s, transform 0.15s;
-          -webkit-tap-highlight-color: transparent;
+          transition: background 0.2s, transform 0.15s;
           background: var(--primary, #3c81b5);
           color: #fff;
-          padding: 0 14px;
-          height: 44px;
-          font-size: 15px;
+          padding: 0 16px;
+          height: 40px;
+          font-size: 14px;
         }
 
-        /* Mobilde buton "Sepete Eklendi" genişliğine göre sabit - animasyonda büyüyüp küçülmesin */
-        @media (max-width: 767px) {
-          .tf-sticky-atc-btns {
-            width: auto;
-            flex-shrink: 0;
-            margin-left: auto;
-          }
-          .sticky-atc-btn {
-            min-width: 150px;
-            width: auto;
-            max-width: 100%;
-            padding: 0 20px;
-          }
-        }
         .sticky-atc-btn:active:not(:disabled) {
           transform: scale(0.98);
         }
@@ -320,10 +316,6 @@ export default function StickyItem({
         }
         .sticky-atc-btn--out-of-stock {
           background: #dc2626;
-          color: #fff;
-        }
-        .sticky-atc-btn--out-of-stock:disabled {
-          background: #dc2626;
         }
         .sticky-atc-btn__text,
         .sticky-atc-btn__slide {
@@ -332,11 +324,9 @@ export default function StickyItem({
           text-align: center;
           overflow: hidden;
           text-overflow: ellipsis;
-          position: relative;
         }
         .sticky-atc-btn--success {
           background: #10b981;
-          overflow: hidden;
         }
         .sticky-atc-btn--success .sticky-atc-btn__text {
           opacity: 0;
@@ -349,7 +339,6 @@ export default function StickyItem({
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 0 14px;
           animation: stickyBtnSlide 2s cubic-bezier(0.4, 0, 0.2, 1);
         }
         @keyframes stickyBtnSlide {
@@ -359,23 +348,18 @@ export default function StickyItem({
           100% { transform: translateY(100%); opacity: 0; }
         }
 
-        /* Tablet */
-        @media (min-width: 768px) and (max-width: 991px) {
-          .sticky-atc-btn {
-            height: 40px;
-            font-size: 15px;
-            border-radius: 10px;
-            padding: 0 16px;
+        /* Mobil */
+        @media (max-width: 767px) {
+          .tf-sticky-atc-mid {
+            margin-right: 8px;
           }
-        }
-
-        /* Desktop (sticky kart içinde) */
-        @media (min-width: 992px) {
+          .tf-sticky-atc-infos {
+            max-width: 50%;
+          }
           .sticky-atc-btn {
-            height: 36px;
-            font-size: 15px;
-            border-radius: 8px;
+            font-size: 13px;
             padding: 0 12px;
+            height: 44px;
           }
         }
       `}</style>
