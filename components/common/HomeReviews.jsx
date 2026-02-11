@@ -15,7 +15,7 @@ export default function HomeReviews({ reviews = [] }) {
     return (
         <section className="flat-spacing-5 pt_0 flat-testimonial" style={{ maxWidth: "100vw", overflow: "hidden" }}>
             <div className="container">
-                <div className="flat-title wow fadeInUp" data-wow-delay="0s">
+                <div className="flat-title wow fadeInUp" data-wow-delay="0s" suppressHydrationWarning>
                     <span className="title">Kullanıcı Yorumları</span>
                     <p className="sub-title">Sizden gelen değerlendirmeler</p>
                 </div>
@@ -60,6 +60,7 @@ export default function HomeReviews({ reviews = [] }) {
                                         className="testimonial-item style-column wow fadeInUp"
                                         data-wow-delay={`${index * 0.1}s`}
                                         style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
+                                        suppressHydrationWarning
                                     >
                                         <div className="rating">
                                             <StarRating rating={review.rating} showNumber={false} showReviewCount={false} />

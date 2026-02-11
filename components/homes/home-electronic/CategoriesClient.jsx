@@ -48,12 +48,15 @@ export default function CategoriesClient({ categories }) {
               <Link href={`/magaza/${item.slug || "collection-sub"}`} className="collection-inner">
                 <div className="collection-image img-style radius-10">
                   <Image
-                    className="lazyload"
                     alt={item.name}
                     src={getCategoryImageSrc(item.image?.url)}
-                    width={600}
-                    height={730}
-                    loading="lazy"
+                    width={250}
+                    height={250}
+                    style={{ objectFit: "contain" }}
+                    priority={index < 2}
+                    loading={index < 6 ? "eager" : "lazy"}
+                    fetchPriority={index < 2 ? "high" : "auto"}
+                    sizes="(max-width: 480px) 50vw, (max-width: 768px) 25vw, (max-width: 1200px) 16vw, 200px"
                   />
                 </div>
                 <div className="collection-content">

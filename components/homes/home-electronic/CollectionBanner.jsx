@@ -22,7 +22,7 @@ export default function CollectionBanner({ banner = null }) {
 
   const fallbackContent = !hasVariations && (
     <div className="box-content">
-      <div className="container wow fadeInUp" data-wow-delay="0s">
+      <div className="container wow fadeInUp" data-wow-delay="0s" suppressHydrationWarning>
         {subtitle && <div className="sub fw-7 text_white">{subtitle}</div>}
         {title && <h2 className="heading fw-6 text_white">{title}</h2>}
         {description && <p className="text_white">{description}</p>}
@@ -54,7 +54,9 @@ export default function CollectionBanner({ banner = null }) {
               style={{ objectFit: "cover" }}
               sizes="100vw"
               quality={100}
-              loading="lazy"
+              priority={true}
+              loading="eager"
+              fetchPriority="high"
             />
           </div>
           {/* Tablet Version (768px - 1023px) */}
@@ -68,7 +70,9 @@ export default function CollectionBanner({ banner = null }) {
               style={{ objectFit: "cover" }}
               sizes="100vw"
               quality={100}
-              loading="lazy"
+              priority={true}
+              loading="eager"
+              fetchPriority="high"
             />
           </div>
           {/* Mobile Version (< 768px) */}
@@ -82,40 +86,42 @@ export default function CollectionBanner({ banner = null }) {
               style={{ objectFit: "cover", maxWidth: "100%" }}
               sizes="100vw"
               quality={100}
-              loading="lazy"
+              priority={true}
+              loading="eager"
+              fetchPriority="high"
             />
           </div>
 
           {hasVariations ? (
             <>
               <div className="d-none d-lg-block" style={{ position: "absolute", inset: 0 }}>
-              {texts.map((t, i) => {
-                const rowMap = i === 0 ? { LEFT: ROW_TOP_LEFT, CENTER: ROW_TOP_CENTER, RIGHT: ROW_TOP_RIGHT } : { LEFT: ROW_MID_LEFT, CENTER: ROW_MID_CENTER, RIGHT: ROW_MID_RIGHT };
-                const rowStyle = rowMap[t.align] || (i === 0 ? ROW_TOP_LEFT : ROW_MID_CENTER);
-                const userStyle = parseCssToStyle(t.style);
-                return (
-                  <div
-                    key={t.key}
-                    className={t.class || ""}
-                    style={{
-                      position: "absolute",
-                      ...rowStyle,
-                      pointerEvents: "none",
-                      color: "#fff",
-                      fontSize: "22px",
-                      maxWidth: "85%",
-                      padding: "0 0.75rem",
-                      wordBreak: "break-all",
-                      overflowWrap: "break-word",
-                      whiteSpace: "pre-line",
-                      lineHeight: 1.4,
-                      ...userStyle,
-                    }}
-                  >
-                    {normalizeLineBreaks(t.text)}
-                  </div>
-                );
-              })}
+                {texts.map((t, i) => {
+                  const rowMap = i === 0 ? { LEFT: ROW_TOP_LEFT, CENTER: ROW_TOP_CENTER, RIGHT: ROW_TOP_RIGHT } : { LEFT: ROW_MID_LEFT, CENTER: ROW_MID_CENTER, RIGHT: ROW_MID_RIGHT };
+                  const rowStyle = rowMap[t.align] || (i === 0 ? ROW_TOP_LEFT : ROW_MID_CENTER);
+                  const userStyle = parseCssToStyle(t.style);
+                  return (
+                    <div
+                      key={t.key}
+                      className={t.class || ""}
+                      style={{
+                        position: "absolute",
+                        ...rowStyle,
+                        pointerEvents: "none",
+                        color: "#fff",
+                        fontSize: "22px",
+                        maxWidth: "85%",
+                        padding: "0 0.75rem",
+                        wordBreak: "break-all",
+                        overflowWrap: "break-word",
+                        whiteSpace: "pre-line",
+                        lineHeight: 1.4,
+                        ...userStyle,
+                      }}
+                    >
+                      {normalizeLineBreaks(t.text)}
+                    </div>
+                  );
+                })}
               </div>
               {btn && (btn.text || btn.link) && (
                 <div

@@ -13,6 +13,7 @@ export default function Features({ bgColor = "", titleFont = "" }) {
     <section
       className={`flat-spacing-1 flat-iconbox  wow fadeInUp ${bgColor}`}
       data-wow-delay="0s"
+      suppressHydrationWarning
     >
       <div className="container">
         <div className="wrap-carousel wrap-mobile">

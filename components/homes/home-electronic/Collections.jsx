@@ -55,7 +55,9 @@ export default function Collections({ collections = [] }) {
                           style={{ objectFit: "cover" }}
                           sizes="(min-width: 1024px) 50vw, 100vw"
                           quality={100}
-                          loading="lazy"
+                          priority={index < 2}
+                          loading={index < 2 ? "eager" : "lazy"}
+                          fetchPriority={index < 2 ? "high" : "auto"}
                         />
                       </div>
                       <div className="d-none d-md-block d-lg-none w-100">
@@ -68,7 +70,9 @@ export default function Collections({ collections = [] }) {
                           style={{ objectFit: "cover" }}
                           sizes="(min-width: 768px) 50vw, 100vw"
                           quality={100}
-                          loading="lazy"
+                          priority={index < 2}
+                          loading={index < 2 ? "eager" : "lazy"}
+                          fetchPriority={index < 2 ? "high" : "auto"}
                         />
                       </div>
                       <div className="d-block d-md-none w-100">
@@ -81,42 +85,44 @@ export default function Collections({ collections = [] }) {
                           style={{ objectFit: "cover" }}
                           sizes="100vw"
                           quality={100}
-                          loading="lazy"
+                          priority={index < 2}
+                          loading={index < 2 ? "eager" : "lazy"}
+                          fetchPriority={index < 2 ? "high" : "auto"}
                         />
                       </div>
                     </ImageWrapper>
 
                     {hasVariations ? (
                       <>
-                      <div className="d-none d-lg-block" style={{ position: "absolute", inset: 0 }}>
-                        {texts.map((t, i) => {
-                          const rowMap = i === 0 ? { LEFT: ROW_TOP_LEFT, CENTER: ROW_TOP_CENTER, RIGHT: ROW_TOP_RIGHT } : { LEFT: ROW_MID_LEFT, CENTER: ROW_MID_CENTER, RIGHT: ROW_MID_RIGHT };
-                          const rowStyle = rowMap[t.align] || (i === 0 ? ROW_TOP_LEFT : ROW_MID_CENTER);
-                          const userStyle = parseCssToStyle(t.style);
-                          return (
-                            <div
-                              key={t.key}
-                              className={t.class || ""}
-                              style={{
-                                position: "absolute",
-                                ...rowStyle,
-                                pointerEvents: "none",
-                                color: "#fff",
-                                fontSize: "20px",
-                                textShadow: "0 1px 3px rgba(0,0,0,0.8)",
-                                maxWidth: "85%",
-                                padding: "0 0.75rem",
-                                overflowWrap: "break-word",
-                                whiteSpace: "pre-line",
-                                lineHeight: 1.4,
-                                ...userStyle,
-                              }}
-                            >
-                              {normalizeLineBreaks(t.text ?? "")}
-                            </div>
-                          );
-                        })}
-                      </div>
+                        <div className="d-none d-lg-block" style={{ position: "absolute", inset: 0 }}>
+                          {texts.map((t, i) => {
+                            const rowMap = i === 0 ? { LEFT: ROW_TOP_LEFT, CENTER: ROW_TOP_CENTER, RIGHT: ROW_TOP_RIGHT } : { LEFT: ROW_MID_LEFT, CENTER: ROW_MID_CENTER, RIGHT: ROW_MID_RIGHT };
+                            const rowStyle = rowMap[t.align] || (i === 0 ? ROW_TOP_LEFT : ROW_MID_CENTER);
+                            const userStyle = parseCssToStyle(t.style);
+                            return (
+                              <div
+                                key={t.key}
+                                className={t.class || ""}
+                                style={{
+                                  position: "absolute",
+                                  ...rowStyle,
+                                  pointerEvents: "none",
+                                  color: "#fff",
+                                  fontSize: "20px",
+                                  textShadow: "0 1px 3px rgba(0,0,0,0.8)",
+                                  maxWidth: "85%",
+                                  padding: "0 0.75rem",
+                                  overflowWrap: "break-word",
+                                  whiteSpace: "pre-line",
+                                  lineHeight: 1.4,
+                                  ...userStyle,
+                                }}
+                              >
+                                {normalizeLineBreaks(t.text ?? "")}
+                              </div>
+                            );
+                          })}
+                        </div>
                         {btn && (btn.text || btn.link) && (
                           <div
                             className="collection-overlay-btn"
@@ -144,6 +150,7 @@ export default function Collections({ collections = [] }) {
                       <div
                         className="collection-content wow fadeInUp"
                         data-wow-delay="0s"
+                        suppressHydrationWarning
                       >
                         {subtitle && <p className="subheading">{subtitle}</p>}
                         {title && <h5 className="heading fw-6">{title}</h5>}

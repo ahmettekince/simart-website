@@ -17,7 +17,7 @@ export default function Products({ products = [] }) {
     <section className="flat-spacing-19">
       <div className="container">
         <div className="flat-title flex-row justify-content-between px-0">
-          <span className="title wow fadeInUp" data-wow-delay="0s">
+          <span className="title wow fadeInUp" data-wow-delay="0s" suppressHydrationWarning>
             Diğer Ürünler
           </span>
           <div className="box-sw-navigation">

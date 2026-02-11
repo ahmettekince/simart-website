@@ -19,7 +19,11 @@ export default function BlogsClient({ blogs = [] }) {
     return (
         <section className="flat-spacing-14">
             <div className="container">
-                <div className="flat-title wow fadeInUp" data-wow-delay="0s">
+                <div
+                    className="flat-title wow fadeInUp"
+                    data-wow-delay="0s"
+                    suppressHydrationWarning
+                >
                     <span className="title">Blog Yazıları</span>
                 </div>
                 <div className="hover-sw-nav view-default hover-sw-3 sw-pagination-wrapper blogs-pagination-wrapper">
@@ -46,6 +50,7 @@ export default function BlogsClient({ blogs = [] }) {
                                     <div
                                         className="blog-article-item wow fadeInUp"
                                         data-wow-delay={article.delay || "0s"}
+                                        suppressHydrationWarning
                                     >
                                         <div className="article-thumb h-460">
                                             <Link href={`/${slug}`}>
