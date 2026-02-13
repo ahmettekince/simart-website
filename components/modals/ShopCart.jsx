@@ -849,7 +849,6 @@ export default function ShopCart() {
                           cartTotals.campaignDiscountAmount > 0 ||
                           cartTotals.couponDiscountAmount > 0) && (
                             <div>
-                              {/* Size özel indirim */}
                               {cartTotals.customDiscountAmount > 0 && (
                                 <div className="tf-cart-totals-item" style={{ borderTop: "none", borderBottom: "none" }}>
                                   <div className="tf-cart-total-label fw-6" style={{ fontSize: "14px" }}>
@@ -1025,8 +1024,8 @@ export default function ShopCart() {
                                   : couponSuccess
                                     ? "1px solid #0bc15c"
                                     : "1px solid #e5e5e5",
-                                borderRadius: "6px",
-                                fontSize: "14px",
+                                borderRadius: "12px",
+                                fontSize: "16px",
                                 height: "42px",
                               }}
                               disabled={isApplyingCoupon}
@@ -1076,7 +1075,16 @@ export default function ShopCart() {
                                 lineHeight: "1.5",
                               }}
                             >
-                              {tip.message_short || tip.message}
+                              {tip.product_name ? (
+                                <>
+                                  <span style={{ fontWeight: "700" }}>
+                                    {tip.product_name}
+                                  </span>{" "}
+                                  ürününden {tip.message_short || tip.message}
+                                </>
+                              ) : (
+                                tip.message_short || tip.message
+                              )}
                             </div>
                           ))}
                         </div>

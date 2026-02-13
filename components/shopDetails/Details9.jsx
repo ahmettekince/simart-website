@@ -7,7 +7,7 @@ import Slider5 from "./sliders/Slider5";
 import Image from "next/image";
 import { colors } from "@/data/singleProductOptions";
 import CountdownComponent from "../common/Countdown";
-import StickyItem from "./StickyItem";
+import SmartStickyBar from "./SmartStickyBar";
 import Quantity from "./Quantity";
 import { useCartStore } from "@/stores/cartStore";
 import { getProductButtonState } from "@/utils/productStock";
@@ -19,12 +19,13 @@ import ProductVideoPlayer from "./ProductVideoPlayer";
 import VideoModal from "@/components/common/VideoModal";
 import ModelViewerModal from "@/components/modals/ModelViewerModal";
 import OverlayCtaButton, { Model3dIcon, PlayIcon, ArrowIcon } from "@/components/common/OverlayCtaButton";
+import VolumeDiscount from "./VolumeDiscount";
+import InfoTicker from "./InfoTicker";
 
 
 const TOOLTIP_MAX_WIDTH = 360;
 const TOOLTIP_MARGIN = 16;
 
-/** Yuvarlak (?) ikonu – tıklanınca protokol açıklamasını gösterir. Tooltip body'de portal ile render edilir; taşma ve z-index sorunu olmaz. */
 function ProductProtocolHelp({ description, protocolName }) {
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0, maxWidth: TOOLTIP_MAX_WIDTH });
@@ -142,6 +143,18 @@ export default function Details9({ product }) {
     return () => window.removeEventListener("resize", check);
   }, []);
 
+  // Global sepet başarısı dinleyicisi (Hediye seçimi sonrası vb. animasyonu tetiklemek için)
+  useEffect(() => {
+    const handleCartSuccess = (e) => {
+      if (e.detail?.productId === product.id) {
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 2000);
+      }
+    };
+    window.addEventListener('cart-success', handleCartSuccess);
+    return () => window.removeEventListener('cart-success', handleCartSuccess);
+  }, [product.id]);
+
   // Icon mapping
 
 
@@ -163,34 +176,7 @@ export default function Details9({ product }) {
   }, [product?.info_messages]);
 
 
-  const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
-  const [isAnimating, setIsAnimating] = useState(false);
 
-  useEffect(() => {
-    if (!announcementMessages || announcementMessages.length <= 1) {
-      setCurrentMessageIndex(0);
-      setIsAnimating(false);
-      return;
-    }
-
-    // İlk mesajı göster
-    setCurrentMessageIndex(0);
-    setIsAnimating(false);
-
-    const interval = setInterval(() => {
-      setIsAnimating(true);
-      // Animasyon başladıktan sonra index'i değiştir
-      setTimeout(() => {
-        setCurrentMessageIndex((prev) => (prev + 1) % announcementMessages.length);
-        // Animasyon bitince animating state'ini sıfırla
-        setTimeout(() => {
-          setIsAnimating(false);
-        }, 50);
-      }, 300); // Animasyon süresi
-    }, 4000); // Her 4 saniyede bir değiş
-
-    return () => clearInterval(interval);
-  }, [announcementMessages]);
 
   // Sadece API varyasyonları varsa göster; yoksa varyasyon alanı hiç render olmasın
   const hasVariations = useMemo(() => {
@@ -365,7 +351,7 @@ export default function Details9({ product }) {
     setIsAdding(true);
     try {
       const result = await addItem(product, qtyToAdd, false);
-      if (result?.added) {
+      if (result?.added || result?.success) {
         setShowSuccess(true);
         setTimeout(() => setShowSuccess(false), 2000);
       } else if (!result?.isGiftSelection) {
@@ -420,60 +406,57 @@ export default function Details9({ product }) {
                     <h5 style={{ fontSize: "30px", fontWeight: "600" }}>{product.title ? product.title : "Şımart Teknoloji"}</h5>
                   </div>
 
-                  {/* Rating gösterimi: StarRating component + Değerlendirme butonu */}
-                  {((product.reviews?.average_rating || product.rating || product.average_rating || 0) > 0 ||
-                    (product.reviews?.count || product.reviews_count || product.review_count || 0) > 0) && (
-                      <div className="tf-product-info-rating" style={{ marginBottom: "12px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                          <StarRating
-                            rating={product.reviews?.average_rating || product.rating || product.average_rating || 0}
-                            reviewCount={product.reviews?.count || product.reviews_count || product.review_count || 0}
-                            size="large"
-                            showReviewCount={false}
-                          />
-                          {(product.reviews?.count || product.reviews_count || product.review_count) > 0 && (
-                            <button
-                              type="button"
-                              onClick={() => {
-                                window.location.hash = "#product-reviews";
-                                setTimeout(() => document.getElementById("product-reviews")?.scrollIntoView({ behavior: "smooth" }), 50);
-                              }}
-                              style={{ fontSize: "13px", color: "#888", display: "inline-flex", alignItems: "center", gap: "4px", background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "inherit" }}
-                            >
-                              <b style={{ fontWeight: "600", color: "#777" }}>{product.reviews?.count || product.reviews_count || product.review_count} </b>
-                              Değerlendirme
-                              {product.reviews?.fotografli_yorum && (
-                                <span style={{ display: "inline-flex", alignItems: "center", marginLeft: "2px" }} title="Fotoğraflı yorumlar">
-                                  <Image src="/images/products/camera.png" alt="Fotoğraflı yorumlar" width={28} height={18} style={{ flexShrink: 0, display: "block" }} />
-                                </span>
-                              )}
-                            </button>
-                          )}
-                        </div>
-                        {product.bundle_items && Array.isArray(product.bundle_items) && product.bundle_items.length > 0 && (
-                          <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "6px" }}>
-                            (Bu puan paketteki ürünlerin ortalama puanıdır.)
-                          </div>
+
+
+                  {/* Rating gösterimi: Yıldızlar ve Değerlendirme Sayısı - Üstte */}
+                  <div className="tf-product-info-rating" style={{ marginBottom: "12px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <StarRating
+                        rating={product.reviews?.average_rating || product.rating || product.average_rating || 0}
+                        reviewCount={product.reviews?.count || product.reviews_count || product.review_count || 0}
+                        size="large"
+                        showReviewCount={false}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          window.location.hash = "#product-reviews";
+                          setTimeout(() => document.getElementById("product-reviews")?.scrollIntoView({ behavior: "smooth" }), 50);
+                        }}
+                        style={{ fontSize: "13px", color: "#888", display: "inline-flex", alignItems: "center", gap: "4px", background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "inherit" }}
+                      >
+                        <b style={{ fontWeight: "600", color: "#777" }}>{product.reviews?.count || product.reviews_count || product.review_count || 0} </b>
+                        Değerlendirme
+                        {product.reviews?.fotografli_yorum && (
+                          <span style={{ display: "inline-flex", alignItems: "center", marginLeft: "2px" }} title="Fotoğraflı yorumlar">
+                            <Image src="/images/products/camera.png" alt="Fotoğraflı yorumlar" width={28} height={18} style={{ flexShrink: 0, display: "block" }} />
+                          </span>
                         )}
+                      </button>
+                    </div>
+                    {product.bundle_items && Array.isArray(product.bundle_items) && product.bundle_items.length > 0 && (
+                      <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "6px" }}>
+                        (Bu puan paketteki ürünlerin ortalama puanıdır.)
                       </div>
                     )}
+                  </div>
 
-                  <div className="tf-product-info-price d-none d-lg-block" style={{ marginBottom: "16px" }}>
-                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", flexWrap: "nowrap" }}>
+                  <div className="tf-product-info-price" style={{ marginBottom: "16px", width: "100%" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", flexWrap: "nowrap", width: "100%" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                         <span className="price-on-sale" style={{ fontSize: "20px", fontWeight: "700", color: originalPrice ? "#0bc15c" : "var(--primary, #3c81b5)" }}>
-                          {Number(finalPrice).toLocaleString("tr-TR")} TL
+                          {(Math.floor(Number(finalPrice) * 100) / 100).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TL
                         </span>
                         {originalPrice != null && originalPrice > finalPrice && (
                           <span className="compare-at-price" style={{ fontSize: "16px", color: "#999", textDecoration: "line-through" }}>
-                            {Number(originalPrice).toLocaleString("tr-TR")} TL
+                            {(Math.floor(Number(originalPrice) * 100) / 100).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TL
                           </span>
                         )}
                       </div>
 
                       {/* Ürün protokolü - sağa yaslanmış */}
                       {product.product_protocol && (
-                        <div style={{ display: "flex", alignItems: "center", gap: "4px", flexShrink: 0 }}>
+                        <div className="d-none d-lg-flex" style={{ alignItems: "center", gap: "4px", flexShrink: 0 }}>
                           <span style={{ fontSize: "14px", color: "#666", lineHeight: 1.5, whiteSpace: "nowrap" }}>
                             Bu ürün{" "}
                             {product.product_protocol.image?.url ? (
@@ -501,31 +484,42 @@ export default function Details9({ product }) {
                     </div>
                   </div>
 
-                  <div className="tf-product-info-badges">
-                    <div className="product-status-content">
+                  {/* Yeni Sade Bilgi Kaydırağı */}
+                  {announcementMessages && announcementMessages.length > 0 && (
+                    <div style={{ marginBottom: "12px" }}>
+                      <InfoTicker messages={announcementMessages} />
+                    </div>
+                  )}
 
-                      <div className="announcement-messages-wrapper">
-                        {announcementMessages && announcementMessages.length > 0 ? (
-                          announcementMessages.map((msg, idx) => {
-                            const isActive = idx === currentMessageIndex;
-                            const isNext = idx === (currentMessageIndex + 1) % announcementMessages.length;
-                            const isAnimatingOut = isActive && isAnimating;
-
-                            return (
-                              <p
-                                key={idx}
-                                className={`fw-6 announcement-message ${isActive ? "active" : ""} ${isNext && isAnimating ? "next" : ""} ${isAnimatingOut ? "animating-out" : ""}`}
-                              >
-                                {msg.message}
-                              </p>
-                            );
-                          })
-                        ) : (
-                          <p className="fw-6 announcement-message active">Mesaj yok</p>
+                  {/* Ürün Protokolü - Sadece mobilde duyuru altında, masaüstünde fiyatın yanında */}
+                  {product.product_protocol && (
+                    <div className="d-lg-none">
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                        <span style={{ fontSize: "12px", color: "#666" }}>
+                          Bu ürün{" "}
+                          {product.product_protocol.image?.url ? (
+                            <Image
+                              src={product.product_protocol.image.url}
+                              alt={product.product_protocol.image?.alt_text || product.product_protocol.name || "Protokol"}
+                              width={18}
+                              height={18}
+                              style={{ display: "inline-block", verticalAlign: "middle", objectFit: "contain", margin: "0 2px" }}
+                              unoptimized={String(product.product_protocol.image.url).startsWith("http")}
+                            />
+                          ) : (
+                            <strong>{product.product_protocol.name}</strong>
+                          )}{" "}
+                          ile çalışmaktadır.
+                        </span>
+                        {product.product_protocol.description && (
+                          <ProductProtocolHelp
+                            description={product.product_protocol.description}
+                            protocolName={product.product_protocol.name}
+                          />
                         )}
                       </div>
                     </div>
-                  </div>
+                  )}
 
                   {timeBasedDiscount && countdownTargetDate && (
                     <div className="tf-product-info-countdown" style={{ marginBottom: "24px" }}>
@@ -553,7 +547,7 @@ export default function Details9({ product }) {
                   )}
 
                   {/* Desktop Medya Butonları (Kısa açıklamanın üstünde) */}
-                  <div className="d-none d-md-flex" style={{ gap: "10px", marginTop: "16px", marginBottom: "20px", flexWrap: "wrap" }}>
+                  <div className="d-none d-md-flex" style={{ gap: "10px", flexWrap: "wrap" }}>
                     {(product.model_3d_url || product.media?.model_3d_url) && (
                       <OverlayCtaButton
                         variant="primary"
@@ -658,7 +652,7 @@ export default function Details9({ product }) {
                     <form onSubmit={(e) => e.preventDefault()} className="">
                       <div className="tf-product-buy-actions d-none d-md-flex" style={{ alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
                         <div className="tf-product-info-quantity" style={{ margin: 0 }}>
-                          <Quantity setQuantity={setQuantity} minQuantity={minQuantity} maxQuantity={maxQuantity} disabled={buttonState.buttonDisabled} />
+                          <Quantity setQuantity={setQuantity} initialValue={quantity} minQuantity={minQuantity} maxQuantity={maxQuantity} disabled={buttonState.buttonDisabled} />
                         </div>
                         <button
                           type="button"
@@ -667,14 +661,24 @@ export default function Details9({ product }) {
                           className={`main-cart-btn ${showSuccess ? "success-animation" : ""} ${buttonState.buttonText === "Stokta Yok" ? "out-of-stock" : ""}`}
                         >
                           <span className="button-text-main">
-                            {showSuccess ? "Sepete Eklendi" : isAdding ? "Ekleniyor..." : buttonState.buttonText}
+                            {showSuccess
+                              ? "Sepete Eklendi"
+                              : isAdding
+                                ? "Ekleniyor..."
+                                : buttonState.buttonText}
                           </span>
-                          {showSuccess && <span className="button-text-slide">Sepete Eklendi</span>}
+                          {showSuccess && (
+                            <span className="button-text-slide">
+                              Sepete Eklendi
+                            </span>
+                          )}
                         </button>
 
                       </div>
                     </form>
                   </div>
+
+                  <VolumeDiscount product={product} setQuantity={setQuantity} />
 
                   <style jsx global>{`
                    
@@ -701,6 +705,12 @@ export default function Details9({ product }) {
                       overflow: hidden;
                       text-overflow: ellipsis;
                       pointer-events: none;
+                    }
+
+                    @media (max-width: 767px) {
+                      .announcement-message {
+                        font-size: 12px;
+                      }
                     }
 
                     .announcement-message.active {
@@ -837,8 +847,8 @@ export default function Details9({ product }) {
                     }
 
                     .tf-product-info-buy-button .main-cart-btn.success-animation {
-                      background: #10b981;
-                      border-color: #10b981;
+                      background: #10b981 !important;
+                      border-color: #10b981 !important;
                       overflow: hidden;
                     }
 
@@ -986,7 +996,7 @@ export default function Details9({ product }) {
           </div>
         </div>
       </div>
-      <StickyItem
+      <SmartStickyBar
         product={product}
         quantity={quantity}
         setQuantity={setQuantity}
@@ -997,9 +1007,11 @@ export default function Details9({ product }) {
       />
 
       {/* Video Player - sadece influencer_videos varsa ve doluysa */}
-      {Array.isArray(product?.influencer_videos) && product.influencer_videos.length > 0 && (
-        <ProductVideoPlayer influencerVideos={product.influencer_videos} />
-      )}
-    </section>
+      {
+        Array.isArray(product?.influencer_videos) && product.influencer_videos.length > 0 && (
+          <ProductVideoPlayer influencerVideos={product.influencer_videos} />
+        )
+      }
+    </section >
   );
 }

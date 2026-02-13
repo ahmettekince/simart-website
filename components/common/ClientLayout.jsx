@@ -19,6 +19,7 @@ import ScrollTop from "@/components/common/ScrollTop";
 import CookieConsentBanner from "@/components/common/CookieConsentBanner";
 import Analytics from "@/components/common/Analytics";
 import GlobalGiftSelectionModal from "@/components/modals/GlobalGiftSelectionModal";
+import CampaignTab from "@/components/common/CampaignTab";
 
 export default function ClientLayout({ children }) {
     const pathname = usePathname();
@@ -193,6 +194,7 @@ export default function ClientLayout({ children }) {
             <NewsletterModal />
             <ShareModal />
             <GlobalGiftSelectionModal />
+            <CampaignTab />
             <ScrollTop />
             {/* WhatsApp butonu*/}
             {/* <div className="whatsapp-floating-btn">

@@ -64,8 +64,8 @@ export function CareerSection({ faqs = [] }) {
                 setFileError("")
                 setSelectedFile(file.name)
                 // Hata varsa temizle
-                if (fieldErrors.cv_file) {
-                    setFieldErrors(prev => ({ ...prev, cv_file: null }))
+                if (fieldErrors.resume_file) {
+                    setFieldErrors(prev => ({ ...prev, resume_file: null }))
                 }
             }
         } else {
@@ -155,10 +155,14 @@ export function CareerSection({ faqs = [] }) {
                 setFullName("")
                 setMessage("")
                 setPrivacyAccepted(false)
+                handleShowMessage()
             } else {
                 setSuccess(false)
-                if (response.data.errors) {
-                    setFieldErrors(response.data.errors)
+                const errors = response.data.errors
+                if (errors && Object.keys(errors).length > 0) {
+                    setFieldErrors(errors)
+                    setApiMessage(response.data.message || "Bir hata oluştu.")
+                    handleShowMessage()
                 } else {
                     setApiMessage(response.data.message || "Bir hata oluştu.")
                     handleShowMessage()
@@ -168,10 +172,13 @@ export function CareerSection({ faqs = [] }) {
             setSuccess(false)
             console.error("Career Form Error:", error)
 
-            if (error.response?.data?.errors) {
-                setFieldErrors(error.response.data.errors)
+            const errorData = error.response?.data
+            if (errorData?.errors && Object.keys(errorData.errors).length > 0) {
+                setFieldErrors(errorData.errors)
+                setApiMessage(errorData.message || "Bir hata oluştu. Lütfen tekrar deneyin.")
+                handleShowMessage()
             } else {
-                const errorMessage = error.response?.data?.message || "Bir hata oluştu. Lütfen tekrar deneyin."
+                const errorMessage = errorData?.message || "Bir hata oluştu. Lütfen tekrar deneyin."
                 setApiMessage(errorMessage)
                 handleShowMessage()
             }
@@ -202,28 +209,6 @@ export function CareerSection({ faqs = [] }) {
                                 {fieldErrors.full_name && (
                                     <div className="text-danger mt-1" style={{ fontSize: '12px' }}>
                                         {fieldErrors.full_name[0]}
-                                    </div>
-                                )}
-                            </fieldset>
-                        </div>
-
-                        {/* E-Mail */}
-                        <div className="mb_15">
-                            <fieldset className="w-100">
-                                <input
-                                    type="email"
-                                    name="email"
-                                    id="email"
-                                    required
-                                    placeholder="E-Mail *"
-                                    className={fieldErrors.email ? "error-border" : ""}
-                                    onChange={() => {
-                                        if (fieldErrors.email) setFieldErrors(prev => ({ ...prev, email: null }))
-                                    }}
-                                />
-                                {fieldErrors.email && (
-                                    <div className="text-danger mt-1" style={{ fontSize: '12px' }}>
-                                        {fieldErrors.email[0]}
                                     </div>
                                 )}
                             </fieldset>
@@ -281,15 +266,15 @@ export function CareerSection({ faqs = [] }) {
                             <div className="d-flex align-items-center gap-2 flex-wrap">
                                 <input
                                     type="file"
-                                    name="cv_file"
-                                    id="cv_file"
+                                    name="resume_file"
+                                    id="resume_file"
                                     accept=".pdf,.doc,.docx"
                                     onChange={handleFileChange}
                                     style={{ display: 'none' }}
                                 />
                                 <label
-                                    htmlFor="cv_file"
-                                    className={`btn btn-outline-secondary ${fieldErrors.cv_file ? "border-danger text-danger" : ""}`}
+                                    htmlFor="resume_file"
+                                    className={`btn btn-outline-secondary ${fieldErrors.resume_file ? "border-danger text-danger" : ""}`}
                                     style={{ cursor: 'pointer', margin: 0, padding: '8px 16px' }}
                                 >
                                     Dosya Seç
@@ -301,9 +286,9 @@ export function CareerSection({ faqs = [] }) {
                                     Maksimum dosya boyutu: 3MB
                                 </div>
                                 {fileError && <div className="w-100 text-danger" style={{ fontSize: '12px' }}>{fileError}</div>}
-                                {fieldErrors.cv_file && (
+                                {fieldErrors.resume_file && (
                                     <div className="w-100 text-danger" style={{ fontSize: '12px' }}>
-                                        {fieldErrors.cv_file[0]}
+                                        {fieldErrors.resume_file[0]}
                                     </div>
                                 )}
                             </div>

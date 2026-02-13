@@ -67,7 +67,6 @@ export default function ProductCardSimart({ product }) {
 
   // -- Buton Metin Mantığı --
   const { buttonText, buttonDisabled } = getProductButtonState(product);
-
   // Sepetteki mevcut ürünü bul - tüm olası ID alanlarını kontrol et
   const existingCartItem = React.useMemo(() => {
     if (!cartItems || !Array.isArray(cartItems) || !product?.id) return null;
@@ -78,6 +77,18 @@ export default function ProductCardSimart({ product }) {
       (it?.product && it.product.id === product.id)
     ) || null;
   }, [cartItems, product?.id]);
+
+  // Global sepet başarısı dinleyicisi (Hediye seçimi sonrası vb. animasyonu tetiklemek için)
+  React.useEffect(() => {
+    const handleCartSuccess = (e) => {
+      if (e.detail?.productId === product?.id) {
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 2000);
+      }
+    };
+    window.addEventListener('cart-success', handleCartSuccess);
+    return () => window.removeEventListener('cart-success', handleCartSuccess);
+  }, [product?.id]);
 
   // Max bilgisini önce sepetteki item'dan al, yoksa product'tan al
   const rawMax = existingCartItem?.max_purchase_quantity ??

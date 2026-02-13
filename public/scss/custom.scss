@@ -799,7 +799,6 @@ input[type="checkbox"]:checked,
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
   white-space: nowrap;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 
   .overlay-cta-btn__icon {
     display: inline-flex;
@@ -824,7 +823,6 @@ input[type="checkbox"]:checked,
     color: #fff;
 
     &:hover {
-      box-shadow: 0 4px 12px rgba(255, 94, 158, 0.3);
       opacity: 0.95;
     }
   }
@@ -834,12 +832,10 @@ input[type="checkbox"]:checked,
     background: #fff;
     color: var(--primary, #3c81b5);
     border: 1px solid var(--primary, #3c81b5);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
 
     &:hover {
       background: var(--primary, #3c81b5);
       color: #fff;
-      box-shadow: 0 3px 8px rgba(60, 129, 181, 0.12);
     }
   }
 

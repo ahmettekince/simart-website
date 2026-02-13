@@ -45,6 +45,7 @@ export default function OrderSummary({
   const isCartSynced = useCartStore((state) => state.isSynced);
   /* Logic copied and adapted from ShopCart.jsx for Campaign and Gift display */
   const applied_campaigns = useCartStore((state) => state.applied_campaigns);
+  const cartTips = useCartStore((state) => state.totals?.cart_tips);
 
   // Normal items and gift items separation
   const normalItems = items.filter(item => !item.is_gift);
@@ -718,6 +719,34 @@ export default function OrderSummary({
             <h6 className="fw-5" style={{ fontSize: "18px" }}>Toplam</h6>
             <h6 className="total fw-5" style={{ fontSize: "18px" }}>{cartTotals.total.toLocaleString("tr-TR")} TL</h6>
           </div>
+
+          {/* Sepet İpuçları (Cart Tips) */}
+          {cartTips && Array.isArray(cartTips) && cartTips.length > 0 && (
+            <div style={{ marginTop: "12px", marginBottom: "12px" }}>
+              {cartTips.map((tip, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    marginBottom: "8px",
+                    fontSize: "13px",
+                    color: "#10b981",
+                    lineHeight: "1.5",
+                  }}
+                >
+                  {tip.product_name ? (
+                    <>
+                      <span style={{ fontWeight: "700" }}>
+                        {tip.product_name}
+                      </span>{" "}
+                      ürününden {tip.message_short || tip.message}
+                    </>
+                  ) : (
+                    tip.message_short || tip.message
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
           {/* Sipariş Notu - Checkbox ile kontrol edilebilir */}
 
           {showNotes && (

@@ -5,10 +5,13 @@ import { useCartStore } from "@/stores/cartStore";
 import { getProductButtonState } from "@/utils/productStock";
 import MaxQuantityToast from "@/components/common/MaxQuantityToast";
 import ErrorToast from "@/components/common/ErrorToast";
+import Quantity from "./Quantity";
 
 export default function StickyItem({
   product = null,
   quantity = 1,
+  setQuantity = () => { },
+  minQuantity = 1,
   maxQuantity = null,
   isStockLimit = false,
   soldOut = false
@@ -32,6 +35,18 @@ export default function StickyItem({
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
   }, []);
+
+  // Global sepet başarısı dinleyicisi (Hediye seçimi sonrası vb. animasyonu tetiklemek için)
+  useEffect(() => {
+    const handleCartSuccess = (e) => {
+      if (e.detail?.productId === product?.id) {
+        setShowSuccess(true);
+        setTimeout(() => setShowSuccess(false), 2000);
+      }
+    };
+    window.addEventListener('cart-success', handleCartSuccess);
+    return () => window.removeEventListener('cart-success', handleCartSuccess);
+  }, [product?.id]);
 
   // Mobilde sticky bar her zaman görünür; masaüstünde scroll ile göster/gizle
   useEffect(() => {
@@ -137,7 +152,7 @@ export default function StickyItem({
     try {
       if (product) {
         const result = await addItem(product, quantity, false);
-        if (result?.added) {
+        if (result?.added || result?.success) {
           setShowSuccess(true);
           setTimeout(() => setShowSuccess(false), 2000);
         } else if (result?.isGiftSelection) {
@@ -197,7 +212,16 @@ export default function StickyItem({
           </div>
           <div className="tf-sticky-atc-infos">
             <form onSubmit={(e) => e.preventDefault()} className="">
-              <div className="tf-sticky-atc-btns">
+              <div className="tf-sticky-atc-btns" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div className="d-none d-md-block">
+                  <Quantity
+                    setQuantity={setQuantity}
+                    initialValue={quantity}
+                    minQuantity={minQuantity}
+                    maxQuantity={maxQuantity}
+                    disabled={soldOut || buttonState.buttonDisabled}
+                  />
+                </div>
                 {soldOut || buttonState.buttonDisabled ? (
                   <button
                     type="button"
@@ -326,7 +350,7 @@ export default function StickyItem({
           text-overflow: ellipsis;
         }
         .sticky-atc-btn--success {
-          background: #10b981;
+          background: #10b981 !important;
         }
         .sticky-atc-btn--success .sticky-atc-btn__text {
           opacity: 0;
@@ -354,12 +378,16 @@ export default function StickyItem({
             margin-right: 8px;
           }
           .tf-sticky-atc-infos {
-            max-width: 50%;
+            max-width: 60%;
+            flex: 1;
           }
           .sticky-atc-btn {
             font-size: 13px;
             padding: 0 12px;
             height: 44px;
+          }
+          .tf-sticky-atc-btns {
+            gap: 6px !important;
           }
         }
       `}</style>

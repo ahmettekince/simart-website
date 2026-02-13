@@ -16,7 +16,7 @@ export default function StarRating({
   showReviewCount = true,
 }) {
   const numRating = Number(rating) || 0;
-  if (numRating <= 0) return null;
+
 
   const numReviews = reviewCount != null ? Number(reviewCount) : 0;
 

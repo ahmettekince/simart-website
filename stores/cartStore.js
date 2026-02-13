@@ -154,7 +154,17 @@ export const useCartStore = create(
 
                 if (result?.success) {
                     get().syncFromAPI(result.cart);
-                    // ... logs ...
+
+                    // Başarılı ekleme durumunda global event yayınla (UI animasyonları için)
+                    if (typeof window !== 'undefined') {
+                        window.dispatchEvent(new CustomEvent('cart-success', {
+                            detail: {
+                                productId: product.id,
+                                slug: productSlug
+                            }
+                        }));
+                    }
+
                     if (openModal) {
                         if (typeof window !== 'undefined') {
                             setTimeout(() => {

@@ -149,6 +149,7 @@
  * @property {string[]} [colors] - Ürün renkleri
  * @property {string[]} [sizes] - Ürün bedenleri
  * @property {string} [brand] - Marka adı
+ * @property {Object[]} [tiered_cart_discount_campaigns] - Kademeli sepet indirimleri
  * @property {string} [created_at] - Oluşturulma tarihi
  * @property {string} [updated_at] - Güncellenme tarihi
  */
@@ -334,6 +335,9 @@ export class ProductModel {
 
             // Hediye kampanyaları (sepete eklerken hediye seçimi için)
             selectable_gift_campaigns: product.selectable_gift_campaigns || product.selectableGiftCampaigns || [],
+
+            // Kademeli kart indirimleri (Volume Discount)
+            tiered_cart_discount_campaigns: product.tiered_cart_discount_campaigns || [],
 
             // Ürün protokolü (Wi-Fi, Zigbee vb. – görsel + açıklama)
             product_protocol: product.product_protocol || null,
