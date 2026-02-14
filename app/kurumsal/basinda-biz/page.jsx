@@ -3,6 +3,7 @@ import { AboutLayout } from "@/components/about/about-layout"
 import { PressSection } from "@/components/about/press-section"
 import { webPageSchema } from "@/lib/schema"
 import { siteConfig } from "@/config/site"
+import { getPress } from "@/api/press";
 
 export const metadata = {
     title: "Basında Biz - Şımart Teknoloji",
@@ -33,47 +34,9 @@ export const metadata = {
     },
 }
 
+export default async function BasindaBizPage() {
+    const pressItems = await getPress();
 
-const pressItems = [
-    {
-        id: 1,
-        title: "Web Tekno - Robot Süpürge ve Akıllı Ev Sistemleri",
-        link: "https://www.webtekno.com/akilli-ev-teknolojileri-gelistiren-simart-teknoloji-nin-ceo-su-mustafa-emrah-babur-la-teknoloji-konustuk-h146498.html",
-        imageUrl: "/images/press/basinda-biz-1.webp",
-    },
-    {
-        id: 2,
-        title: "Onedio - Robot Süpürge ve Akıllı Ev Sistemleri",
-        link: "https://onedio.com/haber/evdeki-hicbir-elektronik-cihaza-dokunmayin-1233716",
-        imageUrl: "/images/press/basinda-biz-2.webp",
-    },
-    {
-        id: 3,
-        title: "Mynet - Robot Süpürge ve Akıllı Ev Sistemleri",
-        link: "https://www.mynet.com/turkiye-de-iot-devrimi-akilli-teknolojilerle-gelecege-yolculuk-110107183056",
-        imageUrl: "/images/press/basinda-biz-3.webp",
-    },
-    {
-        id: 4,
-        title: "Hürriyet Haber - Robot Süpürge ve Akıllı Ev Sistemleri",
-        link: "https://www.hurriyet.com.tr/yerel-haberler/ankara/cindeki-basarisini-ankaraya-tasidi-42134059",
-        imageUrl: "/images/press/basinda-biz-4.webp",
-    },
-    {
-        id: 5,
-        title: "TGRT - Robot Süpürge ve Akıllı Ev Sistemleri",
-        link: "https://www.youtube.com/watch?v=Hnx1Q0cFfpg",
-        imageUrl: "/images/press/basinda-biz-5.webp",
-    },
-    {
-        id: 6,
-        title: "EINPRESSWIRE - Robot Süpürge ve Akıllı Ev Sistemleri",
-        link: "https://www.einpresswire.com/article/589570980/award-winning-mart-technology-has-developed-products-with-combined-hardware-and-software-ecosystem",
-        imageUrl: "/images/press/basinda-biz-6.webp",
-    },
-]
-
-export default function BasindaBizPage() {
     const pageJsonLd = webPageSchema({
         name: "Basında Biz - Şımart Teknoloji",
         url: `${siteConfig.site.url}/kurumsal/basinda-biz`,

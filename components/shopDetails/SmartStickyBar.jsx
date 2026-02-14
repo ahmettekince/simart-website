@@ -146,7 +146,9 @@ export default function SmartStickyBar({
             )}
           </div>
           <div className="ss-details">
-            <h6 className="ss-title d-none d-md-block">{productName}</h6>
+            <h6 className="ss-title d-none d-md-block">
+              {productName.length > 20 ? productName.slice(0, 20) + "..." : productName}
+            </h6>
             <div className="ss-price-row">
               <span className={`ss-current-price ${originalPrice ? 'ss-has-discount' : ''}`}>
                 {Number(finalPrice).toLocaleString("tr-TR")} TL

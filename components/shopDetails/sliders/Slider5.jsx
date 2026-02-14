@@ -191,7 +191,7 @@ export default function Slider5({
         ))}
       </Swiper>
       <Gallery>
-        <div className="tf-product-main-with-dots" style={{ border: "1px solid #f5f5f5", borderRadius: "8px" }}>
+        <div className="tf-product-main-with-dots">
           <Swiper
             dir="ltr"
             style={{ touchAction: "pan-y" }}
@@ -213,7 +213,7 @@ export default function Slider5({
               <SwiperSlide className="swiper-slide" key={index}>
                 <Item original={slide.src} thumbnail={slide.src} width={slide.width} height={slide.height}>
                   {({ ref, open }) => (
-                    <a onClick={open} className="item">
+                    <a onClick={open} className="item" style={{ border: "2px solid #f5f5f5", borderRadius: "8px" }}>
                       <Image
                         ref={ref}
                         className="tf-image-zoom lazyload"

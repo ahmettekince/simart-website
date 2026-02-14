@@ -20,6 +20,7 @@ export const useCustomerStore = create((set, get) => ({
     try {
       const response = await apiClient.get("/customer/me");
       const data = response.data?.data?.customer || null;
+      console.log("customer", data);
       set({ customer: data, lastFetchedAt: now, isLoading: false, error: null });
       return data;
     } catch (err) {

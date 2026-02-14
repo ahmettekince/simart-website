@@ -378,8 +378,7 @@ export default function AccountAddress() {
             font-size: 13px !important;
           }
           .new-address-btn {
-            width: 100% !important;
-            justify-content: center !important;
+            width: auto !important;
           }
         }
         @media (max-width: 480px) {
@@ -390,23 +389,23 @@ export default function AccountAddress() {
         }
       `}} />
       <div className="widget-inner-address" style={{ textAlign: "left" }}>
-        <AccountTabs
-          tabs={[
-            { id: "delivery", label: "Teslimat Adreslerim", count: deliveryAddresses.length },
-            { id: "billing", label: "Fatura Adreslerim", count: billingAddresses.length },
-          ]}
-          activeTab={activeTab}
-          onTabChange={(id) => {
-            setActiveTab(id);
-            setactiveEdit(false);
-            setEditingAddress(null);
-            setactiveAdd(false);
-          }}
-          style={{ marginBottom: "20px" }}
-        />
+        {/* Tablar ve Yeni Adres Butonu */}
+        <div className="d-flex flex-wrap align-items-center gap-10 mb_30">
+          <AccountTabs
+            tabs={[
+              { id: "delivery", label: "Teslimat Adreslerim", count: deliveryAddresses.length },
+              { id: "billing", label: "Fatura Adreslerim", count: billingAddresses.length },
+            ]}
+            activeTab={activeTab}
+            onTabChange={(id) => {
+              setActiveTab(id);
+              setactiveEdit(false);
+              setEditingAddress(null);
+              setactiveAdd(false);
+            }}
+            style={{ marginBottom: "0px" }}
+          />
 
-        {/* Yeni Adres Butonu */}
-        <div style={{ marginTop: "30px", marginBottom: "20px" }}>
           <AddAddressButton
             onClick={() => {
               setactiveEdit(true);

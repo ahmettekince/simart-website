@@ -48,7 +48,7 @@ export function CertificatesSection({ certificates }) {
             <div className="row g-3">
                 {certificates.map((cert, index) => (
                     <div
-                        key={cert.id}
+                        key={cert.id || index}
                         className="col-12 col-md-6 col-xl-4"
                         style={{ cursor: 'pointer' }}
                         onClick={() => openLightbox(index)}
@@ -75,8 +75,8 @@ export function CertificatesSection({ certificates }) {
                         >
                             <div style={{ position: 'relative', width: '100%', paddingBottom: '133.33%', aspectRatio: '3/4' }}>
                                 <Image
-                                    src={cert.imageUrl || "/placeholder.svg"}
-                                    alt={`Sertifika ${cert.id}`}
+                                    src={cert.thumbnail_url || cert.url || cert.imageUrl || "/placeholder.svg"}
+                                    alt={`Sertifika ${cert.id || index}`}
                                     fill
                                     style={{ objectFit: 'contain', padding: '8px' }}
                                     sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
@@ -175,8 +175,8 @@ export function CertificatesSection({ certificates }) {
                         onClick={(e) => e.stopPropagation()}
                     >
                         <Image
-                            src={certificates[selectedIndex].imageUrl || "/placeholder.svg"}
-                            alt={`Sertifika ${certificates[selectedIndex].id}`}
+                            src={certificates[selectedIndex].url || certificates[selectedIndex].imageUrl || "/placeholder.svg"}
+                            alt={`Sertifika ${certificates[selectedIndex].id || selectedIndex}`}
                             fill
                             style={{ objectFit: 'contain' }}
                             sizes="100vw"

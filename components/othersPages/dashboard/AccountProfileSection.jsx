@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import apiClient from "@/utils/apiClient";
 import { formatPhoneValue } from "@/utils/inputFormatters";
 import CircularLoading from "@/components/common/CircularLoading";
@@ -166,23 +167,29 @@ export default function AccountProfileSection() {
           </div>
         )}
 
-        {/* Foto placeholder */}
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: "16px" }}>
+        {/* Profil Resmi Placeholder */}
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: "20px" }}>
           <div
             style={{
-              width: "64px",
-              height: "64px",
+              width: "80px",
+              height: "80px",
               borderRadius: "50%",
-              border: "2px dashed #ddd",
+              border: "1px solid #eee",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              color: "#999",
-              fontSize: "11px",
-              backgroundColor: "#fafafa",
+              overflow: "hidden",
+              backgroundColor: "#fff",
+              boxShadow: "0 2px 4px rgba(0,0,0,0.05)"
             }}
           >
-            Foto
+            <Image
+              src="/images/logo/favicon.png"
+              alt="Logo"
+              width={60}
+              height={60}
+              style={{ objectFit: "contain" }}
+            />
           </div>
         </div>
 

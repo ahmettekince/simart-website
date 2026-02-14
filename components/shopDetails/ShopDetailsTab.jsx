@@ -178,7 +178,7 @@ export default function ShopDetailsTab({ product }) {
     <>
       {/* Açıklama bölümü - tab bar'da yok, sadece yukarıda gösterilir */}
       {hasDescription && (
-        <section className="" style={{ overflowX: "hidden", paddingTop: "15px" }}>
+        <section className="" style={{ overflowX: "hidden", paddingTop: "45px" }}>
           <div className={descriptionContainerClass}>
             <div className="row">
               <div className="col-12" >

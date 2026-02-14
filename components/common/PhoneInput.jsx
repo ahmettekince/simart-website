@@ -26,11 +26,19 @@ export default function PhoneInput({
   // Value prop'u değiştiğinde rawDigits'i güncelle
   useEffect(() => {
     if (value) {
-      // +90'ı çıkar ve sadece rakamları al
-      const cleanValue = value.startsWith("+90")
-        ? value.slice(3).replace(/\D/g, "")
-        : value.replace(/\D/g, "");
-      setRawDigits(cleanValue.slice(0, 10));
+      // Sadece rakamları al
+      let digits = value.replace(/\D/g, "");
+
+      // Eğer numara 90 ile başlıyorsa ve 10 haneden uzunsa 90'ı at
+      if (digits.startsWith("90") && digits.length > 10) {
+        digits = digits.slice(2);
+      }
+      // Eğer numara 0 ile başlıyorsa ve 10 haneden uzunsa 0'ı at
+      else if (digits.startsWith("0") && digits.length >= 11) {
+        digits = digits.slice(1);
+      }
+
+      setRawDigits(digits.slice(0, 10));
     } else {
       setRawDigits("");
     }
@@ -71,10 +79,17 @@ export default function PhoneInput({
   const handleChange = (e) => {
     const inputValue = e.target.value;
 
-    // +90'ı çıkar ve sadece rakamları al
-    let digits = inputValue.startsWith("+90")
-      ? inputValue.slice(3).replace(/\D/g, "")
-      : inputValue.replace(/\D/g, "");
+    // Sadece rakamları al
+    let digits = inputValue.replace(/\D/g, "");
+
+    // Eğer numara 90 ile başlıyorsa ve 10 haneden uzunsa 90'ı at
+    if (digits.startsWith("90") && digits.length > 10) {
+      digits = digits.slice(2);
+    }
+    // Eğer numara 0 ile başlıyorsa ve 10 haneden uzunsa 0'ı at
+    else if (digits.startsWith("0") && digits.length >= 11) {
+      digits = digits.slice(1);
+    }
 
     // Maksimum 10 hane
     digits = digits.slice(0, 10);

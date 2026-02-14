@@ -31,8 +31,8 @@ export function PressSection({ items }) {
                     >
                         <div style={{ position: 'relative', width: '100%', paddingBottom: '56.25%' }}>
                             <Image
-                                src={item.imageUrl || "/placeholder.svg"}
-                                alt={item.title}
+                                src={item.media?.url || item.imageUrl || "/placeholder.svg"}
+                                alt={item.top_text || item.title || "Basın"}
                                 fill
                                 style={{ objectFit: 'cover' }}
                                 sizes="(max-width: 768px) 100vw, 50vw"
@@ -55,17 +55,33 @@ export function PressSection({ items }) {
                             right: 0,
                             padding: '24px',
                             zIndex: 2,
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center'
                         }}>
                             <h3 style={{
-                                fontSize: 'clamp(18px, 2vw, 24px)',
+                                fontSize: 'clamp(16px, 1.8vw, 22px)',
                                 fontWeight: 'bold',
                                 color: '#fff',
                                 textAlign: 'center',
                                 margin: 0,
                                 textShadow: '0 2px 4px rgba(0,0,0,0.5)',
+                                lineHeight: '1.2'
                             }}>
-                                {item.title}
+                                {item.top_text || item.title}
                             </h3>
+                            {(item.bottom_text) && (
+                                <p style={{
+                                    fontSize: 'clamp(13px, 1.4vw, 16px)',
+                                    color: '#eee',
+                                    textAlign: 'center',
+                                    margin: '4px 0 0 0',
+                                    fontWeight: '400'
+                                }}>
+                                    {item.bottom_text}
+                                </p>
+                            )}
                         </div>
 
                         {/* Hover overlay */}

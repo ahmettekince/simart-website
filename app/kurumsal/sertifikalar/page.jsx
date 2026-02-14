@@ -1,6 +1,7 @@
 import Header from "@/components/headers/Header"
 import { AboutLayout } from "@/components/about/about-layout"
 import { CertificatesSection } from "@/components/about/certificates-section"
+import { getCertificates } from "@/api/certificates";
 
 export const metadata = {
     title: "Sertifikalar - Şımart Teknoloji",
@@ -31,45 +32,9 @@ export const metadata = {
     },
 }
 
-const certificates = [
-    {
-        id: 1,
-        title: "Sertifikalar - Şımart Teknoloji",
-        imageUrl: "/images/certificates/cert1.webp",
-    },
-    {
-        id: 2,
-        title: "Sertifikalar - Şımart Teknoloji",
-        imageUrl: "/images/certificates/cert2.webp",
-    },
-    {
-        id: 3,
-        title: "Sertifikalar - Şımart Teknoloji",
-        imageUrl: "/images/certificates/cert3.webp",
-    },
-    {
-        id: 4,
-        title: "Sertifikalar - Şımart Teknoloji",
-        imageUrl: "/images/certificates/cert4.webp",
-    },
-    {
-        id: 5,
-        title: "Sertifikalar - Şımart Teknoloji",
-        imageUrl: "/images/certificates/cert5.webp",
-    },
-    {
-        id: 6,
-        title: "Sertifikalar - Şımart Teknoloji",
-        imageUrl: "/images/certificates/cert6.webp",
-    },
-    {
-        id: 7,
-        title: "Sertifikalar - Şımart Teknoloji",
-        imageUrl: "/images/certificates/cert7.webp",
-    },
-]
+export default async function SertifikalarPage() {
+    const certificates = await getCertificates();
 
-export default function SertifikalarPage() {
     return (
         <>
             <Header />
