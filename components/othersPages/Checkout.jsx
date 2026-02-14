@@ -1,8 +1,6 @@
 "use client";
 import { useCartStore } from "@/stores/cartStore";
 import { useAuthStore } from "@/stores/authStore";
-import Image from "next/image";
-import Link from "next/link";
 import { useEffect, useState, useMemo, useRef } from "react";
 import { log } from "@/utils/logger";
 import apiClient from "@/utils/apiClient";

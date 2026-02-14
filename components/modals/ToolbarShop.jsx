@@ -5,7 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import apiClient from "@/utils/apiClient";
 
-const PLACEHOLDER_IMG = "/images/collections/collection-1.jpg";
+const PLACEHOLDER_IMG = "/images/item/pr1.jpg";
 const OFFCANVAS_ID = "toolbarShopmb";
 
 function getImageSrc(url) {
@@ -64,6 +64,7 @@ export default function ToolbarShop() {
                       src={getImageSrc(item.image?.url)}
                       width={40}
                       height={48}
+                      unoptimized={getImageSrc(item.image?.url).startsWith('/')}
                     />
                   </div>
                   <span>{item.name || "Kategori"}</span>

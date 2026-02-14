@@ -1,7 +1,7 @@
 import Footer from "@/components/footers/Footer";
 import Header from "@/components/headers/Header";
 
-import Details9 from "@/components/shopDetails/Details9";
+import Detail from "@/components/shopDetails/Detail";
 import Products from "@/components/shopDetails/Products";
 import RecentProducts from "@/components/shopDetails/RecentProducts";
 import ShopDetailsTab from "@/components/shopDetails/ShopDetailsTab";
@@ -13,7 +13,8 @@ export const metadata = {
 };
 import { allProducts } from "@/data/products";
 import ProductSinglePrevNext from "@/components/common/ProductSinglePrevNext";
-export default async function page({ params }) {const { id } = await params
+export default async function page({ params }) {
+  const { id } = await params
   const product =
     allProducts.filter((elm) => elm.id == id)[0] || allProducts[0];
   return (
@@ -34,7 +35,7 @@ export default async function page({ params }) {const { id } = await params
           </div>
         </div>
       </div>
-      <Details9 product={product} />
+      <Detail product={product} />
       <ShopDetailsTab />
       <Products />
       <RecentProducts />

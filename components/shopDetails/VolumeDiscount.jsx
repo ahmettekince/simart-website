@@ -133,7 +133,6 @@ export default function VolumeDiscount({ product, setQuantity }) {
               </div>
             </div>
             <div className="d-flex flex-column align-items-end" style={{ gap: "2px" }}>
-              {/* Tasarruf kısmı kaldırıldı */}
               <div className="rule-price-total" style={{ textAlign: "right" }}>
                 <div style={{ display: "flex", alignItems: "baseline", gap: "6px", justifyContent: "flex-end" }}>
                   <div className="price-regular" style={{ fontSize: "16px", fontWeight: "800", color: "#0bc15c" }}>

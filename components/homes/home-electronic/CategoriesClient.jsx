@@ -6,7 +6,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
 import NavDotsPill from "@/components/common/NavDotsPill";
 
-const CATEGORY_PLACEHOLDER = "/images/collections/collection-1.jpg";
+const CATEGORY_PLACEHOLDER = "/images/item/pr1.jpg"; // Mevcut bir görselle değiştirildi
 
 function getCategoryImageSrc(url) {
   if (!url || typeof url !== "string" || url.trim() === "") return CATEGORY_PLACEHOLDER;
@@ -57,6 +57,7 @@ export default function CategoriesClient({ categories }) {
                     loading={index < 6 ? "eager" : "lazy"}
                     fetchPriority={index < 2 ? "high" : "auto"}
                     sizes="(max-width: 480px) 50vw, (max-width: 768px) 25vw, (max-width: 1200px) 16vw, 200px"
+                    unoptimized={getCategoryImageSrc(item.image?.url).startsWith('/')}
                   />
                 </div>
                 <div className="collection-content" style={{ position: 'relative', inset: 'unset', padding: '0 10px 20px', textAlign: 'center' }}>

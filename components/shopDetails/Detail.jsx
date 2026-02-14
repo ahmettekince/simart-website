@@ -3,7 +3,7 @@ import React, { useEffect, useLayoutEffect, useMemo, useState, useRef } from "re
 import ReactDOM from "react-dom";
 import Link from "next/link";
 import { decodeHtmlEntities, addLazyLoadToDescriptionImages } from "@/utils/stripHtml";
-import Slider5 from "./sliders/Slider5";
+import Slider from "./sliders/Slider";
 import Image from "next/image";
 import { colors } from "@/data/singleProductOptions";
 import CountdownComponent from "../common/Countdown";
@@ -123,7 +123,7 @@ function ProductProtocolHelp({ description, protocolName }) {
   );
 }
 
-export default function Details9({ product }) {
+export default function Detail({ product }) {
   const [currentColor, setCurrentColor] = useState(colors[0]);
   const { addItem } = useCartStore();
   const cartItems = useCartStore((s) => s.items);
@@ -377,7 +377,7 @@ export default function Details9({ product }) {
             <div className="col-md-6">
               <div className="tf-product-media-wrap sticky-top" style={{ top: '120px', zIndex: 10 }}>
                 <div className="thumbs-slider">
-                  <Slider5
+                  <Slider
                     handleColor={handleColor}
                     currentColor={currentColor.value}
                     galleryImages={product.images || product.gallery_images || []}

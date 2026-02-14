@@ -1,7 +1,7 @@
 import Footer from "@/components/footers/Footer";
 import Header from "@/components/headers/Header";
 import ShopDefault from "@/components/shop/ShopDefault";
-import ShopLoadmore from "@/components/shop/ShopLoadmore";
+import ShopLoadmore from "@/components/shop/_ShopLoadmore";
 import React from "react";
 
 export const metadata = {

@@ -19,7 +19,7 @@ export default function ProductDetailHit({ productSlug }) {
     apiClient
       .post(`/products/${slug}/hit`)
       .catch(() => {
-        // Sessizce yoksay; analytics için kritik değil, sayfa çalışmaya devam etsin
+        //devam et
       });
   }, [productSlug]);
 

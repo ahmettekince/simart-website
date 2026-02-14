@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 // POST body'yi parse et
 async function parseBody(req) {
   const contentType = req.headers.get('content-type') || '';
-  
+
   if (contentType.includes('application/json')) {
     return await req.json();
   } else if (contentType.includes('application/x-www-form-urlencoded')) {
@@ -91,7 +91,7 @@ export async function POST(req) {
       const securityKey = process.env.SECURITY_KEY || '';
       const timestamp = Math.floor(Date.now() / 1000);
       const bodyStr = JSON.stringify(backendPayload);
-      
+
       // HMAC Signature oluştur
       const dataToSign = `${timestamp}|${bodyStr}`;
       const signature = crypto
@@ -125,22 +125,22 @@ export async function POST(req) {
     // Backend status'una göre yönlendir
     const backendStatus = backendResponse?.status || 'error';
     const origin = req.headers.get('origin') || req.url.split('/api/payment/callback')[0];
-    
+
     // Status'a göre doğru sayfaya yönlendir
     const searchParams = new URLSearchParams();
     searchParams.append('status', backendStatus);
-    
+
     const redirectPath = backendStatus === 'success' ? '/odeme-basarili' : '/odeme-basarisiz';
     const redirectUrl = `${process.env.APP_URL || origin}${redirectPath}?${searchParams.toString()}`;
-    
+
     console.log('[Payment Callback] Backend status:', backendStatus);
     console.log('[Payment Callback] Redirecting to:', redirectUrl);
     return NextResponse.redirect(redirectUrl, { status: 302 });
   } catch (error) {
     console.error('[Payment Callback] Error processing POST:', error);
-    return NextResponse.json({ 
-      error: 'Internal server error', 
-      details: error.message 
+    return NextResponse.json({
+      error: 'Internal server error',
+      details: error.message
     }, { status: 500 });
   }
 }
@@ -177,7 +177,7 @@ export async function GET(req) {
       const securityKey = process.env.SECURITY_KEY || '';
       const timestamp = Math.floor(Date.now() / 1000);
       const bodyStr = JSON.stringify(backendPayload);
-      
+
       // HMAC Signature oluştur
       const dataToSign = `${timestamp}|${bodyStr}`;
       const signature = crypto
@@ -211,22 +211,22 @@ export async function GET(req) {
     // Backend status'una göre yönlendir
     const backendStatus = backendResponse?.status || 'error';
     const origin = req.headers.get('origin') || req.url.split('/api/payment/callback')[0];
-    
+
     // Status'a göre doğru sayfaya yönlendir
     const searchParams = new URLSearchParams();
     searchParams.append('status', backendStatus);
-    
+
     const redirectPath = backendStatus === 'success' ? '/odeme-basarili' : '/odeme-basarisiz';
     const redirectUrl = `${process.env.APP_URL || origin}${redirectPath}?${searchParams.toString()}`;
-    
+
     console.log('[Payment Callback] Backend status:', backendStatus);
     console.log('[Payment Callback] Redirecting to:', redirectUrl);
     return NextResponse.redirect(redirectUrl, { status: 302 });
   } catch (error) {
     console.error('[Payment Callback] Error processing GET:', error);
-    return NextResponse.json({ 
-      error: 'Internal server error', 
-      details: error.message 
+    return NextResponse.json({
+      error: 'Internal server error',
+      details: error.message
     }, { status: 500 });
   }
 }

@@ -2,7 +2,6 @@
 import Link from "next/link";
 import React from "react";
 import { usePathname } from "next/navigation";
-import { ProductCard } from "../../otherpagesinveriler/shopCards/ProductCard";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 
@@ -105,7 +104,7 @@ export default function Nav({ isArrow = true, textColor = "", Linkfs = "", menuI
                           >
                             {[...products1].slice(0, 10).map((elm, i) => (
                               <SwiperSlide key={i} className="swiper-slide">
-                                <ProductCard product={elm} />
+
                               </SwiperSlide>
                             ))}
                           </Swiper>

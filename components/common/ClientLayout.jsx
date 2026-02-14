@@ -38,43 +38,36 @@ export default function ClientLayout({ children }) {
 
     useEffect(() => {
         let ticking = false;
-        const scrollThreshold = 5; // Minimum scroll farkı (px) - küçük değişiklikleri ignore et
 
         const handleScroll = () => {
             if (!ticking) {
                 window.requestAnimationFrame(() => {
-                    const header = document.querySelector("header");
-                    if (header) {
-                        if (window.scrollY > 100) {
-                            header.classList.add("header-bg");
-                        } else {
-                            header.classList.remove("header-bg");
-                        }
+                    const currentScrollY = window.scrollY;
+
+                    // Background kontrolü (body üzerinden)
+                    if (currentScrollY > 20) {
+                        document.body.classList.add("is-scrolled");
+                    } else {
+                        document.body.classList.remove("is-scrolled");
                     }
 
-                    const currentScrollY = window.scrollY;
+                    // Görünürlük (Sticky/Hide) kontrolü
                     const scrollDifference = Math.abs(currentScrollY - lastScrollY.current);
-
-                    // Sadece yeterli scroll farkı varsa direction'ı güncelle
-                    if (scrollDifference >= scrollThreshold) {
+                    if (scrollDifference >= 5) {
                         let newDirection = lastScrollDirection.current;
 
                         if (currentScrollY > 250) {
                             newDirection = currentScrollY > lastScrollY.current ? "down" : "up";
                         } else {
-                            // Scroll 250'den azsa header'ı göster
-                            newDirection = "down";
+                            newDirection = "up"; // Üst kısımlarda her zaman göster
                         }
 
-                        // Sadece direction gerçekten değiştiyse state'i güncelle
                         if (lastScrollDirection.current !== newDirection) {
                             lastScrollDirection.current = newDirection;
                             setScrollDirection(newDirection);
                         }
-
                         lastScrollY.current = currentScrollY;
                     }
-
                     ticking = false;
                 });
                 ticking = true;

@@ -2,8 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
-import { decodeHtmlEntities, addLazyLoadToDescriptionImages } from "@/utils/stripHtml";
-import Accordion from "@/components/common/Accordion";
+import { decodeHtmlEntities } from "@/utils/stripHtml";
 import BirlikteAlNew from "@/components/shopDetails/BirlikteAlNew";
 import InstallmentOptions from "@/components/shopDetails/InstallmentOptions";
 

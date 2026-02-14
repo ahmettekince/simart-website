@@ -1,7 +1,7 @@
 import Footer from "@/components/footers/Footer";
 import Header from "@/components/headers/Header";
 
-import ShopLoadmoreOnScroll from "@/components/shop/ShopLoadmoreOnScroll";
+import ShopLoadmoreOnScroll from "@/components/shop/_ShopLoadmoreOnScroll";
 import React from "react";
 
 export const metadata = {

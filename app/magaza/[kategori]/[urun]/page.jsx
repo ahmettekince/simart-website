@@ -1,10 +1,9 @@
 import Header from "@/components/headers/Header";
-import Details9 from "@/components/shopDetails/Details9";
+import Detail from "@/components/shopDetails/Detail";
 import Products from "@/components/shopDetails/Products";
 import ShopDetailsTab from "@/components/shopDetails/ShopDetailsTab";
 import ProductDetailHit from "@/components/shopDetails/ProductDetailHit";
 import React from "react";
-import Link from "next/link";
 import { getProductBySlug, getProductsByCategory } from "@/api/products";
 import { notFound } from "next/navigation";
 import { productSchema } from "@/lib/schema";
@@ -148,25 +147,9 @@ export default async function page({ params }) {
       />
       <ProductDetailHit productSlug={urun} />
       <Header />
-      <div className="tf-breadcrumb">
-        <div className="container">
-          <div className="tf-breadcrumb-wrap d-flex justify-content-between flex-wrap align-items-center">
-            <div className="tf-breadcrumb-list">
-              {/* <Link href={`/`} className="text">
-                Mağaza
-              </Link>
-
-              <i className="icon icon-arrow-right" />
-              <Link href={`/magaza/${kategori}`} className="text">
-                {categoryName}
-              </Link>
-              <i className="icon icon-arrow-right" />
-              <span className="text">{productName}</span> */}
-            </div>
-          </div>
-        </div>
+      <div style={{ padding: "30px" }}>
       </div>
-      <Details9 product={product} />
+      <Detail product={product} />
       <ShopDetailsTab product={product} />
       {categoryProducts.length > 0 && <Products products={categoryProducts} />}
     </>

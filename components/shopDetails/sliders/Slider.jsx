@@ -8,7 +8,7 @@ import { Gallery, Item } from "react-photoswipe-gallery";
 import NavDotsPill from "@/components/common/NavDotsPill";
 import OverlayCtaButton, { Model3dIcon, PlayIcon, ArrowIcon } from "@/components/common/OverlayCtaButton";
 
-export default function Slider5({
+export default function Slider({
   currentColor = "Beige",
   handleColor = () => { },
   galleryImages = [],
@@ -242,7 +242,7 @@ export default function Slider5({
               />
             </div>
           )}
-          {/* Trendyol tarzı medya overlay butonları - Mobilde kalsın, desktopta Details9 üstten hallediyor */}
+          {/* Trendyol tarzı medya overlay butonları - Mobilde kalsın, desktopta Detail üstten hallediyor */}
           <div className="overlay-cta-buttons-wrapper d-md-none">
             {(product.model_3d_url || product.media?.model_3d_url) && (
               <OverlayCtaButton

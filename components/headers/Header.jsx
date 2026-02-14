@@ -3,7 +3,6 @@ import Nav from "@/components/headers/Nav";
 import Image from "next/image";
 import Link from "next/link";
 import CartLength from "@/components/common/CartLength";
-import WishlistLength from "@/components/common/WishlistLength";
 import MobileMenu from "@/components/modals/MobileMenu";
 import AccountIcon from "@/components/headers/AccountIcon";
 import { getMenus } from "@/api/menus";

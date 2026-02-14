@@ -212,7 +212,7 @@ export default function SmartStickyBar({
             background: #ffffff;
             border: 1px solid #eee;
             border-radius: 12px;
-            padding: 8px 14px;
+            padding: 20px 14px;
             display: flex;
             flex-direction: row;
             align-items: center;
