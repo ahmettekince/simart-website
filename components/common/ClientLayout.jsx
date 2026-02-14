@@ -10,13 +10,13 @@ import AskQuestion from "@/components/modals/AskQuestion";
 import SearchModal from "@/components/modals/SearchModal";
 import ToolbarBottom from "@/components/modals/ToolbarBottom";
 import ToolbarShop from "@/components/modals/ToolbarShop";
-import NewsletterModal from "@/components/modals/NewsletterModal";
-import ShareModal from "@/components/modals/ShareModal";
 import ScrollTop from "@/components/common/ScrollTop";
 import CookieConsentBanner from "@/components/common/CookieConsentBanner";
 import Analytics from "@/components/common/Analytics";
 import GlobalGiftSelectionModal from "@/components/modals/GlobalGiftSelectionModal";
 import CampaignTab from "@/components/common/CampaignTab";
+import NewsletterModal from "../modals/NewsletterModal";
+import ShareModal from "../modals/ShareModal";
 
 export default function ClientLayout({ children }) {
     const pathname = usePathname();
@@ -186,7 +186,6 @@ export default function ClientLayout({ children }) {
             <SearchModal />
             <ToolbarBottom />
             <ToolbarShop />
-            <NewsletterModal />
             <ShareModal />
             <GlobalGiftSelectionModal />
             <CampaignTab />

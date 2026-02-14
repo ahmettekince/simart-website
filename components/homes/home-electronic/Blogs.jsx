@@ -1,11 +1,12 @@
 import React from "react";
 import { serverFetch } from "@/utils/serverFetch";
+import { API_REVALIDATE } from "@/config/apiConfig";
 import BlogsClient from "./BlogsClient";
 
 export default async function Blogs() {
   try {
-    // 10 saniyelik revalidate cache ile veri çekilir
-    const response = await serverFetch("/blogs", { next: { revalidate: 10 } });
+    // Merkezi config'den gelen revalidate cache ile veri çekilir
+    const response = await serverFetch("/blogs", { next: { revalidate: API_REVALIDATE.BLOGS } });
 
     if (response?.status === "success" && response.data?.length > 0) {
       return <BlogsClient blogs={response.data} />;

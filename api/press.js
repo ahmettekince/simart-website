@@ -1,5 +1,6 @@
 import { serverFetch } from "@/utils/serverFetch";
 import { log } from "@/utils/logger";
+import { API_REVALIDATE } from "@/config/apiConfig";
 
 /**
  * Basında Biz (Press) verilerini getirir.
@@ -7,7 +8,7 @@ import { log } from "@/utils/logger";
 export async function getPress() {
     try {
         const response = await serverFetch("/press", {
-            cache: "no-store",
+            next: { revalidate: API_REVALIDATE.PRESS },
         });
 
         if (response?.status === "success" && Array.isArray(response.data)) {

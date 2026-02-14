@@ -1,5 +1,6 @@
 import { serverFetch } from "@/utils/serverFetch";
 import { log } from "@/utils/logger";
+import { API_REVALIDATE } from "@/config/apiConfig";
 
 /**
  * Tüm kategorileri getirir.
@@ -8,8 +9,8 @@ export async function getCategories() {
     log("[API home.js] getCategories: İstek gönderiliyor - URL: /categories");
 
     const response = await serverFetch("/categories", {
-        next: { revalidate: 0 }, // Cache'i devre dışı bırak
-        cache: "no-store" // Cache'i tamamen devre dweışı bırak
+        next: { revalidate: API_REVALIDATE.HOME }, // Cache'i devre dışı bırak
+        cache: "no-store" // Cache'i tamamen devre dışı bırak
     });
 
     if (response?.status === "success") {
@@ -75,7 +76,7 @@ export async function getCollectionBanner() {
         const response = await serverFetch("/banners", {
             method: "POST",
             body: { type: "collectionbanner" },
-            next: { revalidate: 0 }
+            next: { revalidate: API_REVALIDATE.HOME }
         });
 
         // serverFetch hata durumunda null döndürür
@@ -119,7 +120,7 @@ export async function getCollections() {
         const response = await serverFetch("/banners", {
             method: "POST",
             body: { type: "collections" },
-            next: { revalidate: 0 }
+            next: { revalidate: API_REVALIDATE.HOME }
         });
 
         // serverFetch hata durumunda null döndürür
@@ -161,7 +162,7 @@ export async function getReviews() {
     try {
         const response = await serverFetch("/reviews", {
             method: "GET",
-            next: { revalidate: 3600 } // 1 saat cache
+            next: { revalidate: API_REVALIDATE.REVIEWS } // Config'den cache süresi
         });
 
         if (!response) {
@@ -199,7 +200,7 @@ export async function getReviews() {
 export async function getTopbar() {
     const response = await serverFetch("/topbars", {
         method: "POST",
-        next: { revalidate: 3600 } // 1 saat cache
+        next: { revalidate: API_REVALIDATE.TOPBAR } // Config'den cache süresi
     });
 
     if (response?.status === "success") {

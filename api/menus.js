@@ -1,5 +1,6 @@
 import { serverFetch } from "@/utils/serverFetch";
 import { log } from "@/utils/logger";
+import { API_REVALIDATE } from "@/config/apiConfig";
 
 /**
  * Header menülerini getirir.
@@ -36,7 +37,7 @@ export async function getMenuByType(menuType) {
     const response = await serverFetch("/menus", {
         method: "POST",
         body: { type: menuType },
-        next: { revalidate: 3600 }
+        next: { revalidate: API_REVALIDATE.MENUS }
     });
 
     if (response?.status === "success" && response.data) {

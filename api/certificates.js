@@ -1,5 +1,6 @@
 import { serverFetch } from "@/utils/serverFetch";
 import { log } from "@/utils/logger";
+import { API_REVALIDATE } from "@/config/apiConfig";
 
 /**
  * Sertifikalar (Certificates) verilerini getirir.
@@ -7,7 +8,7 @@ import { log } from "@/utils/logger";
 export async function getCertificates() {
     try {
         const response = await serverFetch("/certificates", {
-            cache: "no-store",
+            next: { revalidate: API_REVALIDATE.CERTIFICATES },
         });
 
         if (response?.status === "success" && Array.isArray(response.data)) {

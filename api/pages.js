@@ -1,5 +1,6 @@
 import { serverFetch } from "@/utils/serverFetch";
 import { log } from "@/utils/logger";
+import { API_REVALIDATE } from "@/config/apiConfig";
 
 /**
  * Tüm özel sayfaları getirir (admin panelden eklenen sayfalar)
@@ -7,7 +8,7 @@ import { log } from "@/utils/logger";
  */
 export async function getPages() {
     const response = await serverFetch("/pages", {
-        next: { revalidate: 0 }
+        next: { revalidate: API_REVALIDATE.PAGES }
     });
 
     if (response?.status === "success") {
@@ -27,7 +28,7 @@ export async function getPageBySlug(slug) {
     if (!slug) return null;
 
     const response = await serverFetch(`/pages?slug=${slug}`, {
-        next: { revalidate: 0 }
+        next: { revalidate: API_REVALIDATE.PAGES }
     });
 
     if (response?.status === "success" && response.data) {

@@ -1,11 +1,12 @@
 import { serverFetch } from "@/utils/serverFetch";
 import { log } from "@/utils/logger";
+import { API_REVALIDATE } from "@/config/apiConfig";
 
 /**
  * Tüm blog yazılarını getirir.
  */
 export async function getBlogs() {
-    const response = await serverFetch("/blogs");
+    const response = await serverFetch("/blogs", { next: { revalidate: API_REVALIDATE.BLOGS } });
     if (response?.status === "success") {
         return response.data || [];
     }
@@ -19,7 +20,7 @@ export async function getBlogs() {
  */
 export async function getBlogBySlug(slug) {
     if (!slug) return null;
-    const response = await serverFetch(`/blogs?slug=${slug}`);
+    const response = await serverFetch(`/blogs?slug=${slug}`, { next: { revalidate: API_REVALIDATE.BLOGS } });
 
     if (response?.status === "success" && response.data) {
         // API bazen dizi bazen obje dönebilir

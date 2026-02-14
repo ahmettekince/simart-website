@@ -375,7 +375,7 @@ export default function Details9({ product }) {
         <div className="container">
           <div className="row">
             <div className="col-md-6">
-              <div className="tf-product-media-wrap position-relative">
+              <div className="tf-product-media-wrap sticky-top" style={{ top: '120px', zIndex: 10 }}>
                 <div className="thumbs-slider">
                   <Slider5
                     handleColor={handleColor}

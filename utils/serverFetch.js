@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { log } from "./logger";
+import { API_REVALIDATE } from "@/config/apiConfig";
 
 const BACKEND_URL = process.env.BACKEND_URL;
 
@@ -68,10 +69,14 @@ export async function serverFetch(endpoint, options = {}) {
 
         // Next.js cache: production build'de fetch varsayılan cache kullanır.
         // revalidate: 0 veya cache: 'no-store' geçirilmeli, yoksa build anındaki veri kalır.
+        // Revalidate yönetimi: options.next yoksa varsayılanı kullan
         if (options.cache === "no-store" || options.next?.revalidate === 0) {
             fetchOptions.cache = "no-store";
         } else if (options.next) {
             fetchOptions.next = options.next;
+        } else {
+            // Hiçbir şey belirtilmemişse varsayılan revalidate süresini kullan
+            fetchOptions.next = { revalidate: API_REVALIDATE.DEFAULT || 3600 };
         }
 
         if (options.signal) {

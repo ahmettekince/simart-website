@@ -1,5 +1,6 @@
 import { serverFetch } from "@/utils/serverFetch";
 import { log } from "@/utils/logger";
+import { API_REVALIDATE } from "@/config/apiConfig";
 
 /**
  * Kampanyaları getirir.
@@ -8,7 +9,7 @@ import { log } from "@/utils/logger";
 export async function getCampaigns() {
   try {
     const response = await serverFetch("/campaigns", {
-      next: { revalidate: 60 },
+      next: { revalidate: API_REVALIDATE.CAMPAIGNS },
     });
 
     if (response?.status === "success" && response?.data) {

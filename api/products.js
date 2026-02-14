@@ -1,5 +1,6 @@
 import { serverFetch } from "@/utils/serverFetch";
 import { log } from "@/utils/logger";
+import { API_REVALIDATE } from "@/config/apiConfig";
 import { ProductModel } from "@/models/Product";
 
 /**
@@ -7,7 +8,7 @@ import { ProductModel } from "@/models/Product";
  */
 export async function getProducts(params = "") {
     const endpoint = `/products${params ? `?${params}` : ""}`;
-    const response = await serverFetch(endpoint, { next: { revalidate: 0 } });
+    const response = await serverFetch(endpoint, { next: { revalidate: API_REVALIDATE.PRODUCTS } });
 
     if (response?.status === "success") {
         return response.data || [];
@@ -30,7 +31,7 @@ export async function getProductsByCategory(categorySlug) {
     }
 
     const endpoint = `/products/category/${categorySlug}`;
-    const response = await serverFetch(endpoint, { next: { revalidate: 0 } });
+    const response = await serverFetch(endpoint, { next: { revalidate: API_REVALIDATE.PRODUCTS } });
 
     if (response?.status === "success") {
         return response.data || [];
@@ -52,7 +53,7 @@ export async function getCategoryWithProducts(categorySlug) {
     }
 
     const endpoint = `/products/category/${categorySlug}`;
-    const response = await serverFetch(endpoint, { next: { revalidate: 0 } });
+    const response = await serverFetch(endpoint, { next: { revalidate: API_REVALIDATE.PRODUCTS } });
 
     if (response?.status === "success") {
         return {
@@ -77,7 +78,7 @@ export async function getProductBySlug(productSlug) {
     }
 
     const endpoint = `/products/${productSlug}`;
-    const response = await serverFetch(endpoint, { next: { revalidate: 0 } });
+    const response = await serverFetch(endpoint, { next: { revalidate: API_REVALIDATE.PRODUCTS } });
 
     if (response?.status === "success" && response.data) {
         try {

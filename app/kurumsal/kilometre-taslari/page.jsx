@@ -3,6 +3,7 @@ import Image from "next/image";
 import Header from "@/components/headers/Header";
 import { getTimeline } from "@/api/timeline";
 import { AboutLayout } from "@/components/about/about-layout";
+import { VideoSection } from "@/components/about/video-section";
 
 export const metadata = {
   title: "Kilometre Taşları",
@@ -87,12 +88,25 @@ export default async function KilometreTaslariPage() {
                       />
                     </div>
                   </div>
+
                 </div>
               );
             })
           )}
+
+        </div>
+        <div className="mt-5">
+          <div className="row justify-content-end">
+            <div className="col-12">
+              <div className="text-center mb-3">
+                <h4 className="fw-bold">Şımart Tanıtım Filmi</h4>
+              </div>
+              <VideoSection />
+            </div>
+          </div>
         </div>
       </AboutLayout>
+
     </>
   );
 }

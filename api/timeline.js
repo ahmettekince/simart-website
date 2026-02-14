@@ -1,5 +1,6 @@
 import { serverFetch } from "@/utils/serverFetch";
 import { log } from "@/utils/logger";
+import { API_REVALIDATE } from "@/config/apiConfig";
 
 /**
  * Kilometre taşları (timeline) verilerini getirir.
@@ -8,7 +9,7 @@ import { log } from "@/utils/logger";
 export async function getTimeline() {
   try {
     const response = await serverFetch("/timeline", {
-      cache: "no-store",
+      next: { revalidate: API_REVALIDATE.TIMELINE },
     });
 
     if (response?.status === "success" && Array.isArray(response.data)) {

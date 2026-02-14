@@ -813,7 +813,7 @@ export default function ShopCart() {
                               <SimartButton
                                 href="/magaza"
                                 variant="fill"
-                                style={{ width: "fit-content", display: "inline-block" }}
+                                style={{ width: "fit-content" }}
                               >
                                 Alışverişe Başla
                               </SimartButton>
