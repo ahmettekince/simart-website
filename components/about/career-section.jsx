@@ -87,7 +87,7 @@ export function CareerSection({ faqs = [] }) {
         // Maksimum 10 hane (5XX...)
         let digits = raw.slice(0, 10);
 
-        // Formatlama: +90 553 810 81 99
+        // Formatlama: +90 5XX XXX XX XX
         let formatted = "+90";
         if (digits.length > 0) formatted += " " + digits.slice(0, 3);
         if (digits.length > 3) formatted += " " + digits.slice(3, 6);
