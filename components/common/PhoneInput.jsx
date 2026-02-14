@@ -29,12 +29,12 @@ export default function PhoneInput({
       // Sadece rakamları al
       let digits = value.replace(/\D/g, "");
 
-      // Eğer numara 90 ile başlıyorsa ve 10 haneden uzunsa 90'ı at
-      if (digits.startsWith("90") && digits.length > 10) {
+      // Sabit ülke kodunu (90) temizle
+      if (digits.startsWith("90")) {
         digits = digits.slice(2);
       }
-      // Eğer numara 0 ile başlıyorsa ve 10 haneden uzunsa 0'ı at
-      else if (digits.startsWith("0") && digits.length >= 11) {
+      // Baştaki 0'ı temizle
+      if (digits.startsWith("0")) {
         digits = digits.slice(1);
       }
 
@@ -82,16 +82,16 @@ export default function PhoneInput({
     // Sadece rakamları al
     let digits = inputValue.replace(/\D/g, "");
 
-    // Eğer numara 90 ile başlıyorsa ve 10 haneden uzunsa 90'ı at
-    if (digits.startsWith("90") && digits.length > 10) {
+    // Sabit ülke kodunu (90) her zaman temizle (formatter zaten ekliyor)
+    if (digits.startsWith("90")) {
       digits = digits.slice(2);
     }
-    // Eğer numara 0 ile başlıyorsa ve 10 haneden uzunsa 0'ı at
-    else if (digits.startsWith("0") && digits.length >= 11) {
+    // Baştaki 0'ı temizle (prevent +90 0553...)
+    if (digits.startsWith("0")) {
       digits = digits.slice(1);
     }
 
-    // Maksimum 10 hane
+    // Maksimum 10 hane (5XX...)
     digits = digits.slice(0, 10);
 
     setRawDigits(digits);

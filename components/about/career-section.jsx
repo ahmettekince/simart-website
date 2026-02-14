@@ -75,24 +75,26 @@ export function CareerSection({ faqs = [] }) {
     }
 
     const handlePhoneChange = (e) => {
-        const inputValue = e.target.value;
+        let value = e.target.value;
 
-        // Sadece rakamları al
-        let digits = inputValue.replace(/\D/g, "");
+        // Rakamları al
+        let raw = value.replace(/\D/g, "");
 
-        // Eğer numara 90 ile başlıyorsa ve 10 haneden uzunsa (ülke kodu dahil yapıştırılmış olabilir)
-        if (digits.startsWith("90") && digits.length > 10) {
-            digits = digits.slice(2);
-        }
-        // Eğer 0 ile başlıyorsa (05XX... gibi)
-        else if (digits.startsWith("0") && digits.length >= 11) {
-            digits = digits.slice(1);
-        }
+        // Baştaki 90 veya 0'ı temizle (Çünkü biz +90'ı hep sabit ekliyoruz)
+        if (raw.startsWith("90")) raw = raw.slice(2);
+        if (raw.startsWith("0")) raw = raw.slice(1);
 
         // Maksimum 10 hane (5XX...)
-        digits = digits.slice(0, 10);
+        let digits = raw.slice(0, 10);
 
-        setPhone("+90" + digits);
+        // Formatlama: +90 553 810 81 99
+        let formatted = "+90";
+        if (digits.length > 0) formatted += " " + digits.slice(0, 3);
+        if (digits.length > 3) formatted += " " + digits.slice(3, 6);
+        if (digits.length > 6) formatted += " " + digits.slice(6, 8);
+        if (digits.length > 8) formatted += " " + digits.slice(8, 10);
+
+        setPhone(formatted);
 
         // Hata varsa temizle
         if (fieldErrors.phone) {
@@ -149,7 +151,7 @@ export function CareerSection({ faqs = [] }) {
         setLoading(true)
         const formData = new FormData(e.target)
         formData.set("full_name", fullName) // State'deki formatlı ismi kullan
-        formData.set("phone", phone) // State'deki formatlı telefonu kullan
+        formData.set("phone", phone.replace(/\s/g, "")) // Boşlukları temizleyerek API'ye gönder (+905XXXXXXXXX)
         formData.set("message", message) // State'deki mesajı kullan
         formData.append("g-recaptcha-response", token)
 
@@ -236,7 +238,7 @@ export function CareerSection({ faqs = [] }) {
                                     placeholder="Telefon *"
                                     value={phone}
                                     onChange={handlePhoneChange}
-                                    maxLength={13}
+                                    maxLength={17}
                                     className={fieldErrors.phone ? "error-border" : ""}
                                 />
                                 {fieldErrors.phone && (

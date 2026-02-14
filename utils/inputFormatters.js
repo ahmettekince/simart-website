@@ -61,28 +61,43 @@ export function formatLastNameValue(str) {
   return str.replace(NAME_REGEX, "").toLocaleUpperCase("tr-TR");
 }
 
-/** Telefon: sadece rakam, +90 ile başlar; en fazla 12 rakam (90 + 10 hane) */
-const PHONE_MAX_DIGITS = 12; // 90 + 10
+/** Telefon: +90 5XX XXX XX XX formatında giriş için uncontrolled input yardımcısı */
 export function formatPhoneWithPlus90(e) {
-  const raw = e.target.value.replace(/\D/g, "").slice(0, PHONE_MAX_DIGITS);
-  let digits = raw;
-  if (digits.length && !digits.startsWith("90")) {
-    if (digits.startsWith("0")) digits = "90" + digits.slice(1);
-    else digits = "90" + digits;
-    digits = digits.slice(0, PHONE_MAX_DIGITS);
-  }
-  e.target.value = digits ? "+" + digits : "";
+  const value = e.target.value;
+  let digits = value.replace(/\D/g, "");
+
+  // Baştaki ülke kodunu (90) veya sıfırı (0) temizle
+  if (digits.startsWith("90")) digits = digits.slice(2);
+  if (digits.startsWith("0")) digits = digits.slice(1);
+
+  digits = digits.slice(0, 10);
+
+  let formatted = "+90";
+  if (digits.length > 0) formatted += " " + digits.slice(0, 3);
+  if (digits.length > 3) formatted += " " + digits.slice(3, 6);
+  if (digits.length > 6) formatted += " " + digits.slice(6, 8);
+  if (digits.length > 8) formatted += " " + digits.slice(8, 10);
+
+  e.target.value = formatted;
 }
 
-/** Telefon değerini +90XXXXXXXXXX formatında döndür (kontrollü input için) */
+/** Telefon değerini +90 5XX XXX XX XX formatında döndür (kontrollü inputlar için) */
 export function formatPhoneValue(value) {
-  if (value == null || typeof value !== "string") return "";
-  const raw = value.replace(/\D/g, "").slice(0, PHONE_MAX_DIGITS);
-  let digits = raw;
-  if (digits.length && !digits.startsWith("90")) {
-    if (digits.startsWith("0")) digits = "90" + digits.slice(1);
-    else digits = "90" + digits;
-    digits = digits.slice(0, PHONE_MAX_DIGITS);
-  }
-  return digits ? "+" + digits : "";
+  if (value == null || typeof value !== "string" || value.trim() === "" || value.trim() === "+") return "+90";
+
+  let digits = value.replace(/\D/g, "");
+
+  // Sabit ülke kodunu (90) veya sıfırı (0) temizle
+  if (digits.startsWith("90")) digits = digits.slice(2);
+  if (digits.startsWith("0")) digits = digits.slice(1);
+
+  digits = digits.slice(0, 10);
+
+  let formatted = "+90";
+  if (digits.length > 0) formatted += " " + digits.slice(0, 3);
+  if (digits.length > 3) formatted += " " + digits.slice(3, 6);
+  if (digits.length > 6) formatted += " " + digits.slice(6, 8);
+  if (digits.length > 8) formatted += " " + digits.slice(8, 10);
+
+  return formatted;
 }

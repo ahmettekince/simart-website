@@ -7,22 +7,22 @@ export const defaultFaqTabs = [
       {
         title: "Siparişimi iade etmek istiyorum, ne yapmalıyım?",
         content:
-          "<p>Müşteri hizmetlerimizle iletişime geçerek iade kodunuzu alın. Ardından ürünü fatura ve iade kodu ile kargo firmasına teslim edin. İade kodu olmadan gönderilen ürünlerde kargo ücreti tarafınıza yansıyabilir. Ürünün orijinal kutusu ve ambalajı ile iade edilmesi gerekmektedir.</p>",
+          "<p>Müşteri hizmetleriyle iletişime geçerek iade kodunuzu alabilirsiniz. İade edeceğiniz ürünü faturası ve iade kodu ile beraber kargoya teslim etmeniz gerekmektedir. Kargo şubesine veya görevlisine bu kodu bildirmemeniz halinde sizden kargo ücreti talep edebilir. İade ürünü orijinal kutu ve ambalajında göndermelisiniz.</p>",
       },
       {
         title: "Siparişimi iptal etmek istiyorum, ne yapmalıyım?",
         content:
-          "<p>Siparişiniz kargoya verilmeden önce müşteri hizmetlerimizle iletişime geçerek iptal talebinizi iletebilirsiniz.</p>",
+          "<p>Siparişiniz kargoya verilmeden önce müşteri hizmetleriyle iletişime geçerek siparişinizi iptal edebilirsiniz.</p>",
       },
       {
         title: "İptal ettiğim ürünün ücreti hesabıma yansımadı, ne yapmalıyım?",
         content:
-          "<p>İade işlemleri 3 iş günü içinde gerçekleştirilir. Banka hesabınıza yansıması 3-8 iş günü sürebilir. Beklenen süre geçtiyse müşteri hizmetlerimiz veya iletişim/destek sayfamız üzerinden iletişime geçebilirsiniz.</p>",
+          "<p>İptal edilen siparişin ücret iadesi 3 iş günü içinde yapılmaktadır. Ücret iadeniz tarafımızca yapıldıktan sonra bankanıza bağlı olarak iadenin ekstreye yansıması 3-8 iş günü olarak belirtilmektedir. Bu sürenin dolduğunu düşünüyorsanız Müşteri hizmetleriyle iletişime geçerek ya da İletişim veya Destek sayfasından üzerinden bize ulaşabilirsiniz.</p>",
       },
       {
         title: "İade ettiğim ürünün durumunu öğrenmek istiyorum, ne yapmalıyım?",
         content:
-          "<p>Siparişlerim sayfasından takip edebilir veya müşteri hizmetlerimizle iletişime geçebilirsiniz.</p>",
+          "<p>Siparişlerim sayfasından kontrol edebilirsiniz. Müşteri hizmetleriyle iletişime geçebilirsiniz.</p>",
       },
     ],
   },
@@ -33,17 +33,32 @@ export const defaultFaqTabs = [
       {
         title: "Siparişim kırık/hasarlı teslim edildi, ne yapmalıyım?",
         content:
-          "<p>Müşteri hizmetlerimizle iletişime geçebilirsiniz. WhatsApp hattımız üzerinden ürünün kırık/hasarlı olduğuna dair fotoğraf ve video paylaşmanız sizlere daha hızlı yardımcı olmamızı sağlar.</p>",
+          "<p>Müşteri hizmetleriyle iletişime geçebilirsiniz. WhatsApp hattımızdan ürünün kırık/hasarlı olduğuna dair görsel ve video gönderebilirsiniz.</p>",
       },
       {
         title: "Siparişim hala kargoya verilmemiş görünüyor, ne yapmalıyım?",
         content:
-          "<p>Siparişleriniz belirtilen süre içerisinde kargoya teslim edilmiyorsa müşteri hizmetlerimizle iletişime geçebilirsiniz. Sipariş detaylarındaki tahmini kargoya teslim tarihinin aşıldığını görüyorsanız, iletişim sayfamız veya Destek sayfası üzerinden bize ulaşabilirsiniz.</p>",
+          "<p>Müşteri hizmetleriyle iletişime geçebilirsiniz. Belirtilen kargoya teslim tarihinin firmamızca aşıldığını görüntülüyorsanız İletişim sayfasından veya 'Destek' üzerinden bize ulaşabilirsiniz.</p>",
       },
       {
         title: "Siparişim yanlış/eksik geldi, ne yapmalıyım?",
         content:
-          "<p>İlgili koliyi açmadan, ağzı açık şekilde fotoğraflayınız. (Koli boyutunu ve etiket bilgilerini net görecek şekilde fotoğraflamaya dikkat ediniz.) Bu görselleri WhatsApp hattımız veya Destek sayfamız üzerinden bizimle paylaşarak talebinizi iletebilirsiniz. Ekibimiz en kısa sürede sizinle iletişime geçecektir.</p>",
+          "<p>İlgili koliyi ağzı açık şekilde fotoğraflayınız. (Koli boyutunu ürünler görünecek şekilde fotoğraflamaya dikkat ediniz.) Koli boyutu görseli ile WhatsApp hattımız üzerinden de talebinizi iletebilirsiniz. Size en hızlı şekilde dönüş sağlayacağız.</p>",
+      },
+      {
+        title: "Siparişimde gelmeyen ürün var, ne yapmalıyım?",
+        content:
+          "<p>Bizle iletişime geçerek en kısa sürede gelmeyen ürününüzü kargolama yapacağız.</p>",
+      },
+      {
+        title: "Siparişim kargoda görünüyor, ne zaman elime ulaşır?",
+        content:
+          "<p>Kargo teslimat süresi kargo şirketlerinin yoğunluğuna göre değişiklik gösterebilir. Size gönderilen kargo ile ilgili SMS'te bulunan kodu kullanarak ilgili kargo şirketinin web sitesinden kargonuzun durumunu takip edebilirsiniz.</p>",
+      },
+      {
+        title: "Kargo gönderi kodumu nasıl öğrenebilirim?",
+        content:
+          "<p>Kargo şirketinden cep telefonunuza gelen SMS üzerinden ya da Siparişler sayfasına giderek takip ederek kargo gönderi kodunuzu öğrenebilirsiniz.</p>",
       },
     ],
   },
@@ -52,14 +67,29 @@ export const defaultFaqTabs = [
     label: "Siparişler",
     faqs: [
       {
-        title: "Siparişimi nasıl takip edebilirim?",
+        title: "Siparişime ürün/ürünler eklemek istiyorum ne yapmalıyım?",
         content:
-          "<p>Hesabım > Siparişlerim bölümünden tüm siparişlerinizi ve durumlarını görebilirsiniz.</p>",
+          "<p>Siparişlere yeni bir ürün eklenememektedir. Dilerseniz yeni bir sipariş oluşturabilirsiniz.</p>",
       },
       {
-        title: "Siparişimi değiştirmek istiyorum, ne yapmalıyım?",
+        title: "Siparişimin durumunu nasıl öğrenebilirim?",
         content:
-          "<p>Sipariş kargoya verilmeden önce müşteri hizmetlerimizle iletişime geçerek değişiklik talebinizi iletebilirsiniz.</p>",
+          "<p>Üye girişi yaparak Siparişler sayfasından sipariş detaylarınıza ulaşabilirsiniz.</p>",
+      },
+      {
+        title: "Faturamı görüntülemek istiyorum, ne yapmalıyım?",
+        content:
+          "<p>Üye girişi yaparak Siparişler sayfasından sipariş detaylarınıza ve faturalarınıza ulaşabilirsiniz.</p>",
+      },
+      {
+        title: "Site üzerinden ödeme yapamıyorum, ne yapmalıyım?",
+        content:
+          "<p>Tarayıcı değiştirerek veya çerezleri temizleyerek farklı bir tarayıcıdan giriş yapmayı deneyebilirisiniz. Dilerseniz ürünlerimizi Hepsiburada, Trendyol, Amazon, Çiçeksepeti, n11, Pazarama, PttAVM ve Allesgo üzerinden de temin edebilirsiniz.</p>",
+      },
+      {
+        title: "Teslimat adresimi değiştirmek istiyorum, ne yapmalıyım?",
+        content:
+          "<p>Siparişiniz tamamlandıktan sonra adres ve/veya alıcı değişikliği yapılamamaktadır. Siparişiniz kargoya verilmeden önce Müşteri hizmetleriyle iletişime geçerek adresinizi değiştirebilirsiniz.</p>",
       },
     ],
   },

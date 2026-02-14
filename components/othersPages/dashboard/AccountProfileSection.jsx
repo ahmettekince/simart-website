@@ -65,8 +65,8 @@ export default function AccountProfileSection() {
   }, [storeError]);
 
   const handleSendVerificationCode = async () => {
-    const phone = formatPhoneValue(phoneForVerify);
-    if (!phone || phone.length < 12) {
+    const phone = formatPhoneValue(phoneForVerify).replace(/\s/g, "");
+    if (!phone || phone.length < 13) {
       setPhoneError("Geçerli bir telefon numarası girin (+90 ile başlamalı, 10 hane).");
       return;
     }
@@ -91,8 +91,8 @@ export default function AccountProfileSection() {
   };
 
   const handleVerifyCode = async () => {
-    const phone = formatPhoneValue(phoneForVerify);
-    if (!phone || phone.length < 12) {
+    const phone = formatPhoneValue(phoneForVerify).replace(/\s/g, "");
+    if (!phone || phone.length < 13) {
       setPhoneError("Geçerli bir telefon numarası girin.");
       return;
     }

@@ -7,6 +7,12 @@ export default function Accordion({ faqs = faqs1, initialIndex = -1 }) {
   const questionRefs = useRef([]);
   const answerRefs = useRef([]);
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+
+  // Tab değiştiğinde veya faqs listesi yenilendiğinde seçili index'i sıfırla
+  useEffect(() => {
+    setCurrentIndex(initialIndex);
+  }, [faqs, initialIndex]);
+
   useEffect(() => {
     questionRefs.current.forEach((el) => {
       el?.classList.remove("active");
