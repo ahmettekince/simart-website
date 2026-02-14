@@ -31,7 +31,7 @@ export function PressSection({ items }) {
                     >
                         <div style={{ position: 'relative', width: '100%', paddingBottom: '56.25%' }}>
                             <Image
-                                src={item.media?.url || item.imageUrl || "/placeholder.svg"}
+                                src={item.media?.url || item.imageUrl}
                                 alt={item.top_text || item.title || "Basın"}
                                 fill
                                 style={{ objectFit: 'cover' }}
