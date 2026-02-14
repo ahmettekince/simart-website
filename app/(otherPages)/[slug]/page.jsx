@@ -3,6 +3,7 @@ import { getPageBySlug } from "@/api/pages";
 import Header from "@/components/headers/Header";
 import { webPageSchema } from "@/lib/schema";
 import { siteConfig } from "@/config/site";
+import DynamicPageContent from "@/components/common/DynamicPageContent";
 
 /**
  * Dinamik metadata oluşturma
@@ -19,14 +20,50 @@ export async function generateMetadata({ params }) {
     };
   }
 
-  const title = page.title || "Şımart Teknoloji Sayfa İçeriği";
-  const description = page.seo?.description || "Şımart Teknoloji sayfa içeriği";
+  const title = page.title || siteConfig.site.title;
+  const description = page.seo?.description || page.title || siteConfig.site.description;
   const keywords = page.seo?.keywords || siteConfig.site.keywords;
+  const pageUrl = `${siteConfig.site.url}${slug}`;
+  const imageUrl = page.image?.url || siteConfig.site.og.image;
 
   return {
-    title: `${title}`,
+    title: title,
     description: description,
     keywords: keywords,
+    authors: [{ name: siteConfig.site.author }],
+    robots: "index, follow",
+    alternates: {
+      canonical: pageUrl,
+    },
+    openGraph: {
+      title: title,
+      description: description,
+      url: pageUrl,
+      siteName: siteConfig.site.name,
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+      locale: "tr_TR",
+      type: "article",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: title,
+      description: description,
+      images: [imageUrl],
+      site: siteConfig.site.twitter.site,
+      creator: siteConfig.site.twitter.creator,
+    },
+    other: {
+      "itemprop:name": title,
+      "itemprop:description": description,
+      "itemprop:image": page.image?.url || siteConfig.site.itemprop.image,
+    },
   };
 }
 
@@ -57,14 +94,22 @@ export default async function DynamicPage({ params }) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(pageJsonLd) }}
       />
       <Header />
-      <div className="container py-5">
-        <div className="row">
-          <div className="col-12">
-            {page.title && <h1 className="mb-4">{page.title}</h1>}
-            {page.content && <div className="page-content" dangerouslySetInnerHTML={{ __html: page.content }} />}
+
+      {/* Sayfa Başlığı (Resim yoksa mağaza sayfasındaki gibi göster) */}
+      {!page.image?.url && page.title && (
+        <div className="tf-page-title">
+          <div className="container-full">
+            <div className="heading text-center">{page.title}</div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* İçerik ve Diğer Detaylar (Client Component) */}
+      <DynamicPageContent
+        htmlContent={page.content}
+        title={page.title}
+        image={page.image}
+      />
     </>
   );
 }

@@ -231,6 +231,21 @@ export default function Footer({ bgColor = "", footerMenus = null }) {
               <div className="col-12">
                 <div className="footer-bottom-wrap d-flex gap-20 flex-wrap justify-content-between align-items-center">
                   <div className="footer-menu_item">© 2020-2026 Şımart Teknoloji. Tüm Hakları Saklıdır.</div>
+                  <div className="etbis-logo">
+                    <a
+                      href="https://etbis.ticaret.gov.tr/tr/Anasayfa/SiteAraSonuc?siteId=c2f2afe3-b443-4375-8fef-27b0f895293e"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Image
+                        src="/images/etbis/etbis.png"
+                        alt="ETBİS"
+                        width={70}
+                        height={81}
+                        loading="lazy"
+                      />
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>

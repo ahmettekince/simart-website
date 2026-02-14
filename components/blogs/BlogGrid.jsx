@@ -15,15 +15,16 @@ export default function BlogGrid({ blogs = [] }) {
           {blogs.map((post, index) => (
             <div className="col-xl-4 col-md-6 col-12" key={index}>
               <div className="blog-article-item">
-                <div className="article-thumb">
+                <div className="article-thumb" style={{ position: 'relative', aspectRatio: '550/354', overflow: 'hidden' }}>
                   {post.image?.url && typeof post.image.url === "string" && post.image.url.trim() !== "" && (
                     <Link href={`/${post.slug}`}>
                       <Image
                         className="lazyload"
                         alt={post.title}
                         src={post.image.url}
-                        width={550}
-                        height={354}
+                        fill
+                        style={{ objectFit: 'cover' }}
+                        sizes="(max-width: 768px) 100vw, 33vw"
                       />
                     </Link>
                   )}

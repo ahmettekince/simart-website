@@ -810,13 +810,13 @@ export default function ShopCart() {
                           <div className="row align-items-center mt-5 mb-4">
                             <div className="col-12 fs-18 text-center mb-3">Sepetinizde ürün bulunmamaktadır.</div>
                             <div className="col-12 text-center">
-                              <Link
-                                href={`/magaza`}
-                                className="tf-btn btn-fill animate-hover-btn radius-3"
+                              <SimartButton
+                                href="/magaza"
+                                variant="fill"
                                 style={{ width: "fit-content", display: "inline-block" }}
                               >
                                 Alışverişe Başla
-                              </Link>
+                              </SimartButton>
                             </div>
                           </div>
                         </div>

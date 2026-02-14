@@ -5,11 +5,8 @@ import { usePathname } from "next/navigation";
 import { useCartStore } from "@/stores/cartStore";
 import { useAuthStore } from "@/stores/authStore";
 import { getCart } from "@/api/cart";
-import HomesModal from "@/components/modals/HomesModal";
-import Context from "@/context/Context";
 import ShopCart from "@/components/modals/ShopCart";
 import AskQuestion from "@/components/modals/AskQuestion";
-import DeliveryReturn from "@/components/modals/DeliveryReturn";
 import SearchModal from "@/components/modals/SearchModal";
 import ToolbarBottom from "@/components/modals/ToolbarBottom";
 import ToolbarShop from "@/components/modals/ToolbarShop";
@@ -184,10 +181,8 @@ export default function ClientLayout({ children }) {
     return (
         <>
             <div id="wrapper">{children}</div>
-            <HomesModal />
             <ShopCart />
             <AskQuestion />
-            <DeliveryReturn />
             <SearchModal />
             <ToolbarBottom />
             <ToolbarShop />

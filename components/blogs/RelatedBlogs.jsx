@@ -34,14 +34,15 @@ export default function RelatedBlogs() {
               return (
                 <SwiperSlide key={index}>
                   <div className="blog-article-item">
-                    <div className="article-thumb radius-10">
+                    <div className="article-thumb radius-10" style={{ position: 'relative', aspectRatio: '550/354', overflow: 'hidden' }}>
                       <Link href={`/${slug}`}>
                         <Image
                           src={article.imgSrc}
                           alt={article.alt}
-                          width={550}
-                          height={354}
+                          fill
                           className="lazyload"
+                          style={{ objectFit: 'cover' }}
+                          sizes="(max-width: 768px) 100vw, 33vw"
                         />
                       </Link>
                       <div className="article-label">

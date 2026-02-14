@@ -52,14 +52,15 @@ export default function BlogsClient({ blogs = [] }) {
                                         data-wow-delay={article.delay || "0s"}
                                         suppressHydrationWarning
                                     >
-                                        <div className="article-thumb h-460">
+                                        <div className="article-thumb" style={{ position: 'relative', aspectRatio: '550/354', overflow: 'hidden' }}>
                                             <Link href={`/${slug}`}>
                                                 <Image
                                                     className="lazyload"
                                                     alt={article.title || article.name}
                                                     src={imgSrc}
-                                                    width={550}
-                                                    height={354}
+                                                    fill
+                                                    style={{ objectFit: 'cover' }}
+                                                    sizes="(max-width: 768px) 100vw, 33vw"
                                                 />
                                             </Link>
                                             <div className="article-label">

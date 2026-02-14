@@ -7,7 +7,7 @@ import { log } from "@/utils/logger";
  */
 export async function getPages() {
     const response = await serverFetch("/pages", {
-        next: { revalidate: 10 }
+        next: { revalidate: 0 }
     });
 
     if (response?.status === "success") {
@@ -27,7 +27,7 @@ export async function getPageBySlug(slug) {
     if (!slug) return null;
 
     const response = await serverFetch(`/pages?slug=${slug}`, {
-        next: { revalidate: 10 }
+        next: { revalidate: 0 }
     });
 
     if (response?.status === "success" && response.data) {

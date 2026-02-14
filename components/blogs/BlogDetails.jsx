@@ -39,6 +39,61 @@ export default function BlogDetails({ blog }) {
                   className="desc"
                   dangerouslySetInnerHTML={{ __html: String(blog?.content || "") }}
                 />
+                <style dangerouslySetInnerHTML={{
+                  __html: `
+                  .desc {
+                    font-size: 16px;
+                    line-height: 1.8;
+                    color: #222;
+                  }
+                  .desc h1, .desc h2, .desc h3, .desc h4, .desc h5, .desc h6 {
+                    margin-top: 32px;
+                    margin-bottom: 16px;
+                    font-weight: 600;
+                    line-height: 1.3;
+                    color: #000;
+                  }
+                  .desc h1 { font-size: 52px; }
+                  .desc h2 { font-size: 32px; }
+                  .desc h3 { font-size: 26px; }
+                  
+                  .desc p {
+                    margin-bottom: 20px;
+                  }
+                  .desc ul {
+                    list-style-type: disc !important;
+                    margin-bottom: 20px;
+                    padding-left: 25px !important;
+                  }
+                  .desc ol {
+                    list-style-type: decimal !important;
+                    margin-bottom: 20px;
+                    padding-left: 25px !important;
+                  }
+                  .desc li {
+                    margin-bottom: 8px;
+                    display: list-item !important;
+                  }
+                  .desc strong {
+                    font-weight: 700;
+                  }
+                  .desc a {
+                    color: var(--primary);
+                    text-decoration: underline;
+                  }
+                  .desc img {
+                    max-width: 100%;
+                    height: auto;
+                    border-radius: 8px;
+                    margin: 20px 0;
+                  }
+                  @media (max-width: 768px) {
+                    .desc h1 { font-size: 32px; }
+                    .desc h2 { font-size: 26px; }
+                    .desc h3 { font-size: 22px; }
+                    .desc { font-size: 15px; }
+                  }
+                `}} />
 
                 <div className="bot d-flex justify-content-between flex-wrap align-items-center">
                   <ul className="tags-lists">

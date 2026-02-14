@@ -75,17 +75,28 @@ export function CareerSection({ faqs = [] }) {
     }
 
     const handlePhoneChange = (e) => {
-        let value = e.target.value
-        // Sadece rakamlar ve + işareti
-        value = value.replace(/[^0-9+]/g, "")
-        // +90 ile başlamasını sağla (veya sadece rakam girmesine izin verip prefix ekle)
-        if (!value.startsWith("+")) {
-            value = "+" + value
+        const inputValue = e.target.value;
+
+        // Sadece rakamları al
+        let digits = inputValue.replace(/\D/g, "");
+
+        // Eğer numara 90 ile başlıyorsa ve 10 haneden uzunsa (ülke kodu dahil yapıştırılmış olabilir)
+        if (digits.startsWith("90") && digits.length > 10) {
+            digits = digits.slice(2);
         }
-        setPhone(value)
+        // Eğer 0 ile başlıyorsa (05XX... gibi)
+        else if (digits.startsWith("0") && digits.length >= 11) {
+            digits = digits.slice(1);
+        }
+
+        // Maksimum 10 hane (5XX...)
+        digits = digits.slice(0, 10);
+
+        setPhone("+90" + digits);
+
         // Hata varsa temizle
         if (fieldErrors.phone) {
-            setFieldErrors(prev => ({ ...prev, phone: null }))
+            setFieldErrors(prev => ({ ...prev, phone: null }));
         }
     }
 
@@ -225,6 +236,7 @@ export function CareerSection({ faqs = [] }) {
                                     placeholder="Telefon *"
                                     value={phone}
                                     onChange={handlePhoneChange}
+                                    maxLength={13}
                                     className={fieldErrors.phone ? "error-border" : ""}
                                 />
                                 {fieldErrors.phone && (
