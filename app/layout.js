@@ -29,8 +29,6 @@ export default async function RootLayout({ children }) {
     <html lang="tr">
 
       <body className="preload-wrapper">
-        {/* Google reCaptcha (body içinde yükleniyor) */}
-        <script src="https://www.google.com/recaptcha/api.js" async></script>
         <div className="preload preload-container" id="preloader">
           <div className="preload-logo">
             <div className="spinner"></div>

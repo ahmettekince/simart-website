@@ -5,6 +5,7 @@ import Image from "next/image";
 import { decodeHtmlEntities } from "@/utils/stripHtml";
 import BirlikteAlNew from "@/components/shopDetails/BirlikteAlNew";
 import InstallmentOptions from "@/components/shopDetails/InstallmentOptions";
+import Accordion from "@/components/common/Accordion";
 
 const SORT_OPTIONS = [
   { value: "default", label: "Varsayılan" },
@@ -141,15 +142,17 @@ export default function ShopDetailsTab({ product }) {
     return product?.discount_price || product?.price || 0;
   }, [product?.time_based_discounts, product?.discount_price, product?.price]);
 
-  // Sıra: Değerlendirmeler, Teknik Özellikler, Taksit Seçenekleri
+  // Sıra: Değerlendirmeler, Teknik Özellikler, SSS, Taksit Seçenekleri
   const tabIds = [
     ...(reviewCount > 0 ? ["reviews"] : []),
     ...(hasTechSpecs ? ["tech"] : []),
+    ...(hasFaq ? ["faq"] : []),
     "installment",
   ];
   const tabs = [
     ...(reviewCount > 0 ? [{ title: `Değerlendirmeler (${reviewCount})`, active: false }] : []),
     ...(hasTechSpecs ? [{ title: "Teknik Özellikler", active: false }] : []),
+    ...(hasFaq ? [{ title: "SSS", active: false }] : []),
     { title: "Taksit Seçenekleri", active: false },
   ];
 
@@ -482,6 +485,17 @@ export default function ShopDetailsTab({ product }) {
                             </div>
                           )}
                         </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* SSS Tab */}
+                  {hasFaq && (
+                    <div
+                      className={`widget-content-inner ${currentTab === faqTabIndex ? "active" : ""}`}
+                    >
+                      <div className="tf-faq-tab-content">
+                        <Accordion faqs={faqList} initialIndex={0} />
                       </div>
                     </div>
                   )}

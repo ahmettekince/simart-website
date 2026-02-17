@@ -169,24 +169,34 @@ export class ProductModel {
             throw new Error("Product must have an id");
         }
 
-        // Görselleri normalize et (gallery_images kullan, cover zaten gallery'nin 1. item'ı)
+        // Görselleri normalize et
         const normalizeImages = () => {
-            // gallery_images varsa direkt kullan (cover_image zaten içinde)
-            if (product.gallery_images && product.gallery_images.length > 0) {
-                return product.gallery_images;
-            }
-            // Eğer gallery_images yoksa cover_image'ı kullan
+            let list = [];
+
+            // 1. Kapak görselini (cover_image) ilk sıraya koy
             if (product.cover_image) {
-                return [product.cover_image];
+                list.push(product.cover_image);
             }
-            // Eski format desteği
-            if (product.images && Array.isArray(product.images)) {
-                return product.images;
+
+            // 2. Galeri görsellerini (gallery_images) ekle (kapakla aynı olanları atla)
+            if (product.gallery_images && Array.isArray(product.gallery_images)) {
+                product.gallery_images.forEach(img => {
+                    const imgUrl = typeof img === 'string' ? img : (img.url || img.src);
+                    const coverUrl = product.cover_image ? (typeof product.cover_image === 'string' ? product.cover_image : (product.cover_image.url || product.cover_image.src)) : null;
+
+                    if (imgUrl && imgUrl !== coverUrl) {
+                        list.push(img);
+                    }
+                });
             }
-            if (product.imgSrc) {
-                return [product.imgSrc];
+
+            // 3. Hiçbir şey bulunamazsa eski formatları dene (images, imgSrc vb.)
+            if (list.length === 0) {
+                if (product.images && Array.isArray(product.images)) return product.images;
+                if (product.imgSrc) return [product.imgSrc];
             }
-            return [];
+
+            return list;
         };
 
         const normalizedImages = normalizeImages();

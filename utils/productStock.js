@@ -12,6 +12,14 @@ export function getProductButtonState(product) {
   let buttonText = "Sepete Ekle";
   let buttonDisabled = false;
 
+  // Özel Durum: Katya Akıllı Robot Süpürge (Yadigar Model)
+  if (product?.name === "katya Robot Süpürge") {
+    return {
+      buttonText: "Türkiye'nin İlk Robot Süpürgesi",
+      buttonDisabled: true,
+    }
+  }
+
   // Stok durumuna göre buton metni
   if (isInStock) {
     if (unlimitedStock) {

@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from "react";
 import apiClient from "@/utils/apiClient";
 import Link from "next/link";
+import SimartButton from "@/components/common/SimartButton";
 
 export default function Coupons() {
   const [coupons, setCoupons] = useState([]);
@@ -98,12 +99,12 @@ export default function Coupons() {
             Henüz tanımlı bir kuponunuz bulunmuyor.
           </div>
           <div className="col-lg-3 col-md-6">
-            <Link
+            <SimartButton
               href="/magaza"
-              className="tf-btn btn-fill animate-hover-btn radius-3 w-100 justify-content-center"
+              fullWidth
             >
               Alışverişe Başla
-            </Link>
+            </SimartButton>
           </div>
         </div>
       )}

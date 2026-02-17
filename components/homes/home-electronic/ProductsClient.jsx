@@ -23,7 +23,7 @@ export default function ProductsClient({ products = [] }) {
                         dir="ltr"
                         slidesPerView={4}
                         spaceBetween={30}
-                        loop={total > 1}
+                        loop={true}
                         breakpoints={{
                             1100: { slidesPerView: 4, spaceBetween: 30 },
                             768: { slidesPerView: 3, spaceBetween: 20 },
@@ -45,7 +45,7 @@ export default function ProductsClient({ products = [] }) {
                             <NavDotsPill
                                 total={total}
                                 activeIndex={activeIndex}
-                                onDotClick={(i) => swiperRef.current?.slideToLoop?.(i)}
+                                onDotClick={(i) => swiperRef.current?.slideToLoop?.(i) ?? swiperRef.current?.slideTo?.(i)}
                                 ariaLabel="Ürün slaytları"
                             />
                         </div>

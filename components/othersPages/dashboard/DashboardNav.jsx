@@ -79,66 +79,78 @@ export default function DashboardNav({ profileSection: profileSectionProp }) {
 
   return (
     <>
-      <ul className="my-account-nav">
-        {reviewableProducts.length > 0 && (
-          <li key="notification">
-            <button
-              type="button"
-              onClick={() => setReviewModalOpen(true)}
+      <div className="dashboard-sidebar-sticky">
+        <ul className="my-account-nav">
+          {reviewableProducts.length > 0 && (
+            <li key="notification">
+              <button
+                type="button"
+                onClick={() => setReviewModalOpen(true)}
+                className="my-account-nav-item"
+                style={{
+                  width: "100%",
+                  textAlign: "left",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "12px",
+                  font: "inherit",
+                  color: "inherit",
+                  backgroundColor: "transparent",
+                }}
+              >
+                <span className="bell-notification-icon" style={{ flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }} aria-hidden>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                  </svg>
+                </span>
+                <span style={{ flex: 1, lineHeight: 1.3, color: "#0bc15c" }}>
+                  Yorum yapabileceğiniz {reviewableProducts.length} adet ürün var. Yorum yapın, kupon fırsatı yakalayın!
+                </span>
+              </button>
+            </li>
+          )}
+          {profileSection && (
+            <li key="profile" className="dashboard-nav-profile-slot" style={{ listStyle: "none", margin: 0, padding: 0, border: "none", background: "none" }}>
+              {profileSection}
+            </li>
+          )}
+          {accountLinks.map((link, index) => (
+            <li key={index}>
+              <Link
+                href={link.href}
+                className={`my-account-nav-item ${pathname == link.href ? "active" : ""}`}
+              >
+                {link.label}
+                {link.showCount && reviewableProducts.length > 0 && (
+                  <span style={{ marginLeft: "4px" }}>({reviewableProducts.length})</span>
+                )}
+              </Link>
+            </li>
+          ))}
+          <li>
+            <a
+              href="#"
+              onClick={(e) => { e.preventDefault(); if (!isLoggingOut) setShowLogoutConfirm(true); }}
               className="my-account-nav-item"
-              style={{
-                width: "100%",
-                textAlign: "left",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-                font: "inherit",
-                color: "inherit",
-                backgroundColor: "transparent",
-              }}
+              style={{ cursor: isLoggingOut ? "wait" : "pointer" }}
             >
-              <span className="bell-notification-icon" style={{ flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }} aria-hidden>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                  <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                </svg>
-              </span>
-              <span style={{ flex: 1, lineHeight: 1.3, color: "#0bc15c" }}>
-                Yorum yapabileceğiniz {reviewableProducts.length} adet ürün var. Yorum yapın, kupon fırsatı yakalayın!
-              </span>
-            </button>
+              {isLoggingOut ? "Çıkış yapılıyor..." : "Çıkış Yap"}
+            </a>
           </li>
-        )}
-        {profileSection && (
-          <li key="profile" className="dashboard-nav-profile-slot" style={{ listStyle: "none", margin: 0, padding: 0, border: "none", background: "none" }}>
-            {profileSection}
-          </li>
-        )}
-        {accountLinks.map((link, index) => (
-          <li key={index}>
-            <Link
-              href={link.href}
-              className={`my-account-nav-item ${pathname == link.href ? "active" : ""}`}
-            >
-              {link.label}
-              {link.showCount && reviewableProducts.length > 0 && (
-                <span style={{ marginLeft: "4px" }}>({reviewableProducts.length})</span>
-              )}
-            </Link>
-          </li>
-        ))}
-        <li>
-          <a
-            href="#"
-            onClick={(e) => { e.preventDefault(); if (!isLoggingOut) setShowLogoutConfirm(true); }}
-            className="my-account-nav-item"
-            style={{ cursor: isLoggingOut ? "wait" : "pointer" }}
-          >
-            {isLoggingOut ? "Çıkış yapılıyor..." : "Çıkış Yap"}
-          </a>
-        </li>
-      </ul>
+        </ul>
+      </div>
+
+      <style jsx global>{`
+        @media (min-width: 992px) {
+          .dashboard-sidebar-sticky {
+            position: sticky;
+            top: 120px;
+            z-index: 10;
+          }
+        }
+      `}</style>
 
       {showLogoutConfirm && (
         <div

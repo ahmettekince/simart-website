@@ -12,7 +12,6 @@ export default function Topbar({ data = [], isActive = false }) {
         <div className="tf-top-bar_wrap grid-3 gap-30 align-items-center">
           <div className="tf-top-bar_left">
             <div className="d-flex gap-30 text_white fw-5">
-              {/* Optional: Left side content */}
             </div>
           </div>
           <div className="text-center overflow-hidden">
@@ -37,14 +36,7 @@ export default function Topbar({ data = [], isActive = false }) {
               ))}
             </Swiper>
           </div>
-          <div className="top-bar-language tf-cur justify-content-end">
-            <div className="tf-currencies">
-              {/* <CurrencySelect light topStart /> */}
-            </div>
-            <div className="tf-languages">
-              {/* <LanguageSelect ... /> */}
-            </div>
-          </div>
+
         </div>
       </div>
     </div>

@@ -52,8 +52,7 @@ export async function serverFetch(endpoint, options = {}) {
     const startTime = Date.now();
     const method = options.method || "GET";
 
-    log(`[serverFetch] FETCH START: ${method} ${url}`);
-    log(`[serverFetch] Body String: ${bodyStr}`);
+
 
     try {
         // Fetch options'ı hazırla
@@ -83,7 +82,7 @@ export async function serverFetch(endpoint, options = {}) {
             fetchOptions.signal = options.signal;
         }
 
-        log(`[serverFetch] Fetch Options Body: ${fetchOptions.body || "undefined"}`);
+
 
         const response = await fetch(url, fetchOptions);
 

@@ -44,7 +44,7 @@ export default function PhoneInput({
     }
   }, [value]);
 
-  // Rakamları formata çevir: +90 553 810 81 99
+  // Rakamları formata çevir: +90 5XX XXX XX XX
   const formatPhoneNumber = (digits) => {
     if (!digits) return "+90 ";
 

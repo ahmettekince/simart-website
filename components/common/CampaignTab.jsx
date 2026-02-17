@@ -30,7 +30,7 @@ export default function CampaignTab() {
                 style={{
                     position: "fixed",
                     right: 0,
-                    top: "35%",
+                    top: "50%",
                     zIndex: 9999,
                     display: "flex",
                     flexDirection: "column",
@@ -107,7 +107,7 @@ export default function CampaignTab() {
                 }
                 @media (max-width: 768px) {
                     .campaign-tab-wrapper {
-                        top: 30% !important;
+                        top: 55% !important;
                     }
                     .campaign-tab-main {
                         padding: 12px 8px !important;

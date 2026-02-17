@@ -7,6 +7,7 @@ import apiClient from "@/utils/apiClient";
 import { useReviewStore } from "@/stores/reviewStore";
 import ReviewDashboardModal from "@/components/modals/ReviewDashboardModal";
 import AccountTabs from "@/components/common/AccountTabs";
+import SimartButton from "@/components/common/SimartButton";
 
 function formatReviewDate(iso) {
   if (!iso) return "-";
@@ -124,13 +125,13 @@ export default function MyReviews() {
                   </div>
                 </div>
                 <div style={{ padding: "0 16px 12px 16px" }}>
-                  <button
+                  <SimartButton
                     type="button"
                     onClick={() => handleReviewClick(p)}
-                    className="main-cart-btn"
+                    fullWidth
                   >
                     Ürünü Değerlendir
-                  </button>
+                  </SimartButton>
                 </div>
               </div>
             ))}
@@ -224,13 +225,12 @@ export default function MyReviews() {
                     : "Bu filtrede değerlendirme bulunamadı."}
             </p>
             {activeFilter === "degerlendir" && (
-              <Link
+              <SimartButton
                 href="/magaza"
-                className="tf-btn btn-fill animate-hover-btn radius-4"
-                style={{ backgroundColor: "var(--primary, #3c81b5)", borderColor: "var(--primary, #3c81b5)" }}
+                style={{ width: "auto", minWidth: "200px" }}
               >
                 Alışverişe Devam Et
-              </Link>
+              </SimartButton>
             )}
           </div>
         )}

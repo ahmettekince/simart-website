@@ -147,7 +147,23 @@ export default async function page({ params }) {
       />
       <ProductDetailHit productSlug={urun} />
       <Header />
-      <div style={{ padding: "30px" }}>
+      <div className="tf-breadcrumb">
+        <div className="container">
+          <div className="tf-breadcrumb-wrap d-flex justify-content-between flex-wrap align-items-center">
+            <div className="tf-breadcrumb-list">
+              {/* <Link href={`/`} className="text">
+                Mağaza
+              </Link>
+
+              <i className="icon icon-arrow-right" />
+              <Link href={`/magaza/${kategori}`} className="text">
+                {categoryName}
+              </Link>
+              <i className="icon icon-arrow-right" />
+              <span className="text">{productName}</span> */}
+            </div>
+          </div>
+        </div>
       </div>
       <Detail product={product} />
       <ShopDetailsTab product={product} />

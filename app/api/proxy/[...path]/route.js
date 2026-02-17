@@ -125,21 +125,7 @@ async function handleRequest(request, params, method) {
         // Axios response headers'ında Set-Cookie'ler lowercase 'set-cookie' olarak gelir ve array olabilir
         const setCookieHeaders = response.headers['set-cookie'];
 
-        // Auth debug: Login/customer isteklerinde Set-Cookie logla
-        const isDev = process.env.NODE_ENV === "development";
-        if (isDev && (path.includes("login") || path.includes("customer"))) {
-            console.log(`\n--- [Proxy Auth Debug] Path: ${path} ---`);
-            console.log("[Proxy Auth Debug] Backend Set-Cookie var mı:", !!setCookieHeaders);
-            if (setCookieHeaders) {
-                const arr = Array.isArray(setCookieHeaders) ? setCookieHeaders : [setCookieHeaders];
-                arr.forEach((c, i) => {
-                    const name = c.split('=')[0]?.trim();
-                    const hasToken = name === '_token';
-                    console.log(`[Proxy Auth Debug] Cookie ${i + 1}: ${name} ${hasToken ? "(TOKEN!)" : ""}`);
-                });
-            }
-            console.log("---\n");
-        }
+
 
         if (setCookieHeaders && Array.isArray(setCookieHeaders)) {
             setCookieHeaders.forEach(cookie => {

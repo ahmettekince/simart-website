@@ -147,7 +147,7 @@ export default function SmartStickyBar({
           </div>
           <div className="ss-details">
             <h6 className="ss-title d-none d-md-block">
-              {productName.length > 20 ? productName.slice(0, 20) + "..." : productName}
+              {productName.length > 18 ? productName.slice(0, 18) + "..." : productName}
             </h6>
             <div className="ss-price-row">
               <span className={`ss-current-price ${originalPrice ? 'ss-has-discount' : ''}`}>
@@ -189,7 +189,7 @@ export default function SmartStickyBar({
       <style jsx>{`
         .smart-sticky-wrapper {
           position: fixed;
-          z-index: 2;
+          z-index: 20;
           transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
           opacity: 0;
           pointer-events: none;

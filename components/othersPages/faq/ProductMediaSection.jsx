@@ -47,7 +47,7 @@ export default function ProductMediaSection({ product }) {
   }, [product?.slug]);
 
   const youtubeUrl = mediaData?.video_url || product?.youtube_url || "";
-  const manualUrl = mediaData?.document_link || "https://documents.simart.me/katyau/";
+  const manualUrl = mediaData?.document_link || product?.document_link || "";
   const manualTitle =
     product?.manual_title ?? `${productName} Kılavuzunu görüntüleyin`;
 

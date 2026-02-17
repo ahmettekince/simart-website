@@ -146,7 +146,7 @@ export default function ProductCardSimart({ product }) {
         </div>
 
         <div className="rating-slot">
-          <StarRating rating={rating} reviewCount={reviewCount} size="medium" />
+          {reviewCount > 0 && <StarRating rating={rating} reviewCount={reviewCount} size="medium" />}
         </div>
 
         <div className="price-slot">
