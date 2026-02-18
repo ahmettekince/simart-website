@@ -185,6 +185,7 @@ export default function Slider({
                 src={slide.src}
                 width={slide.width}
                 height={slide.height}
+                quality={100}
               />
             </div>
           </SwiperSlide>
@@ -223,6 +224,7 @@ export default function Slider({
                         src={slide.src}
                         width={slide.width}
                         height={slide.height}
+                        quality={100}
                       />
                     </a>
                   )}

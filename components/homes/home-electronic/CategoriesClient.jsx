@@ -59,6 +59,7 @@ export default function CategoriesClient({ categories }) {
                     fetchPriority={index < 2 ? "high" : "auto"}
                     sizes="(max-width: 480px) 50vw, (max-width: 768px) 25vw, (max-width: 1200px) 16vw, 200px"
                     unoptimized={getCategoryImageSrc(item.image?.url).startsWith('/')}
+                    quality={100}
                   />
                 </div>
                 <div className="collection-content" style={{ position: 'relative', inset: 'unset', padding: '0 10px 20px', textAlign: 'center' }}>

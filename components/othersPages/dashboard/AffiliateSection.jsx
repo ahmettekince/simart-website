@@ -198,7 +198,7 @@ export default function AffiliateSection() {
                                 type="text"
                                 name="username"
                                 className="tf-field-input tf-input"
-                                placeholder="Örn: alinahmettekin"
+                                placeholder="Örn: simartteknoloji"
                                 value={formData.username}
                                 onChange={handleInputChange}
                             />

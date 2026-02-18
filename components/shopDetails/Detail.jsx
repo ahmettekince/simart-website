@@ -369,7 +369,7 @@ export default function Detail({ product }) {
   };
   return (
     <>
-      <section className=" pt_0" style={{ maxWidth: "100vw", overflow: "clip" }}>
+      <section className="pt_0" style={{ maxWidth: "100vw", overflow: "clip" }}>
         <MaxQuantityToast visible={showMaxReachedToast} onHide={() => setShowMaxReachedToast(false)} maxQuantity={maxQuantity} isStockLimit={isStockLimiting} />
         <ErrorToast visible={showErrorToast} onHide={() => setShowErrorToast(false)} message={errorToastMessage} />
         <div className="tf-main-product section-image-zoom">
@@ -446,11 +446,11 @@ export default function Detail({ product }) {
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", flexWrap: "nowrap", width: "100%" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                           <span className="price-on-sale" style={{ fontSize: "20px", fontWeight: "700", color: originalPrice ? "#0bc15c" : "var(--primary, #3c81b5)" }}>
-                            {(Math.floor(Number(finalPrice) * 100) / 100).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TL
+                            {Number(finalPrice).toLocaleString("tr-TR", { minimumFractionDigits: 0, maximumFractionDigits: Number(finalPrice) % 1 === 0 ? 0 : 2 })} TL
                           </span>
                           {originalPrice != null && originalPrice > finalPrice && (
                             <span className="compare-at-price" style={{ fontSize: "16px", color: "#999", textDecoration: "line-through" }}>
-                              {(Math.floor(Number(originalPrice) * 100) / 100).toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TL
+                              {Number(originalPrice).toLocaleString("tr-TR", { minimumFractionDigits: 0, maximumFractionDigits: Number(originalPrice) % 1 === 0 ? 0 : 2 })} TL
                             </span>
                           )}
                         </div>

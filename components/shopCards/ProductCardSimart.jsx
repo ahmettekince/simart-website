@@ -294,7 +294,7 @@ export default function ProductCardSimart({ product }) {
           font-size: 16px;
           text-decoration: line-through;
           color: #999;
-          margin-left: 18px;
+          margin-left: 10px;
         }
         .price-new {
           font-size: 19px;
@@ -476,6 +476,11 @@ export default function ProductCardSimart({ product }) {
           .title-slot {
             line-height: 18px;
             margin-bottom: 4px;
+            max-height: 36px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
           }
           .card-content-area {
             padding: 1px 12px 8px 8px;
