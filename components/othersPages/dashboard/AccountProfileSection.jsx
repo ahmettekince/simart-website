@@ -44,6 +44,10 @@ export default function AccountProfileSection() {
   const [profileMessage, setProfileMessage] = useState("");
   const [profileError, setProfileError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [isPhotoLoading, setIsPhotoLoading] = useState(false);
+  const [showPhotoMenu, setShowPhotoMenu] = useState(false);
+  const fileInputRef = React.useRef(null);
+  const photoMenuRef = React.useRef(null);
 
   useEffect(() => {
     if (customer) {
@@ -63,6 +67,33 @@ export default function AccountProfileSection() {
   useEffect(() => {
     if (storeError) setProfileError("Müşteri bilgileri yüklenirken bir hata oluştu.");
   }, [storeError]);
+
+  // Fotoğraf menüsünü dışarı tıklandığında kapat
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (photoMenuRef.current && !photoMenuRef.current.contains(event.target)) {
+        setShowPhotoMenu(false);
+      }
+    };
+    if (showPhotoMenu) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showPhotoMenu]);
+
+  // Hata ve başarı mesajlarını 5 saniye sonra temizle
+  useEffect(() => {
+    if (profileMessage || profileError || phoneError) {
+      const timer = setTimeout(() => {
+        setProfileMessage("");
+        setProfileError("");
+        setPhoneError("");
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [profileMessage, profileError, phoneError]);
 
   const handleSendVerificationCode = async () => {
     const phone = formatPhoneValue(phoneForVerify).replace(/\s/g, "");
@@ -129,6 +160,70 @@ export default function AccountProfileSection() {
     }
   };
 
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Dosya tipi ve boyut kontrolü (opsiyonel ama iyi olur)
+    if (!file.type.startsWith("image/")) {
+      setProfileError("Lütfen geçerli bir resim dosyası seçin.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("photo", file);
+
+    setIsPhotoLoading(true);
+    setProfileError("");
+    setProfileMessage("");
+
+    try {
+      const response = await apiClient.post("/customer/profile-photo", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      if (response.data?.status === "success") {
+        setProfileMessage("Profil fotoğrafınız güncellendi.");
+        await useCustomerStore.getState().fetchCustomer(true);
+      } else {
+        setProfileError(getApiErrorMessage(response.data) || "Fotoğraf yüklenemedi.");
+      }
+    } catch (err) {
+      setProfileError(getApiErrorMessage(err.response?.data) || err.message || "Fotoğraf yüklenirken bir hata oluştu.");
+    } finally {
+      setIsPhotoLoading(false);
+      setShowPhotoMenu(false);
+      // Inputu temizle ki aynı dosya tekrar seçilebilsin
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const handlePhotoDelete = async (e) => {
+    e.stopPropagation(); // Image tıklandığında file input tetiklenmesin
+    if (!customer?.profile_photo_url) return;
+    if (!confirm("Profil fotoğrafınızı silmek istediğinize emin misiniz?")) return;
+
+    setIsPhotoLoading(true);
+    setProfileError("");
+    setProfileMessage("");
+
+    try {
+      const response = await apiClient.delete("/customer/profile-photo");
+      if (response.data?.status === "success") {
+        setProfileMessage("Profil fotoğrafınız silindi.");
+        await useCustomerStore.getState().fetchCustomer(true);
+      } else {
+        setProfileError(getApiErrorMessage(response.data) || "Fotoğraf silinemedi.");
+      }
+    } catch (err) {
+      setProfileError(getApiErrorMessage(err.response?.data) || err.message || "Fotoğraf silinirken bir hata oluştu.");
+    } finally {
+      setIsPhotoLoading(false);
+      setShowPhotoMenu(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSaving(true);
@@ -167,31 +262,153 @@ export default function AccountProfileSection() {
           </div>
         )}
 
-        {/* Profil Resmi Placeholder */}
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: "20px" }}>
+        {/* Profil Resmi */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginBottom: "30px" }}>
           <div
             style={{
-              width: "80px",
-              height: "80px",
-              borderRadius: "50%",
-              border: "1px solid #eee",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              overflow: "hidden",
-              backgroundColor: "#fff",
-              boxShadow: "0 2px 4px rgba(0,0,0,0.05)"
+              position: "relative",
+              width: "100px",
+              height: "100px",
             }}
           >
-            <Image
-              src="/images/logo/favicon.png"
-              alt="Logo"
-              width={60}
-              height={60}
-              style={{ objectFit: "contain" }}
-            />
+            <div
+              style={{
+                position: "relative",
+                width: "100px",
+                height: "100px",
+                borderRadius: "50%",
+                border: "2px solid #3c81b5",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                overflow: "hidden",
+                backgroundColor: "#fff",
+                boxShadow: "0 4px 12px rgba(60, 129, 181, 0.15)",
+              }}
+              className="profile-photo-wrapper"
+            >
+              {isPhotoLoading ? (
+                <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(255,255,255,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10 }}>
+                  <CircularLoading size={24} />
+                </div>
+              ) : null}
+
+              <Image
+                src={customer?.profile_photo_url || "/images/logo/favicon.png"}
+                alt="Profil Fotoğrafı"
+                fill
+                style={{ objectFit: customer?.profile_photo_url ? "cover" : "contain", padding: customer?.profile_photo_url ? "0" : "15px" }}
+              />
+            </div>
+
+            {/* Kalem İkonu (Sağ Alt - Daha Dışarıda) */}
+            <div
+              onClick={(e) => {
+                e.preventDefault();
+                setShowPhotoMenu(!showPhotoMenu);
+              }}
+              style={{
+                position: "absolute",
+                bottom: "-2px",
+                right: "-2px",
+                width: "32px",
+                height: "32px",
+                backgroundColor: "#3c81b5",
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#fff",
+                boxShadow: "0 3px 6px rgba(0,0,0,0.25)",
+                border: "2px solid #fff",
+                zIndex: 15,
+                cursor: "pointer",
+                transition: "all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275)"
+              }}
+              className="photo-edit-trigger"
+            >
+              <i className="icon-edit" style={{ fontSize: '13px' }}></i>
+
+              {/* Fotoğraf Yönetim Menüsü (Popup) */}
+              {showPhotoMenu && (
+                <div
+                  ref={photoMenuRef}
+                  style={{
+                    position: "absolute",
+                    top: "38px",
+                    right: "0px",
+                    width: "170px",
+                    backgroundColor: "#fff",
+                    boxShadow: "0 8px 24px rgba(0,0,0,0.18)",
+                    borderRadius: "10px",
+                    zIndex: 100,
+                    overflow: "hidden",
+                    border: "1px solid #f0f0f0"
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    style={{
+                      padding: "12px 16px",
+                      fontSize: "13px",
+                      color: "#333",
+                      cursor: "pointer",
+                      borderBottom: "1px solid #f5f5f5",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "10px"
+                    }}
+                    className="photo-menu-item"
+                  >
+                    <i className="icon-camera" style={{ fontSize: '14px' }} />
+                    {customer?.profile_photo_url ? "Fotoğrafı Değiştir" : "Fotoğraf Yükle"}
+                  </div>
+
+                  {customer?.profile_photo_url && (
+                    <div
+                      onClick={handlePhotoDelete}
+                      style={{
+                        padding: "12px 16px",
+                        fontSize: "13px",
+                        color: "#dc3545",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "10px"
+                      }}
+                      className="photo-menu-item"
+                    >
+                      <i className="icon-trash" style={{ fontSize: '14px' }} />
+                      Fotoğrafı Kaldır
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
+
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handlePhotoUpload}
+            accept="image/*"
+            style={{ display: "none" }}
+          />
         </div>
+
+        <style jsx>{`
+          .photo-edit-trigger:hover {
+            background-color: #2a5d84 !important;
+          }
+          .photo-menu-item:hover {
+            background-color: #f8f9fa;
+            color: #3c81b5 !important;
+          }
+          .photo-menu-item:active {
+            background-color: #f0f1f2;
+          }
+        `}</style>
 
         {/* İsim | Soyisim - yan yana */}
         <div className="account-profile-row account-profile-row-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "12px" }}>

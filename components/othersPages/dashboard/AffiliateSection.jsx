@@ -28,6 +28,17 @@ export default function AffiliateSection() {
         fetchCustomer();
     }, [fetchCustomer]);
 
+    // Hata ve başarı mesajlarını 5 saniye sonra temizle
+    useEffect(() => {
+        if (applyError || applySuccess) {
+            const timer = setTimeout(() => {
+                setApplyError("");
+                setApplySuccess("");
+            }, 5000);
+            return () => clearTimeout(timer);
+        }
+    }, [applyError, applySuccess]);
+
     const handleInputChange = (e) => {
         const { name, value, type, checked } = e.target;
         setFormData(prev => ({
