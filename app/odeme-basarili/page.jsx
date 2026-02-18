@@ -3,8 +3,8 @@ import PaymentConfirmation from "@/components/othersPages/PaymentConfirmation";
 import React from "react";
 
 export const metadata = {
-  title: "Payment Confirmation || Ecomus - Ultimate Nextjs Ecommerce Template",
-  description: "Ecomus - Ultimate Nextjs Ecommerce Template",
+  title: "Siparişiniz Onaylandı || Şımart Teknoloji",
+  description: "Şımart Teknoloji - Siparişiniz Onaylandı",
 };
 export default function page() {
   return (
@@ -12,7 +12,7 @@ export default function page() {
       <Header />
       <div className="tf-page-title">
         <div className="container-full">
-          <div className="heading text-center">Payment confirmation</div>
+          <div className="heading text-center">Siparişiniz Onaylandı</div>
         </div>
       </div>
 
