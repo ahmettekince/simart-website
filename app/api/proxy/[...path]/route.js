@@ -79,7 +79,7 @@ async function handleRequest(request, params, method) {
         cookieStore.getAll().forEach(cookie => {
             cookieHeaders.push(`${cookie.name}=${cookie.value}`);
             // DEVICE_ID cookie'sini X-Device-ID header'ı olarak ekle
-            if (cookie.name === 'DEVICE_ID') {
+            if (cookie.name === 'DEVICE_ID' || cookie.name === 'device_id') {
                 deviceId = cookie.value;
             }
         });

@@ -11,11 +11,12 @@ export async function checkAuthServer() {
     try {
         const cookieStore = await cookies();
         const encryptedToken = cookieStore.get('_token')?.value;
+        const deviceId = cookieStore.get('device_id')?.value || cookieStore.get('DEVICE_ID')?.value;
         const secretKey = process.env.TOKEN_SEC_KEY;
 
 
 
-        if (!encryptedToken || !secretKey) {
+        if (!encryptedToken || !secretKey || !deviceId) {
 
             return false;
         }

@@ -5,8 +5,8 @@ import Header from "@/components/headers/Header";
 import AffiliateSection from "@/components/othersPages/dashboard/AffiliateSection";
 
 export const metadata = {
-  title: "Paylaş Simart - Şımart Teknoloji",
-  description: "Paylaş Simart sayfası. Simart'ı paylaşın ve kazanın.",
+  title: "Paylaş Şımart - Şımart Teknoloji",
+  description: "Paylaş Şımart sayfası. Şımart'ı paylaşın ve kazanın.",
 };
 export default async function PaylasSimartPage() {
   const isAuthenticated = await checkAuthServer();

@@ -24,7 +24,16 @@ export const useCustomerStore = create((set, get) => ({
       set({ customer: data, lastFetchedAt: now, isLoading: false, error: null });
       return data;
     } catch (err) {
-      set({ error: err, isLoading: false });
+      const errorMsg = err.response?.data?.message || "";
+      if (errorMsg.includes("device_id")) {
+        // device_id hatası gelirse oturumu geçersiz say ve yönlendir
+        set({ customer: null, isLoading: false, error: err });
+        if (typeof window !== "undefined") {
+          window.location.href = "/giris-yap";
+        }
+      } else {
+        set({ error: err, isLoading: false });
+      }
       return null;
     }
   },
