@@ -74,6 +74,17 @@ export default function Checkout() {
   const [deliveryAddressErrors, setDeliveryAddressErrors] = useState({}); // Teslimat adresi API hataları (alan bazlı)
   const [billingAddressErrors, setBillingAddressErrors] = useState({}); // Fatura adresi API hataları (alan bazlı)
 
+  // Hataları 5 saniye sonra temizle
+  useEffect(() => {
+    if (orderErrorMessage || Object.keys(orderErrors).length > 0) {
+      const timer = setTimeout(() => {
+        setOrderErrorMessage("");
+        setOrderErrors({});
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [orderErrorMessage, orderErrors]);
+
   // Misafir checkout (login değilse): e-posta, şifre e-postaya gönderilsin (varsayılan işaretli), şifre alanı
   const [guestEmail, setGuestEmail] = useState("");
   const [sendPasswordToEmail, setSendPasswordToEmail] = useState(true); // Varsayılan işaretli: şifrem e-posta adresime gönderilsin
@@ -767,18 +778,34 @@ export default function Checkout() {
                           {orderErrors.password[0]}
                         </div>
                       )}
-                      <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
-                        <label htmlFor="checkout-guest-email">E-posta*</label>
-                        <input
-                          type="email"
-                          id="checkout-guest-email"
-                          name="email"
-                          placeholder="ornek@email.com"
-                          value={guestEmail}
-                          onChange={(e) => setGuestEmail(e.target.value)}
-                          autoComplete="email"
-                        />
-                      </fieldset>
+                      <div className={!sendPasswordToEmail ? "grid-2" : ""} style={{ gap: "15px" }}>
+                        <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
+                          <label htmlFor="checkout-guest-email">E-posta*</label>
+                          <input
+                            type="email"
+                            id="checkout-guest-email"
+                            name="email"
+                            placeholder="ornek@email.com"
+                            value={guestEmail}
+                            onChange={(e) => setGuestEmail(e.target.value)}
+                            autoComplete="email"
+                          />
+                        </fieldset>
+                        {!sendPasswordToEmail && (
+                          <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
+                            <label htmlFor="checkout-guest-password">Şifre*</label>
+                            <input
+                              type="password"
+                              id="checkout-guest-password"
+                              name="password"
+                              placeholder="Şifre belirleyin"
+                              value={guestPassword}
+                              onChange={(e) => setGuestPassword(e.target.value)}
+                              autoComplete="new-password"
+                            />
+                          </fieldset>
+                        )}
+                      </div>
                       <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                           <input
@@ -796,20 +823,6 @@ export default function Checkout() {
                           </label>
                         </div>
                       </fieldset>
-                      {!sendPasswordToEmail && (
-                        <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
-                          <label htmlFor="checkout-guest-password">Şifre*</label>
-                          <input
-                            type="password"
-                            id="checkout-guest-password"
-                            name="password"
-                            placeholder="Şifre belirleyin"
-                            value={guestPassword}
-                            onChange={(e) => setGuestPassword(e.target.value)}
-                            autoComplete="new-password"
-                          />
-                        </fieldset>
-                      )}
                     </>
                   )}
 

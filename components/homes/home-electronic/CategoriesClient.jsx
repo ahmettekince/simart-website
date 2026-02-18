@@ -33,8 +33,9 @@ export default function CategoriesClient({ categories }) {
         }}
         loop={total > 1}
         autoplay={{
-          delay: 3000,
+          delay: 3500,
           disableOnInteraction: false,
+          pauseOnMouseEnter: true,
         }}
         speed={600}
         className="tf-sw-collection"
@@ -62,7 +63,7 @@ export default function CategoriesClient({ categories }) {
                 </div>
                 <div className="collection-content" style={{ position: 'relative', inset: 'unset', padding: '0 10px 20px', textAlign: 'center' }}>
                   <div className="top">
-                    <h5 className="heading fw-5" >{item.name}</h5>
+                    <h5 className="fw-5" style={{ fontSize: "14px" }} >{item.name}</h5>
                   </div>
                 </div>
               </Link>

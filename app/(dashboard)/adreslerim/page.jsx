@@ -6,8 +6,8 @@ import { checkAuthServer } from "@/utils/authServer";
 import { redirect } from "next/navigation";
 
 export const metadata = {
-  title: "My Accout Address || Ecomus - Ultimate Nextjs Ecommerce Template",
-  description: "Ecomus - Ultimate Nextjs Ecommerce Template",
+  title: "Adreslerim || Şımart Teknoloji",
+  description: "Şımart Teknoloji ",
 };
 export default async function page() {
   const isAuthenticated = await checkAuthServer();

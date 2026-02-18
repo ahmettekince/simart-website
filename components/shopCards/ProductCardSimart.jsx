@@ -137,7 +137,6 @@ export default function ProductCardSimart({ product }) {
         />
       </div>
 
-      {/* Alt Kısım: Bilgiler */}
       <div className="card-content-area">
         <div className="title-slot">
           <Link href={detailUrl} className="product-title">
@@ -271,10 +270,11 @@ export default function ProductCardSimart({ product }) {
         }
         .price-slot {
           height: 24px;
-          margin-bottom: 12px;
+          margin-bottom: 2px;
           display: flex;
           align-items: center;
           flex-shrink: 0;
+          
         }
         .button-row {
           display: flex;
@@ -289,26 +289,15 @@ export default function ProductCardSimart({ product }) {
           display: flex;
           width: 100%;
         }
-
-                /* Metin Stilleri */
-                .product-title {
-                    display: -webkit-box;
-                    -webkit-line-clamp: 2;
-                    -webkit-box-orient: vertical;
-                    overflow: hidden;
-                    font-size: 12px;
-                    line-height: 20px;
-                    font-weight: bold;
-                    color: #000;
-                }
+  
         .price-old {
-          font-size: 13px;
+          font-size: 16px;
           text-decoration: line-through;
           color: #999;
-          margin-left: 8px;
+          margin-left: 18px;
         }
         .price-new {
-          font-size: 16px;
+          font-size: 19px;
         }
         .price-new.price-normal {
           color: #3c81b5;
@@ -316,11 +305,10 @@ export default function ProductCardSimart({ product }) {
         .price-new.price-discount {
           color: #0bc15c;
         }
-
-                /* Butonlar (Tema renkleri kullanılıyor) */
+                
         .main-cart-btn {
           width: 100%;
-          height: 44px;
+          height: 38px;
           border-radius: 12px;
           font-size: 13px;
           font-weight: 600;
@@ -418,12 +406,12 @@ export default function ProductCardSimart({ product }) {
                 
                 .wish-action-btn {
                     position: relative;
-                    width: 44px;
-                    height: 44px;
-          min-width: 44px;
-          min-height: 44px;
-          max-width: 44px;
-          max-height: 44px;
+                    width: 38px;
+                    height: 38px;
+          min-width: 38px;
+          min-height: 38px;
+          max-width: 38px;
+          max-height: 38px;
                     border-radius: 50%;
                     border: 1px solid #ddd;
                     background: #fff;
@@ -485,22 +473,30 @@ export default function ProductCardSimart({ product }) {
           .product-card-simart {
             min-height: 0;
           }
+          .title-slot {
+            line-height: 18px;
+            margin-bottom: 4px;
+          }
           .card-content-area {
             padding: 1px 12px 8px 8px;
           }
           .price-slot {
-            margin-bottom: 8px;
+            margin-bottom: 2px;
           }
           .button-row {
             gap: 6px;
           }
           .wish-action-btn {
-            width: 40px;
-            height: 40px;
-            min-width: 40px;
-            min-height: 40px;
-            max-width: 40px;
-            max-height: 40px;
+            width: 36px;
+            height: 36px;
+            min-width: 36px;
+            min-height: 36px;
+            max-width: 36px;
+            max-height: 36px;
+          }
+          .main-cart-btn {
+            height: 36px;
+            border-radius: 8px;
           }
           .wish-action-btn i {
             font-size: 16px;

@@ -22,6 +22,7 @@ export default function AffiliateSection() {
     const [isVerifying, setIsVerifying] = useState(false);
     const [applyError, setApplyError] = useState("");
     const [applySuccess, setApplySuccess] = useState("");
+    const [fieldErrors, setFieldErrors] = useState({});
 
     useEffect(() => {
         fetchCustomer();
@@ -34,23 +35,20 @@ export default function AffiliateSection() {
             [name]: type === 'checkbox' ? checked : value
         }));
         setApplyError("");
+        setFieldErrors(prev => ({ ...prev, [name]: null }));
     };
 
     const handleApply = async (e) => {
         e.preventDefault();
-        if (!formData.username || !formData.birth_date) {
-            setApplyError("Lütfen tüm alanları doldurun.");
-            return;
-        }
-
         setIsApplying(true);
         setApplyError("");
         setApplySuccess("");
+        setFieldErrors({});
 
         try {
             const response = await apiClient.post("/affiliate/create", null, {
                 params: {
-                    birth_date: formData.birth_date.replace(/-/g, "/"),
+                    birth_date: formData.birth_date ? formData.birth_date.replace(/-/g, "/") : "",
                     username: formData.username,
                     affiliate_checkbox: formData.affiliate_checkbox ? 1 : 0
                 }
@@ -61,10 +59,21 @@ export default function AffiliateSection() {
                 // Update customer to jump to affiliate_status 0 (SMS wait)
                 setTimeout(() => fetchCustomer(true), 1500);
             } else {
-                setApplyError(response.data?.message || "Başvuru sırasında bir hata oluştu.");
+                const errors = response.data?.errors;
+                if (errors && Object.keys(errors).length > 0) {
+                    setFieldErrors(errors);
+                } else {
+                    setApplyError(response.data?.message || "Başvuru sırasında bir hata oluştu.");
+                }
             }
         } catch (err) {
-            setApplyError(err.response?.data?.message || "Bir hata oluştu.");
+            const data = err.response?.data;
+            const errors = data?.errors;
+            if (errors && Object.keys(errors).length > 0) {
+                setFieldErrors(errors);
+            } else {
+                setApplyError(data?.message || "Bir hata oluştu.");
+            }
         } finally {
             setIsApplying(false);
         }
@@ -79,15 +88,12 @@ export default function AffiliateSection() {
 
         setIsVerifying(true);
         setApplyError("");
+        setFieldErrors({});
 
         try {
-            // we might need birth_date here too as per previous logic, but depends on API
-            // User said: {{SITE_API_URL}}/affiliate/create?birth_date=2002/12/12&code=123213
-            // Since birth_date is in formData if they just filled it, or we might need it from elsewhere.
-            // For safety, we keep birth_date in local state if we just transitioned.
             const response = await apiClient.post("/affiliate/create", null, {
                 params: {
-                    birth_date: formData.birth_date.replace(/-/g, "/"),
+                    birth_date: formData.birth_date ? formData.birth_date.replace(/-/g, "/") : "",
                     code: verificationCode
                 }
             });
@@ -96,10 +102,21 @@ export default function AffiliateSection() {
                 setApplySuccess(response.data.message || "Başvurunuz başarıyla alındı.");
                 setTimeout(() => fetchCustomer(true), 2000);
             } else {
-                setApplyError(response.data?.message || "Doğrulama başarısız.");
+                const errors = response.data?.errors;
+                if (errors && Object.keys(errors).length > 0) {
+                    setFieldErrors(errors);
+                } else {
+                    setApplyError(response.data?.message || "Doğrulama başarısız.");
+                }
             }
         } catch (err) {
-            setApplyError(err.response?.data?.message || "Bir hata oluştu.");
+            const data = err.response?.data;
+            const errors = data?.errors;
+            if (errors && Object.keys(errors).length > 0) {
+                setFieldErrors(errors);
+            } else {
+                setApplyError(data?.message || "Bir hata oluştu.");
+            }
         } finally {
             setIsVerifying(false);
         }
@@ -156,7 +173,7 @@ export default function AffiliateSection() {
                         </div>
                         <h4 className="fw-6">Paylaş Şımart Başvurusu</h4>
                         <p className="text-muted mx-auto" style={{ maxWidth: '500px' }}>
-                            Kullanıcı adınızı belirleyin ve doğum tarihinizi girerek süreci başlatın.
+                            Referans adınızı belirleyin ve doğum tarihinizi girerek süreci başlatın.
                         </p>
                     </div>
 
@@ -165,7 +182,7 @@ export default function AffiliateSection() {
                         {applySuccess && <div className="alert alert-success py-2 mb-3">{applySuccess}</div>}
 
                         <div className="mb-3">
-                            <label className="form-label fw-6" style={{ fontSize: '14px' }}>Kullanıcı Adı</label>
+                            <label className="form-label fw-6" style={{ fontSize: '14px' }}>Referans Adı</label>
                             <input
                                 type="text"
                                 name="username"
@@ -173,8 +190,12 @@ export default function AffiliateSection() {
                                 placeholder="Örn: alinahmettekin"
                                 value={formData.username}
                                 onChange={handleInputChange}
-                                required
                             />
+                            {fieldErrors.username && (
+                                <div style={{ color: '#dc3545', fontSize: '13px', marginTop: '4px' }}>
+                                    {fieldErrors.username[0]}
+                                </div>
+                            )}
                         </div>
 
                         <div className="mb-4">
@@ -185,23 +206,33 @@ export default function AffiliateSection() {
                                 className="tf-field-input tf-input"
                                 value={formData.birth_date}
                                 onChange={handleInputChange}
-                                required
                             />
+                            {fieldErrors.birth_date && (
+                                <div style={{ color: '#dc3545', fontSize: '13px', marginTop: '4px' }}>
+                                    {fieldErrors.birth_date[0]}
+                                </div>
+                            )}
                         </div>
 
-                        <div className="mb-4 d-flex align-items-start gap-2">
-                            <input
-                                type="checkbox"
-                                id="affiliate_checkbox"
-                                name="affiliate_checkbox"
-                                style={{ marginTop: '4px', width: '18px', height: '18px', cursor: 'pointer' }}
-                                checked={formData.affiliate_checkbox}
-                                onChange={handleInputChange}
-                                required
-                            />
-                            <label htmlFor="affiliate_checkbox" style={{ fontSize: '13px', cursor: 'pointer', lineHeight: '1.4' }}>
-                                <Link href="/sozlesme/satis-ortakligi" target="_blank" className="text-primary text-decoration-underline">Satış Ortaklığı Sözleşmesini</Link> okudum ve kabul ediyorum.
-                            </label>
+                        <div className="mb-4">
+                            <div className="d-flex align-items-start gap-2">
+                                <input
+                                    type="checkbox"
+                                    id="affiliate_checkbox"
+                                    name="affiliate_checkbox"
+                                    style={{ marginTop: '4px', width: '18px', height: '18px', cursor: 'pointer' }}
+                                    checked={formData.affiliate_checkbox}
+                                    onChange={handleInputChange}
+                                />
+                                <label htmlFor="affiliate_checkbox" style={{ fontSize: '13px', cursor: 'pointer', lineHeight: '1.4' }}>
+                                    <Link href="/sozlesme/satis-ortakligi" target="_blank" className="text-primary text-decoration-underline">Satış Ortaklığı Sözleşmesini</Link> okudum ve kabul ediyorum.
+                                </label>
+                            </div>
+                            {fieldErrors.affiliate_checkbox && (
+                                <div style={{ color: '#dc3545', fontSize: '13px', marginTop: '4px', width: '100%' }}>
+                                    {fieldErrors.affiliate_checkbox[0]}
+                                </div>
+                            )}
                         </div>
 
                         <SimartButton type="submit" fullWidth disabled={isApplying}>
@@ -247,24 +278,13 @@ export default function AffiliateSection() {
                                 onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, ""))}
                                 required
                             />
+                            {fieldErrors.code && (
+                                <div style={{ color: '#dc3545', fontSize: '13px', marginTop: '4px', textAlign: 'center' }}>
+                                    {fieldErrors.code[0]}
+                                </div>
+                            )}
                             {/* SMS gelmediyse veya bir hata varsa birth_date girmesini saglayacak alanlar eklenebilir ama user istegine gore form'a donme butonu ekliyorum */}
                         </div>
-
-                        {/* Kod doğrulaması için birth_date gerekebilir. 
-                            Eğer kullanıcı sayfayı kapatıp açarsa status:0 gelir ama birth_date elimizde olmaz. 
-                            Bu durumda birth_date'i de isteyen bir form göstermek gerekebilir. */}
-                        {(!formData.birth_date) && (
-                            <div className="mb-4">
-                                <label className="form-label fw-6" style={{ fontSize: '14px' }}>Doğum Tarihiniz (Onay için tekrar)</label>
-                                <input
-                                    type="date"
-                                    name="birth_date"
-                                    className="tf-field-input tf-input"
-                                    onChange={handleInputChange}
-                                    required
-                                />
-                            </div>
-                        )}
 
                         <SimartButton type="submit" fullWidth disabled={isVerifying}>
                             {isVerifying ? "Doğrulanıyor..." : "Doğrula ve Başvur"}

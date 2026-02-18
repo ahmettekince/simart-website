@@ -135,7 +135,7 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
   }));
 
   return (
-    <div className="payment2" style={{ marginTop: "24px" }}>
+    <div className="payment2" style={{ marginTop: "24px", marginBottom: "24px" }}>
       <div className="payment2-grid">
         {/* Sol: Kart Bilgileri */}
         <div className="payment2-card">

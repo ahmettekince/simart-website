@@ -102,10 +102,14 @@ export default function ProductImageSwiper({
     if (!images || images.length === 0) {
         return (
             <div className="product-img">
-                <img
+                <Image
                     className="img-product"
                     src="/images/products/product-1.jpg"
                     alt={productName}
+                    width={width}
+                    height={height}
+                    sizes={sizes}
+                    quality={100}
                     style={{
                         objectFit: 'cover',
                         objectPosition: 'center',
@@ -145,17 +149,21 @@ export default function ProductImageSwiper({
                             height: '100%'
                         }}
                     >
-                        <img
+                        <Image
                             className="img-product"
                             src={imageUrl}
                             alt={productName}
+                            width={width}
+                            height={height}
+                            sizes={sizes}
+                            quality={90}
                             style={{
                                 objectFit: 'cover',
                                 objectPosition: 'center',
                                 width: '100%',
                                 height: 'auto'
                             }}
-                            loading="lazy"
+                            priority={true} // Tek görsel olan kartlar genellikle ATF'dir
                         />
                     </Link>
                     {renderCampaignTags()}
@@ -217,17 +225,21 @@ export default function ProductImageSwiper({
                         return (
                             <SwiperSlide key={index}>
                                 <Link href={`/magaza/${categorySlug}/${productSlug}`} className="product-img">
-                                    <img
+                                    <Image
                                         className="img-product"
                                         src={imageUrl}
                                         alt={`${productName} - ${index + 1}`}
+                                        width={width}
+                                        height={height}
+                                        sizes={sizes}
+                                        quality={90}
                                         style={{
                                             objectFit: 'cover',
                                             objectPosition: 'center',
                                             width: '100%',
                                             height: 'auto'
                                         }}
-                                        loading="lazy"
+                                        priority={index === 0}
                                     />
                                 </Link>
                             </SwiperSlide>
