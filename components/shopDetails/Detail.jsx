@@ -571,8 +571,8 @@ export default function Detail({ product }) {
                       )}
                     </div>
 
-                    {/* Kısa Açıklama - sadece desktop (mobilde render etme) */}
-                    {showShortDescription && product.short_description && (
+                    {/* Kısa Açıklama - Desktopta her zaman, mobilde eğer detaylı açıklama yoksa göster */}
+                    {(showShortDescription || !product.description) && product.short_description && (
                       <>
                         <style dangerouslySetInnerHTML={{
                           __html: `

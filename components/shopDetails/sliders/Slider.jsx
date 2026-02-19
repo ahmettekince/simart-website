@@ -1,12 +1,38 @@
 "use client";
 import Image from "next/image";
 import Drift from "drift-zoom";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, forwardRef } from "react";
 import { Navigation, Thumbs } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Gallery, Item } from "react-photoswipe-gallery";
 import NavDotsPill from "@/components/common/NavDotsPill";
 import OverlayCtaButton, { Model3dIcon, PlayIcon, ArrowIcon } from "@/components/common/OverlayCtaButton";
+import CircularLoading from "@/components/common/CircularLoading";
+
+// Loading destekli Resim Bileşeni
+const SliderImage = forwardRef(({ onLoadingComplete, ...props }, ref) => {
+  const [loading, setLoading] = useState(true);
+
+  return (
+    <div className="slider-image-wrapper" style={{ position: "relative", width: "100%", height: "100%", minHeight: "200px" }}>
+      {loading && (
+        <div
+          className="d-flex align-items-center justify-content-center"
+          style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", zIndex: 1, background: "#f9f9f9" }}
+        >
+          <CircularLoading />
+        </div>
+      )}
+      <Image
+        ref={ref}
+        onLoad={() => setLoading(false)}
+        onError={() => setLoading(false)}
+        {...props}
+      />
+    </div>
+  );
+});
+SliderImage.displayName = "SliderImage";
 
 export default function Slider({
   currentColor = "Beige",
@@ -214,8 +240,8 @@ export default function Slider({
               <SwiperSlide className="swiper-slide" key={index}>
                 <Item original={slide.src} thumbnail={slide.src} width={slide.width} height={slide.height}>
                   {({ ref, open }) => (
-                    <a onClick={open} className="item" style={{ border: "2px solid #f5f5f5", borderRadius: "8px" }}>
-                      <Image
+                    <a onClick={open} className="item" style={{ border: "2px solid #f5f5f5", borderRadius: "8px", position: "relative", display: "block", height: "100%" }}>
+                      <SliderImage
                         ref={ref}
                         className="tf-image-zoom lazyload"
                         data-zoom={slide.src}
@@ -225,6 +251,9 @@ export default function Slider({
                         width={slide.width}
                         height={slide.height}
                         quality={100}
+                        style={{ objectFit: "contain", width: "100%", height: "100%" }}
+                        priority={index === 0}
+                        loading="eager"
                       />
                     </a>
                   )}

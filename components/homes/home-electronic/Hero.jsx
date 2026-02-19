@@ -2,8 +2,9 @@
 import React, { useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Autoplay } from "swiper/modules";
+import { Autoplay, EffectCreative } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css/effect-creative";
 import NavDotsPill from "@/components/common/NavDotsPill";
 
 export default function Hero({ banners = [] }) {
@@ -23,13 +24,23 @@ export default function Hero({ banners = [] }) {
         spaceBetween={0}
         centeredSlides={false}
         loop={total > 1}
+        effect="creative"
+        creativeEffect={{
+          prev: {
+            shadow: true,
+            translate: ["-100%", 0, 0],
+          },
+          next: {
+            translate: ["100%", 0, 0],
+          },
+        }}
         autoHeight={true}
         autoplay={{
           delay: 4000,
           disableOnInteraction: false,
         }}
         speed={1000}
-        modules={[Autoplay]}
+        modules={[Autoplay, EffectCreative]}
         onSwiper={(swiper) => (swiperRef.current = swiper)}
         onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
         className="tf-sw-slideshow"

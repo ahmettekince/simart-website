@@ -45,7 +45,7 @@ export default function SearchableSelect({
   const filteredOptions = useMemo(() => {
     if (!searchTerm.trim()) return options;
     return options.filter((opt) =>
-      opt.name.toLowerCase().includes(searchTerm.toLowerCase())
+      opt.name.toLocaleLowerCase('tr').includes(searchTerm.toLocaleLowerCase('tr'))
     );
   }, [options, searchTerm]);
 

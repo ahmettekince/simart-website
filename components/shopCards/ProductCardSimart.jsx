@@ -7,6 +7,7 @@ import ProductImageSwiper from "@/components/common/ProductImageSwiper";
 import MaxQuantityToast from "@/components/common/MaxQuantityToast";
 import ErrorToast from "@/components/common/ErrorToast";
 import StarRating from "@/components/common/StarRating";
+import CircularLoading from "@/components/common/CircularLoading";
 import { getProductButtonState } from "@/utils/productStock";
 
 export default function ProductCardSimart({ product }) {
@@ -14,27 +15,15 @@ export default function ProductCardSimart({ product }) {
   const { addItem } = useCartStore();
   const cartItems = useCartStore((s) => s.items);
   const [isAdding, setIsAdding] = React.useState(false);
+  const [isNavigating, setIsNavigating] = React.useState(false);
   const [showSuccess, setShowSuccess] = React.useState(false);
   const [showMaxReachedToast, setShowMaxReachedToast] = React.useState(false);
   const [maxQuantityForToast, setMaxQuantityForToast] = React.useState(null);
   const [showErrorToast, setShowErrorToast] = React.useState(false);
   const [errorToastMessage, setErrorToastMessage] = React.useState("");
 
-  // onHide callback'ini memoize et - sürekli yeni fonksiyon oluşturmasın
-  const handleHideToast = useCallback(() => {
-    setShowMaxReachedToast(false);
-  }, []);
-
-  const handleHideErrorToast = useCallback(() => {
-    setShowErrorToast(false);
-  }, []);
-
   // -- Veriler --
   const title = product.name || product.title;
-  const finalPrice = product.discount_price || product.price || 0;
-  const oldPrice = product.discount_price ? product.price : null;
-  const rating = product.rating || product.average_rating || 0;
-  const reviewCount = product.reviews_count || product.review_count || 0;
   const productSlug = product.slug || product.id;
 
   // Kategori slug'ını al (ilk kategoriden)
@@ -64,6 +53,34 @@ export default function ProductCardSimart({ product }) {
   };
   const categorySlug = getCategorySlug();
   const detailUrl = `/magaza/${categorySlug}/${productSlug}`;
+
+  // Navigasyon Yükleniyor Kontrolü
+  const handleNavigate = (e) => {
+    // Eğer buton tıklamasıyla çakışıyorsa engelle (gerçi stopPropagation var ama ne olur ne olmaz)
+    if (isAdding || showSuccess) return;
+
+    // Eğer link ise varsayılanı engelle (next/link zaten yapıyor ama client-side geçiş için garanti olsun)
+    // Sadece sol tık için çalışsın
+    if (e.type === 'click' && (e.metaKey || e.ctrlKey)) return; // Ctrl+Click yeni sekme açar, loading gösterme
+
+    e.preventDefault();
+    setIsNavigating(true);
+    router.push(detailUrl);
+  };
+
+  // onHide callback'ini memoize et - sürekli yeni fonksiyon oluşturmasın
+  const handleHideToast = useCallback(() => {
+    setShowMaxReachedToast(false);
+  }, []);
+
+  const handleHideErrorToast = useCallback(() => {
+    setShowErrorToast(false);
+  }, []);
+
+  const finalPrice = product.discount_price || product.price || 0;
+  const oldPrice = product.discount_price ? product.price : null;
+  const rating = product.rating || product.average_rating || 0;
+  const reviewCount = product.reviews_count || product.review_count || 0;
 
   // -- Buton Metin Mantığı --
   const { buttonText, buttonDisabled } = getProductButtonState(product);
@@ -123,8 +140,15 @@ export default function ProductCardSimart({ product }) {
     <div className="product-card-simart">
       <MaxQuantityToast visible={showMaxReachedToast} onHide={handleHideToast} maxQuantity={maxQuantityForToast} isStockLimit={isStockLimitTriggered} />
       <ErrorToast visible={showErrorToast} onHide={handleHideErrorToast} message={errorToastMessage} />
+      {/* Yükleniyor Overlay - Sayfa Geçişi İçin */}
+      {isNavigating && (
+        <div className="card-loading-overlay">
+          <CircularLoading />
+        </div>
+      )}
+
       {/* Üst Kısım: Görsel (Ölçek ve Kalite Korundu) */}
-      <div className="card-image-area">
+      <div className="card-image-area" onClick={handleNavigate} style={{ cursor: "pointer" }}>
         <ProductImageSwiper
           images={product.images || []}
           productSlug={productSlug}
@@ -139,7 +163,7 @@ export default function ProductCardSimart({ product }) {
 
       <div className="card-content-area">
         <div className="title-slot">
-          <Link href={detailUrl} className="product-title">
+          <Link href={detailUrl} className="product-title" onClick={handleNavigate}>
             {title}
           </Link>
         </div>
@@ -158,12 +182,13 @@ export default function ProductCardSimart({ product }) {
         <div className="button-row">
           <div className="flex-grow-1">
             <button
-              onClick={async () => {
+              onClick={async (e) => {
+                e.stopPropagation(); // Kart tıklamasını engelle
                 if (isAdding || showSuccess) return;
 
                 // Ön sipariş ise ürün detayına yönlendir
                 if (product.is_pre_order) {
-                  router.push(detailUrl);
+                  handleNavigate(e);
                   return;
                 }
 
@@ -226,6 +251,20 @@ export default function ProductCardSimart({ product }) {
       </div>
 
       <style jsx>{`
+                .card-loading-overlay {
+                  position: absolute;
+                  top: 0;
+                  left: 0;
+                  width: 100%;
+                  height: 100%;
+                  background: rgba(255, 255, 255, 0.6);
+                  z-index: 10;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  border-radius: 12px;
+                  backdrop-filter: blur(1px);
+                }
                 .product-card-simart {
                     display: flex;
                     flex-direction: column;
