@@ -101,3 +101,46 @@ export function formatPhoneValue(value) {
 
   return formatted;
 }
+
+/** 
+ * Ad Soyad (Tek input):
+ * - İlk kelime (İsim): Baş harfi büyük, geri kalanı küçük
+ * - Diğer kelimeler (Soyisim): Tamamı büyük harf
+ * - Türkçe karakter uyumlu
+ */
+export function formatFullNameValue(str) {
+  if (str == null || typeof str !== "string") return "";
+
+  // İzin verilen karakterler dışında her şeyi temizle (ama boşluk kalsın)
+  const cleaned = str.replace(/[^a-zA-ZğüşıöçĞÜŞİÖÇ\s]/g, "");
+
+  // Boşluklara göre ayır
+  const parts = cleaned.split(" ");
+
+  let newFullName = "";
+
+  if (parts.length > 0) {
+    // İlk kelime: Baş harfi büyük, geri kalanı küçük
+    const firstName = parts[0];
+    if (firstName) {
+      newFullName += firstName.charAt(0).toLocaleUpperCase("tr-TR") + firstName.slice(1).toLocaleLowerCase("tr-TR");
+    }
+  }
+
+  if (parts.length > 1) {
+    // İkinci ve sonraki kelimeler (Soyisim): Tamamı büyük harf
+    // slice(1) ile ilk kelime hariç diğerlerini alıyoruz
+    const lastNamePart = parts.slice(1).join(" ").toLocaleUpperCase("tr-TR");
+
+    // Eğer soyisim kısmı varsa boşlukla ekle
+    // (parts.length > 1 olduğuna göre bir şeyler var, ama boş string de olabilir split davranışına göre)
+    if (lastNamePart.length > 0 || (parts.length === 2 && parts[1] === "")) {
+      newFullName += " " + lastNamePart;
+    }
+  } else if (str.endsWith(" ")) {
+    // Kullanıcı ilk isimi yazdıktan sonra boşluğa bastıysa boşluğu ekle
+    newFullName += " ";
+  }
+
+  return newFullName;
+}

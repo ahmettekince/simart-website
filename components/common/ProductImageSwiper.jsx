@@ -224,7 +224,7 @@ export default function ProductImageSwiper({
                         const imageUrl = getImageUrl(image);
                         return (
                             <SwiperSlide key={index}>
-                                <Link href={`/magaza/${categorySlug}/${productSlug}`} className="product-img">
+                                <Link href={`/magaza/${categorySlug}/${productSlug}`} className="product-img" style={{ display: "block", width: "100%" }}>
                                     <Image
                                         className="img-product"
                                         src={imageUrl}
@@ -232,7 +232,7 @@ export default function ProductImageSwiper({
                                         width={width}
                                         height={height}
                                         sizes={sizes}
-                                        quality={90}
+                                        quality={100}
                                         style={{
                                             objectFit: 'cover',
                                             objectPosition: 'center',

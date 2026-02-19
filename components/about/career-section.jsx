@@ -4,6 +4,7 @@ import React, { useRef, useState } from "react"
 import Image from "next/image"
 import Accordion from "@/components/common/Accordion"
 import apiClient from "@/utils/apiClient"
+import { formatFullNameValue } from "@/utils/inputFormatters"
 import RecaptchaV3 from "@/components/common/RecaptchaV3"
 
 export function CareerSection({ faqs = [] }) {
@@ -32,9 +33,8 @@ export function CareerSection({ faqs = [] }) {
     }
 
     const handleFullNameChange = (e) => {
-        // Sadece harfler ve boşluk
-        const value = e.target.value.replace(/[^a-zA-ZğüşıöçĞÜŞİÖÇ\s]/g, "")
-        setFullName(value)
+        setFullName(formatFullNameValue(e.target.value));
+
         // Hata varsa temizle
         if (fieldErrors.full_name) {
             setFieldErrors(prev => ({ ...prev, full_name: null }))

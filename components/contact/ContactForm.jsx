@@ -4,7 +4,7 @@ import Link from "next/link";
 import React, { useRef, useState } from "react";
 import apiClient from "@/utils/apiClient";
 import { siteConfig } from "@/config/site";
-import { formatPhoneValue } from "@/utils/inputFormatters";
+import { formatPhoneValue, formatFullNameValue } from "@/utils/inputFormatters";
 import RecaptchaV3 from "@/components/common/RecaptchaV3";
 
 export default function ContactForm() {
@@ -16,6 +16,7 @@ export default function ContactForm() {
   const [apiMessage, setApiMessage] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
   const [phoneValue, setPhoneValue] = useState("+90");
+  const [fullName, setFullName] = useState(""); // State for full name
 
   const handleShowMessage = () => {
     setShowMessage(true);
@@ -39,7 +40,7 @@ export default function ContactForm() {
     const formData = new FormData(e.target);
     const phone = formData.get("phone") || phoneValue;
     const data = {
-      full_name: formData.get("full_name"),
+      full_name: fullName, // Use formatted state
       email: formData.get("email"),
       phone: formatPhoneValue(phone) || phone,
       message: formData.get("message"),
@@ -79,6 +80,7 @@ export default function ContactForm() {
         setApiMessage("Mesajınız başarıyla gönderildi.");
         e.target.reset();
         setPhoneValue("+90");
+        setFullName(""); // Reset full name after successful submission
       } else {
         setSuccess(false);
         setApiMessage(response.data.message || "Bir hata oluştu.");
@@ -108,7 +110,15 @@ export default function ContactForm() {
               <form ref={formRef} onSubmit={sendMail} className="form-contact" id="contactform" noValidate>
                 <div className="d-flex gap-15 mb_15">
                   <fieldset className="w-100">
-                    <input type="text" name="full_name" id="name" required placeholder="İsim Soyisim *" />
+                    <input
+                      type="text"
+                      name="full_name"
+                      id="name"
+                      required
+                      placeholder="İsim Soyisim *"
+                      value={fullName}
+                      onChange={(e) => setFullName(formatFullNameValue(e.target.value))}
+                    />
                     {fieldErrors.full_name?.length > 0 && (
                       <div className="contact-field-error" style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
                         {fieldErrors.full_name[0]}

@@ -93,7 +93,7 @@ export default function SearchModal() {
   // Ürün linki oluşturma (kategori bilgisi yoksa varsayılan olarak "urunler" kullan)
   const getProductLink = (product) => {
     // Slug'dan kategori çıkarmaya çalış veya varsayılan kullan
-    const categorySlug = "urunler"; // Varsayılan kategori
+    const categorySlug = product.category?.slug || (product.categories && product.categories.length > 0 ? product.categories[0].slug : "urunler");
     return `/magaza/${categorySlug}/${product.slug}`;
   };
 
@@ -192,11 +192,13 @@ export default function SearchModal() {
                               {product.name}
                             </Link>
                             <div style={{ marginTop: "4px" }}>
-                              <StarRating
-                                rating={product.reviews?.average_rating ?? product.rating ?? product.average_rating ?? 0}
-                                reviewCount={product.reviews?.count ?? product.reviews_count ?? product.review_count ?? 0}
-                                size="small"
-                              />
+                              {(product.reviews?.average_rating ?? product.rating ?? product.average_rating ?? 0) >= 1 && (
+                                <StarRating
+                                  rating={product.reviews?.average_rating ?? product.rating ?? product.average_rating ?? 0}
+                                  reviewCount={product.reviews?.count ?? product.reviews_count ?? product.review_count ?? 0}
+                                  size="small"
+                                />
+                              )}
                             </div>
                             <div className="tf-product-info-price" style={{ marginTop: "4px", display: "flex", alignItems: "center", gap: "8px" }}>
                               {product.discount_price && product.discount_price < product.price ? (
@@ -244,7 +246,7 @@ export default function SearchModal() {
                         </div>
                         <div className="tf-col-content">
                           <div className="tf-search-content-title fw-5">
-                            İlham mı lazım?
+
                           </div>
                           <div className="text-center p-4">
                             <p>Arama yapmak için en az 3 karakter girin.</p>

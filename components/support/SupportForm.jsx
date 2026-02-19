@@ -7,6 +7,7 @@ import { siteConfig } from "@/config/site";
 import SearchableSelect from "@/components/common/SearchableSelect";
 import PhoneInput from "@/components/common/PhoneInput";
 import RecaptchaV3 from "@/components/common/RecaptchaV3";
+import { formatFullNameValue } from "@/utils/inputFormatters";
 
 export default function SupportForm() {
   const formRef = useRef();
@@ -21,6 +22,7 @@ export default function SupportForm() {
   const [selectedProductId, setSelectedProductId] = useState("");
   const [productsLoading, setProductsLoading] = useState(false);
   const [phone, setPhone] = useState("");
+  const [fullName, setFullName] = useState("");
 
   // Ürünleri API'den çek
   useEffect(() => {
@@ -45,6 +47,15 @@ export default function SupportForm() {
     fetchProducts();
   }, []);
 
+  const [message, setMessage] = useState("");
+
+  const handleMessageChange = (e) => {
+    const val = e.target.value;
+    if (val.length <= 500) {
+      setMessage(val);
+    }
+  };
+
   const handleShowMessage = () => {
     setShowMessage(true);
     setTimeout(() => {
@@ -56,12 +67,12 @@ export default function SupportForm() {
     e.preventDefault();
     setLoading(true);
     setFieldErrors({});
-    const formData = new FormData(e.target);
+    // formData.get("message") yerine state'ten alacağız
     const data = {
-      full_name: formData.get("full_name"),
-      phone: formData.get("phone"),
+      full_name: fullName,
+      phone: phone,
       product: products.find((p) => String(p.id) === String(selectedProductId))?.name || "",
-      message: formData.get("message"),
+      message: message,
     };
 
     // V3: Token al
@@ -98,8 +109,10 @@ export default function SupportForm() {
         setApiMessage("Mesajınız başarıyla gönderildi.");
         setSelectedProductId("");
         setPhone("");
+        setFullName("");
+        setMessage(""); // Reset message
         setFieldErrors({});
-        e.target.reset();
+        e.target.reset(); // Bu artık message'ı temizlemez çünkü controlled component, ama diğerlerini (eğer varsa) temizler
       } else {
         // API status: "error" but HTTP 200 - validasyon hatası
         setSuccess(false);
@@ -133,7 +146,15 @@ export default function SupportForm() {
                 <form ref={formRef} onSubmit={sendMail} className="form-contact" id="contactform" noValidate>
                   <div className="d-flex gap-15 mb_15">
                     <fieldset className="w-100">
-                      <input type="text" name="full_name" id="name" required placeholder="İsim Soyisim *" />
+                      <input
+                        type="text"
+                        name="full_name"
+                        id="name"
+                        required
+                        placeholder="İsim Soyisim *"
+                        value={fullName} // Controlled input
+                        onChange={(e) => setFullName(formatFullNameValue(e.target.value))} // Update state with formatted value
+                      />
                       {fieldErrors.full_name && (
                         <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>{fieldErrors.full_name[0]}</div>
                       )}
@@ -181,8 +202,13 @@ export default function SupportForm() {
                         required
                         cols={30}
                         rows={10}
-                        defaultValue={""}
+                        value={message}
+                        onChange={handleMessageChange}
+                        maxLength={500}
                       />
+                      <div className="text-muted mt-1" style={{ fontSize: '12px', color: '#666', textAlign: 'right' }}>
+                        {message.length} / 500
+                      </div>
                       {fieldErrors.message && (
                         <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>{fieldErrors.message[0]}</div>
                       )}
