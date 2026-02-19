@@ -12,7 +12,7 @@ export async function getCart() {
 
 
         });
-        console.log("[API cart.js] getCart failed:", response.data);
+        log("[API cart.js] getCart failed:", response.data);
 
 
         if (response.status === 404) {

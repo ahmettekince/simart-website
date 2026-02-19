@@ -27,6 +27,7 @@ export default function ProductImageSwiper({
     sizes = "(max-width: 480px) 50vw, (max-width: 768px) 33vw, 320px",
     campaignTags = [],
     categorySlug = "urunler",
+    isPriority = false,
 }) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const swiperRef = useRef(null);
@@ -163,7 +164,7 @@ export default function ProductImageSwiper({
                                 width: '100%',
                                 height: 'auto'
                             }}
-                            priority={true} // Tek görsel olan kartlar genellikle ATF'dir
+                            priority={isPriority} // isPriority ile kontrol edilir
                         />
                     </Link>
                     {renderCampaignTags()}
@@ -239,7 +240,7 @@ export default function ProductImageSwiper({
                                             width: '100%',
                                             height: 'auto'
                                         }}
-                                        priority={index === 0}
+                                        priority={isPriority && index === 0}
                                     />
                                 </Link>
                             </SwiperSlide>

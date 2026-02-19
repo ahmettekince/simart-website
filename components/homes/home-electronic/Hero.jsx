@@ -1,10 +1,9 @@
 "use client";
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Autoplay, EffectCreative } from "swiper/modules";
+import { Autoplay } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css/effect-creative";
 import NavDotsPill from "@/components/common/NavDotsPill";
 
 export default function Hero({ banners = [] }) {
@@ -24,23 +23,12 @@ export default function Hero({ banners = [] }) {
         spaceBetween={0}
         centeredSlides={false}
         loop={total > 1}
-        effect="creative"
-        creativeEffect={{
-          prev: {
-            shadow: true,
-            translate: ["-100%", 0, 0],
-          },
-          next: {
-            translate: ["100%", 0, 0],
-          },
-        }}
-        autoHeight={true}
         autoplay={{
           delay: 4000,
           disableOnInteraction: false,
         }}
         speed={1000}
-        modules={[Autoplay, EffectCreative]}
+        modules={[Autoplay]}
         onSwiper={(swiper) => (swiperRef.current = swiper)}
         onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
         className="tf-sw-slideshow"
@@ -83,14 +71,15 @@ function BannerContent({ images, isFirstSlide = false }) {
   return (
     <>
       {/* Desktop Version (>= 1024px) - görüntülenen boyuta uygun, büyük dosya indirilmez */}
-      <div className="d-none d-lg-block w-100">
+      {/* Desktop */}
+      <div className="d-none d-lg-block w-100" style={{ overflow: "hidden" }}>
         <Image
           src={images.desktop?.url}
           alt="Banner Desktop"
           width={1920}
-          height={1080}
+          height={500}
           className="w-100 h-auto"
-          style={{ objectFit: "cover" }}
+          style={{ objectFit: "cover", display: "block" }}
           sizes="100vw"
           quality={100}
           priority={isFirstSlide}
@@ -98,15 +87,15 @@ function BannerContent({ images, isFirstSlide = false }) {
         />
       </div>
 
-      {/* Tablet Version (768px - 1023px) */}
-      <div className="d-none d-md-block d-lg-none w-100">
+      {/* Tablet */}
+      <div className="d-none d-md-block d-lg-none w-100" style={{ overflow: "hidden" }}>
         <Image
           src={images.tablet?.url}
           alt="Banner Tablet"
-          width={1024}
-          height={768}
+          width={1080}
+          height={535}
           className="w-100 h-auto"
-          style={{ objectFit: "cover" }}
+          style={{ objectFit: "cover", display: "block" }}
           sizes="100vw"
           quality={100}
           priority={isFirstSlide}
@@ -114,15 +103,15 @@ function BannerContent({ images, isFirstSlide = false }) {
         />
       </div>
 
-      {/* Mobile Version (< 768px) - görüntülenen boyuta uygun küçük dosya */}
-      <div className="d-block d-md-none w-100 mobile-banner-wrap position-relative">
+      {/* Mobile */}
+      <div className="d-block d-md-none w-100" style={{ overflow: "hidden" }}>
         <Image
           src={images.mobile?.url}
           alt="Banner Mobile"
-          width={800}
-          height={934}
+          width={750}
+          height={875}
           className="w-100 h-auto"
-          style={{ objectFit: "cover", maxWidth: "100%" }}
+          style={{ objectFit: "cover", display: "block", maxWidth: "100%" }}
           sizes="(max-width: 768px) 100vw, 800px"
           quality={100}
           priority={isFirstSlide}

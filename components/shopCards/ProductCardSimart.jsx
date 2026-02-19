@@ -10,7 +10,7 @@ import StarRating from "@/components/common/StarRating";
 import CircularLoading from "@/components/common/CircularLoading";
 import { getProductButtonState } from "@/utils/productStock";
 
-export default function ProductCardSimart({ product }) {
+export default function ProductCardSimart({ product, isPriority = false }) {
   const router = useRouter();
   const { addItem } = useCartStore();
   const cartItems = useCartStore((s) => s.items);
@@ -158,6 +158,7 @@ export default function ProductCardSimart({ product }) {
           sizes="(max-width: 480px) 50vw, (max-width: 768px) 33vw, (max-width: 1200px) 25vw, 320px"
           campaignTags={product.campaign_tags || []}
           categorySlug={categorySlug}
+          isPriority={isPriority}
         />
       </div>
 

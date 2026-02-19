@@ -43,7 +43,7 @@ export default function ProductsClient({ products = [] }) {
                     >
                         {displayProducts.map((product, index) => (
                             <SwiperSlide key={product.id || index} className="height-auto">
-                                <ProductCardSimart product={product} />
+                                <ProductCardSimart product={product} isPriority={index < 8} />
                             </SwiperSlide>
                         ))}
                     </Swiper>

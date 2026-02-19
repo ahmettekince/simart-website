@@ -14,7 +14,7 @@ export default function SearchModal() {
   const [showResults, setShowResults] = useState(false);
   const debounceTimerRef = useRef(null);
 
-  // Başlangıçta önerileri çek
+  // Modal açıldığında önerileri çek
   useEffect(() => {
     const fetchRecommendations = async () => {
       try {
@@ -27,8 +27,24 @@ export default function SearchModal() {
       }
     };
 
-    fetchRecommendations();
-  }, []);
+    const handleShown = () => {
+      // Veri yoksa çek
+      if (recommendations.length === 0) {
+        fetchRecommendations();
+      }
+    };
+
+    const searchModal = document.getElementById('canvasSearch');
+    if (searchModal) {
+      searchModal.addEventListener('shown.bs.offcanvas', handleShown);
+    }
+
+    return () => {
+      if (searchModal) {
+        searchModal.removeEventListener('shown.bs.offcanvas', handleShown);
+      }
+    };
+  }, [recommendations.length]);
 
   // Arama yapma fonksiyonu
   const performSearch = async (query) => {
