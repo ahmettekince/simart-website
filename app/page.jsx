@@ -45,10 +45,9 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [menuItems, banners, categories, collectionBanner, collections, reviews] = await Promise.all([
+  const [menuItems, banners, collectionBanner, collections, reviews] = await Promise.all([
     getMenus(),
     getBanners(),
-    getCategories(),
     getCollectionBanner(),
     getCollections(),
     getReviews(),
@@ -70,7 +69,7 @@ export default async function Home() {
       <div className="color-primary-15">
         <Header textClass={"text-black"} menuItems={menuItems} />
         <Hero banners={banners} />
-        <Categories categories={categories} />
+        <Categories />
         <CollectionBanner banner={collectionBanner} />
         <Collections collections={collections} />
         <Products />

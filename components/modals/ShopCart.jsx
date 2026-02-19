@@ -57,9 +57,13 @@ export default function ShopCart() {
     });
   }, [items]);
 
-  // Sepet boşsa API'den önerileri çek
-  useEffect(() => {
+  // Önerileri modal açıldığında çekmek için
+  const fetchRecommendations = React.useCallback(() => {
     if (items.length === 0) {
+      // Eğer veri zaten varsa tekrar çekme (opsiyonel, taze veri isteniyorsa kaldırılabilir)
+      // Kullanıcı performansı önemsediği için cache mantığı iyi olur.
+      if (recommendations.length > 0) return;
+
       getCartRecommendations()
         .then((recs) => {
           if (recs && recs.length > 0) {
@@ -69,10 +73,34 @@ export default function ShopCart() {
         .catch((error) => {
           console.error("Öneriler yüklenirken hata:", error);
         });
-    } else {
+    }
+  }, [items.length, recommendations.length]);
+
+  // Event listener: Modal açıldığında çek
+  useEffect(() => {
+    const modalElement = document.getElementById("shoppingCart");
+    if (!modalElement) return;
+
+    const handleShown = () => {
+      fetchRecommendations();
+    };
+
+    modalElement.addEventListener("shown.bs.modal", handleShown);
+    return () => {
+      modalElement.removeEventListener("shown.bs.modal", handleShown);
+    };
+  }, [fetchRecommendations]);
+
+  // Sepet açıkken ürün silinip sepet boşalırsa çek
+  useEffect(() => {
+    const modalElement = document.getElementById("shoppingCart");
+    if (items.length === 0 && modalElement && modalElement.classList.contains("show")) {
+      fetchRecommendations();
+    } else if (items.length > 0) {
+      // Sepet dolduysa önerileri temizle (isteğe bağlı, UI kalabalık olmasın diye)
       setRecommendations([]);
     }
-  }, [items.length]);
+  }, [items.length, fetchRecommendations]);
 
   const setQuantity = async (id, quantity, action) => {
     // Minimum 1 kontrolü - 1'den küçük olamaz
