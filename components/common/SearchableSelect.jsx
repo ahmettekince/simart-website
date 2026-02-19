@@ -35,7 +35,7 @@ export default function SearchableSelect({
 
   // value null veya undefined ise boş string kullan
   const safeValue = value != null ? String(value) : "";
-  
+
   const selectedOption = options.find((opt) => {
     if (!opt || opt.id == null) return false;
     return String(opt.id) === safeValue;
@@ -71,7 +71,11 @@ export default function SearchableSelect({
   }, [isOpen]);
 
   const handleSelect = (option) => {
-    onChange(option.id.toString());
+    if (option && option.id != null) {
+      onChange(option.id.toString());
+    } else {
+      console.warn("Seçilen opsiyonun ID'si geçersiz:", option);
+    }
     setIsOpen(false);
     setSearchTerm("");
   };
@@ -167,6 +171,7 @@ export default function SearchableSelect({
           >
             {filteredOptions.length === 0 ? (
               <div
+                key="no-results"
                 style={{
                   padding: "12px",
                   textAlign: "center",
@@ -176,10 +181,11 @@ export default function SearchableSelect({
                 Sonuç bulunamadı
               </div>
             ) : (
-              filteredOptions.map((option) => (
+              filteredOptions.map((option, index) => (
                 <div
-                  key={option.id}
+                  key={option.id || index}
                   onClick={() => handleSelect(option)}
+                  className="searchable-select-option"
                   style={{
                     padding: "10px 12px",
                     cursor: "pointer",

@@ -291,13 +291,13 @@ export default function ProductCardSimart({ product }) {
         }
   
         .price-old {
-          font-size: 16px;
+          font-size: 14px;
           text-decoration: line-through;
           color: #999;
           margin-left: 10px;
         }
         .price-new {
-          font-size: 19px;
+          font-size: 16px;
         }
         .price-new.price-normal {
           color: #3c81b5;

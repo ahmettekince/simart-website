@@ -6,7 +6,7 @@ import { checkAuthServer } from "@/utils/authServer";
 import { redirect } from "next/navigation";
 
 export const metadata = {
-  title: "Siparişlerim || Şımart Teknoloji",
+  title: "Siparişlerim - Şımart Teknoloji",
   description: "Şımart Teknoloji",
 };
 export default async function page() {
