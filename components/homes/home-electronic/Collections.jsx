@@ -14,7 +14,7 @@ export default function Collections({ collections = [] }) {
       <div className="container">
         <div className="row g-3 g-md-4">
           {collections.map((collection, index) => {
-            const { images, title, subtitle, link } = collection;
+            const { images, title, subtitle, link, button_text } = collection;
 
             if (!images || (!images.desktop?.url && !images.tablet?.url && !images.mobile?.url && !images.url)) {
               return null;
@@ -154,8 +154,8 @@ export default function Collections({ collections = [] }) {
                       >
                         {subtitle && <p className="subheading">{subtitle}</p>}
                         {title && <h5 className="heading fw-6">{title}</h5>}
-                        {link && (
-                          <Button href={link} text={"Koleksiyona Git"} />
+                        {link && button_text && (
+                          <Button href={link} text={button_text} />
                         )}
                       </div>
                     )}

@@ -3,16 +3,37 @@
 import React, { useState, useEffect } from "react";
 import { Ticket, X } from "lucide-react";
 import CampaignModal from "../modals/CampaignModal";
+import apiClient from "@/utils/apiClient";
 
 export default function CampaignTab() {
+    const [isVisible, setIsVisible] = useState(false);
+    const [hasCampaigns, setHasCampaigns] = useState(false);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [isVisible, setIsVisible] = useState(true);
 
     useEffect(() => {
-        const closed = sessionStorage.getItem("campaign-tab-closed");
-        if (closed) {
-            setIsVisible(false);
-        }
+        const checkCampaigns = async () => {
+            try {
+                const response = await apiClient.get("/campaigns");
+                if (response.data?.status === "success") {
+                    const regularCount = response.data.data?.regular_campaigns?.length || 0;
+                    const installmentCount = response.data.data?.installment_campaigns?.length || 0;
+
+                    if (regularCount > 0 || installmentCount > 0) {
+                        setHasCampaigns(true);
+
+                        // Sadece kampanya varsa ve daha önce kapatılmamışsa göster
+                        const closed = sessionStorage.getItem("campaign-tab-closed");
+                        if (!closed) {
+                            setIsVisible(true);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("Kampanya kontrolü yapılırken hata oluştu:", error);
+            }
+        };
+
+        checkCampaigns();
     }, []);
 
     const handleCloseTab = (e) => {

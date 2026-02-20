@@ -26,13 +26,13 @@ export default function CollectionBanner({ banner = null }) {
         {subtitle && <div className="sub fw-7 text_white">{subtitle}</div>}
         {title && <h2 className="heading fw-6 text_white">{title}</h2>}
         {description && <p className="text_white">{description}</p>}
-        {link && (
+        {link && button_text && (
           <Link
             href={link}
             className="tf-btn btn-primary-main style-3 fw-6 btn-light-icon animate-hover-btn"
             style={{ borderRadius: 12 }}
           >
-            <span>{button_text || "Shop Collection"}</span>
+            <span>{button_text}</span>
           </Link>
         )}
       </div>
