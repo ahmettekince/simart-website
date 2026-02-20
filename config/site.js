@@ -84,6 +84,12 @@ export const siteConfig = {
         },
     ],
 
+    // Mobil Uygulama Linkleri
+    apps: {
+        appStore: "https://apps.apple.com/tr/app/%C5%9F%C4%B1mart/id1583706431?l=tr",
+        googlePlay: "https://play.google.com/store/apps/details?id=com.lemo.simarttest&hl=tr&gl=US",
+    },
+
     // Site Bilgileri
     site: {
         name: "Şımart Teknoloji",

@@ -142,18 +142,20 @@ export default function ShopDetailsTab({ product }) {
     return product?.discount_price || product?.price || 0;
   }, [product?.time_based_discounts, product?.discount_price, product?.price]);
 
+  const isKatya = product?.name === "katya Robot Süpürge" || product?.name === "Katya Akıllı Robot Süpürge";
+
   // Sıra: Değerlendirmeler, Teknik Özellikler, SSS, Taksit Seçenekleri
   const tabIds = [
     ...(reviewCount > 0 ? ["reviews"] : []),
     ...(hasTechSpecs ? ["tech"] : []),
     ...(hasFaq ? ["faq"] : []),
-    "installment",
+    ...(!isKatya ? ["installment"] : []),
   ];
   const tabs = [
     ...(reviewCount > 0 ? [{ title: `Değerlendirmeler (${reviewCount})`, active: false }] : []),
     ...(hasTechSpecs ? [{ title: "Teknik Özellikler", active: false }] : []),
     ...(hasFaq ? [{ title: "SSS", active: false }] : []),
-    { title: "Taksit Seçenekleri", active: false },
+    ...(!isKatya ? [{ title: "Taksit Seçenekleri", active: false }] : []),
   ];
 
   const indexOf = (id) => { const i = tabIds.indexOf(id); return i >= 0 ? i + 1 : null; };
@@ -501,11 +503,13 @@ export default function ShopDetailsTab({ product }) {
                   )}
 
                   {/* Taksit Seçenekleri Tab */}
-                  <div
-                    className={`widget-content-inner ${currentTab === installmentTabIndex ? "active" : ""}`}
-                  >
-                    <InstallmentOptions productSlug={product?.slug} />
-                  </div>
+                  {installmentTabIndex && (
+                    <div
+                      className={`widget-content-inner ${currentTab === installmentTabIndex ? "active" : ""}`}
+                    >
+                      <InstallmentOptions productSlug={product?.slug} />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

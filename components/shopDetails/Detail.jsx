@@ -442,48 +442,71 @@ export default function Detail({ product }) {
                       </div>
                     )}
 
-                    <div className="tf-product-info-price d-none d-md-block" style={{ marginBottom: "16px", width: "100%" }}>
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", flexWrap: "nowrap", width: "100%" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                          <span className="price-on-sale" style={{ fontSize: "20px", fontWeight: "700", color: originalPrice ? "#0bc15c" : "var(--primary, #3c81b5)" }}>
-                            {Number(finalPrice).toLocaleString("tr-TR", { minimumFractionDigits: 0, maximumFractionDigits: Number(finalPrice) % 1 === 0 ? 0 : 2 })} TL
-                          </span>
-                          {originalPrice != null && originalPrice > finalPrice && (
-                            <span className="compare-at-price" style={{ fontSize: "16px", color: "#999", textDecoration: "line-through" }}>
-                              {Number(originalPrice).toLocaleString("tr-TR", { minimumFractionDigits: 0, maximumFractionDigits: Number(originalPrice) % 1 === 0 ? 0 : 2 })} TL
-                            </span>
-                          )}
-                        </div>
+                    {/* Ön Sipariş Açıklaması */}
+                    {product.pre_order_description && (
+                      <div
+                        className="pre-order-description-box"
+                        style={{
+                          backgroundColor: "#fff8f0",
+                          border: "1px solid #ffe8cc",
+                          borderRadius: "8px",
+                          padding: "10px 14px",
+                          marginBottom: "16px",
+                          fontSize: "14px",
+                          lineHeight: "1.5",
+                          color: "#856404"
+                        }}
+                      >
+                        <div
+                          dangerouslySetInnerHTML={{ __html: product.pre_order_description.replace(/\n/g, '<br/>') }}
+                        />
+                      </div>
+                    )}
 
-                        {/* Ürün protokolü - sağa yaslanmış */}
-                        {product.product_protocol && (
-                          <div className="d-none d-lg-flex" style={{ alignItems: "center", gap: "4px", flexShrink: 0 }}>
-                            <span style={{ fontSize: "14px", color: "#666", lineHeight: 1.5, whiteSpace: "nowrap" }}>
-                              Bu ürün{" "}
-                              {product.product_protocol.image?.url ? (
-                                <Image
-                                  src={product.product_protocol.image.url}
-                                  alt={product.product_protocol.image?.alt_text || product.product_protocol.name || "Protokol"}
-                                  width={20}
-                                  height={20}
-                                  style={{ display: "inline-block", verticalAlign: "middle", objectFit: "contain", marginLeft: "2px", marginRight: "2px" }}
-                                  unoptimized={String(product.product_protocol.image.url).startsWith("http")}
-                                />
-                              ) : (
-                                <strong>{product.product_protocol.name}</strong>
-                              )}{" "}
-                              ile çalışmaktadır.
+                    {product?.name !== "katya Robot Süpürge" && product?.name !== "Katya Akıllı Robot Süpürge" && (
+                      <div className="tf-product-info-price d-none d-md-block" style={{ marginBottom: "16px", width: "100%" }}>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", flexWrap: "nowrap", width: "100%" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                            <span className="price-on-sale" style={{ fontSize: "20px", fontWeight: "700", color: originalPrice ? "#0bc15c" : "var(--primary, #3c81b5)" }}>
+                              {Number(finalPrice).toLocaleString("tr-TR", { minimumFractionDigits: 0, maximumFractionDigits: Number(finalPrice) % 1 === 0 ? 0 : 2 })} TL
                             </span>
-                            {product.product_protocol.description && (
-                              <ProductProtocolHelp
-                                description={product.product_protocol.description}
-                                protocolName={product.product_protocol.name}
-                              />
+                            {originalPrice != null && originalPrice > finalPrice && (
+                              <span className="compare-at-price" style={{ fontSize: "16px", color: "#999", textDecoration: "line-through" }}>
+                                {Number(originalPrice).toLocaleString("tr-TR", { minimumFractionDigits: 0, maximumFractionDigits: Number(originalPrice) % 1 === 0 ? 0 : 2 })} TL
+                              </span>
                             )}
                           </div>
-                        )}
+
+                          {/* Ürün protokolü - sağa yaslanmış */}
+                          {product.product_protocol && (
+                            <div className="d-none d-lg-flex" style={{ alignItems: "center", gap: "4px", flexShrink: 0 }}>
+                              <span style={{ fontSize: "14px", color: "#666", lineHeight: 1.5, whiteSpace: "nowrap" }}>
+                                Bu ürün{" "}
+                                {product.product_protocol.image?.url ? (
+                                  <Image
+                                    src={product.product_protocol.image.url}
+                                    alt={product.product_protocol.image?.alt_text || product.product_protocol.name || "Protokol"}
+                                    width={20}
+                                    height={20}
+                                    style={{ display: "inline-block", verticalAlign: "middle", objectFit: "contain", marginLeft: "2px", marginRight: "2px" }}
+                                    unoptimized={String(product.product_protocol.image.url).startsWith("http")}
+                                  />
+                                ) : (
+                                  <strong>{product.product_protocol.name}</strong>
+                                )}{" "}
+                                ile çalışmaktadır.
+                              </span>
+                              {product.product_protocol.description && (
+                                <ProductProtocolHelp
+                                  description={product.product_protocol.description}
+                                  protocolName={product.product_protocol.name}
+                                />
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
+                    )}
 
                     {/* Yeni Sade Bilgi Kaydırağı */}
                     {announcementMessages && announcementMessages.length > 0 && (
@@ -624,7 +647,7 @@ export default function Detail({ product }) {
                       </>
                     )}
 
-                    {product?.name !== "katya Robot Süpürge" && (
+                    {product?.name !== "katya Robot Süpürge" && product?.name !== "Katya Akıllı Robot Süpürge" && (
                       <div className="tf-product-info-buy-button">
                         <form onSubmit={(e) => e.preventDefault()} className="">
                           <div className="tf-product-buy-actions d-none d-md-flex" style={{ alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
@@ -975,7 +998,7 @@ export default function Detail({ product }) {
         </div>
       </section>
 
-      {product?.name !== "Katya Akıllı Robot Süpürge" && (
+      {product?.name !== "katya Robot Süpürge" && product?.name !== "Katya Akıllı Robot Süpürge" && (
         <SmartStickyBar
           product={product}
           quantity={quantity}

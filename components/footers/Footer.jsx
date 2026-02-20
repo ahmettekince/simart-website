@@ -6,6 +6,7 @@ import Link from "next/link";
 import { siteConfig } from "@/config/site";
 import SimartButton from "@/components/common/SimartButton";
 import apiClient from "@/utils/apiClient";
+import AppStoreButtons from "./AppStoreButtons";
 
 export default function Footer({ bgColor = "", footerMenus = null }) {
   useEffect(() => {
@@ -111,6 +112,7 @@ export default function Footer({ bgColor = "", footerMenus = null }) {
                     Haritada İncele
                     <i className="icon icon-arrow1-top-left" />
                   </Link>
+                  <AppStoreButtons />
                 </div>
               </div>
               {/* Footer menüleri - slug'a göre dinamik olarak render edilir */}

@@ -64,7 +64,7 @@ export function VideoSection() {
                     {/* Light overlay for better contrast */}
                     <div style={{
                         position: 'absolute',
-                        inset: 0,
+                        inset: '0 0 0 30px',
                         background: 'rgba(0,0,0,0.3)',
                         zIndex: 1,
                         transition: 'background 0.3s ease',
