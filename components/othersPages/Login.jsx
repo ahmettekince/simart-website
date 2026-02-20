@@ -20,6 +20,7 @@ export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
 
 
   const handleChange = (e) => {
@@ -31,6 +32,11 @@ export default function Login() {
     // Mesajları temizle
     setMessage("");
     setError("");
+    // İlgili alanın hatasını temizle
+    setFieldErrors((prev) => ({
+      ...prev,
+      [name]: null
+    }));
   };
 
   const handleLogin = async (e) => {
@@ -38,6 +44,7 @@ export default function Login() {
     setIsLoading(true);
     setMessage("");
     setError("");
+    setFieldErrors({});
 
     // V3: Token al
     let token = null;
@@ -92,9 +99,26 @@ export default function Login() {
       }
     } catch (err) {
       // Hata mesajını göster
+      const responseData = err.response?.data;
+
+      if (responseData?.errors) {
+        const errors = responseData.errors;
+        const parsedErrors = {};
+
+        // Her field için ilk hatayı al
+        Object.keys(errors).forEach((key) => {
+          if (Array.isArray(errors[key]) && errors[key].length > 0) {
+            parsedErrors[key] = errors[key][0];
+          } else if (typeof errors[key] === "string") {
+            parsedErrors[key] = errors[key];
+          }
+        });
+        setFieldErrors(parsedErrors);
+      }
+
       const errorMessage =
-        err.response?.data?.message ||
-        err.response?.data?.error ||
+        responseData?.message ||
+        responseData?.error ||
         err.message ||
         "Giriş işlemi sırasında bir hata oluştu.";
       setError(errorMessage);
@@ -202,6 +226,11 @@ export default function Login() {
                     >
                       E-posta *
                     </label>
+                    {fieldErrors.email && (
+                      <div style={{ color: "#d93025", fontSize: "12px", marginTop: "4px", marginLeft: "2px" }}>
+                        {fieldErrors.email}
+                      </div>
+                    )}
                   </div>
                   <div className="tf-field style-1 mb_30">
                     <input
@@ -221,6 +250,11 @@ export default function Login() {
                     >
                       Şifre *
                     </label>
+                    {fieldErrors.password && (
+                      <div style={{ color: "#d93025", fontSize: "12px", marginTop: "4px", marginLeft: "2px" }}>
+                        {fieldErrors.password}
+                      </div>
+                    )}
                   </div>
                   <div className="mb_20">
                     <Link href="/sifremi-unuttum" className="tf-btn btn-line">
