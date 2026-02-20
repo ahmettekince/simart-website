@@ -1,17 +1,32 @@
-import { notFound } from "next/navigation";
 import { getPageBySlug } from "@/api/pages";
+import { getQrCard } from "@/api/qr";
+import { getMenus, getFooterMenus } from "@/api/menus";
 import Header from "@/components/headers/Header";
 import { webPageSchema } from "@/lib/schema";
 import { siteConfig } from "@/config/site";
 import DynamicPageContent from "@/components/common/DynamicPageContent";
+import QRContent from "@/components/common/QRContent";
 
 /**
  * Dinamik metadata oluşturma
  */
 export async function generateMetadata({ params }) {
   const { slug } = await params;
-  const page = await getPageBySlug(slug);
 
+  // QR sayfa kontrolü (qr- veya kqr- ile başlıyorsa)
+  if (slug.startsWith("qr-")) {
+    const qrData = await getQrCard(slug);
+    if (!qrData) {
+      return { title: "QR Kart Bulunamadı - Şımart Teknoloji" };
+    }
+    return {
+      title: `${qrData.full_name} - Şımart Teknoloji`,
+      description: `${qrData.full_name} QR Tanıtım Sayfası`,
+    };
+  }
+
+  // Standart sayfa kontrolü
+  const page = await getPageBySlug(slug);
   if (!page) {
     return {
       title: "Sayfa Bulunamadı - Şımart Teknoloji",
@@ -32,22 +47,13 @@ export async function generateMetadata({ params }) {
     keywords: keywords,
     authors: [{ name: siteConfig.site.author }],
     robots: "index, follow",
-    alternates: {
-      canonical: pageUrl,
-    },
+    alternates: { canonical: pageUrl },
     openGraph: {
       title: title,
       description: description,
       url: pageUrl,
       siteName: siteConfig.site.name,
-      images: [
-        {
-          url: imageUrl,
-          width: 1200,
-          height: 630,
-          alt: title,
-        },
-      ],
+      images: [{ url: imageUrl, width: 1200, height: 630, alt: title }],
       locale: "tr_TR",
       type: "article",
     },
@@ -70,7 +76,20 @@ export async function generateMetadata({ params }) {
 export default async function DynamicPage({ params }) {
   const { slug } = await params;
 
-  // Tüm sayfalar (bloglar dahil) /pages?slug=xx API'sinden çekiliyor
+  // 1. QR Sayfa Kontrolü (öncelikli)
+  if (slug.startsWith("qr-") || slug.startsWith("kqr")) {
+    const [qrData, menuItems, footerMenus] = await Promise.all([
+      getQrCard(slug),
+      getMenus(),
+      getFooterMenus()
+    ]);
+
+    if (qrData) {
+      return <QRContent qrData={qrData} menuItems={menuItems} footerMenus={footerMenus} />;
+    }
+  }
+
+  // 2. Standart Sayfa/Blog Kontrolü
   const page = await getPageBySlug(slug);
 
   if (!page) {
@@ -95,7 +114,7 @@ export default async function DynamicPage({ params }) {
       />
       <Header />
 
-      {/* Sayfa Başlığı (Resim yoksa mağaza sayfasındaki gibi göster) */}
+      {/* Sayfa Başlığı */}
       {!page.image?.url && page.title && (
         <div className="tf-page-title">
           <div className="container-full">
@@ -104,7 +123,7 @@ export default async function DynamicPage({ params }) {
         </div>
       )}
 
-      {/* İçerik ve Diğer Detaylar (Client Component) */}
+      {/* İçerik */}
       <DynamicPageContent
         htmlContent={page.content}
         title={page.title}

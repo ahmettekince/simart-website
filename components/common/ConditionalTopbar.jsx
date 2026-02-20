@@ -4,10 +4,9 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import Topbar from "@/components/headers/Topbar";
 
-const HIDE_TOPBAR_PATHS = ["/odeme"];
+const HIDE_TOPBAR_PATHS = ["/odeme", "/qr-", "/qr", "/kqr"];
 const MOBILE_BREAKPOINT_PX = 768;
 
-/** Ürün detay sayfası: /magaza/[kategori]/[urun] (en az 3 segment) */
 function isProductDetailPage(pathname) {
   const segments = pathname.split("/").filter(Boolean);
   return segments.length >= 3 && segments[0] === "magaza";
@@ -25,7 +24,7 @@ export default function ConditionalTopbar({ data, isActive }) {
     return () => mql.removeEventListener("change", update);
   }, []);
 
-  const hideByPath = HIDE_TOPBAR_PATHS.some((path) => pathname === path);
+  const hideByPath = HIDE_TOPBAR_PATHS.some((path) => pathname.startsWith(path));
   const hideByProductDetail = isProductDetailPage(pathname) && isMobile;
   const hideTopbar = hideByPath || hideByProductDetail;
 

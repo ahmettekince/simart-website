@@ -6,7 +6,6 @@ import { useCartStore } from "@/stores/cartStore";
 import { useAuthStore } from "@/stores/authStore";
 import { getCart } from "@/api/cart";
 import ShopCart from "@/components/modals/ShopCart";
-import AskQuestion from "@/components/modals/AskQuestion";
 import SearchModal from "@/components/modals/SearchModal";
 import ToolbarBottom from "@/components/modals/ToolbarBottom";
 import ToolbarShop from "@/components/modals/ToolbarShop";
@@ -15,8 +14,6 @@ import CookieConsentBanner from "@/components/common/CookieConsentBanner";
 import Analytics from "@/components/common/Analytics";
 import GlobalGiftSelectionModal from "@/components/modals/GlobalGiftSelectionModal";
 import CampaignTab from "@/components/common/CampaignTab";
-import NewsletterModal from "../modals/NewsletterModal";
-import ShareModal from "../modals/ShareModal";
 
 export default function ClientLayout({ children }) {
     const pathname = usePathname();
@@ -175,11 +172,11 @@ export default function ClientLayout({ children }) {
         <>
             <div id="wrapper">{children}</div>
             <ShopCart />
-            <AskQuestion />
+            {/* <AskQuestion /> */}
             <SearchModal />
             <ToolbarBottom />
             <ToolbarShop />
-            <ShareModal />
+            {/* <ShareModal /> */}
             <GlobalGiftSelectionModal />
             <CampaignTab />
             <ScrollTop />

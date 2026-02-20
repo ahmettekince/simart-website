@@ -331,7 +331,7 @@ export const useCartStore = create(
          */
         syncFromAPI: (apiCartData) => {
             if (!apiCartData || !apiCartData.items) {
-                console.warn('[CartStore] syncFromAPI: Geçersiz sepet verisi');
+                log('[CartStore] syncFromAPI: Geçersiz sepet verisi');
                 return;
             }
 

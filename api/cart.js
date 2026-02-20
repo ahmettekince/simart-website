@@ -108,11 +108,9 @@ export async function getCart() {
         } else if (error.request) {
             // Request gönderildi ama response gelmedi
             log("[API cart.js] getCart no response:", error.request);
-            console.error("[API cart.js] Request error:", error);
         } else {
             // Request hazırlanırken hata
             log("[API cart.js] getCart setup error:", error.message);
-            console.error("[API cart.js] Setup error:", error);
         }
         return null;
     }
@@ -206,13 +204,10 @@ export async function decreaseCartQuantity(productSlug) {
                 data: error.response.data,
                 url: error.config?.url,
             });
-            console.error("[API cart.js] Full error:", error);
         } else if (error.request) {
             log("[API cart.js] decreaseCartQuantity no response:", error.request);
-            console.error("[API cart.js] Request error:", error);
         } else {
             log("[API cart.js] decreaseCartQuantity setup error:", error.message);
-            console.error("[API cart.js] Setup error:", error);
         }
         return null;
     }
@@ -259,13 +254,10 @@ export async function updateCartQuantity(productSlug, quantity) {
                 data: error.response.data,
                 url: error.config?.url,
             });
-            console.error("[API cart.js] Full error:", error);
         } else if (error.request) {
             log("[API cart.js] updateCartQuantity no response:", error.request);
-            console.error("[API cart.js] Request error:", error);
         } else {
             log("[API cart.js] updateCartQuantity setup error:", error.message);
-            console.error("[API cart.js] Setup error:", error);
         }
         return null;
     }
@@ -307,13 +299,10 @@ export async function removeFromCart(productSlug) {
                 data: error.response.data,
                 url: error.config?.url,
             });
-            console.error("[API cart.js] Full error:", error);
         } else if (error.request) {
             log("[API cart.js] removeFromCart no response:", error.request);
-            console.error("[API cart.js] Request error:", error);
         } else {
             log("[API cart.js] removeFromCart setup error:", error.message);
-            console.error("[API cart.js] Setup error:", error);
         }
         return null;
     }
@@ -362,13 +351,10 @@ export async function getCartRecommendations() {
                 data: error.response.data,
                 url: error.config?.url,
             });
-            console.error("[API cart.js] Full error:", error);
         } else if (error.request) {
             log("[API cart.js] getCartRecommendations no response:", error.request);
-            console.error("[API cart.js] Request error:", error);
         } else {
             log("[API cart.js] getCartRecommendations setup error:", error.message);
-            console.error("[API cart.js] Setup error:", error);
         }
         return null;
     }
@@ -518,19 +504,16 @@ export async function removeCoupon(couponCode) {
                 url: error.config?.url,
                 fullError: error
             });
-            console.error("[API cart.js] Full error:", error);
         } else if (error.request) {
             log("[API cart.js] removeCoupon no response:", {
                 request: error.request,
                 fullError: error
             });
-            console.error("[API cart.js] Request error:", error);
         } else {
             log("[API cart.js] removeCoupon setup error:", {
                 message: error.message,
                 fullError: error
             });
-            console.error("[API cart.js] Setup error:", error);
         }
         return null;
     }

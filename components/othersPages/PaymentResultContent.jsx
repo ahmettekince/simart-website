@@ -97,9 +97,10 @@ export default function PaymentResultContent() {
               </h2>
 
               {/* MESAJ */}
-              <p style={{ color: "#666", fontSize: "16px", lineHeight: "1.6", marginBottom: "30px", maxWidth: "80%", margin: "0 auto 30px" }}>
-                {displayMessage}
-              </p>
+              <p
+                style={{ color: "#666", fontSize: "16px", lineHeight: "1.6", marginBottom: "30px", maxWidth: "80%", margin: "0 auto 30px" }}
+                dangerouslySetInnerHTML={{ __html: displayMessage }}
+              />
 
               {/* SİPARİŞ NUMARASI KUTUSU */}
               {orderNumber !== "-" && (
