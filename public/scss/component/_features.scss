@@ -63,13 +63,22 @@
 }
 
 .feature-icon {
-  width: 48px;
-  height: 48px;
+  height: 65px;
   margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
 
   svg {
-    width: 100%;
+    height: 45px; // İkonları hafif küçülttük ki logolarla eşleşsin
+    width: 45px;
+  }
+
+  img {
     height: 100%;
+    width: auto;
+    max-width: 180px; // Yatay logoların iyice açılmasına izin verdik
+    object-fit: contain;
   }
 }
 

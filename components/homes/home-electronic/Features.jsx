@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import NavDotsPill from "@/components/common/NavDotsPill";
+import Image from "next/image";
 
 // Ekranda kaç kart görünüyor: desktop 4, tablet 3, mobil 1
 function useSlidesPerView() {
@@ -24,31 +25,25 @@ function useSlidesPerView() {
 
 const DEFAULT_FEATURES = [
   {
-    icon: "shipping",
+    image: "/images/home/ucretsiz_kargo.png",
     title: "Ücretsiz Kargo",
     description: "Türkiye'nin her yerine ücretsiz kargo ile, alışverişinizi zahmetsizce tamamlayın.",
     color: "#3c81b5",
   },
   {
-    icon: "shield",
+    image: "/images/home/48_saat_garanti.png",
     title: "Çözüm Garantili",
     description: "48 saatte çözüm garantili teknik destek sunuyoruz.",
     color: "#2563eb",
   },
-  // {
-  //   icon: "support",
-  //   title: "Teknik Servis",
-  //   description: "Uzman ekibimizle her türlü teknik destek ve servis hizmetini hızlıca sunuyoruz.",
-  //   color: "#2563eb",
-  // },
   {
     icon: "payment",
     title: "Güvenli Ödeme",
     description: "Tüm siparişlerinizde sorunsuz, güvenli ödemeyle kusursuz alışveriş sunuyoruz.",
-    color: "#059669",
+    color: "#3c81b5",
   },
   {
-    icon: "local",
+    image: "/images/home/yerli_uretim.png",
     title: "Yerli Üretim",
     description: "Kaliteli ve yerli üretim ürünlerimizle Türkiye'nin geleceğine katkı sağlıyoruz.",
     color: "#7c3aed",
@@ -114,7 +109,17 @@ export default function Features({ items = DEFAULT_FEATURES }) {
             <SwiperSlide key={i}>
               <div className="feature-card">
                 <div className="feature-icon" style={{ color: item.color || "#3c81b5" }}>
-                  {ICONS[item.icon] ?? ICONS.shipping}
+                  {item.image ? (
+                    <Image
+                      src={item.image}
+                      alt={item.title}
+                      width={120} // Maksimum genişlik
+                      height={60}  // Sabit yükseklik
+                      style={{ width: "auto", height: "100%", objectFit: "contain" }}
+                    />
+                  ) : (
+                    ICONS[item.icon] ?? ICONS.shipping
+                  )}
                 </div>
                 <h3 className="feature-title">{item.title}</h3>
                 <p className="feature-desc">{item.description}</p>

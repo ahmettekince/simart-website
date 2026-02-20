@@ -17,6 +17,7 @@ export default function ContactForm() {
   const [fieldErrors, setFieldErrors] = useState({});
   const [phoneValue, setPhoneValue] = useState("+90");
   const [fullName, setFullName] = useState(""); // State for full name
+  const [message, setMessage] = useState(""); // State for message
 
   const handleShowMessage = () => {
     setShowMessage(true);
@@ -81,6 +82,7 @@ export default function ContactForm() {
         e.target.reset();
         setPhoneValue("+90");
         setFullName(""); // Reset full name after successful submission
+        setMessage(""); // Reset message after successful submission
       } else {
         setSuccess(false);
         setApiMessage(response.data.message || "Bir hata oluştu.");
@@ -169,8 +171,20 @@ export default function ContactForm() {
                     required
                     cols={30}
                     rows={10}
-                    defaultValue={""}
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    maxLength={500}
                   />
+                  <div
+                    style={{
+                      textAlign: "right",
+                      fontSize: "12px",
+                      marginTop: "4px",
+                      color: message.length >= 500 ? "#dc3545" : "#666",
+                    }}
+                  >
+                    {message.length}/500
+                  </div>
                   {fieldErrors.message?.length > 0 && (
                     <div className="contact-field-error" style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
                       {fieldErrors.message[0]}

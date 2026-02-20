@@ -337,7 +337,7 @@ export default function ProductCardSimart({ product, isPriority = false }) {
           margin-left: 10px;
         }
         .price-new {
-          font-size: 16px;
+          font-size: 18px;
         }
         .price-new.price-normal {
           color: #3c81b5;
@@ -527,6 +527,9 @@ export default function ProductCardSimart({ product, isPriority = false }) {
           }
           .price-slot {
             margin-bottom: 2px;
+          }
+          .price-new {
+            font-size: 17px;
           }
           .button-row {
             gap: 6px;

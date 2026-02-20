@@ -6,6 +6,7 @@ import CartLength from "@/components/common/CartLength";
 import MobileMenu from "@/components/modals/MobileMenu";
 import AccountIcon from "@/components/headers/AccountIcon";
 import { getMenus } from "@/api/menus";
+import SimartLogo from "@/components/common/SimartLogo";
 
 export default async function Header({
   textClass,
@@ -88,13 +89,7 @@ export default async function Header({
             </div>
             <div className="col-xl-3 col-md-4 col-6">
               <Link href={`/`} className="logo-header">
-                <Image
-                  alt="logo"
-                  className="logo"
-                  src="/images/logo/logo.svg"
-                  width="136"
-                  height="21"
-                />
+                <SimartLogo width="136" height="21" className="logo" />
               </Link>
             </div>
             <div className="col-xl-6 tf-md-hidden">
