@@ -157,7 +157,7 @@ export default function ProductImageSwiper({
                             width={width}
                             height={height}
                             sizes={sizes}
-                            quality={90}
+                            quality={100}
                             style={{
                                 objectFit: 'cover',
                                 objectPosition: 'center',
