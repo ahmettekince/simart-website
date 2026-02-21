@@ -257,7 +257,7 @@ export default function Login() {
                     )}
                   </div>
                   <div className="mb_20">
-                    <Link href="/sifremi-unuttum" className="tf-btn btn-line">
+                    <Link href="/sifremi-sifirlama" className="tf-btn btn-line">
                       Şifrenizi mi unuttunuz?
                     </Link>
                   </div>

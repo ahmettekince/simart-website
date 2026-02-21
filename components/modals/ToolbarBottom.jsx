@@ -13,7 +13,7 @@ export default function ToolbarBottom() {
   // Aktif durum kontrolü
   const isHomeActive = pathname === "/";
   const isMagazaActive = pathname.startsWith("/magaza");
-  const isHesapActive = pathname.startsWith("/hesabim") || pathname.startsWith("/giris-yap") || pathname.startsWith("/kayit-ol") || pathname.startsWith("/sifremi-unuttum") || pathname.startsWith("/adreslerim") || pathname.startsWith("/my-account");
+  const isHesapActive = pathname.startsWith("/hesabim") || pathname.startsWith("/giris-yap") || pathname.startsWith("/kayit-ol") || pathname.startsWith("/sifremi-sifirlama") || pathname.startsWith("/adreslerim") || pathname.startsWith("/my-account");
 
   return (
     <div className="tf-toolbar-bottom type-1150">

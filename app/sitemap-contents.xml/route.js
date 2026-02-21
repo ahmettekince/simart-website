@@ -5,7 +5,7 @@ export async function GET() {
     try {
         const xml = await serverFetch("/sitemap-contents.xml", {
             raw: true,
-            next: { revalidate: API_REVALIDATE.STANDARD || 3600 }
+            next: { revalidate: API_REVALIDATE.STANDARD || 4 }
         });
 
         if (!xml) {

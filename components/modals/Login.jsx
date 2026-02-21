@@ -52,7 +52,7 @@ export default function Login() {
               </div>
               <div>
                 <Link
-                  href="/sifremi-unuttum"
+                  href="/sifremi-sifirlama"
                   className="btn-link link"
                 >
                   Şifremi Unuttum?

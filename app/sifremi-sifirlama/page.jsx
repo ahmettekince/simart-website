@@ -4,10 +4,10 @@ import React from "react";
 import { checkAuthServer } from "@/utils/authServer";
 import { redirect } from "next/navigation";
 
-const description = "Şımart Teknoloji Şifremi Unuttum sayfası. Hesabınıza tekrar erişim sağlamak için şifrenizi kolayca sıfırlayın ve akıllı ev deneyiminize kaldığınız yerden devam edin.";
+const description = "Şımart Teknoloji Şifre Sıfırlama sayfası. Hesabınıza tekrar erişim sağlamak için şifrenizi kolayca sıfırlayın ve akıllı ev deneyiminize kaldığınız yerden devam edin.";
 
 export const metadata = {
-  title: "Şifremi Unuttum - Şımart Teknoloji",
+  title: "Şifremi Sıfırla - Şımart Teknoloji",
   description,
   keywords: "Şımart Teknoloji Şifremi Unuttum, Şımart Şifre Sıfırlama, Şımart Hesap Kurtarma, Şımart Üyelik Şifresi Yenileme, Şımart Teknoloji Şifre Yardımı, Akıllı Ev Sistemi Şifremi Unuttum, Şımart Şifre Yenileme, Şımart Login Şifre Sıfırlama",
   authors: [{ name: "Şımart Teknoloji" }],
@@ -18,7 +18,7 @@ export const metadata = {
   openGraph: {
     title: "Şifremi Sıfırla - Şımart Teknoloji",
     description,
-    url: "https://simart.me/sifremi-unuttum",
+    url: "https://simart.me/sifremi-sifirlama",
     siteName: "Şımart Teknoloji",
     images: [
       {
@@ -50,7 +50,7 @@ const webPageSchema = {
   "@context": "https://schema.org",
   "@type": "WebPage",
   name: "Şifremi Sıfırla - Şımart Teknoloji",
-  url: "https://simart.me/sifremi-unuttum",
+  url: "https://simart.me/sifremi-sifirlama",
   description,
   primaryImageOfPage: {
     "@type": "ImageObject",
