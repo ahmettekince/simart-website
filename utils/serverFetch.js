@@ -117,6 +117,11 @@ export async function serverFetch(endpoint, options = {}) {
             return null;
         }
 
+        // Eğer raw istenmişse ham metni dön
+        if (options.raw) {
+            return responseText;
+        }
+
         // JSON parse et
         try {
             const json = JSON.parse(responseText);
