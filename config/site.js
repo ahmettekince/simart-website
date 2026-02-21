@@ -120,6 +120,12 @@ export const siteConfig = {
             name: "Şımart Teknoloji - Robot Süpürge ve Akıllı Ev Sistemleri",
             description: "Şımart Teknoloji, robot süpürgeler, akıllı ev sistemleri ve IoT çözümlerinde öncüdür. Ev otomasyonu ve yaşamı kolaylaştıran teknolojilerle hizmetinizdeyiz.",
             image: "https://simart.me/uploads/systems/seo.jpg",
+        },
+        tracking: {
+            googleAnalytics: "G-GQP4JCTH72",
+            metaPixel: "529025925073486",
+            tiktokPixel: "CVDS0HRC77UBK4421FCG",
+            gtm: "GTM-TKCLRL3",
         }
     },
 };
