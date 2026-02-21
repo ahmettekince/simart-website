@@ -1,6 +1,5 @@
 import React from "react";
 import Header from "@/components/headers/Header";
-import Footer from "@/components/footers/Footer";
 import OrderTrackingContent from "./OrderTrackingContent";
 
 export const metadata = {
@@ -13,7 +12,6 @@ export default function OrderTrackingPage({ params }) {
         <>
             <Header />
             <OrderTrackingContent params={params} />
-            <Footer />
         </>
     );
 }
