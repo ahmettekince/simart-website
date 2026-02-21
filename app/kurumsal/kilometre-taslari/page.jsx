@@ -78,14 +78,14 @@ export default async function KilometreTaslariPage() {
                         dangerouslySetInnerHTML={{ __html: item.description }}
                       />
                     </div>
-                    <div className="tf-timeline-image">
-                      <Image
+                    <div className="tf-timeline-image-silindi">
+                      {/* <Image
                         className="lazyload"
                         alt={item.title || "Kilometre taşı"}
                         src={imageUrl}
                         width={800}
                         height={593}
-                      />
+                      /> */}
                     </div>
                   </div>
 
