@@ -1,4 +1,5 @@
-import { getPageBySlug } from "@/api/pages";
+import { getPageBySlug } from "@/api/pages"
+import { notFound } from "next/navigation";
 import { getQrCard } from "@/api/qr";
 import { getMenus, getFooterMenus } from "@/api/menus";
 import Header from "@/components/headers/Header";
