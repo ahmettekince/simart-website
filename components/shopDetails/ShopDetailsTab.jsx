@@ -1,9 +1,6 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import Image from "next/image";
-import { decodeHtmlEntities } from "@/utils/stripHtml";
-import BirlikteAlNew from "@/components/shopDetails/BirlikteAlNew";
 import InstallmentOptions from "@/components/shopDetails/InstallmentOptions";
 import Accordion from "@/components/common/Accordion";
 
@@ -97,51 +94,7 @@ export default function ShopDetailsTab({ product }) {
   const techSpecs = product?.technical_specifications || [];
   const hasTechSpecs = Array.isArray(techSpecs) && techSpecs.length > 0;
 
-  // Açıklama tab bar'da yok; içerik varsa yukarıda (tab'ların üstünde) render edilir
-  const descVal = product?.description;
-  const hasDescription = descVal != null && String(descVal).trim() !== "";
-
-  // Birlikte Al (Alternatifler) - sadece mobilde, açıklama ve tablar arasında
-  const hasVariations = product && Array.isArray(product.variations) && product.variations.length > 0;
-  const categorySlugForVariations =
-    product?.primary_category?.slug ||
-    (Array.isArray(product?.categories) && product.categories[0]?.slug) ||
-    "urunler";
-  const baseVariation = hasVariations && product ? {
-    name: product.name || product.title || "",
-    slug: product.slug || "",
-    category_slug: categorySlugForVariations,
-    is_in_stock: product.is_in_stock,
-    is_pre_order: product.is_pre_order,
-    price: product.price,
-    discount_price: product.discount_price,
-    cover_image: product.images?.[0] || product.gallery_images?.[0] || null,
-  } : null;
-  const allVariations = useMemo(() => {
-    if (!hasVariations || !product) return [];
-    const list = [];
-    if (baseVariation?.slug) list.push(baseVariation);
-    product.variations.forEach((v) => {
-      if (!v) return;
-      const slug = v.slug || "";
-      const cat = v.category_slug || baseVariation?.category_slug || "urunler";
-      if (baseVariation && slug === baseVariation.slug && cat === baseVariation.category_slug) return;
-      list.push({ ...v, slug, category_slug: cat });
-    });
-    return list;
-  }, [product, baseVariation, hasVariations]);
-
-  // Fiyat hesaplama: önce time_based_discount, sonra normal discount_price, son olarak price
-  const finalPrice = useMemo(() => {
-    const timeBasedDiscount = product?.time_based_discounts?.find(
-      (discount) => discount.remaining_minutes !== null && discount.remaining_minutes !== undefined
-    );
-    if (timeBasedDiscount && timeBasedDiscount.discounted_price) {
-      return timeBasedDiscount.discounted_price;
-    }
-    return product?.discount_price || product?.price || 0;
-  }, [product?.time_based_discounts, product?.discount_price, product?.price]);
-
+  // Taksit Seçenekleri için isKatya kontrolü
   const isKatya = product?.name === "katya Robot Süpürge" || product?.name === "Katya Akıllı Robot Süpürge";
 
   // Sıra: Değerlendirmeler, Teknik Özellikler, SSS, Taksit Seçenekleri
@@ -176,38 +129,8 @@ export default function ShopDetailsTab({ product }) {
     return () => window.removeEventListener("hashchange", checkHash);
   }, [reviewsTabIndex]);
 
-  const descriptionContainerClass = product?.description_layout === "full" ? "container-fluid" : "container";
-
   return (
     <>
-      {/* Açıklama bölümü - tab bar'da yok, sadece yukarıda gösterilir */}
-      {hasDescription && (
-        <section className="" style={{ overflowX: "hidden", paddingTop: "45px" }}>
-          <div className={descriptionContainerClass}>
-            <div className="row">
-              <div className="col-12" >
-                {product?.description && (
-                  <div
-                    className="product-description-text"
-                    dangerouslySetInnerHTML={{ __html: decodeHtmlEntities(product.description) }}
-                  />
-                )}
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
-      {/* Birlikte Al - sadece mobilde, açıklamanın altında tabların üstünde (araya) */}
-      {hasVariations && allVariations.length > 0 && (
-        <div className="container d-md-none" style={{ marginTop: 0, marginBottom: 24 }}>
-          <BirlikteAlNew
-            variations={allVariations}
-            currentSlug={product.slug}
-            currentCategorySlug={categorySlugForVariations}
-          />
-        </div>
-      )}
-
       <section id="product-reviews" className="pt_0" style={{ paddingBottom: "0px !important" }}>
         <div className="container">
           <div className="row">

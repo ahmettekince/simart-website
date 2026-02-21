@@ -3,6 +3,8 @@ import Detail from "@/components/shopDetails/Detail";
 import Products from "@/components/shopDetails/Products";
 import ShopDetailsTab from "@/components/shopDetails/ShopDetailsTab";
 import ProductDetailHit from "@/components/shopDetails/ProductDetailHit";
+import ProductDescription from "@/components/shopDetails/ProductDescription";
+import BirlikteAlNew from "@/components/shopDetails/BirlikteAlNew";
 import React from "react";
 import { getProductBySlug, getProductsByCategory } from "@/api/products";
 import { notFound } from "next/navigation";
@@ -137,6 +139,32 @@ export default async function page({ params }) {
     reviews: product.reviews?.items || [],
   });
 
+  // Varyasyonları hesapla (mobilde gösterilecek BirlikteAlNew için)
+  const hasVariations = product && Array.isArray(product.variations) && product.variations.length > 0;
+  let allVariations = [];
+  if (hasVariations) {
+    const baseVariation = {
+      name: product.name || product.title || "",
+      slug: product.slug || "",
+      category_slug: categorySlug || "urunler",
+      is_in_stock: product.is_in_stock,
+      is_pre_order: product.is_pre_order,
+      price: product.price,
+      discount_price: product.discount_price,
+      cover_image: product.images?.[0] || product.gallery_images?.[0] || null,
+    };
+    allVariations.push(baseVariation);
+    product.variations.forEach((v) => {
+      if (!v) return;
+      if (v.slug === baseVariation.slug) return;
+      allVariations.push({
+        ...v,
+        slug: v.slug || "",
+        category_slug: v.category_slug || baseVariation.category_slug
+      });
+    });
+  }
+
   return (
     <>
       {/* Product JSON-LD (ürün sayfası) */}
@@ -151,21 +179,26 @@ export default async function page({ params }) {
         <div className="container">
           <div className="tf-breadcrumb-wrap d-flex justify-content-between flex-wrap align-items-center">
             <div className="tf-breadcrumb-list">
-              {/* <Link href={`/`} className="text">
-                Mağaza
-              </Link>
-
-              <i className="icon icon-arrow-right" />
-              <Link href={`/magaza/${kategori}`} className="text">
-                {categoryName}
-              </Link>
-              <i className="icon icon-arrow-right" />
-              <span className="text">{productName}</span> */}
             </div>
           </div>
         </div>
       </div>
       <Detail product={product} />
+
+      {/* Detaylı Açıklama - Sekmelerden ayrıldı (re-render performans sorunu için) */}
+      <ProductDescription product={product} />
+
+      {/* Birlikte Al - Sadece mobilde Açıklama ve Sekmeler arasında */}
+      {allVariations.length > 0 && (
+        <div className="container d-md-none" style={{ marginTop: 0, marginBottom: 24 }}>
+          <BirlikteAlNew
+            variations={allVariations}
+            currentSlug={product.slug}
+            currentCategorySlug={categorySlug || "urunler"}
+          />
+        </div>
+      )}
+
       <ShopDetailsTab product={product} />
       {categoryProducts.length > 0 && <Products products={categoryProducts} />}
     </>
