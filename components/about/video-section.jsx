@@ -112,7 +112,7 @@ export function VideoSection() {
                 </button>
             ) : (
                 <iframe
-                    src={`https://www.youtube.com/embed/Jjlxo4jeONU?autoplay=1&rel=0`}
+                    src={`https://www.youtube-nocookie.com/embed/Jjlxo4jeONU?autoplay=1&rel=0&enablejsapi=1&origin=${typeof window !== 'undefined' ? encodeURIComponent(window.location.origin) : ''}`}
                     title="Şımart Teknoloji Tanıtım Filmi"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen

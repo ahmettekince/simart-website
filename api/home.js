@@ -200,7 +200,7 @@ export async function getReviews() {
 export async function getTopbar() {
     const response = await serverFetch("/topbars", {
         method: "POST",
-        next: { revalidate: API_REVALIDATE.TOPBAR } // Config'den cache süresi
+        next: { revalidate: API_REVALIDATE.TOPBAR }
     });
 
     if (response?.status === "success") {
