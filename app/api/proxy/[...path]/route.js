@@ -84,10 +84,17 @@ async function handleRequest(request, params, method) {
             }
         });
         const cookieHeader = cookieHeaders.join('; ');
-        const userAgent = request.headers.get('user-agent') || request.headers.get('User-Agent');
 
-        const reqContentType = request.headers.get("content-type");
-        const isMultipartReq = reqContentType?.includes("multipart/form-data");
+        // İstemci bilgilerini yakala ve forward et
+        const userAgent = request.headers.get('user-agent') || "Şımart Teknoloji Browser";
+        const clientIp = request.headers.get('x-forwarded-for') || "";
+
+        // Doğrulama için terminale log basalım
+        console.log(`\n[Proxy Request] IP: ${clientIp} | UA: ${userAgent.substring(0, 50)}...`);
+
+        // İçerik tipini belirle (multipart veya json)
+        const reqContentType = request.headers.get("content-type") || "";
+        const isMultipartReq = reqContentType.includes("multipart/form-data");
 
         const response = await axios({
             method,
@@ -97,7 +104,8 @@ async function handleRequest(request, params, method) {
                 "Content-Type": isMultipartReq ? reqContentType : "application/json",
                 "X-Signature": signature,
                 "X-Timestamp": timestamp.toString(),
-                ...(userAgent && { "User-Agent": userAgent }),
+                "User-Agent": userAgent,
+                "X-Forwarded-For": clientIp,
                 ...(cookieHeader && { "Cookie": cookieHeader }),
                 ...(deviceId && { "X-Device-ID": deviceId }),
             },

@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { log } from "./logger";
 import { API_REVALIDATE } from "@/config/apiConfig";
+import { headers as nextHeaders } from "next/headers";
 
 const BACKEND_URL = process.env.BACKEND_URL;
 
@@ -11,6 +12,23 @@ function isJsonResponse(response) {
 }
 
 export async function serverFetch(endpoint, options = {}) {
+    // Client bilgilerini al
+    let clientUserAgent = "Şımart Teknoloji Browser";
+    let clientIp = "";
+
+    try {
+        const headerList = await nextHeaders();
+        clientUserAgent = headerList.get("user-agent") || clientUserAgent;
+
+        // En yaygın IP header'larını kontrol et
+        clientIp = headerList.get("x-forwarded-for") || "";
+
+        // Doğrulama logu
+        console.log(`[serverFetch] IP: ${clientIp} | UA: ${clientUserAgent.substring(0, 50)}...`);
+    } catch (e) {
+        // Static context veya header olmayan yerlerde hata vermemesi için
+    }
+
     // HMAC Signing Logic
     const securityKey = process.env.SECURITY_KEY || "";
     const timestamp = Math.floor(Date.now() / 1000);
@@ -43,6 +61,8 @@ export async function serverFetch(endpoint, options = {}) {
         "X-API-Key": process.env.API_KEY || "",
         "X-Signature": signature,
         "X-Timestamp": timestamp.toString(),
+        "User-Agent": clientUserAgent,
+        "X-Forwarded-For": clientIp,
         ...options.headers,
     };
 
