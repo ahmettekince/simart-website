@@ -15,6 +15,7 @@ export const metadata = {
   description: siteConfig.site.description,
   keywords: siteConfig.site.keywords,
   author: siteConfig.site.author,
+  referrer: "strict-origin-when-cross-origin",
   // og, twitter ve itemprop her sayfada ayrı tanımlanacak
 };
 
