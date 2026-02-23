@@ -53,7 +53,7 @@ export async function generateMetadata({ params }) {
   const title = page.title || siteConfig.site.title;
   const description = page.seo?.description || page.title || siteConfig.site.description;
   const keywords = page.seo?.keywords || siteConfig.site.keywords;
-  const pageUrl = `${siteConfig.site.url}${slug}`;
+  const pageUrl = `${siteConfig.site.url}/${slug}`;
   const imageUrl = page.image?.url || siteConfig.site.og.image;
 
   return {
