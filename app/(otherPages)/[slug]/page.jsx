@@ -8,13 +8,26 @@ import { siteConfig } from "@/config/site";
 import DynamicPageContent from "@/components/common/DynamicPageContent";
 import QRContent from "@/components/common/QRContent";
 
-/**
- * Dinamik metadata oluşturma
- */
+// Engellenen istekler
+const blockedSlugs = [
+  "meta.json",
+  "queue.php"
+];
+
+// Dinamik metadata oluşturma
 export async function generateMetadata({ params }) {
   const { slug } = await params;
 
-  // QR sayfa kontrolü (qr- veya kqr- ile başlıyorsa)
+  // Engellenen istekler kontrolü
+  const normalizedSlug = slug?.toLowerCase();
+  if (blockedSlugs.includes(normalizedSlug)) {
+    return {
+      title: "Sayfa Bulunamadı",
+      robots: "noindex, nofollow",
+    };
+  }
+
+  // QR sayfa kontrolü 
   if (slug.startsWith("qr-")) {
     const qrData = await getQrCard(slug);
     if (!qrData) {
@@ -28,6 +41,7 @@ export async function generateMetadata({ params }) {
 
   // Standart sayfa kontrolü
   const page = await getPageBySlug(slug);
+
   if (!page) {
     return {
       title: "Sayfa Bulunamadı - Şımart Teknoloji",
@@ -77,27 +91,32 @@ export async function generateMetadata({ params }) {
 export default async function DynamicPage({ params }) {
   const { slug } = await params;
 
-  // 1. QR Sayfa Kontrolü (öncelikli)
-  if (slug.startsWith("qr-") || slug.startsWith("kqr")) {
-    const [qrData, menuItems, footerMenus] = await Promise.all([
+  // Engellenen istekler kontrolü
+  const normalizedSlug = slug?.toLowerCase();
+  if (blockedSlugs.includes(normalizedSlug)) {
+    return notFound();
+  }
+
+  // QR Sayfa Kontrolü
+  if (slug.startsWith("qr-")) {
+    const [qrData, menuItems] = await Promise.all([
       getQrCard(slug),
       getMenus(),
-      getFooterMenus()
     ]);
 
     if (qrData) {
-      return <QRContent qrData={qrData} menuItems={menuItems} footerMenus={footerMenus} />;
+      return <QRContent qrData={qrData} menuItems={menuItems} />;
     }
   }
 
-  // 2. Standart Sayfa/Blog Kontrolü
+  // Standart Sayfa/Blog Kontrolü
   const page = await getPageBySlug(slug);
 
   if (!page) {
     return notFound();
   }
 
-  // WebPage schema oluştur
+  // WebPage JSON-LD oluştur
   const pageUrl = `${siteConfig.site.url}/${slug}`;
   const pageJsonLd = webPageSchema({
     name: page.title || "Şımart Teknoloji Sayfa İçeriği",

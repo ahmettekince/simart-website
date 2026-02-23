@@ -4,9 +4,7 @@ import { API_REVALIDATE } from "@/config/apiConfig";
 
 const BACKEND_URL = process.env.BACKEND_URL;
 
-/**
- * Response'un JSON olup olmadığını kontrol eder
- */
+// Response'un JSON olup olmadığını kontrol eder
 function isJsonResponse(response) {
     const contentType = response.headers.get("content-type");
     return contentType && contentType.includes("application/json");
