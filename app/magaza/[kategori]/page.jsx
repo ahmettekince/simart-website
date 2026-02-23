@@ -10,8 +10,16 @@ import { notFound } from "next/navigation";
 export async function generateMetadata({ params }) {
   const { kategori } = await params;
   const { products, category } = await getCategoryWithProducts(kategori);
-  const categoryName = category?.name || kategori;
-  const productCount = category?.product_count ?? products.length;
+
+  if (!category) {
+    return {
+      title: "Sayfa Bulunamadı - Şımart Teknoloji",
+      description: "Aradığınız kategori bulunamadı.",
+    };
+  }
+
+  const categoryName = category.name;
+  const productCount = category.product_count ?? products.length;
 
   return {
     title: `${categoryName} - Şımart Teknoloji`,
@@ -38,8 +46,13 @@ export default async function KategoriPage({ params }) {
     getCategories(),
   ]);
 
-  const categoryName = category?.name || kategori;
-  const productCount = category?.product_count ?? products.length;
+  // Eğer kategori objesi gelmediyse (API'de öyle bir kategori yoksa) 404 fırlat
+  if (!category) {
+    notFound();
+  }
+
+  const categoryName = category.name;
+  const productCount = category.product_count ?? products.length;
 
   return (
     <main className="magaza-page">
@@ -50,7 +63,7 @@ export default async function KategoriPage({ params }) {
         <div className="container-full">
           <div className="heading text-center">{categoryName}</div>
           <p className="text-center text-2 text_black-2 mt_5">
-            {productCount > 0 ? `${productCount} ürün bulundu` : "Bu kategoride ürün bulunamadı"}
+            {productCount > 0 ? `${productCount} ürün bulundu` : "Bu kategoride henüz ürün bulunmamaktadır"}
           </p>
         </div>
       </div>
