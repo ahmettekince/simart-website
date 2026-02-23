@@ -8,28 +8,16 @@ import { createPortal } from "react-dom";
  */
 export const getEmbedUrl = (url) => {
   if (!url) return "";
+  if (url.includes("/embed/")) return url;
 
-  // Eğer url zaten embed formatındaysa, sadece parametre ekleyebiliriz
-  // Ama daha güvenli olması için ID'yi bulup temiz bir URL oluşturmak daha iyidir
-  let videoId = "";
-
-  if (url.includes("/embed/")) {
-    videoId = url.split("/embed/")[1].split("?")[0];
-  } else {
-    const vMatch = url.match(/[?&]v=([^&]+)/);
-    if (vMatch && vMatch[1]) {
-      videoId = vMatch[1];
-    } else {
-      const shortMatch = url.match(/youtu\.be\/([^?]+)/);
-      if (shortMatch && shortMatch[1]) {
-        videoId = shortMatch[1];
-      }
-    }
+  const vMatch = url.match(/[?&]v=([^&]+)/);
+  if (vMatch && vMatch[1]) {
+    return `https://www.youtube.com/embed/${vMatch[1]}?autoplay=1&rel=0&playsinline=1`;
   }
 
-  if (videoId) {
-    const origin = typeof window !== "undefined" ? window.location.origin : "";
-    return `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1&rel=0&playsinline=1&enablejsapi=1${origin ? `&origin=${encodeURIComponent(origin)}` : ""}`;
+  const shortMatch = url.match(/youtu\.be\/([^?]+)/);
+  if (shortMatch && shortMatch[1]) {
+    return `https://www.youtube.com/embed/${shortMatch[1]}?autoplay=1&rel=0&playsinline=1`;
   }
 
   return url;
