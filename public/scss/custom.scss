@@ -52,6 +52,16 @@ input[type="checkbox"]:checked,
   border-color: var(--primary, #3c81b5) !important;
 }
 
+/* Giriş alanları odaklanma (focus) rengi */
+input:not([type="checkbox"]):not([type="radio"]):focus,
+textarea:focus,
+select:focus,
+.tf-field-input:focus {
+  border-color: #3c81b5 !important;
+  box-shadow: 0 0 0 3px rgba(60, 129, 181, 0.1) !important;
+  outline: none !important;
+}
+
 /* Abone Olun input - font size 24px */
 .footer-newsletter .form-newsletter .subscribe-email,
 .footer-newsletter .subscribe-content input {
@@ -2061,7 +2071,112 @@ body.product-detail-page .progress-wrap {
   }
 }
 
-/* Ödeme: Kart Bilgileri + Taksit Seçenekleri (Trendyol benzeri, abartısız) */
+/* Floating Label styles for Payment - Modern & Dynamic */
+.floating-label-field {
+  position: relative;
+  margin-bottom: 12px;
+  width: 100%;
+}
+
+.floating-label-input,
+.payment2-select-wrapper {
+  width: 100% !important;
+  height: 52px !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 12px !important;
+  background: #fff !important;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  position: relative;
+}
+
+.floating-label-input {
+  padding: 16px 14px 4px 14px !important;
+  font-size: 15px !important;
+  color: #1a1a1a !important;
+  outline: none !important;
+
+  &::placeholder {
+    color: transparent !important;
+  }
+
+  &:focus {
+    border-color: #3c81b5 !important;
+    box-shadow: 0 0 0 4px rgba(60, 129, 181, 0.08) !important;
+  }
+}
+
+.payment2-select-wrapper {
+  display: flex !important;
+  align-items: flex-end;
+  padding: 0 14px 4px 14px;
+  cursor: pointer;
+
+  &:focus-within {
+
+    border-color: #3c81b5 !important;
+    box-shadow: 0 0 0 4px rgba(60, 129, 181, 0.08) !important;
+  }
+
+  .payment2-exp {
+    display: flex;
+    width: 100%;
+    gap: 8px;
+    margin-bottom: 2px;
+  }
+
+  .payment2-select {
+    flex: 1;
+    height: 30px !important;
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    font-size: 15px !important;
+    color: #1a1a1a !important;
+    outline: none !important;
+    cursor: pointer;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
+}
+
+.floating-label-text {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  transform: translateY(-50%);
+  font-size: 15px;
+  color: #8c8c8c;
+  pointer-events: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  background: transparent;
+  padding: 0;
+  z-index: 1;
+}
+
+.floating-label-input:focus+.floating-label-text,
+.floating-label-input:not(:placeholder-shown)+.floating-label-text,
+.payment2-select-wrapper.has-value .floating-label-text,
+.payment2-select-wrapper:focus-within .floating-label-text {
+  top: 12px;
+  left: 14px;
+  font-size: 11px;
+  transform: translateY(-50%);
+  color: #8c8c8c;
+  font-weight: 500;
+}
+
+.floating-label-field .cvv-help {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #8c8c8c;
+  cursor: help;
+  z-index: 2;
+  font-size: 18px;
+}
+
 .payment2-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -2077,13 +2192,14 @@ body.product-detail-page .progress-wrap {
 
 .payment2-card {
   border: 1px solid #e9ecef;
-  border-radius: 10px;
+  border-radius: 12px;
   background: #fff;
   overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
 }
 
 .payment2-card__header {
-  padding: 12px 14px;
+  padding: 14px 16px;
   border-bottom: 1px solid #edf1f4;
   display: flex;
   align-items: center;
@@ -2091,52 +2207,29 @@ body.product-detail-page .progress-wrap {
 }
 
 .payment2-card__title {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
-  color: #333;
+  color: #1a1a1a;
 }
 
 .payment2-card__body {
-  padding: 14px;
+  padding: 16px;
 }
 
 .payment2-card__body--tight {
-  padding: 0px 0;
+  padding: 0;
 }
 
 .payment2-field {
   margin-bottom: 12px;
 }
 
-.payment2-field--muted {
-  margin-top: 6px;
-}
-
 .payment2-label {
   display: block;
   margin-bottom: 6px;
   font-size: 13px;
-  font-weight: 500;
-  color: #333;
-}
-
-.payment2-input,
-.payment2-select {
-  width: 100%;
-  height: 44px;
-  padding: 10px 12px;
-  border: 1px solid #e5e5e5;
-  border-radius: 8px;
-  font-size: 14px;
-  background: #fff;
-  transition: border-color .2s, box-shadow .2s;
-  outline: none;
-}
-
-.payment2-input:focus,
-.payment2-select:focus {
-  border-color: #3c81b5;
-  box-shadow: 0 0 0 3px rgba(60, 129, 181, 0.10);
+  font-weight: 600;
+  color: #4b5563;
 }
 
 .payment2-row {

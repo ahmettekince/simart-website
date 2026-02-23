@@ -868,12 +868,8 @@ export default function OrderSummary({
             </>
           )}
           {(showAgreements ||
-            orderErrors?.uzak_satis_sozlesmesi_accepted ||
             orderErrorMessage ||
-            orderErrors?.delivery_address_id ||
-            orderErrors?.invoice_address_id ||
-            orderErrors?.card_holder_name ||
-            orderErrors?.card_number) && (
+            Object.keys(orderErrors).length > 0) && (
               <div className="wd-check-payment" style={{ marginTop: "30px", paddingTop: "30px", borderTop: "1px solid #e5e5e5" }}>
                 {showAgreements && (
                   <div className="mb_20" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
@@ -892,42 +888,24 @@ export default function OrderSummary({
                         <Link href="/iade-politikasi" target="_blank" style={{ textDecoration: "underline" }}>İade ve Geri Ödeme Politikasını</Link> okudum, kabul ediyorum.
                       </label>
                     </div>
-                    {orderErrors.agreements_accepted && (
-                      <div style={{ marginTop: "8px", fontSize: "12px", color: "#dc3545", width: "100%" }}>
-                        {orderErrors.agreements_accepted[0]}
-                      </div>
-                    )}
                   </div>
                 )}
 
-                {orderErrors.uzak_satis_sozlesmesi_accepted && (
-                  <div style={{ marginTop: "-15px", marginBottom: "15px", fontSize: "12px", color: "#dc3545" }}>
-                    {orderErrors.uzak_satis_sozlesmesi_accepted[0]}
-                  </div>
-                )}
-                {orderErrorMessage && (
-                  <div style={{ marginTop: "15px", marginBottom: "15px", padding: "12px", backgroundColor: "#fee", border: "1px solid #fcc", borderRadius: "6px", fontSize: "14px", color: "#c33" }}>
+                {/* Genel Hata Mesajı - Sadece spesifik hatalar (orderErrors) boşsa göster */}
+                {orderErrorMessage && Object.keys(orderErrors).length === 0 && (
+                  <div style={{ marginBottom: "15px", padding: "12px", backgroundColor: "#fee", border: "1px solid #fcc", borderRadius: "6px", fontSize: "14px", color: "#c33" }}>
                     {orderErrorMessage}
                   </div>
                 )}
-                {orderErrors.delivery_address_id && (
-                  <div style={{ marginTop: "15px", marginBottom: "15px", padding: "12px", backgroundColor: "#fee", border: "1px solid #fcc", borderRadius: "6px", fontSize: "14px", color: "#c33" }}>
-                    {orderErrors.delivery_address_id[0]}
-                  </div>
-                )}
-                {orderErrors.invoice_address_id && (
-                  <div style={{ marginTop: "15px", marginBottom: "15px", padding: "12px", backgroundColor: "#fee", border: "1px solid #fcc", borderRadius: "6px", fontSize: "14px", color: "#c33" }}>
-                    {orderErrors.invoice_address_id[0]}
-                  </div>
-                )}
-                {orderErrors.card_holder_name && (
-                  <div style={{ marginTop: "15px", marginBottom: "15px", padding: "12px", backgroundColor: "#fee", border: "1px solid #fcc", borderRadius: "6px", fontSize: "14px", color: "#c33" }}>
-                    {orderErrors.card_holder_name[0]}
-                  </div>
-                )}
-                {orderErrors.card_number && (
-                  <div style={{ marginTop: "15px", marginBottom: "15px", padding: "12px", backgroundColor: "#fee", border: "1px solid #fcc", borderRadius: "6px", fontSize: "14px", color: "#c33" }}>
-                    {orderErrors.card_number[0]}
+
+                {/* Form Alanı Hata Mesajları (E-posta, Adres, Kart vb.) */}
+                {Object.keys(orderErrors).length > 0 && (
+                  <div style={{ marginBottom: "15px", padding: "12px", backgroundColor: "#fee", border: "1px solid #fcc", borderRadius: "12px", fontSize: "14px", color: "#c33" }}>
+                    {Object.entries(orderErrors).map(([key, messages]) => (
+                      <div key={key} style={{ marginBottom: "4px" }}>
+                        • {Array.isArray(messages) ? messages[0] : messages}
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>

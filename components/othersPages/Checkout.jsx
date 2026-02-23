@@ -1752,7 +1752,11 @@ export default function Checkout() {
                           (addr) => addr.id === selectedDeliveryAddressId
                         );
                         const isInvoicedDelivery = selectedDeliveryAddress?.invoice_type != null;
-                        const paymentStepNum = isAuthenticated ? (isInvoicedDelivery ? 2 : 3) : 4;
+
+                        // Dinamik adım numarası: fatura adresi gizliyse (isteğe bağlı veya kayıtlıysa) bir azalmalı
+                        const paymentStepNum = isAuthenticated
+                          ? (isInvoicedDelivery || sameBillingAddress ? 2 : 3)
+                          : (sameBillingAddress ? 3 : 4);
                         return (
                           <>
                             <h5 className="fw-5 mb_20 mt_40">{paymentStepNum} - Ödeme Bilgileri</h5>

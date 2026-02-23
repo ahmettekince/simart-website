@@ -143,33 +143,32 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
             <div className="payment2-card__title">Kart Bilgileri</div>
           </div>
           <div className="payment2-card__body">
-            <div className="payment2-field">
-              <label className="payment2-label" htmlFor="card-holder">Kart Üzerindeki İsim</label>
+            <div className="floating-label-field">
               <input
-                className="payment2-input"
+                className="floating-label-input"
                 type="text"
                 id="card-holder"
                 name="card-holder"
                 autoComplete="cc-name"
-                placeholder="AD SOYAD"
+                placeholder=" "
                 value={cardHolderName}
                 onChange={(e) => {
                   const value = e.target.value.replace(/\d/g, "");
-                  setCardHolderName(value.toUpperCase());
+                  setCardHolderName(value.toLocaleUpperCase("tr-TR"));
                 }}
               />
+              <label className="floating-label-text" htmlFor="card-holder">Kart Üzerindeki Ad, Soyad</label>
             </div>
 
-            <div className="payment2-field">
-              <label className="payment2-label" htmlFor="card-number">Kart Numarası</label>
+            <div className="floating-label-field">
               <input
-                className="payment2-input"
+                className="floating-label-input"
                 ref={cardNumberInputRef}
                 type="text"
                 id="card-number"
                 name="card-number"
                 autoComplete="cc-number"
-                placeholder="1234 5678 9012 3456"
+                placeholder=" "
                 defaultValue=""
                 onChange={(e) => {
                   let value = e.target.value.replace(/\D/g, "");
@@ -192,60 +191,54 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
                 onFocus={() => requestAnimationFrame(() => syncCardNumberFromInput())}
                 maxLength={19}
               />
+              <label className="floating-label-text" htmlFor="card-number">Kart Numarası</label>
             </div>
 
             <div className="payment2-row">
-              <div className="payment2-field">
-                <label className="payment2-label">Son Kullanma Tarihi</label>
-                <div className="payment2-exp">
-                  <select
-                    className="payment2-select"
-                    id="expiry-month"
-                    name="expiry-month"
-                    value={expiryMonth}
-                    onChange={(e) => setExpiryMonth(e.target.value)}
-                    autoComplete="cc-exp-month"
-                  >
-                    <option value="">Ay</option>
-                    {Array.from({ length: 12 }, (_, i) => {
-                      const month = String(i + 1).padStart(2, "0");
-                      return (
-                        <option key={month} value={month}>
-                          {month}
-                        </option>
-                      );
-                    })}
-                  </select>
-                  <select
-                    className="payment2-select"
-                    id="expiry-year"
-                    name="expiry-year"
-                    value={expiryYear}
-                    onChange={(e) => setExpiryYear(e.target.value)}
-                    autoComplete="cc-exp-year"
-                  >
-                    <option value="">Yıl</option>
-                    {Array.from({ length: 20 }, (_, i) => {
-                      const year = new Date().getFullYear() + i;
-                      return (
-                        <option key={year} value={year}>
-                          {year}
-                        </option>
-                      );
-                    })}
-                  </select>
-                </div>
+              <div className="floating-label-field">
+                <input
+                  className="floating-label-input"
+                  type="text"
+                  id="expiry-date"
+                  name="expiry-date"
+                  autoComplete="cc-exp"
+                  placeholder=" "
+                  value={expiryMonth && expiryYear ? `${expiryMonth}/${expiryYear}` : (expiryMonth || "")}
+                  onChange={(e) => {
+                    let value = e.target.value.replace(/\D/g, "");
+                    if (value.length > 4) value = value.slice(0, 4);
+
+                    let month = "";
+                    let year = "";
+
+                    if (value.length >= 1) {
+                      month = value.slice(0, 2);
+                      // Ay 12'den büyükse 12 yap (basit koruma)
+                      if (month.length === 2 && parseInt(month) > 12) month = "12";
+                      // İlk rakam 1'den büyükse başına 0 ekle (örn: 5 -> 05)
+                      if (month.length === 1 && parseInt(month) > 1) month = "0" + month;
+                    }
+
+                    if (value.length > 2) {
+                      year = value.slice(2, 4);
+                    }
+
+                    setExpiryMonth(month);
+                    setExpiryYear(year);
+                  }}
+                  maxLength={5}
+                />
+                <label className="floating-label-text" htmlFor="expiry-date">Son Kullanma Tarihi (AA/YY)</label>
               </div>
 
-              <div className="payment2-field">
-                <label className="payment2-label" htmlFor="cvv">CVV</label>
+              <div className="floating-label-field">
                 <input
-                  className="payment2-input payment2-input--cvv"
+                  className="floating-label-input"
                   type="text"
                   id="cvv"
                   name="cvv"
                   autoComplete="cc-csc"
-                  placeholder="123"
+                  placeholder=" "
                   value={cvv}
                   onChange={(e) => {
                     const value = e.target.value.replace(/\D/g, "");
@@ -253,6 +246,21 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
                   }}
                   maxLength={3}
                 />
+                <label className="floating-label-text" htmlFor="cvv">CVV</label>
+                <div className="cvv-help" title="Kartınızın arkasındaki 3 haneli güvenlik numarası">
+                  <span style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '18px',
+                    height: '18px',
+                    border: '1.5px solid #8c8c8c',
+                    borderRadius: '50%',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    lineHeight: 1
+                  }}>?</span>
+                </div>
               </div>
             </div>
 
