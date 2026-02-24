@@ -66,7 +66,6 @@ export default function Hero({ banners = [] }) {
 // Görsel içeriği yöneten alt bileşen — ilk slide eager, diğerleri lazy
 function BannerContent({ images, isFirstSlide = false }) {
   if (!images) return null;
-  const loadMode = isFirstSlide ? "eager" : "lazy";
 
   return (
     <>

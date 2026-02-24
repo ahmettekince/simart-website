@@ -21,6 +21,7 @@ import ModelViewerModal from "@/components/modals/ModelViewerModal";
 import OverlayCtaButton, { Model3dIcon, PlayIcon, ArrowIcon } from "@/components/common/OverlayCtaButton";
 import VolumeDiscount from "./VolumeDiscount";
 import InfoTicker from "./InfoTicker";
+import Trendyol from "@/components/common/Trendyol";
 
 
 const TOOLTIP_MAX_WIDTH = 360;
@@ -507,6 +508,7 @@ export default function Detail({ product }) {
                         </div>
                       </div>
                     )}
+                    <Trendyol productSlug={product.slug} />
 
                     {/* Yeni Sade Bilgi Kaydırağı */}
                     {announcementMessages && announcementMessages.length > 0 && (
