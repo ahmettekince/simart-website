@@ -1,12 +1,16 @@
-import Features from "@/components/homes/home-electronic/Features";
-import HomeReviews from "@/components/common/HomeReviews";
 import Header from "@/components/headers/Header";
-import Blogs from "@/components/homes/home-electronic/Blogs";
-import Categories from "@/components/homes/home-electronic/Categories";
-import CollectionBanner from "@/components/homes/home-electronic/CollectionBanner";
-import Collections from "@/components/homes/home-electronic/Collections";
 import Hero from "@/components/homes/home-electronic/Hero";
-import Products from "@/components/homes/home-electronic/Products";
+import nextDynamic from "next/dynamic";
+
+// Sayfanın altında kalan bileşenleri dinamik yüklüyoruz.
+// Bu işlem ana paketi küçültür ve tarayıcının daha hızlı render yapmasını sağlar.
+const Features = nextDynamic(() => import("@/components/homes/home-electronic/Features"), { ssr: true });
+const HomeReviews = nextDynamic(() => import("@/components/common/HomeReviews"), { ssr: true });
+const Blogs = nextDynamic(() => import("@/components/homes/home-electronic/Blogs"), { ssr: true });
+const Categories = nextDynamic(() => import("@/components/homes/home-electronic/Categories"), { ssr: true });
+const CollectionBanner = nextDynamic(() => import("@/components/homes/home-electronic/CollectionBanner"), { ssr: true });
+const Collections = nextDynamic(() => import("@/components/homes/home-electronic/Collections"), { ssr: true });
+const Products = nextDynamic(() => import("@/components/homes/home-electronic/Products"), { ssr: true });
 
 import React from "react";
 import { getCategories, getBanners, getCollectionBanner, getCollections, getReviews } from "@/api/home";

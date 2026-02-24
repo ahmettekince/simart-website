@@ -5,15 +5,19 @@ import { usePathname } from "next/navigation";
 import { useCartStore } from "@/stores/cartStore";
 import { useAuthStore } from "@/stores/authStore";
 import { getCart } from "@/api/cart";
-import ShopCart from "@/components/modals/ShopCart";
-import SearchModal from "@/components/modals/SearchModal";
-import ToolbarBottom from "@/components/modals/ToolbarBottom";
-import ToolbarShop from "@/components/modals/ToolbarShop";
-import ScrollTop from "@/components/common/ScrollTop";
-import CookieConsentBanner from "@/components/common/CookieConsentBanner";
-import Analytics from "@/components/common/Analytics";
-import GlobalGiftSelectionModal from "@/components/modals/GlobalGiftSelectionModal";
-import CampaignTab from "@/components/common/CampaignTab";
+import dynamic from "next/dynamic";
+
+// Modalları ve ağır bileşenleri dinamik (lazy) olarak yüklüyoruz. 
+// ssr: false sayesinde sunucu yükü azalır ve tarayıcı açıldığı an arka planda yüklenirler.
+const ShopCart = dynamic(() => import("@/components/modals/ShopCart"), { ssr: false });
+const SearchModal = dynamic(() => import("@/components/modals/SearchModal"), { ssr: false });
+const ToolbarBottom = dynamic(() => import("@/components/modals/ToolbarBottom"), { ssr: false });
+const ToolbarShop = dynamic(() => import("@/components/modals/ToolbarShop"), { ssr: false });
+const GlobalGiftSelectionModal = dynamic(() => import("@/components/modals/GlobalGiftSelectionModal"), { ssr: false });
+const CookieConsentBanner = dynamic(() => import("@/components/common/CookieConsentBanner"), { ssr: false });
+const CampaignTab = dynamic(() => import("@/components/common/CampaignTab"), { ssr: false });
+const ScrollTop = dynamic(() => import("@/components/common/ScrollTop"), { ssr: false });
+const Analytics = dynamic(() => import("@/components/common/Analytics"), { ssr: false });
 
 export default function ClientLayout({ children }) {
     const pathname = usePathname();
@@ -119,7 +123,6 @@ export default function ClientLayout({ children }) {
     useEffect(() => {
         // Her zaman LTR kullan
         document.documentElement.dir = "ltr";
-        document.body.classList.remove("rtl");
 
         const preloader = document.getElementById("preloader");
         if (preloader) preloader.classList.add("disabled");
