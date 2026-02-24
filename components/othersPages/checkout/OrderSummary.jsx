@@ -883,8 +883,9 @@ export default function OrderSummary({
                         style={{ marginTop: "3px", flexShrink: 0 }}
                       />
                       <label htmlFor="check-agreements" className="text_black-2" style={{ margin: 0, lineHeight: "1.5" }}>
-                        <Link href="/gizlilik-politikasi" target="_blank" style={{ textDecoration: "underline" }}>Gizlilik Politikasını</Link> ve{" "}
-                        <Link href="/sartlar-kosullar" target="_blank" style={{ textDecoration: "underline" }}>Şartlar ve Koşulları</Link> okudum, kabul ediyorum.
+                        <Link href="/gizlilik-politikasi" target="_blank" style={{ textDecoration: "underline" }}>Gizlilik Politikasını</Link>,{" "}
+                        <Link href="/sartlar-kosullar" target="_blank" style={{ textDecoration: "underline" }}>Şartlar ve Koşulları</Link> ve{" "}
+                        <Link href="/iade-ve-geri-odeme-politikasi" target="_blank" style={{ textDecoration: "underline" }}>İade ve Geri Ödeme Politikasını</Link> okudum, kabul ediyorum.
                       </label>
                     </div>
                   </div>
