@@ -83,7 +83,7 @@ function BannerContent({ images, isFirstSlide = false }) {
           sizes="100vw"
           quality={100}
           priority={isFirstSlide}
-          loading={isFirstSlide ? "eager" : "lazy"}
+          {...(isFirstSlide ? { fetchPriority: "high" } : {})}
         />
       </div>
 
@@ -99,7 +99,7 @@ function BannerContent({ images, isFirstSlide = false }) {
           sizes="100vw"
           quality={100}
           priority={isFirstSlide}
-          loading={isFirstSlide ? "eager" : "lazy"}
+          {...(isFirstSlide ? { fetchPriority: "high" } : {})}
         />
       </div>
 
@@ -115,7 +115,7 @@ function BannerContent({ images, isFirstSlide = false }) {
           sizes="(max-width: 768px) 100vw, 800px"
           quality={100}
           priority={isFirstSlide}
-          loading={isFirstSlide ? "eager" : "lazy"}
+          {...(isFirstSlide ? { fetchPriority: "high" } : {})}
         />
       </div>
     </>
