@@ -8,7 +8,7 @@ import { getInstallmentOptions } from "@/api/installment";
  * Mobilde alt alta, tablette 2 yan yana, PC'de 4 yan yana gösterir
  * Filtreleme: Rate 0 olanları gösterir, ama installment_count: 1 ve rate > 0 olanları göstermez
  */
-export default function InstallmentOptions({ productSlug }) {
+export default function InstallmentOptions({ productSlug, active }) {
   const [loading, setLoading] = useState(false);
   const [installmentData, setInstallmentData] = useState(null);
   const [error, setError] = useState(null);
@@ -22,7 +22,7 @@ export default function InstallmentOptions({ productSlug }) {
 
   // Taksit seçeneklerini yükle - tab açıldığında otomatik yükle
   useEffect(() => {
-    if (!cleanSlug || installmentData) return;
+    if (!cleanSlug || installmentData || !active) return;
 
     const fetchInstallments = async () => {
       setLoading(true);
@@ -37,20 +37,20 @@ export default function InstallmentOptions({ productSlug }) {
             banks: data.banks
               .filter((bank) => !excludedBankNames.includes((bank.bank_name || "").trim()))
               .map((bank) => {
-              const filteredOptions = bank.options.filter((option) => {
-                // Rate 0 olanları göster
-                const rate = parseFloat(option.rate || 0);
-                if (rate === 0) return true;
-                // Rate > 0 ve installment_count === 1 olanları gösterme
-                if (option.installment_count === 1 && rate > 0) return false;
-                // Diğer rate'li taksitleri göster
-                return true;
-              });
-              return {
-                ...bank,
-                options: filteredOptions,
-              };
-            }),
+                const filteredOptions = bank.options.filter((option) => {
+                  // Rate 0 olanları göster
+                  const rate = parseFloat(option.rate || 0);
+                  if (rate === 0) return true;
+                  // Rate > 0 ve installment_count === 1 olanları gösterme
+                  if (option.installment_count === 1 && rate > 0) return false;
+                  // Diğer rate'li taksitleri göster
+                  return true;
+                });
+                return {
+                  ...bank,
+                  options: filteredOptions,
+                };
+              }),
           };
           setInstallmentData(filteredData);
         } else {
@@ -65,7 +65,7 @@ export default function InstallmentOptions({ productSlug }) {
     };
 
     fetchInstallments();
-  }, [cleanSlug, installmentData]);
+  }, [cleanSlug, installmentData, active]);
 
   if (!cleanSlug) return null;
 

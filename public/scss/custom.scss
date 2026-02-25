@@ -2953,14 +2953,33 @@ body.header-scroll-hide header.header-default {
     border: 1px solid #e5e5e5;
     border-radius: 12px;
     background-color: #fff;
+    display: flex;
+    flex-direction: column;
 
     .card-inner {
-      height: 100%;
+      flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
       text-align: center;
+
+      min-height: 200px;
+
+      .card-content-top {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .card-content-bottom {
+        margin-top: auto !important;
+        width: 100%;
+        display: flex;
+        justify-content: center;
+
+      }
 
       img {
         object-fit: contain;
@@ -2975,20 +2994,23 @@ body.header-scroll-hide header.header-default {
         font-size: 16px;
         color: #3c81b5;
         font-weight: 500;
+        margin-top: 10px;
       }
 
       .manual-title {
         font-weight: 500;
         color: #333;
-        max-width: 80%;
+        font-size: 15px;
+        line-height: 1.4;
       }
 
       .simart-btn {
-        min-width: 140px;
+        min-width: 160px;
       }
     }
   }
 }
+
 
 /* Cart modal - kampanya badge: mobilde font 1px küçük */
 @media (max-width: 767px) {

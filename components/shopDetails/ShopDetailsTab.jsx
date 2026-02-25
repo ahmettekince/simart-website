@@ -430,7 +430,7 @@ export default function ShopDetailsTab({ product }) {
                     <div
                       className={`widget-content-inner ${currentTab === installmentTabIndex ? "active" : ""}`}
                     >
-                      <InstallmentOptions productSlug={product?.slug} />
+                      <InstallmentOptions productSlug={product?.slug} active={currentTab === installmentTabIndex} />
                     </div>
                   )}
                 </div>

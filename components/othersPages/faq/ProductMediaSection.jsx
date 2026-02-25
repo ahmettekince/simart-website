@@ -51,6 +51,9 @@ export default function ProductMediaSection({ product }) {
   const manualTitle =
     product?.manual_title ?? `${productName} Kılavuzunu görüntüleyin`;
 
+  // Kategori slug'ını belirle (Önce ana kategori, yoksa ilk kategori, o da yoksa varsayılan)
+  const categorySlug = product?.category?.slug || product?.categories?.[0]?.slug || "urunler";
+
   // Kılavuz görüntüle butonu işlevi
   const handleManualClick = (e) => {
     e.preventDefault();
@@ -64,51 +67,29 @@ export default function ProductMediaSection({ product }) {
       <div className="row g-3 align-items-stretch">
         {/* Ürün Görseli */}
         <div className="col-12 col-md-4">
-          <div className="product-media-card product-media-card-image d-block">
-            <div className="card-inner">
-              {imageUrl ? (
-                <Image
-                  src={imageUrl}
-                  alt={productName}
-                  width={260}
-                  height={160}
-                  style={{ objectFit: "contain", maxWidth: "100%", height: "auto" }}
-                />
-              ) : (
-                <div className="text-muted small">Görsel bulunamadı</div>
-              )}
-              {/* <span className="label">Ürün Görseli</span> */}
-              <Link
-                href={`/magaza/${(() => {
-                  // 1. product.category.slug varsa
-                  if (product?.category?.slug) return product.category.slug;
-
-                  // 2. product.categories dizisi varsa
-                  if (Array.isArray(product?.categories) && product.categories.length > 0) {
-                    const cat = product.categories[0];
-                    if (cat.slug) return cat.slug;
-                    if (cat.name) {
-                      return cat.name
-                        .toLowerCase()
-                        .replace(/ğ/g, "g")
-                        .replace(/ü/g, "u")
-                        .replace(/ş/g, "s")
-                        .replace(/ı/g, "i")
-                        .replace(/ö/g, "o")
-                        .replace(/ç/g, "c")
-                        .replace(/[^a-z0-9]+/g, "-")
-                        .replace(/^-+|-+$/g, "");
-                    }
-                  }
-
-                  // 3. Varsayılan
-                  return "urunler";
-                })()
-                  }/${product?.slug}`}
-                className="simart-btn simart-btn--outline mt-2"
-              >
-                Ürünü İncele
-              </Link>
+          <div className="product-media-card product-media-card-image h-100 shadow-sm">
+            <div className="card-inner d-flex flex-column h-100">
+              <div className="card-content-top flex-grow-1 d-flex flex-column align-items-center justify-content-center">
+                {imageUrl ? (
+                  <Image
+                    src={imageUrl}
+                    alt={productName}
+                    width={260}
+                    height={160}
+                    style={{ objectFit: "contain", maxWidth: "100%", height: "auto" }}
+                  />
+                ) : (
+                  <div className="text-muted small">Görsel bulunamadı</div>
+                )}
+              </div>
+              <div className="card-content-bottom mt-auto">
+                <Link
+                  href={`/magaza/${categorySlug}/${product?.slug}`}
+                  className="simart-btn simart-btn--outline"
+                >
+                  Ürünü İncele
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -116,30 +97,34 @@ export default function ProductMediaSection({ product }) {
         {/* YouTube */}
         {youtubeUrl && (
           <div className="col-12 col-md-4">
-            <div className="product-media-card product-media-card-youtube d-block">
-              <div className="card-inner">
-                <span className="product-media-youtube-icon">
-                  <svg
-                    width="64"
-                    height="44"
-                    viewBox="0 0 64 44"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
+            <div className="product-media-card product-media-card-youtube h-100 shadow-sm">
+              <div className="card-inner d-flex flex-column h-100">
+                <div className="card-content-top flex-grow-1 d-flex flex-column align-items-center justify-content-center">
+                  <span className="product-media-youtube-icon mb-3">
+                    <svg
+                      width="64"
+                      height="44"
+                      viewBox="0 0 64 44"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M62.5 6.8C61.4 2.5 58.2 0 53.3 0H10.7C5.8 0 2.6 2.5 1.5 6.8 0 11 .5 22 .5 22s.5 11 1.5 15.2c1.1 4.3 4.3 6.8 9.2 6.8h42.6c4.9 0 8.1-2.5 9.2-6.8 1-4.2 1.5-15.2 1.5-15.2s-.5-11-1.5-15.2z"
+                        fill="#FF0000"
+                      />
+                      <path d="M26 31V13l21 9-21 9z" fill="#fff" />
+                    </svg>
+                  </span>
+                  <span className="label text-center">{productName} Tanıtım Videosu</span>
+                </div>
+                <div className="card-content-bottom">
+                  <button
+                    onClick={() => setShowVideo(true)}
+                    className="simart-btn simart-btn--outline"
                   >
-                    <path
-                      d="M62.5 6.8C61.4 2.5 58.2 0 53.3 0H10.7C5.8 0 2.6 2.5 1.5 6.8 0 11 .5 22 .5 22s.5 11 1.5 15.2c1.1 4.3 4.3 6.8 9.2 6.8h42.6c4.9 0 8.1-2.5 9.2-6.8 1-4.2 1.5-15.2 1.5-15.2s-.5-11-1.5-15.2z"
-                      fill="#FF0000"
-                    />
-                    <path d="M26 31V13l21 9-21 9z" fill="#fff" />
-                  </svg>
-                </span>
-                <span className="label">Tanıtım Videosu</span>
-                <button
-                  onClick={() => setShowVideo(true)}
-                  className="simart-btn simart-btn--outline mt-2"
-                >
-                  Videoyu izle
-                </button>
+                    Videoyu izle
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -148,38 +133,42 @@ export default function ProductMediaSection({ product }) {
         {/* Kullanım Kılavuzu */}
         {manualUrl && (
           <div className="col-12 col-md-4">
-            <div className="product-media-card product-media-card-manual d-block">
+            <div className="product-media-card product-media-card-manual h-100 shadow-sm">
               <div className="card-inner">
-                <span className="icon-pdf">
-                  <svg
-                    width="48"
-                    height="60"
-                    viewBox="0 0 48 60"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
+                <div className="card-content-top flex-grow-1 d-flex flex-column align-items-center justify-content-center">
+                  <span className="icon-pdf mb-3">
+                    <svg
+                      width="48"
+                      height="60"
+                      viewBox="0 0 48 60"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M8 0C3.6 0 0 3.6 0 8v44c0 4.4 3.6 8 8 8h32c4.4 0 8-3.6 8-8V20L28 0H8z"
+                        fill="#E53935"
+                      />
+                      <path d="M28 0v20h20L28 0z" fill="#B71C1C" />
+                      <path
+                        d="M12 36h8v2h-8v-2zm0 6h12v2H12v-2zm0 6h10v2H12v-2z"
+                        fill="#fff"
+                      />
+                      <path
+                        d="M28 38h-4v2h4c2.2 0 4-1.8 4-4s-1.8-4-4-4h-4v2h4c1.1 0 2 .9 2 2s-.9 2-2 2z"
+                        fill="#fff"
+                      />
+                    </svg>
+                  </span>
+                  <span className="manual-title text-center px-2">{manualTitle}</span>
+                </div>
+                <div className="card-content-bottom">
+                  <button
+                    onClick={handleManualClick}
+                    className="simart-btn simart-btn--outline"
                   >
-                    <path
-                      d="M8 0C3.6 0 0 3.6 0 8v44c0 4.4 3.6 8 8 8h32c4.4 0 8-3.6 8-8V20L28 0H8z"
-                      fill="#E53935"
-                    />
-                    <path d="M28 0v20h20L28 0z" fill="#B71C1C" />
-                    <path
-                      d="M12 36h8v2h-8v-2zm0 6h12v2H12v-2zm0 6h10v2H12v-2z"
-                      fill="#fff"
-                    />
-                    <path
-                      d="M28 38h-4v2h4c2.2 0 4-1.8 4-4s-1.8-4-4-4h-4v2h4c1.1 0 2 .9 2 2s-.9 2-2 2z"
-                      fill="#fff"
-                    />
-                  </svg>
-                </span>
-                <span className="manual-title">{manualTitle}</span>
-                <button
-                  onClick={handleManualClick}
-                  className="simart-btn simart-btn--outline mt-2"
-                >
-                  {showDocument ? "Kılavuzu Gizle" : "Kılavuzu Görüntüle"}
-                </button>
+                    {showDocument ? "Kılavuzu Gizle" : "Kılavuzu Görüntüle"}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -195,7 +184,6 @@ export default function ProductMediaSection({ product }) {
                 src={manualUrl}
                 title="Kullanım Kılavuzu"
                 allowFullScreen
-                style={{ border: "none", width: "100%", height: "100%" }}
               ></iframe>
             </div>
           </div>
