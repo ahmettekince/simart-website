@@ -22,6 +22,8 @@ export default function ProductsClient({ products = [] }) {
                         spaceBetween={10}
                         slidesPerView={2} // Mobil (Varsayılan)
                         loop={true}
+                        grabCursor={true}
+                        touchEventsTarget="container"
                         speed={1500} // Kayma hızı (ms) - Daha yavaş ve smooth geçiş
                         autoplay={{
                             delay: 4000, // Her slaytta bekleme süresi

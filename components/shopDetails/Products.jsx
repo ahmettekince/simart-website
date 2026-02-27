@@ -35,6 +35,8 @@ export default function Products({ products = [] }) {
               dir="ltr"
               slidesPerView={4}
               spaceBetween={30}
+              grabCursor={true}
+              touchEventsTarget="container"
               breakpoints={{
                 1100: { slidesPerView: 4, spaceBetween: 30 },
                 768: { slidesPerView: 3, spaceBetween: 20 },
