@@ -127,7 +127,7 @@ export default function SmartStickyBar({
   if (!product) return null;
 
   return (
-    <div className={`smart-sticky-wrapper ${isVisible ? "is-visible" : ""}`}>
+    <div className={`smart-sticky-wrapper ${isVisible ? "is-visible" : ""} ${buttonState.buttonText === "Stokta Yok" ? "d-none d-md-block" : ""}`}>
       <MaxQuantityToast visible={showMaxReachedToast} onHide={() => setShowMaxReachedToast(false)} maxQuantity={maxQuantity} isStockLimit={isStockLimit} />
       <ErrorToast visible={showErrorToast} onHide={() => setShowErrorToast(false)} message={errorToastMessage} />
 
@@ -146,35 +146,39 @@ export default function SmartStickyBar({
             )}
           </div>
           <div className="ss-details">
-            <h6 className="ss-title d-none d-md-block">
-              {productName.length > 18 ? productName.slice(0, 18) + "..." : productName}
+            <h6 className={`ss-title d-none d-md-block ${buttonState.buttonText === "Stokta Yok" ? "full-title" : ""}`}>
+              {buttonState.buttonText === "Stokta Yok" ? productName : (productName.length > 18 ? productName.slice(0, 18) + "..." : productName)}
             </h6>
-            <div className="ss-price-row">
-              <span className={`ss-current-price ${originalPrice ? 'ss-has-discount' : ''}`}>
-                {Number(finalPrice).toLocaleString("tr-TR")} TL
-              </span>
-              {originalPrice && (
-                <span className="ss-old-price">
-                  {Number(originalPrice).toLocaleString("tr-TR")} TL
+            {buttonState.buttonText !== "Stokta Yok" && (
+              <div className="ss-price-row">
+                <span className={`ss-current-price ${originalPrice ? 'ss-has-discount' : ''}`}>
+                  {Number(finalPrice).toLocaleString("tr-TR")} TL
                 </span>
-              )}
-            </div>
+                {originalPrice && (
+                  <span className="ss-old-price">
+                    {Number(originalPrice).toLocaleString("tr-TR")} TL
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
         {/* Actions Section */}
         <div className="ss-actions">
-          <div className="ss-quantity-wrapper">
-            <Quantity
-              setQuantity={setQuantity}
-              initialValue={quantity}
-              minQuantity={minQuantity}
-              maxQuantity={maxQuantity}
-              disabled={soldOut || buttonState.buttonDisabled}
-            />
-          </div>
+          {buttonState.buttonText !== "Stokta Yok" && (
+            <div className="ss-quantity-wrapper">
+              <Quantity
+                setQuantity={setQuantity}
+                initialValue={quantity}
+                minQuantity={minQuantity}
+                maxQuantity={maxQuantity}
+                disabled={soldOut || buttonState.buttonDisabled}
+              />
+            </div>
+          )}
           <button
-            className={`ss-submit-btn ${showSuccess ? 'success' : ''} ${buttonState.buttonDisabled ? 'disabled' : ''}`}
+            className={`ss-submit-btn ${showSuccess ? 'success' : ''} ${buttonState.buttonDisabled ? 'disabled' : ''} ${buttonState.buttonText === 'Stokta Yok' ? 'out-of-stock' : ''}`}
             onClick={handleAddToCart}
             disabled={isAdding || showSuccess || buttonState.buttonDisabled}
           >
@@ -349,6 +353,13 @@ export default function SmartStickyBar({
           text-overflow: ellipsis;
         }
 
+        .ss-title.full-title {
+          white-space: normal;
+          overflow: visible;
+          text-overflow: clip;
+          line-height: 1.4;
+        }
+
         .ss-price-row {
           display: flex;
           gap: 8px;
@@ -407,6 +418,12 @@ export default function SmartStickyBar({
         .ss-submit-btn.disabled {
           background: #ccc;
           cursor: not-allowed;
+        }
+
+        .ss-submit-btn.out-of-stock {
+          background: #dc2626 !important;
+          border-color: #dc2626 !important;
+          opacity: 1 !important;
         }
 
         .btn-label {
