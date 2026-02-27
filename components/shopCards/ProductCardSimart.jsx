@@ -174,10 +174,14 @@ export default function ProductCardSimart({ product, isPriority = false }) {
         </div>
 
         <div className="price-slot">
-          <span className={`price-new fw-bold ${oldPrice ? "price-discount" : "price-normal"}`}>
-            {finalPrice.toLocaleString("tr-TR")} TL
-          </span>
-          {oldPrice && <span className="price-old">{oldPrice.toLocaleString("tr-TR")} TL</span>}
+          {buttonText !== "Stokta Yok" && (
+            <>
+              <span className={`price-new fw-bold ${oldPrice ? "price-discount" : "price-normal"}`}>
+                {finalPrice.toLocaleString("tr-TR")} TL
+              </span>
+              {oldPrice && <span className="price-old">{oldPrice.toLocaleString("tr-TR")} TL</span>}
+            </>
+          )}
         </div>
 
         <div className="button-row">

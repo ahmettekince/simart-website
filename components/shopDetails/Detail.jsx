@@ -467,16 +467,20 @@ export default function Detail({ product }) {
                     {product?.name !== "katya Robot Süpürge" && product?.name !== "Katya Akıllı Robot Süpürge" && (
                       <div className="tf-product-info-price d-none d-md-block" style={{ marginBottom: "16px", width: "100%" }}>
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", flexWrap: "nowrap", width: "100%" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <span className="price-on-sale" style={{ fontSize: "20px", fontWeight: "700", color: originalPrice ? "#0bc15c" : "var(--primary, #3c81b5)" }}>
-                              {Number(finalPrice).toLocaleString("tr-TR", { minimumFractionDigits: 0, maximumFractionDigits: Number(finalPrice) % 1 === 0 ? 0 : 2 })} TL
-                            </span>
-                            {originalPrice != null && originalPrice > finalPrice && (
-                              <span className="compare-at-price" style={{ fontSize: "16px", color: "#999", textDecoration: "line-through" }}>
-                                {Number(originalPrice).toLocaleString("tr-TR", { minimumFractionDigits: 0, maximumFractionDigits: Number(originalPrice) % 1 === 0 ? 0 : 2 })} TL
+                          {(product.is_in_stock || product.is_pre_order) ? (
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                              <span className="price-on-sale" style={{ fontSize: "20px", fontWeight: "700", color: originalPrice ? "#0bc15c" : "var(--primary, #3c81b5)" }}>
+                                {Number(finalPrice).toLocaleString("tr-TR", { minimumFractionDigits: 0, maximumFractionDigits: Number(finalPrice) % 1 === 0 ? 0 : 2 })} TL
                               </span>
-                            )}
-                          </div>
+                              {originalPrice != null && originalPrice > finalPrice && (
+                                <span className="compare-at-price" style={{ fontSize: "16px", color: "#999", textDecoration: "line-through" }}>
+                                  {Number(originalPrice).toLocaleString("tr-TR", { minimumFractionDigits: 0, maximumFractionDigits: Number(originalPrice) % 1 === 0 ? 0 : 2 })} TL
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <div />
+                          )}
 
                           {/* Ürün protokolü - sağa yaslanmış */}
                           {product.product_protocol && (
@@ -511,7 +515,7 @@ export default function Detail({ product }) {
                     <Trendyol productSlug={product.slug} />
 
                     {/* Yeni Sade Bilgi Kaydırağı */}
-                    {announcementMessages && announcementMessages.length > 0 && (
+                    {(product.is_in_stock || product.is_pre_order) && announcementMessages && announcementMessages.length > 0 && (
                       <div style={{ marginBottom: "12px" }}>
                         <InfoTicker messages={announcementMessages} />
                       </div>
