@@ -212,6 +212,7 @@ export default function Slider({
                 width={slide.width}
                 height={slide.height}
                 quality={100}
+                unoptimized={true}
               />
             </div>
           </SwiperSlide>
@@ -253,6 +254,7 @@ export default function Slider({
                         quality={100}
                         style={{ objectFit: "contain", width: "100%", height: "100%" }}
                         priority={index === 0}
+                        unoptimized={true}
                         loading="eager"
                       />
                     </a>
