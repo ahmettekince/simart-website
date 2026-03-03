@@ -24,7 +24,7 @@ export default function PaymentFailure() {
                 Ödeme işleminiz sırasında bir sorun oluştu. Bankanızla iletişime geçebilir veya farklı bir kart ile tekrar deneyebilirsiniz.
               </p>
               <Link
-                href={`/hesabim/siparislerim`}
+                href={`/siparislerim`}
                 className="tf-btn mb_20 w-100 btn-fill animate-hover-btn radius-3 justify-content-center"
               >
                 <span>Siparişlerime Git</span>

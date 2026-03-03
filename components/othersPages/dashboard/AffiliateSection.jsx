@@ -134,7 +134,7 @@ export default function AffiliateSection() {
         }
     };
 
-    if (isLoading && !customer) {
+    if (isLoading || !customer) {
         return (
             <div className="d-flex justify-content-center p-5">
                 <CircularLoading text="Bilgileriniz kontrol ediliyor..." />

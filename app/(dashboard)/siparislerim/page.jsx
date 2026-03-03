@@ -19,7 +19,6 @@ export default async function page() {
   return (
     <>
       <Header />
-
       <section className="flat-spacing-11">
         <div className="container">
           <div className="row">
@@ -32,7 +31,6 @@ export default async function page() {
           </div>
         </div>
       </section>
-
     </>
   );
 }

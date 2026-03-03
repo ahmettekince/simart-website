@@ -73,6 +73,7 @@ export default function AffiliateDashboard() {
             <div className="row g-3 mb-4">
                 <StatCard title="Toplam Ziyaret" value={info.visitors_total} icon="icon-view" color="#3c81b5" />
                 <StatCard title="Siparişler" value={info.orders_count} icon="icon-bag" color="#f59e0b" />
+                <StatCard title="Komisyon Oranı" value={`%${info.commission_rate}`} icon="icon-card" color="#3b82f6" />
                 <StatCard title="Bekleyen Hakediş" value={`${info.commission_pending} TL`} icon="icon-time" color="#8b5cf6" />
                 <StatCard title="Çekilebilir Bakiye" value={`${info.commission_withdrawable} TL`} icon="icon-check" color="#10b981" isGreen />
                 <StatCard title="Toplam Kazanç" value={`${info.commission_lifetime} TL`} icon="icon-card" color="#ef4444" isHighlight />
@@ -169,8 +170,8 @@ export default function AffiliateDashboard() {
                 {activeTab === "link-olustur" && (
                     <div className="bg-white p-4 rounded shadow-sm border" >
                         <h5 className="fw-6 mb-3" style={{ fontSize: '18px' }}>Referans Linki Oluştur</h5>
-                        <div className="p-3 bg-danger d-flex gap-3 align-items-center mb-4" style={{ borderRadius: '10px' }}>
-                            <div className="bg-white text-danger rounded-circle d-flex align-items-center justify-content-center" style={{ minWidth: '32px', height: '32px' }}>
+                        <div className="p-3 d-flex gap-3 align-items-center mb-4" style={{ backgroundColor: '#3c81b5', borderRadius: '10px' }}>
+                            <div className="bg-white rounded-circle d-flex align-items-center justify-content-center" style={{ minWidth: '32px', height: '32px', color: '#3c81b5' }}>
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
                                     <line x1="12" y1="6" x2="12" y2="10"></line>
                                     <line x1="12" y1="18" x2="12.01" y2="18"></line>

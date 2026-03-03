@@ -135,7 +135,7 @@ export default function PaymentResultContent() {
                   Ana Sayfaya Dön
                 </Link>
                 {isSuccess && (
-                  <Link href="/hesabim/siparislerim" className="tf-btn btn-line radius-3">
+                  <Link href="/siparislerim" className="tf-btn btn-line radius-3">
                     Siparişlerimi Görüntüle
                   </Link>
                 )}
