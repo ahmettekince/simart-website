@@ -106,8 +106,8 @@ export default function Orders() {
 
   return (
     <div className="my-account-content account-order">
-      <div className="wrap-account-order">
-        <table>
+      <div className="wrap-account-order border overflow-hidden" style={{ borderRadius: '12px' }}>
+        <table className="mb-0">
           <thead>
             <tr>
               <th className="fw-6">Sipariş No</th>
@@ -149,25 +149,25 @@ export default function Orders() {
                 const isPaymentFailed = (order.payment_status_text || "").toLowerCase().includes("başarısız");
                 const displayStatus = isPaymentFailed ? (order.payment_status_text || "Ödeme Başarısız") : (order.status_text || "-");
                 return (
-                <tr
-                  className="tf-order-item"
-                  key={order.id}
-                  style={isPaymentFailed ? { backgroundColor: "rgb(204, 51, 51)", color: "#fff" } : undefined}
-                >
-                  <td>{order.order_number}</td>
-                  <td>{formatDate(order.created_at)}</td>
-                  <td>{displayStatus}</td>
-                  <td>{formatTotal(order.total)}</td>
-                  <td>
-                    <SimartButton
-                      type="button"
-                      onClick={() => handleViewOrder(order.order_number)}
-                    >
-                      Görüntüle
-                    </SimartButton>
-                  </td>
-                </tr>
-              );
+                  <tr
+                    className="tf-order-item"
+                    key={order.id}
+                    style={isPaymentFailed ? { backgroundColor: "rgb(204, 51, 51)", color: "#fff" } : undefined}
+                  >
+                    <td>{order.order_number}</td>
+                    <td>{formatDate(order.created_at)}</td>
+                    <td>{displayStatus}</td>
+                    <td>{formatTotal(order.total)}</td>
+                    <td>
+                      <SimartButton
+                        type="button"
+                        onClick={() => handleViewOrder(order.order_number)}
+                      >
+                        Görüntüle
+                      </SimartButton>
+                    </td>
+                  </tr>
+                );
               })}
           </tbody>
         </table>
@@ -186,7 +186,7 @@ export default function Orders() {
             className="order-detail-modal modal-dialog-centered"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="order-detail-modal-inner">
+            <div className="order-detail-modal-inner" style={{ borderRadius: '16px' }}>
               <div className="order-detail-header d-flex align-items-center justify-content-between">
                 <h5 className="fw-6 mb-0">Sipariş Detayı</h5>
                 <button
@@ -226,8 +226,8 @@ export default function Orders() {
                         <button
                           type="button"
                           className={`order-copy-btn ${copiedOrderNumber === selectedOrderDetail.order_number
-                              ? "copied"
-                              : ""
+                            ? "copied"
+                            : ""
                             }`}
                           onClick={() => handleCopyOrderNumber(selectedOrderDetail.order_number)}
                           aria-label={
@@ -261,7 +261,7 @@ export default function Orders() {
                     {(selectedOrderDetail.campaign_discount_amount ?? 0) > 0 && (
                       <div className="order-detail-row">
                         <span className="label">Kampanya İndirimi</span>
-                        <span className="value" style={{ color: "#0bc15c" }}>
+                        <span className="value" style={{ color: "#10b981" }}>
                           -{formatTotal(selectedOrderDetail.campaign_discount_amount)}
                         </span>
                       </div>
@@ -269,7 +269,7 @@ export default function Orders() {
                     {(selectedOrderDetail.coupon_discount_amount ?? 0) > 0 && (
                       <div className="order-detail-row">
                         <span className="label">Kupon İndirimi{selectedOrderDetail.coupon_code ? ` (${selectedOrderDetail.coupon_code})` : ""}</span>
-                        <span className="value" style={{ color: "#0bc15c" }}>
+                        <span className="value" style={{ color: "#10b981" }}>
                           -{formatTotal(selectedOrderDetail.coupon_discount_amount)}
                         </span>
                       </div>
@@ -397,11 +397,11 @@ export default function Orders() {
                             {(selectedOrderDetail.invoice_address.full_address ||
                               selectedOrderDetail.invoice_address.address_detail ||
                               "").split("\n").map((line, idx) => (
-                              <span key={idx}>
-                                {line}
-                                <br />
-                              </span>
-                            ))}
+                                <span key={idx}>
+                                  {line}
+                                  <br />
+                                </span>
+                              ))}
                           </div>
                         </div>
                       )}
@@ -442,6 +442,20 @@ export default function Orders() {
           </div>
         </div>
       )}
+
+      <style jsx>{`
+        .wrap-account-order table thead tr th {
+          background-color: #f5f5f5 !important;
+          color: #000 !important;
+          border: none !important;
+          padding: 15px 20px !important;
+        }
+        .text-success { color: #10b981 !important; }
+        .order-status-badge--success {
+          background-color: #ecfdf5 !important;
+          color: #10b981 !important;
+        }
+      `}</style>
     </div>
   );
 }

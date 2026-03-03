@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { log } from '@/utils/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -66,14 +67,14 @@ export async function POST(req) {
     }
 
     // Bankadan gelen verileri console'a yazdır
-    console.log('========================================');
-    console.log('[Payment Callback] POST Request received from Bank');
-    console.log('Method: POST');
-    console.log('URL:', req.url);
-    console.log('Headers:', Object.fromEntries(req.headers.entries()));
-    console.log('Query Params:', Object.fromEntries(url.searchParams.entries()));
-    console.log('Body Data:', JSON.stringify(payload, null, 2));
-    console.log('========================================');
+    log('========================================');
+    log('[Payment Callback] POST Request received from Bank');
+    log('Method: POST');
+    log('URL:', req.url);
+    log('Headers:', Object.fromEntries(req.headers.entries()));
+    log('Query Params:', Object.fromEntries(url.searchParams.entries()));
+    log('Body Data:', JSON.stringify(payload, null, 2));
+    log('========================================');
 
     // Backend'e gönderilecek verileri hazırla (alan adlarını dönüştür)
     const backendPayload = {
@@ -82,7 +83,7 @@ export async function POST(req) {
       order_number: payload.orderId || payload.order_number || '',
     };
 
-    console.log('[Payment Callback] Sending to backend:', JSON.stringify(backendPayload, null, 2));
+    log('[Payment Callback] Sending to backend:', JSON.stringify(backendPayload, null, 2));
 
     // Backend'e ödeme tamamlama isteği gönder
     let backendResponse = null;
@@ -112,7 +113,7 @@ export async function POST(req) {
       });
 
       backendResponse = await response.json();
-      console.log('[Payment Callback] Backend response:', JSON.stringify(backendResponse, null, 2));
+      log('[Payment Callback] Backend response:', JSON.stringify(backendResponse, null, 2));
     } catch (error) {
       console.error('[Payment Callback] Backend request error:', error);
       backendResponse = {
@@ -133,8 +134,8 @@ export async function POST(req) {
     const redirectPath = backendStatus === 'success' ? '/odeme-basarili' : '/odeme-basarisiz';
     const redirectUrl = `${process.env.APP_URL || origin}${redirectPath}?${searchParams.toString()}`;
 
-    console.log('[Payment Callback] Backend status:', backendStatus);
-    console.log('[Payment Callback] Redirecting to:', redirectUrl);
+    log('[Payment Callback] Backend status:', backendStatus);
+    log('[Payment Callback] Redirecting to:', redirectUrl);
     return NextResponse.redirect(redirectUrl, { status: 302 });
   } catch (error) {
     console.error('[Payment Callback] Error processing POST:', error);
@@ -156,12 +157,12 @@ export async function GET(req) {
     });
 
     // GET verilerini console'a yazdır
-    console.log('========================================');
-    console.log('[Payment Callback] GET Request received');
-    console.log('Method: GET');
-    console.log('URL:', req.url);
-    console.log('Query Params:', JSON.stringify(payload, null, 2));
-    console.log('========================================');
+    log('========================================');
+    log('[Payment Callback] GET Request received');
+    log('Method: GET');
+    log('URL:', req.url);
+    log('Query Params:', JSON.stringify(payload, null, 2));
+    log('========================================');
 
     // Backend'e gönderilecek verileri hazırla
     const backendPayload = {
@@ -198,7 +199,7 @@ export async function GET(req) {
       });
 
       backendResponse = await response.json();
-      console.log('[Payment Callback] Backend response:', JSON.stringify(backendResponse, null, 2));
+      log('[Payment Callback] Backend response:', JSON.stringify(backendResponse, null, 2));
     } catch (error) {
       console.error('[Payment Callback] Backend request error:', error);
       backendResponse = {
@@ -219,8 +220,8 @@ export async function GET(req) {
     const redirectPath = backendStatus === 'success' ? '/odeme-basarili' : '/odeme-basarisiz';
     const redirectUrl = `${process.env.APP_URL || origin}${redirectPath}?${searchParams.toString()}`;
 
-    console.log('[Payment Callback] Backend status:', backendStatus);
-    console.log('[Payment Callback] Redirecting to:', redirectUrl);
+    log('[Payment Callback] Backend status:', backendStatus);
+    log('[Payment Callback] Redirecting to:', redirectUrl);
     return NextResponse.redirect(redirectUrl, { status: 302 });
   } catch (error) {
     console.error('[Payment Callback] Error processing GET:', error);

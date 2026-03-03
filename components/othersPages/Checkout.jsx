@@ -610,6 +610,23 @@ export default function Checkout() {
 
     setIsSubmittingOrder(true);
 
+    // Cookie'den ref değerini çek (Sessiz mod: hata vermez, boşsa null döner)
+    const getRefCookie = () => {
+      try {
+        if (typeof document === "undefined") return null;
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; affiliate_ref=`);
+        if (parts.length === 2) {
+          const ref = parts.pop().split(';').shift();
+          return ref && ref.trim() !== "" ? ref : null;
+        }
+      } catch (e) {
+        // Hata durumunda sessizce devam et
+      }
+      return null;
+    };
+    const affiliateRef = getRefCookie();
+
     try {
       const requestBody = isAuthenticated
         ? {
@@ -626,6 +643,7 @@ export default function Checkout() {
           ...(showOrderNote && orderNote?.trim() && { notes: orderNote.trim() }),
           ...(showGiftNote && giftNote?.trim() && { gift_note: giftNote.trim() }),
           ...(preferLaterDelivery && preferredDeliveryDate && { preferred_delivery_date: preferredDeliveryDate }),
+          ...(affiliateRef && { ref: affiliateRef }),
         }
         : {
           email: (guestEmail || "").trim(),
@@ -645,6 +663,7 @@ export default function Checkout() {
           ...(showOrderNote && orderNote?.trim() && { notes: orderNote.trim() }),
           ...(showGiftNote && giftNote?.trim() && { gift_note: giftNote.trim() }),
           ...(preferLaterDelivery && preferredDeliveryDate && { preferred_delivery_date: preferredDeliveryDate }),
+          ...(affiliateRef && { ref: affiliateRef }),
         };
 
       log("[Checkout] Sipariş gönderiliyor:", requestBody);

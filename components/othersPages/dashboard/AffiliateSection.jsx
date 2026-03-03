@@ -6,6 +6,7 @@ import CircularLoading from "@/components/common/CircularLoading";
 import Link from "next/link";
 import apiClient from "@/utils/apiClient";
 import SimartButton from "@/components/common/SimartButton";
+import AffiliateDashboard from "./AffiliateDashboard";
 
 export default function AffiliateSection() {
     const customer = useCustomerStore((s) => s.customer);
@@ -333,30 +334,7 @@ export default function AffiliateSection() {
 
     // Durum: 2 -> Kabul edildi
     if (affiliateStatus === 2) {
-        return (
-            <div className="my-account-content">
-                <div className="p-5 bg-white rounded shadow-sm text-center border">
-                    <div className="mb-4">
-                        <div
-                            className="d-inline-flex align-items-center justify-content-center rounded-circle bg-light"
-                            style={{ width: '80px', height: '80px' }}
-                        >
-                            <i className="icon-check" style={{ fontSize: '32px', color: '#28a745' }}></i>
-                        </div>
-                    </div>
-                    <h4 className="mb-3 fw-6">Tebrikler, Kabul Edildiniz!</h4>
-                    <div className="alert alert-success d-inline-block px-4 py-2 border-0 mb-4" style={{ backgroundColor: '#f0fff4', color: '#2f855a', borderRadius: '8px' }}>
-                        <strong>Satış Ortaklığı Aktif</strong>
-                    </div>
-                    {affiliateMessage && <p className="text-muted mb-4 mx-auto">{affiliateMessage}</p>}
-                    <div className="mt-4 pt-2">
-                        <Link href="/magaza" className="tf-btn btn-primary-main style-3">
-                            <span>Ürün Paylaşmaya Başla</span>
-                        </Link>
-                    </div>
-                </div>
-            </div>
-        );
+        return <AffiliateDashboard />;
     }
 
     // Durum: 3 -> Reddedildi

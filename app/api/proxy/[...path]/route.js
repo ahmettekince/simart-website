@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import axios from "axios";
 import crypto from "crypto";
+import { log } from "@/utils/logger";
 
 const BACKEND_URL = process.env.BACKEND_URL;
 
@@ -90,7 +91,7 @@ async function handleRequest(request, params, method) {
         const clientIp = request.headers.get('x-forwarded-for') || "";
 
         // Doğrulama için terminale log basalım
-        console.log(`\n[Proxy Request] IP: ${clientIp} | UA: ${userAgent.substring(0, 50)}...`);
+        log(`\n[Proxy Request] IP: ${clientIp} | UA: ${userAgent.substring(0, 50)}...`);
 
         // İçerik tipini belirle (multipart veya json)
         const reqContentType = request.headers.get("content-type") || "";
@@ -117,13 +118,13 @@ async function handleRequest(request, params, method) {
 
         // Backend'den gelen yanıt 200 değilse (400, 404, 500 vb.) terminale detaylı log bas
         if (response.status !== 200) {
-            console.log(`\n--- [Proxy API Error] ---`);
-            console.log(`Path: ${path}`);
-            console.log(`Method: ${method}`);
-            console.log(`Status: ${response.status}`);
-            console.log(`Target URL: ${targetUrl}`);
-            console.log(`Response Data:`, JSON.stringify(response.data, null, 2));
-            console.log(`-------------------------\n`);
+            log(`\n--- [Proxy API Error] ---`);
+            log(`Path: ${path}`);
+            log(`Method: ${method}`);
+            log(`Status: ${response.status}`);
+            log(`Target URL: ${targetUrl}`);
+            log(`Response Data:`, JSON.stringify(response.data, null, 2));
+            log(`-------------------------\n`);
         }
 
         // Backend'den gelen Set-Cookie header'larını NextResponse'a aktar

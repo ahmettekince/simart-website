@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useCartStore } from "@/stores/cartStore";
+import { log } from "@/utils/logger";
 
 const GIFT_NOTE_KEY = "cart_gift_note";
 
@@ -224,7 +225,7 @@ export default function OrderSummary({
 
   // Debug: Kupon bilgisini kontrol et
   useEffect(() => {
-    console.log("[OrderSummary] Coupon state changed:", coupon);
+    log("[OrderSummary] Coupon state changed:", coupon);
   }, [coupon]);
 
   const handleApplyCoupon = async (e) => {

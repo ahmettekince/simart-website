@@ -24,7 +24,7 @@ export async function serverFetch(endpoint, options = {}) {
         clientIp = headerList.get("x-forwarded-for") || "";
 
         // Doğrulama logu
-        console.log(`[serverFetch] IP: ${clientIp} | UA: ${clientUserAgent.substring(0, 50)}...`);
+        log(`[serverFetch] IP: ${clientIp} | UA: ${clientUserAgent.substring(0, 50)}...`);
     } catch (e) {
         // Static context veya header olmayan yerlerde hata vermemesi için
     }

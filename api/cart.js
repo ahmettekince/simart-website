@@ -430,7 +430,7 @@ export async function applyCoupon(couponCode) {
         const errMsg = error?.response?.data?.message;
         const fallbackMsg = (errMsg && String(errMsg).trim()) ? errMsg : "Uygulanamadı";
         if (error.response) {
-            console.log("❌ Kupon Uygulama Hatası (400/500):", error.response.data);
+            log("❌ Kupon Uygulama Hatası (400/500):", error.response.data);
             log("[API cart.js] applyCoupon error response:", {
                 status: error.response.status,
                 data: error.response.data,
