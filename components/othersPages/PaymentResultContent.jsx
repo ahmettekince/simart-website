@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams, notFound } from "next/navigation";
+import Cookies from "js-cookie";
 
 export default function PaymentResultContent() {
   const searchParams = useSearchParams();
@@ -36,6 +37,13 @@ export default function PaymentResultContent() {
       }
     }
   }, [searchParams]);
+
+  // Affiliate ref cookie'sini temizle
+  useEffect(() => {
+    if (resultData?.status === 'success') {
+      Cookies.remove("affiliate_ref");
+    }
+  }, [resultData]);
 
   if (loading) {
     return (
