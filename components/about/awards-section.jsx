@@ -59,9 +59,9 @@ export function AwardsSection({ awards = [] }) {
         <div className="awards-container">
             {awards.map((award, index) => (
                 <div key={index} className="award-item mb-5">
-                    <div className="row align-items-center">
+                    <div className="row align-items-center justify-content-center">
                         {/* Yazı Alanı */}
-                        <div className="col-lg-7">
+                        <div className="col-lg-6">
                             <div className="award-content-wrapper" style={{
                                 position: 'relative',
                                 padding: '40px',
@@ -129,19 +129,19 @@ export function AwardsSection({ awards = [] }) {
                                             {award.content.map((paragraph, pIndex) => {
                                                 // Eğer HTML string ise parse et
                                                 const isHTML = typeof paragraph === 'string' && (paragraph.includes('<strong>') || paragraph.includes('<b>') || paragraph.includes('<p>'))
-                                                
+
                                                 if (isHTML) {
                                                     // <p> tag'lerini kaldır ve parse et
                                                     const cleanText = paragraph.replace(/^<p>|<\/p>$/g, '').replace(/<\/?p>/g, '')
                                                     const parsedContent = parseInlineHTML(cleanText)
-                                                    
+
                                                     return (
                                                         <p key={pIndex} style={{ marginBottom: '16px' }}>
                                                             {parsedContent}
                                                         </p>
                                                     )
                                                 }
-                                                
+
                                                 return (
                                                     <p key={pIndex} style={{ marginBottom: '16px' }}>
                                                         {paragraph}
@@ -195,7 +195,7 @@ export function AwardsSection({ awards = [] }) {
                         </div>
 
                         {/* Fotoğraf Alanı */}
-                        <div className="col-lg-5">
+                        <div className="col-lg-6">
                             <div style={{
                                 position: 'relative',
                                 width: '100%',
@@ -210,7 +210,8 @@ export function AwardsSection({ awards = [] }) {
                                         alt={award.title || "Ödül"}
                                         fill
                                         style={{
-                                            objectFit: 'cover',
+                                            objectFit: 'contain',
+
                                         }}
                                         sizes="(max-width: 768px) 100vw, 40vw"
                                     />

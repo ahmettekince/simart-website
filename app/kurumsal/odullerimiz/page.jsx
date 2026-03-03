@@ -39,15 +39,9 @@ const awardsData = [
             "Türk mühendisleri tarafından tasarlanan \"katya\", Türkiye'nin yerli tasarım robot süpürgesidir.",
             "Bu ödüle layık görülerek, ülkemize bu gururu yaşatmamızı sağlayan tüm ekip arkadaşlarımıza ve işbirlikçilerimize teşekkür ederiz."
         ],
-        image: "/images/awards/adesign-right.png",
+        image: "/images/awards/adesign-right.jpg",
         backgroundImage: "/images/awards/adesign-background.png",
-        stats: [
-            {
-                icon: "👥",
-                value: "19,600",
-                label: "Kullanıcı"
-            }
-        ]
+
     }
 ]
 
