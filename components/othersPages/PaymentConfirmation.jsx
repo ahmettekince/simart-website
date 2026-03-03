@@ -1,12 +1,6 @@
-import React, { useEffect } from "react";
+import React from "react";
 import Link from "next/link";
-import Cookies from "js-cookie";
-
 export default function PaymentConfirmation() {
-  useEffect(() => {
-    // Ödeme başarılı sayfasına gelindiğinde affiliate ref'i temizle
-    Cookies.remove("affiliate_ref");
-  }, []);
   return (
     <section className="flat-spacing-11">
       <div className="container">
