@@ -243,20 +243,6 @@ export default function OrderSummary({
         setCouponSuccess(true);
         const code = couponCode.trim();
         setCouponCode("");
-
-        // GTM: Kupon uygulandığında checkout event'ini güncel veriyle tekrar gönder
-        try {
-          const { trackBeginCheckout } = require("@/utils/analytics");
-          // Not: cartTotals ve items güncel olmalı (store'dan geliyor veya prop olarak paslanıyor)
-          // updateQuantity/applyCoupon sonrası store güncellenir, parent re-render olur
-          // Ancak applyCoupon async olduğu için hemen sonrasında çağırırsak en güncel totals'ı 
-          // store'dan çekmek daha güvenli olabilir
-          const updatedStore = useCartStore.getState();
-          trackBeginCheckout(updatedStore.items, updatedStore.totals, code);
-        } catch (e) {
-          console.error("GTM trackBeginCheckout failed after coupon:", e);
-        }
-
         setTimeout(() => setCouponSuccess(false), 3000);
       } else {
         setCouponError((result && result.message) || "Uygulanamadı");

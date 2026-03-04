@@ -18,6 +18,7 @@ import { formatTcInput, formatTaxNumberInput, formatNameInput } from "@/utils/in
 export default function Checkout() {
   const { items } = useCartStore();
   const isCartSynced = useCartStore((state) => state.isSynced);
+  const coupon = useCartStore((state) => state.coupon);
 
   // API'den gelen totals.total kullan, yoksa local hesapla (fallback)
   const totals = useCartStore((state) => state.totals);
@@ -667,6 +668,14 @@ export default function Checkout() {
         };
 
       log("[Checkout] Sipariş gönderiliyor:", requestBody);
+
+      // GTM: Ödeme adımına geçmeden hemen önce begin_checkout gönder
+      try {
+        const { trackBeginCheckout } = require("@/utils/analytics");
+        trackBeginCheckout(items, cartTotals, coupon?.code);
+      } catch (e) {
+        log("[Checkout] GTM begin_checkout error:", e);
+      }
 
       const response = await apiClient.post("/checkout/validate", requestBody);
 

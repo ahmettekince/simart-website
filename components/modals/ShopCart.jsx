@@ -1138,14 +1138,7 @@ export default function ShopCart() {
                         <SimartButton
                           href="/odeme"
                           variant="fill"
-                          onClick={() => {
-                            try {
-                              const { trackBeginCheckout } = require("@/utils/analytics");
-                              trackBeginCheckout(items, cartTotals, coupon?.code);
-                            } catch (e) {
-                              console.error("trackBeginCheckout failed:", e);
-                            }
-                          }}
+                          onClick={() => { }}
                           style={{
                             flex: 1,
                             minWidth: 0,
