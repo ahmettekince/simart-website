@@ -7,6 +7,7 @@ import { create } from 'zustand';
 import { openCartModal } from '@/utils/openCartModal';
 import { addToCart as addToCartAPI, removeFromCart as removeFromCartAPI, updateCartQuantity as updateCartQuantityAPI, applyCoupon as applyCouponAPI, removeCoupon as removeCouponAPI, clearCart as clearCartAPI } from '@/api/cart';
 import { log } from '@/utils/logger';
+import { trackAddToCart } from '@/utils/analytics';
 
 /**
  * @typedef {Object} CartItem
@@ -172,6 +173,16 @@ export const useCartStore = create(
                             }, 100);
                         }
                     }
+
+                    // GTM Add to Cart takibi
+                    try {
+                        log('[CartStore] Tracking AddToCart...', product.name);
+                        trackAddToCart(product, quantity);
+                        log('[CartStore] trackAddToCart success pushed to dataLayer');
+                    } catch (e) {
+                        console.error('[CartStore] trackAddToCart failed:', e);
+                    }
+
                     return { added: true };
                 }
                 log('[CartStore] addItem: API failed', result?.message);

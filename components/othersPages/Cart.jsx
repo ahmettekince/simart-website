@@ -36,6 +36,12 @@ export default function Cart() {
   }, [totals, items]);
 
   const handleCheckoutRedirect = () => {
+    try {
+      const { trackBeginCheckout } = require("@/utils/analytics");
+      trackBeginCheckout(items, cartTotals);
+    } catch (e) {
+      console.error("trackBeginCheckout failed:", e);
+    }
     router.push("/odeme");
   };
 

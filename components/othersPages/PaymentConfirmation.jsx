@@ -1,6 +1,25 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
+import { trackPurchase } from "@/utils/analytics";
+
 export default function PaymentConfirmation() {
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const pendingData = sessionStorage.getItem('pending_purchase');
+      if (pendingData) {
+        try {
+          const orderData = JSON.parse(pendingData);
+          trackPurchase(orderData);
+          console.log('GTM Purchase tracked from success page:', orderData);
+          // Tekrar sayfa yenilendiğinde aynı event gitmesin diye temizliyoruz
+          sessionStorage.removeItem('pending_purchase');
+        } catch (e) {
+          console.error('Failed to track purchase from success page:', e);
+        }
+      }
+    }
+  }, []);
+
   return (
     <section className="flat-spacing-11">
       <div className="container">

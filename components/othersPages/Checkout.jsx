@@ -676,18 +676,33 @@ export default function Checkout() {
         setOrderErrorMessage("");
         setOrderErrors({});
 
+        // GTM Purchase Datası Hazırla ve sessionStorage'a kaydet
+        try {
+          const purchaseData = {
+            id: response.data?.data?.order_id || response.data?.data?.id || 'ORD-' + Date.now(),
+            total: cartTotals.total,
+            tax_total: (cartTotals.total * 0.20),
+            shipping_total: 0,
+            coupon: useCartStore.getState().coupon?.code || null,
+            items: items // Mevcut sepet ürünleri
+          };
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem('pending_purchase', JSON.stringify(purchaseData));
+          }
+        } catch (e) {
+          console.error("Purchase data preparation failed:", e);
+        }
+
         // payment_html varsa yeni sayfada göster
         if (response.data.data && response.data.data.payment_html) {
           const html = response.data.data.payment_html;
           log("[Checkout] Payment HTML alındı, yeni sayfada açılıyor");
 
-          // Yeni sayfa aç ve HTML'i yaz
-          const win = window.open('', '_self'); // Aynı sekme, popup yok
+          const win = window.open('', '_self');
           win.document.open();
           win.document.write(html);
           win.document.close();
         } else {
-          // payment_html yoksa başarı sayfasına yönlendir
           window.location.href = "/odeme-basarili";
         }
       } else {
