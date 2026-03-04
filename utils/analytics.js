@@ -24,7 +24,7 @@ export const pushToDataLayer = (eventName, ecommerceData = {}) => {
         // Eğer bir transaction_id varsa, mükerrer gönderimi kontrol et
         const transactionId = ecommerceData.transaction_id || (ecommerceData.purchase && ecommerceData.purchase.transaction_id);
         if (transactionId && isOrderProcessed(transactionId, eventName)) {
-            console.log(`[Analytics] Duplicate event blocked for ${eventName}: ${transactionId}`);
+            log(`[Analytics] Duplicate event blocked for ${eventName}: ${transactionId}`);
             return;
         }
 
@@ -40,7 +40,7 @@ export const pushToDataLayer = (eventName, ecommerceData = {}) => {
         };
 
         window.dataLayer.push(pushData);
-        console.log(`[Analytics] dataLayer.push: ${eventName}`, pushData);
+        log(`[Analytics] dataLayer.push: ${eventName}`, pushData);
     }
 };
 
