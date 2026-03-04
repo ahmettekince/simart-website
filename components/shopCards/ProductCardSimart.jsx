@@ -25,30 +25,24 @@ export default function ProductCardSimart({ product, isPriority = false }) {
   // -- Veriler --
   const title = product.name || product.title;
   const productSlug = product.slug || product.id;
+  const isMuseumItem = title === "katya Robot Süpürge";
 
   // Kategori slug'ını al (ilk kategoriden)
   const getCategorySlug = () => {
+    // 1. Direkt prop veya store'dan gelen category_slug
+    if (product.category_slug) return product.category_slug;
+
+    // 2. categories array
     if (product.categories && product.categories.length > 0) {
       const category = product.categories[0];
-      // Slug varsa onu kullan
-      if (category.slug) {
-        return category.slug;
-      }
-      // Slug yoksa kategori adını slug'a çevir
-      if (category.name) {
-        return category.name
-          .toLowerCase()
-          .replace(/ğ/g, "g")
-          .replace(/ü/g, "u")
-          .replace(/ş/g, "s")
-          .replace(/ı/g, "i")
-          .replace(/ö/g, "o")
-          .replace(/ç/g, "c")
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/^-+|-+$/g, "");
-      }
+      if (category.slug) return category.slug;
     }
-    // Kategori yoksa varsayılan olarak "urunler" kullan
+
+    // 3. primary_category
+    const primaryCat = product.primary_category || product.primaryCategory || product.item_category;
+    if (primaryCat && primaryCat.slug) return primaryCat.slug;
+
+    // 4. Default
     return "urunler";
   };
   const categorySlug = getCategorySlug();
@@ -174,7 +168,7 @@ export default function ProductCardSimart({ product, isPriority = false }) {
         </div>
 
         <div className="price-slot">
-          {buttonText !== "Stokta Yok" && (
+          {!isMuseumItem && buttonText !== "Stokta Yok" && (
             <>
               <span className={`price-new fw-bold ${oldPrice ? "price-discount" : "price-normal"}`}>
                 {finalPrice.toLocaleString("tr-TR")} TL
@@ -188,7 +182,11 @@ export default function ProductCardSimart({ product, isPriority = false }) {
           <div className="flex-grow-1">
             <button
               onClick={async (e) => {
-                e.stopPropagation(); // Kart tıklamasını engelle
+                e.stopPropagation();
+                if (isMuseumItem) {
+                  handleNavigate(e);
+                  return;
+                }
                 if (isAdding || showSuccess) return;
 
                 // Ön sipariş ise ürün detayına yönlendir

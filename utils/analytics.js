@@ -48,24 +48,82 @@ export const pushToDataLayer = (eventName, ecommerceData = {}) => {
  * Ürünü GA4 formatına normalize eder.
  */
 const normalizeItem = (item, quantity) => {
-    const itemPrice = item.discount_price || item.price || 0;
+    if (!item) return {};
 
-    // Kategori adını belirle (Öncelik: primary_category > categories[0] > fallback)
-    const category =
-        item.product?.primary_category?.name ||
-        item.product?.primaryCategory?.name ||
-        (Array.isArray(item.product?.categories) && item.product.categories[0]?.name) ||
-        item.category ||
-        'Ürün';
+    const itemPrice = item.discount_price || item.price || item.unitPrice || 0;
+    const categoryNames = [];
 
-    return {
-        item_id: String(item.id || item.productId || item.product?.id),
-        item_name: item.name || item.product?.name || '',
+    // 1. Kategorileri her türlü delikten topla
+    const rawCategories = [
+        ...(Array.isArray(item.categories) ? item.categories : []),
+        ...(Array.isArray(item.product?.categories) ? item.product.categories : []),
+        ...(item.primary_category ? [item.primary_category] : []),
+        ...(item.product?.primary_category ? [item.product.primary_category] : []),
+        ...(item.primaryCategory ? [item.primaryCategory] : []),
+        ...(item.product?.primaryCategory ? [item.product.primaryCategory] : []),
+        ...(item.item_category && typeof item.item_category !== 'string' ? [item.item_category] : [])
+    ];
+
+    // 2. İsimleri ayıkla ve tekilleştir
+    rawCategories.forEach(cat => {
+        if (!cat) return;
+        let name = null;
+        if (typeof cat === 'string') name = cat;
+        else name = cat.name || cat.title || cat.slug;
+
+        if (name && !categoryNames.includes(name)) {
+            categoryNames.push(name);
+        }
+    });
+
+    // 3. Eğer dizi hala boşsa düz string alanlara bak
+    if (categoryNames.length === 0) {
+        const stringFallback =
+            item.category_name ||
+            (typeof item.item_category === 'string' ? item.item_category : null) ||
+            item.category ||
+            item.product?.category_name ||
+            item.category_slug ||
+            item.product?.category_slug;
+
+        if (stringFallback) categoryNames.push(stringFallback);
+    }
+
+    const gaItem = {
+        item_id: String(item.id || item.productId || item.product?.id || item.apiItemId || item.sku || ''),
+        item_name: item.name || item.product?.name || item.title || '',
         price: Number(itemPrice),
         quantity: Number(quantity || item.quantity || 1),
         item_brand: 'Şımart Teknoloji',
-        item_category: category
     };
+
+    // GA4 Standartı: item_category, item_category2, ... item_category5
+    categoryNames.slice(0, 5).forEach((name, index) => {
+        const key = index === 0 ? 'item_category' : `item_category${index + 1}`;
+        let formattedName = name;
+
+        // Eğer slug gelmişse (örn: "robot-supurgeler") ve içinde - varsa formatla
+        if (typeof name === 'string' && name.includes('-') && !name.includes(' ')) {
+            formattedName = name.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+        }
+
+        // "urunler" veya "Genel" gibi değersiz verileri temizle
+        if (typeof formattedName === 'string') {
+            const lower = formattedName.toLowerCase();
+            if (lower === 'urunler' || lower === 'products' || lower === 'genel' || lower === 'shop') {
+                formattedName = 'Akıllı Ürünler';
+            }
+        }
+
+        gaItem[key] = formattedName;
+    });
+
+    // En son çare: Eğer hala boşsa
+    if (!gaItem.item_category) {
+        gaItem.item_category = 'Akıllı Ürünler';
+    }
+
+    return gaItem;
 };
 
 /**
@@ -96,11 +154,12 @@ export const trackAddToCart = (product, quantity = 1) => {
 /**
  * Ödeme Başlatma (begin_checkout)
  */
-export const trackBeginCheckout = (items, totals) => {
+export const trackBeginCheckout = (items, totals, couponCode = null) => {
     const normalizedItems = items.map(item => normalizeItem(item));
     pushToDataLayer('begin_checkout', {
         currency: 'TRY',
         value: Number(totals?.total || totals?.grand_total || 0),
+        coupon: couponCode || undefined,
         items: normalizedItems
     });
 };

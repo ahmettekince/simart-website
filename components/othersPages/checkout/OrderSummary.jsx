@@ -241,7 +241,22 @@ export default function OrderSummary({
       const success = result === true || (result && result.success);
       if (success) {
         setCouponSuccess(true);
+        const code = couponCode.trim();
         setCouponCode("");
+
+        // GTM: Kupon uygulandığında checkout event'ini güncel veriyle tekrar gönder
+        try {
+          const { trackBeginCheckout } = require("@/utils/analytics");
+          // Not: cartTotals ve items güncel olmalı (store'dan geliyor veya prop olarak paslanıyor)
+          // updateQuantity/applyCoupon sonrası store güncellenir, parent re-render olur
+          // Ancak applyCoupon async olduğu için hemen sonrasında çağırırsak en güncel totals'ı 
+          // store'dan çekmek daha güvenli olabilir
+          const updatedStore = useCartStore.getState();
+          trackBeginCheckout(updatedStore.items, updatedStore.totals, code);
+        } catch (e) {
+          console.error("GTM trackBeginCheckout failed after coupon:", e);
+        }
+
         setTimeout(() => setCouponSuccess(false), 3000);
       } else {
         setCouponError((result && result.message) || "Uygulanamadı");
@@ -321,8 +336,11 @@ export default function OrderSummary({
                     {(() => {
                       const item = normalItem;
                       const categorySlug =
-                        item.product?.categories?.[0]?.slug || item.product?.primary_category?.slug || "urunler";
-                      const productSlug = item.slug || item.id;
+                        item.product?.category_slug ||
+                        item.product?.categories?.[0]?.slug ||
+                        item.product?.item_category?.slug ||
+                        "urunler";
+                      const productSlug = item.product?.slug || item.slug || item.id;
                       const productUrl = `/magaza/${categorySlug}/${productSlug}`;
                       const imageUrl =
                         item.image ||
@@ -378,9 +396,8 @@ export default function OrderSummary({
 
                     {/* Linked Gifts */}
                     {relatedGifts.map((giftItem, giftIndex) => {
-                      const categorySlug =
-                        giftItem.product?.categories?.[0]?.slug || giftItem.product?.primary_category?.slug || "urunler";
-                      const productSlug = giftItem.slug || giftItem.id;
+                      const categorySlug = giftItem.product?.categories?.[0]?.slug || "urunler";
+                      const productSlug = giftItem.product?.slug || giftItem.slug || giftItem.id;
                       const productUrl = `/magaza/${categorySlug}/${productSlug}`;
                       const giftSourceNames = (giftItem.applied_campaign_ids && applied_campaigns
                         ? giftItem.applied_campaign_ids
@@ -432,9 +449,8 @@ export default function OrderSummary({
 
               {/* Unlinked Gifts */}
               {unlinkedGifts.map((giftItem, giftIndex) => {
-                const categorySlug =
-                  giftItem.product?.categories?.[0]?.slug || giftItem.product?.primary_category?.slug || "urunler";
-                const productSlug = giftItem.slug || giftItem.id;
+                const categorySlug = giftItem.product?.categories?.[0]?.slug || "urunler";
+                const productSlug = giftItem.product?.slug || giftItem.slug || giftItem.id;
                 const productUrl = `/magaza/${categorySlug}/${productSlug}`;
                 const giftSourceNames = (giftItem.applied_campaign_ids && applied_campaigns
                   ? giftItem.applied_campaign_ids
@@ -483,9 +499,8 @@ export default function OrderSummary({
 
               {/* Tier Gifts */}
               {tierGifts.map((giftItem, giftIndex) => {
-                const categorySlug =
-                  giftItem.product?.categories?.[0]?.slug || giftItem.product?.primary_category?.slug || "urunler";
-                const productSlug = giftItem.slug || giftItem.id;
+                const categorySlug = giftItem.product?.categories?.[0]?.slug || "urunler";
+                const productSlug = giftItem.product?.slug || giftItem.slug || giftItem.id;
                 const productUrl = `/magaza/${categorySlug}/${productSlug}`;
                 const giftSourceNames = (giftItem.applied_campaign_ids && applied_campaigns
                   ? giftItem.applied_campaign_ids

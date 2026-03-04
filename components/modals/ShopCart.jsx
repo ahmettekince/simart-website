@@ -365,10 +365,11 @@ export default function ShopCart() {
                                   {(() => {
                                     const item = normalItem;
                                     const categorySlug =
+                                      item.product?.category_slug ||
                                       item.product?.categories?.[0]?.slug ||
-                                      item.product?.primary_category?.slug ||
+                                      item.product?.item_category?.slug ||
                                       "urunler";
-                                    const productSlug = item.slug || item.id;
+                                    const productSlug = item.product?.slug || item.slug || item.id;
                                     const productUrl = `/magaza/${categorySlug}/${productSlug}`;
                                     const imageUrl =
                                       item.image ||
@@ -573,10 +574,11 @@ export default function ShopCart() {
                                   {/* Gift Ürünleri */}
                                   {relatedGifts.map((giftItem, giftIndex) => {
                                     const categorySlug =
+                                      giftItem.product?.category_slug ||
                                       giftItem.product?.categories?.[0]?.slug ||
-                                      giftItem.product?.primary_category?.slug ||
+                                      giftItem.product?.item_category?.slug ||
                                       "urunler";
-                                    const productSlug = giftItem.slug || giftItem.id;
+                                    const productSlug = giftItem.product?.slug || giftItem.slug || giftItem.id;
                                     const productUrl = `/magaza/${categorySlug}/${productSlug}`;
                                     const imageUrl =
                                       giftItem.image ||
@@ -668,10 +670,11 @@ export default function ShopCart() {
                             })}
                             {unlinkedGifts.map((giftItem, giftIndex) => {
                               const categorySlug =
+                                giftItem.product?.category_slug ||
                                 giftItem.product?.categories?.[0]?.slug ||
-                                giftItem.product?.primary_category?.slug ||
+                                giftItem.product?.item_category?.slug ||
                                 "urunler";
-                              const productSlug = giftItem.slug || giftItem.id;
+                              const productSlug = giftItem.product?.slug || giftItem.slug || giftItem.id;
                               const productUrl = `/magaza/${categorySlug}/${productSlug}`;
                               const imageUrl =
                                 giftItem.image ||
@@ -749,10 +752,11 @@ export default function ShopCart() {
                             {unlinkedGifts.length > 0 && <div className="tf-cart-gift-separator" aria-hidden="true" />}
                             {tierGifts.map((giftItem, giftIndex) => {
                               const categorySlug =
+                                giftItem.product?.category_slug ||
                                 giftItem.product?.categories?.[0]?.slug ||
-                                giftItem.product?.primary_category?.slug ||
+                                giftItem.product?.item_category?.slug ||
                                 "urunler";
-                              const productSlug = giftItem.slug || giftItem.id;
+                              const productSlug = giftItem.product?.slug || giftItem.slug || giftItem.id;
                               const productUrl = `/magaza/${categorySlug}/${productSlug}`;
                               const imageUrl =
                                 giftItem.image ||
@@ -1137,7 +1141,7 @@ export default function ShopCart() {
                           onClick={() => {
                             try {
                               const { trackBeginCheckout } = require("@/utils/analytics");
-                              trackBeginCheckout(items, cartTotals);
+                              trackBeginCheckout(items, cartTotals, coupon?.code);
                             } catch (e) {
                               console.error("trackBeginCheckout failed:", e);
                             }

@@ -22,6 +22,7 @@ export default function Cart() {
   const totals = useCartStore((state) => state.totals);
   const cross_sale_campaigns = useCartStore((state) => state.cross_sale_campaigns);
   const hasCrossSale = Array.isArray(cross_sale_campaigns) && cross_sale_campaigns.length > 0;
+  const coupon = useCartStore((state) => state.coupon);
 
   const [loadingQuantityFor, setLoadingQuantityFor] = React.useState(null);
   const [showMaxReachedToast, setShowMaxReachedToast] = React.useState(false);
@@ -38,7 +39,7 @@ export default function Cart() {
   const handleCheckoutRedirect = () => {
     try {
       const { trackBeginCheckout } = require("@/utils/analytics");
-      trackBeginCheckout(items, cartTotals);
+      trackBeginCheckout(items, cartTotals, coupon?.code);
     } catch (e) {
       console.error("trackBeginCheckout failed:", e);
     }
@@ -266,9 +267,11 @@ export default function Cart() {
                                 displayDiscountPrice != null ? displayDiscountPrice : (displayRegularPrice ?? 0);
                               const itemTotal = itemPrice * item.quantity;
                               const categorySlug =
+                                item.product?.category_slug ||
                                 item.product?.categories?.[0]?.slug ||
-                                item.product?.primary_category?.slug ||
+                                item.product?.item_category?.slug ||
                                 "urunler";
+                              const productSlug = item.product?.slug || item.slug || item.id;
                               const minQty =
                                 Number(item.min_purchase_quantity ?? item.product?.min_purchase_quantity ?? 1) || 1;
                               const purchaseLimit =
@@ -300,7 +303,7 @@ export default function Cart() {
                                   style={hasGifts ? { borderBottom: "none" } : {}}
                                 >
                                   <td className="tf-cart-item_product" style={hasGifts ? { borderBottom: "none" } : {}}>
-                                    <Link href={`/magaza/${categorySlug}/${item.slug}`} className="img-box">
+                                    <Link href={`/magaza/${categorySlug}/${productSlug}`} className="img-box">
                                       <Image
                                         alt={item.name}
                                         src={item.image || "/images/default-product.jpg"}
@@ -310,7 +313,7 @@ export default function Cart() {
                                     </Link>
                                     <div className="cart-info">
                                       <Link
-                                        href={`/magaza/${categorySlug}/${item.slug}`}
+                                        href={`/magaza/${categorySlug}/${productSlug}`}
                                         className="cart-title link"
                                         style={{ fontWeight: "bold" }}
                                       >
@@ -463,11 +466,8 @@ export default function Cart() {
                               );
                             })()}
                             {relatedGifts.map((giftItem, giftIndex) => {
-                              const categorySlug =
-                                giftItem.product?.categories?.[0]?.slug ||
-                                giftItem.product?.primary_category?.slug ||
-                                "urunler";
-                              const productSlug = giftItem.slug || giftItem.id;
+                              const categorySlug = giftItem.product?.categories?.[0]?.slug || "urunler";
+                              const productSlug = giftItem.product?.slug || giftItem.slug || giftItem.id;
                               const giftSourceNames =
                                 giftItem.applied_campaign_ids && applied_campaigns
                                   ? giftItem.applied_campaign_ids
@@ -572,11 +572,8 @@ export default function Cart() {
                         ))}
 
                         {unlinkedGifts.map((giftItem, giftIndex) => {
-                          const categorySlug =
-                            giftItem.product?.categories?.[0]?.slug ||
-                            giftItem.product?.primary_category?.slug ||
-                            "urunler";
-                          const productSlug = giftItem.slug || giftItem.id;
+                          const categorySlug = giftItem.product?.categories?.[0]?.slug || "urunler";
+                          const productSlug = giftItem.product?.slug || giftItem.slug || giftItem.id;
                           const giftSourceNames =
                             giftItem.applied_campaign_ids && applied_campaigns
                               ? giftItem.applied_campaign_ids
@@ -678,11 +675,8 @@ export default function Cart() {
                         })}
 
                         {tierGifts.map((giftItem, giftIndex) => {
-                          const categorySlug =
-                            giftItem.product?.categories?.[0]?.slug ||
-                            giftItem.product?.primary_category?.slug ||
-                            "urunler";
-                          const productSlug = giftItem.slug || giftItem.id;
+                          const categorySlug = giftItem.product?.categories?.[0]?.slug || "urunler";
+                          const productSlug = giftItem.product?.slug || giftItem.slug || giftItem.id;
                           const giftSourceNames =
                             giftItem.applied_campaign_ids && applied_campaigns
                               ? giftItem.applied_campaign_ids

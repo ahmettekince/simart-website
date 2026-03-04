@@ -55,7 +55,15 @@ export default function BirlikteAlSepet({ title = "Sepetinize ekleyebilirsiniz",
         seen.add(numId);
         return true;
       }).map((p) => {
-        const cat = p?.category_slug || p?.product?.categories?.[0]?.slug || p?.product?.primary_category?.slug || "urunler";
+        const targetCategory = p?.categories?.[0] || p?.product?.categories?.[0] || p?.primary_category || p?.product?.primary_category || {};
+        const catNameFromSlug = (p?.category_slug || p?.product?.category_slug || p?.categories?.[0]?.slug || p?.product?.categories?.[0]?.slug || "Akıllı Ürünler")
+          .split("-")
+          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+          .join(" ");
+
+        const catName = targetCategory.name || targetCategory.title || catNameFromSlug;
+        const catSlug = p?.category_slug || p?.product?.category_slug || targetCategory.slug || p?.categories?.[0]?.slug || p?.product?.categories?.[0]?.slug || "urunler";
+
         return {
           id: p?.id || p?.product?.id,
           name: p?.name || p?.title || "",
@@ -63,7 +71,10 @@ export default function BirlikteAlSepet({ title = "Sepetinize ekleyebilirsiniz",
           price: p?.price ?? p?.product?.price ?? 0,
           final_price: p?.final_price ?? p?.discount_price ?? p?.price ?? p?.product?.final_price ?? p?.product?.discount_price ?? p?.product?.price ?? 0,
           cover_image: p?.cover_image || p?.product?.cover_image,
-          category_slug: cat,
+          categories: p?.categories || p?.product?.categories || [],
+          category_slug: catSlug,
+          category_name: catName,
+          item_category: catName,
           is_pre_order: p?.is_pre_order || p?.product?.is_pre_order || false,
         };
       });
@@ -86,6 +97,15 @@ export default function BirlikteAlSepet({ title = "Sepetinize ekleyebilirsiniz",
       if (seen.has(targetId)) return;
       if (cartProductIds.has(targetId)) return;
 
+      const targetCategory = t.categories?.[0] || t.primary_category || t.item_category || {};
+      const catNameFromSlug = (t.category_slug || t.categories?.[0]?.slug || "Akıllı Ürünler")
+        .split("-")
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+
+      const catName = targetCategory.name || targetCategory.title || catNameFromSlug;
+      const catSlug = t.category_slug || targetCategory.slug || t.categories?.[0]?.slug || "urunler";
+
       seen.add(targetId);
       list.push({
         id: targetId,
@@ -94,7 +114,10 @@ export default function BirlikteAlSepet({ title = "Sepetinize ekleyebilirsiniz",
         price: t.price ?? 0,
         final_price: t.final_price ?? t.discount_price ?? t.price ?? 0,
         cover_image: t.cover_image,
-        category_slug: t.category_slug || t.primary_category?.slug || "urunler",
+        categories: t.categories || [],
+        category_slug: catSlug,
+        category_name: catName,
+        item_category: catName,
         stock_quantity: t.stock_quantity,
         unlimited_stock: t.unlimited_stock,
         max_purchase_quantity: t.max_purchase_quantity || t.max_quantity,
@@ -122,7 +145,11 @@ export default function BirlikteAlSepet({ title = "Sepetinize ekleyebilirsiniz",
       stock_quantity: target.stock_quantity,
       unlimited_stock: target.unlimited_stock,
       max_purchase_quantity: target.max_purchase_quantity || target.max_quantity,
-      is_pre_order: target.is_pre_order || false
+      is_pre_order: target.is_pre_order || false,
+      categories: target.categories || [],
+      category_slug: target.category_slug,
+      category_name: target.category_name,
+      item_category: target.item_category
     };
 
     // Limit kontrolü

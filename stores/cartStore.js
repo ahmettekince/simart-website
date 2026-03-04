@@ -382,6 +382,8 @@ export const useCartStore = create(
                         min_purchase_quantity: apiItem.product.minPurchaseQuantity ?? 1,
                         max_purchase_quantity: apiItem.product.maxPurchaseQuantity ?? null,
                         item_category: apiItem.product.primaryCategory || apiItem.product.primary_category || null,
+                        categories: apiItem.product.categories || [],
+                        category_slug: apiItem.product.categories?.[0]?.slug || apiItem.product.primaryCategory?.slug || apiItem.product.primary_category?.slug || null,
                     }
                 };
             });

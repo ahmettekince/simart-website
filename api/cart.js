@@ -63,6 +63,9 @@ export async function getCart() {
                                 null,
                             price: item.product?.price ?? item.price ?? null,
                             discount_price: item.product?.discount_price ?? item.discount_price ?? null,
+                            categories: item.product?.categories || [],
+                            primaryCategory: item.product?.primary_category || item.product?.primaryCategory || null,
+                            primary_category: item.product?.primary_category || item.product?.primaryCategory || null,
                         }
                     };
                 }),
@@ -335,6 +338,8 @@ export async function getCartRecommendations() {
                     url: product.cover_image?.url || null,
                     thumbnail_url: product.cover_image?.thumbnail_url || null,
                 },
+                categories: product.categories || [],
+                primary_category: product.primary_category || null,
             }));
 
             log("[API cart.js] getCartRecommendations success:", recommendations.length, "ürün");
