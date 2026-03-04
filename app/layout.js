@@ -53,9 +53,8 @@ export default async function RootLayout({ children }) {
         />
         {/* Google Tag Manager */}
         {gtmId && (
-          <Script
+          <script
             id="gtm-script"
-            strategy="afterInteractive"
             dangerouslySetInnerHTML={{
               __html: `
                 (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -70,8 +69,16 @@ export default async function RootLayout({ children }) {
       </head>
 
       <body className="preload-wrapper">
-        <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TKCLRL3"
-          height="0" width="0" style={{ "display": "none", "visibility": "hidden" }}></iframe></noscript>
+        {gtmId && (
+          <noscript>
+            <iframe
+              src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`}
+              height="0"
+              width="0"
+              style={{ display: "none", visibility: "hidden" }}
+            ></iframe>
+          </noscript>
+        )}
         <div className="preload preload-container" id="preloader">
           <div className="preload-logo">
             <div className="spinner"></div>
