@@ -71,7 +71,7 @@ export default async function RootLayout({ children }) {
 
       <body className="preload-wrapper">
         <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TKCLRL3"
-          height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+          height="0" width="0" style={{ "display": "none", "visibility": "hidden" }}></iframe></noscript>
         <div className="preload preload-container" id="preloader">
           <div className="preload-logo">
             <div className="spinner"></div>
