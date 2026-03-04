@@ -34,9 +34,23 @@ export default function CookieConsentBanner() {
         }
     };
 
+    const updateGoogleConsent = (analytics) => {
+        if (typeof window !== "undefined" && window.gtag) {
+            window.gtag("consent", "update", {
+                ad_storage: analytics ? "granted" : "denied",
+                ad_user_data: analytics ? "granted" : "denied",
+                ad_personalization: analytics ? "granted" : "denied",
+                analytics_storage: analytics ? "granted" : "denied",
+            });
+            // GTM'e durumun güncellendiğine dair bir event de atalım
+            window.dataLayer.push({ event: "consent_updated", analytics_enabled: analytics });
+        }
+    };
+
     const saveAndClose = (analytics) => {
         Cookies.set(COOKIE_NAME, "accepted", { expires: COOKIE_EXPIRY });
         Cookies.set(COOKIE_ANALYTICS, analytics ? "true" : "false", { expires: COOKIE_EXPIRY });
+        updateGoogleConsent(analytics);
         setVisible(false);
         setSettingsOpen(false);
         notifyConsentUpdate();
@@ -49,6 +63,7 @@ export default function CookieConsentBanner() {
     const decline = () => {
         Cookies.set(COOKIE_NAME, "declined", { expires: COOKIE_EXPIRY });
         Cookies.set(COOKIE_ANALYTICS, "false", { expires: COOKIE_EXPIRY });
+        updateGoogleConsent(false);
         setVisible(false);
         setSettingsOpen(false);
         notifyConsentUpdate();
