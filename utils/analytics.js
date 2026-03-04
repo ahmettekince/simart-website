@@ -3,12 +3,31 @@
  */
 
 /**
+ * Siparişin daha önce işlenip işlenmediğini kontrol eder ve işaretler.
+ * Sayfa yenilemelerinde mükerrer event gönderimini engeller.
+ */
+const isOrderProcessed = (orderId, eventName) => {
+    if (!orderId || typeof window === 'undefined') return false;
+    const key = `processed_${eventName}_${orderId}`;
+    if (sessionStorage.getItem(key)) return true;
+    sessionStorage.setItem(key, 'true');
+    return false;
+};
+
+/**
  * Veri katmanına (dataLayer) olay gönderir.
  * @param {string} eventName 
  * @param {Object} ecommerceData 
  */
 export const pushToDataLayer = (eventName, ecommerceData = {}) => {
     if (typeof window !== 'undefined') {
+        // Eğer bir transaction_id varsa, mükerrer gönderimi kontrol et
+        const transactionId = ecommerceData.transaction_id || (ecommerceData.purchase && ecommerceData.purchase.transaction_id);
+        if (transactionId && isOrderProcessed(transactionId, eventName)) {
+            console.log(`[Analytics] Duplicate event blocked for ${eventName}: ${transactionId}`);
+            return;
+        }
+
         window.dataLayer = window.dataLayer || [];
 
         // GA4 Standartı: Önceki ecommerce verilerini temizle
@@ -121,7 +140,7 @@ export const trackPurchaseSuccess = (orderData) => {
  * Satın Alma Başarısız (purchase_failure)
  */
 export const trackPurchaseFailure = (errorMessage, orderId = null) => {
-    pushToDataLayer('purchase_failure', {
+    pushToDataLayer('purchase_failed', {
         error_message: errorMessage,
         transaction_id: orderId ? String(orderId) : undefined,
         currency: 'TRY'
