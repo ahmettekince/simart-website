@@ -22,7 +22,7 @@ import OverlayCtaButton, { Model3dIcon, PlayIcon, ArrowIcon } from "@/components
 import VolumeDiscount from "./VolumeDiscount";
 import InfoTicker from "./InfoTicker";
 import Trendyol from "@/components/common/Trendyol";
-
+import { trackViewItem } from "@/utils/analytics";
 
 const TOOLTIP_MAX_WIDTH = 360;
 const TOOLTIP_MARGIN = 16;
@@ -126,6 +126,14 @@ function ProductProtocolHelp({ description, protocolName }) {
 
 export default function Detail({ product }) {
   const [currentColor, setCurrentColor] = useState(colors[0]);
+
+  // Sayfa yüklendiğinde ve ürün değiştiğinde GTM View Item takibi
+  useEffect(() => {
+    if (product && typeof window !== "undefined") {
+      trackViewItem(product);
+    }
+  }, [product?.id]);
+
   const { addItem } = useCartStore();
   const cartItems = useCartStore((s) => s.items);
   const [isAdding, setIsAdding] = useState(false);

@@ -30,14 +30,36 @@ export const pushToDataLayer = (eventName, ecommerceData = {}) => {
  */
 const normalizeItem = (item, quantity) => {
     const itemPrice = item.discount_price || item.price || 0;
+
+    // Kategori adını belirle (Öncelik: primary_category > categories[0] > fallback)
+    const category =
+        item.product?.primary_category?.name ||
+        item.product?.primaryCategory?.name ||
+        (Array.isArray(item.product?.categories) && item.product.categories[0]?.name) ||
+        item.category ||
+        'Ürün';
+
     return {
         item_id: String(item.id || item.productId || item.product?.id),
         item_name: item.name || item.product?.name || '',
         price: Number(itemPrice),
         quantity: Number(quantity || item.quantity || 1),
-        item_brand: 'Simart',
-        item_category: item.product?.primary_category?.name || 'Ürünler'
+        item_brand: 'Şımart Teknoloji',
+        item_category: category
     };
+};
+
+/**
+ * Ürün Görüntüleme (view_item)
+ */
+export const trackViewItem = (product) => {
+    if (!product) return;
+    const item = normalizeItem(product);
+    pushToDataLayer('view_item', {
+        currency: 'TRY',
+        value: item.price,
+        items: [item]
+    });
 };
 
 /**
@@ -80,6 +102,29 @@ export const trackPurchase = (orderData) => {
         currency: 'TRY',
         coupon: orderData.coupon || undefined,
         items: normalizedItems
+    });
+};
+
+/**
+ * Satın Alma Başarılı (purchase_success)
+ */
+export const trackPurchaseSuccess = (orderData) => {
+    if (!orderData) return;
+    pushToDataLayer('purchase_success', {
+        transaction_id: String(orderData.id || orderData.order_number || orderData.order_id),
+        value: Number(orderData.total || orderData.grand_total || 0),
+        currency: 'TRY'
+    });
+};
+
+/**
+ * Satın Alma Başarısız (purchase_failure)
+ */
+export const trackPurchaseFailure = (errorMessage, orderId = null) => {
+    pushToDataLayer('purchase_failure', {
+        error_message: errorMessage,
+        transaction_id: orderId ? String(orderId) : undefined,
+        currency: 'TRY'
     });
 };
 

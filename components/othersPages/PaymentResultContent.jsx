@@ -40,32 +40,43 @@ export default function PaymentResultContent() {
 
   // Affiliate ref cookie'sini temizle ve GTM Purchase takibi yap
   useEffect(() => {
-    if (resultData?.status === 'success') {
+    if (!resultData || typeof window === 'undefined') return;
+
+    const { trackPurchase, trackPurchaseSuccess, trackPurchaseFailure } = require("@/utils/analytics");
+    const pendingData = sessionStorage.getItem('pending_purchase');
+    let orderData = null;
+
+    if (pendingData) {
+      try {
+        orderData = JSON.parse(pendingData);
+      } catch (e) {
+        console.error("Pending purchase data parse error", e);
+      }
+    }
+
+    if (resultData.status === 'success') {
       Cookies.remove("affiliate_ref");
 
-      // GTM Purchase Takibi
-      if (typeof window !== 'undefined') {
-        const pendingData = sessionStorage.getItem('pending_purchase');
-        if (pendingData) {
-          try {
-            const { trackPurchase } = require("@/utils/analytics");
-            const orderData = JSON.parse(pendingData);
-
-            // Eğer sipariş numarası API sonucundan farklıysa güncelle
-            if (resultData.order_number || resultData.OrderId) {
-              orderData.id = resultData.order_number || resultData.OrderId;
-            }
-
-            trackPurchase(orderData);
-            console.log('GTM Purchase tracked from PaymentResultContent:', orderData);
-
-            // Tekrar tetiklenmemesi için temizle
-            sessionStorage.removeItem('pending_purchase');
-          } catch (e) {
-            console.error('Failed to track purchase from result page:', e);
-          }
+      if (orderData) {
+        // Eğer sipariş numarası API sonucundan farklıysa güncelle
+        if (resultData.order_number || resultData.OrderId) {
+          orderData.id = resultData.order_number || resultData.OrderId;
         }
+
+        trackPurchase(orderData);
+        trackPurchaseSuccess(orderData);
+        console.log('GTM Purchase tracked from PaymentResultContent:', orderData);
+
+        // Tekrar tetiklenmemesi için temizle
+        sessionStorage.removeItem('pending_purchase');
       }
+    } else {
+      // Başarısız Durumu
+      const errorMsg = resultData.bank_code_message || resultData.message || "Ödeme işlemi sırasında bir hata oluştu.";
+      const orderId = resultData.order_number || resultData.OrderId || (orderData ? orderData.id : null);
+
+      trackPurchaseFailure(errorMsg, orderId);
+      console.log('GTM Purchase Failure tracked:', errorMsg);
     }
   }, [resultData]);
 

@@ -378,10 +378,10 @@ export const useCartStore = create(
                         id: apiItem.product.id,
                         name: apiItem.product.name,
                         slug: apiItem.product.slug,
-                        sku: apiItem.product.sku,
                         cover_image: apiItem.product.coverImage,
                         min_purchase_quantity: apiItem.product.minPurchaseQuantity ?? 1,
                         max_purchase_quantity: apiItem.product.maxPurchaseQuantity ?? null,
+                        item_category: apiItem.product.primaryCategory || apiItem.product.primary_category || null,
                     }
                 };
             });
