@@ -38,10 +38,34 @@ export default function PaymentResultContent() {
     }
   }, [searchParams]);
 
-  // Affiliate ref cookie'sini temizle
+  // Affiliate ref cookie'sini temizle ve GTM Purchase takibi yap
   useEffect(() => {
     if (resultData?.status === 'success') {
       Cookies.remove("affiliate_ref");
+
+      // GTM Purchase Takibi
+      if (typeof window !== 'undefined') {
+        const pendingData = sessionStorage.getItem('pending_purchase');
+        if (pendingData) {
+          try {
+            const { trackPurchase } = require("@/utils/analytics");
+            const orderData = JSON.parse(pendingData);
+
+            // Eğer sipariş numarası API sonucundan farklıysa güncelle
+            if (resultData.order_number || resultData.OrderId) {
+              orderData.id = resultData.order_number || resultData.OrderId;
+            }
+
+            trackPurchase(orderData);
+            console.log('GTM Purchase tracked from PaymentResultContent:', orderData);
+
+            // Tekrar tetiklenmemesi için temizle
+            sessionStorage.removeItem('pending_purchase');
+          } catch (e) {
+            console.error('Failed to track purchase from result page:', e);
+          }
+        }
+      }
     }
   }, [resultData]);
 
