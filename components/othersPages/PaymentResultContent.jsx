@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams, notFound } from "next/navigation";
 import Cookies from "js-cookie";
+import { log } from "@/utils/logger";
 
 export default function PaymentResultContent() {
   const searchParams = useSearchParams();
@@ -65,7 +66,7 @@ export default function PaymentResultContent() {
 
         trackPurchase(orderData);
         trackPurchaseSuccess(orderData);
-        console.log('GTM Purchase tracked from PaymentResultContent:', orderData);
+        log('GTM Purchase tracked from PaymentResultContent:', orderData);
 
         // Tekrar tetiklenmemesi için temizle
         sessionStorage.removeItem('pending_purchase');
@@ -76,7 +77,7 @@ export default function PaymentResultContent() {
       const orderId = resultData.order_number || resultData.OrderId || (orderData ? orderData.id : null);
 
       trackPurchaseFailure(errorMsg, orderId);
-      console.log('GTM Purchase Failure tracked:', errorMsg);
+      log('GTM Purchase Failure tracked:', errorMsg);
     }
   }, [resultData]);
 

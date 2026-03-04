@@ -1,3 +1,5 @@
+import { log } from "./logger";
+
 /**
  * Google Tag Manager (GTM) E-ticaret Etkinlikleri (GA4 Standardı)
  */
