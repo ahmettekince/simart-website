@@ -17,6 +17,16 @@ export default function MagazaDisplay({ products: initialProducts = [], categori
         setProducts(initialProducts);
     }, [initialProducts]);
 
+    // GTM - view_item_list takibi
+    useEffect(() => {
+        const listToTrack = finalSorted.length > 0 ? finalSorted : products;
+        if (listToTrack && listToTrack.length > 0) {
+            import('@/utils/analytics').then(({ trackViewItemList }) => {
+                trackViewItemList(listToTrack, 'Mağaza Ürün Listesi', 'shop_page');
+            });
+        }
+    }, [products, finalSorted]);
+
     return (
         <>
             <section className="magaza-list-section">

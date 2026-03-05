@@ -43,7 +43,7 @@ export default function PaymentResultContent() {
   useEffect(() => {
     if (!resultData || typeof window === 'undefined') return;
 
-    const { trackPurchase, trackPurchaseSuccess, trackPurchaseFailure } = require("@/utils/analytics");
+    const { trackPurchase, trackPurchaseFailure } = require("@/utils/analytics");
     const pendingData = sessionStorage.getItem('pending_purchase');
     let orderData = null;
 
@@ -65,7 +65,6 @@ export default function PaymentResultContent() {
         }
 
         trackPurchase(orderData);
-        trackPurchaseSuccess(orderData);
         log('GTM Purchase tracked from PaymentResultContent:', orderData);
 
         // Tekrar tetiklenmemesi için temizle

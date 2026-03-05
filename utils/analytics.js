@@ -186,14 +186,22 @@ export const trackPurchase = (orderData) => {
 };
 
 /**
- * Satın Alma Başarılı (purchase_success)
+ * Ürün Listesi Görüntüleme (view_item_list)
  */
-export const trackPurchaseSuccess = (orderData) => {
-    if (!orderData) return;
-    pushToDataLayer('purchase_success', {
-        transaction_id: String(orderData.id || orderData.order_number || orderData.order_id),
-        value: Number(orderData.total || orderData.grand_total || 0),
-        currency: 'TRY'
+export const trackViewItemList = (products, listName = 'Ürün Listesi', listId = 'product_list') => {
+    if (!products || !Array.isArray(products)) return;
+
+    const normalizedItems = products.map((item, index) => ({
+        ...normalizeItem(item),
+        item_list_id: listId,
+        item_list_name: listName,
+        index: index + 1
+    }));
+
+    pushToDataLayer('view_item_list', {
+        item_list_id: listId,
+        item_list_name: listName,
+        items: normalizedItems
     });
 };
 
