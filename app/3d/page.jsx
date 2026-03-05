@@ -1,6 +1,6 @@
 "use client";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Line, ContactShadows } from "@react-three/drei";
+import { OrbitControls, Line, ContactShadows, Html } from "@react-three/drei";
 import { useState, useRef, useMemo } from "react";
 import * as THREE from "three";
 
@@ -449,6 +449,23 @@ function House({ type, trail, posRef, rotRef }) {
             <mesh position={[-0.75, 0.015, 0]}><boxGeometry args={[3.3, 0.01, 9.8]} /><meshStandardMaterial color="#b2bec3" opacity={0.35} transparent /></mesh>
             <mesh position={[-4.75, 0.015, 2.75]}><boxGeometry args={[4.3, 0.01, 4.3]} /><meshStandardMaterial color="#10ac84" opacity={0.35} transparent /></mesh>
             <mesh position={[-4.75, 0.015, -2.25]}><boxGeometry args={[4.3, 0.01, 5.3]} /><meshStandardMaterial color="#00d2d3" opacity={0.35} transparent /></mesh>
+
+            {/* Oda İsimleri (HTML Overlay - Sıfır GPU Yükü) */}
+            <Html position={[4, 0.1, -1.75]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
+                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>SALON</div>
+            </Html>
+            <Html position={[4, 0.1, 3.25]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
+                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>ODA 1</div>
+            </Html>
+            <Html position={[-0.75, 0.1, 0]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
+                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>HOL</div>
+            </Html>
+            <Html position={[-4.75, 0.1, 2.75]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
+                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>EBEVEYN ODASI</div>
+            </Html>
+            <Html position={[-4.75, 0.1, -2.25]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
+                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>ODA 2</div>
+            </Html>
         </>}
 
         {type === "3+2" && <>
@@ -516,8 +533,8 @@ function House({ type, trail, posRef, rotRef }) {
             <Wall w={t} h={h} t={3.2} x={-2.5} z={3.3} />
             <Wall w={t} h={h} t={1.5} x={-2.5} z={-0.25} />
             <Wall w={t} h={h} t={1.5} x={-2.5} z={-4.25} />
-            <Lintel x={-2.5} z={2.37} w={t} t={1.75} h={h} /> {/* Lintel Ebeveyn Odası */}
-            <Lintel x={-2.5} z={-2.8} w={t} t={1.75} h={h} /> {/* Lintel Oda 2 */}
+            <Lintel x={-2.5} z={1} w={t} t={1.75} h={h} /> {/* Lintel Ebeveyn Odası */}
+            <Lintel x={-2.5} z={-2.2} w={t} t={2.75} h={h} /> {/* Lintel Oda 2 */}
             <Wall w={4.5} h={h} t={t} x={-4.75} z={0.5} />
         </>}
 
@@ -680,14 +697,7 @@ export default function Plan3D() {
                 />
                 <House type={type} trail={trail} posRef={posRef} rotRef={rotRef} />
                 <Mover />
-                <OrbitControls
-                    enablePan={true}
-                    enableDamping={true}
-                    dampingFactor={0.05}
-                    maxPolarAngle={Math.PI / 2}
-                    minDistance={3}
-                    maxDistance={30}
-                />
+                <OrbitControls enablePan={false} maxPolarAngle={Math.PI / 2.1} minDistance={5} maxDistance={26} />
             </Canvas>
         </div>
     );
