@@ -12,6 +12,15 @@ function Wall({ w, h, t, x, z }) {
         <boxGeometry args={[w, h, t]} />{wallMat}</mesh>;
 }
 
+function Floor({ w, z, x, zPos, color, opacity = 0.35 }) {
+    return (
+        <mesh position={[x, 0.015, zPos]}>
+            <boxGeometry args={[w, 0.01, z]} />
+            <meshStandardMaterial color={color} opacity={opacity} transparent />
+        </mesh>
+    );
+}
+
 function Station() {
     return <group position={[0, 0, -4.7]}>
         <mesh position={[0, 0.1, 0]}><boxGeometry args={[0.8, 0.2, 0.5]} /><meshStandardMaterial color="#444" metalness={0.6} roughness={0.4} /></mesh>
@@ -118,32 +127,36 @@ function buildWaypoints(type) {
     const areas = [];
     if (type === "1+1") {
         const suite = [];
-        suite.push({ name: "Salon", bounds: [[0.1, 4.9], [-4.9, 4.9]], isCenter: true });
-        suite.push({ name: "Mutfak", bounds: [[-4.9, -0.1], [-4.9, -0.1]], doorPos: [0, -2.5], doorDir: 'x', toPos: false, corridorX: 0.6 });
+        // Salon-Mutfak iki parçadan oluşuyor ama tek isimle temizlenecek
+        suite.push({ name: "Salon-Mutfak-A", bounds: [[-4.9, 4.9], [-4.9, 0]], isCenter: true, displayName: "Salon-Mutfak" });
+        suite.push({ name: "Salon-Mutfak-B", bounds: [[0.1, 4.9], [0, 4.9]], isCenter: true, displayName: "Salon-Mutfak" });
         suite.push({ name: "Oda", bounds: [[-4.9, -0.1], [0.1, 4.9]], doorPos: [0, 2.5], doorDir: 'x', toPos: false, corridorX: 0.6 });
 
-        push([station]); push([entrance]); currentPos = entrance;
-        suite.forEach(area => {
+        push([station], false); push([entrance], false); currentPos = entrance;
+        const plan = ["Salon-Mutfak-A", "Salon-Mutfak-B", "Oda"];
+        plan.forEach(name => {
+            const area = suite.find(a => a.name === name);
             const cX = area.corridorX ?? 0;
-            if (!area.isCenter) {
-                push([[cX, 0.25, area.doorPos[1]]]);
+            if (area.doorPos) {
+                push([[cX, 0.25, currentPos[2]]], false);
+                push([[cX, 0.25, area.doorPos[1]]], false);
                 const dPts = door(area.doorPos[0], area.doorPos[1], area.doorDir, area.toPos);
-                push(dPts);
+                push(dPts, false);
                 currentPos = dPts[dPts.length - 1];
             }
             const sPts = sweep(...area.bounds[0], ...area.bounds[1], currentPos, 0.50);
-            push(sPts);
+            push(sPts, true);
             if (sPts.length > 0) currentPos = sPts[sPts.length - 1];
             if (!area.isCenter) {
-                if (area.doorDir === 'z') push([[area.doorPos[0], 0.25, currentPos[2]]]);
-                else push([[currentPos[0], 0.25, area.doorPos[1]]]);
+                if (area.doorDir === 'z') push([[area.doorPos[0], 0.25, currentPos[2]]], false);
+                else push([[currentPos[0], 0.25, area.doorPos[1]]], false);
                 const rPts = door(area.doorPos[0], area.doorPos[1], area.doorDir, !area.toPos);
-                push(rPts);
-                push([[cX, 0.25, area.doorPos[1]]]);
+                push(rPts, false);
+                push([[cX, 0.25, area.doorPos[1]]], false);
                 currentPos = [cX, 0.25, area.doorPos[1]];
             }
         });
-        push([station]);
+        push([station], false);
         return all;
     } else if (type === "2+1") {
         const suite = [];
@@ -286,9 +299,10 @@ function House({ type, trail, posRef, rotRef }) {
 
         {/* ODALARA ÖZEL RENKLİ ZEMİN KAPLAMALARI */}
         {type === "1+1" && <>
-            <mesh position={[2.5, 0.015, 0]}><boxGeometry args={[5, 0.01, 10]} /><meshStandardMaterial color="#ee5253" opacity={0.35} transparent /></mesh>
-            <mesh position={[-2.5, 0.015, -2.5]}><boxGeometry args={[5, 0.01, 5]} /><meshStandardMaterial color="#ff9f43" opacity={0.35} transparent /></mesh>
-            <mesh position={[-2.5, 0.015, 2.5]}><boxGeometry args={[5, 0.01, 5]} /><meshStandardMaterial color="#10ac84" opacity={0.35} transparent /></mesh>
+            {/* Salon-Mutfak L-Şekli Birleşik Renk */}
+            <Floor w={10} z={5} x={0} zPos={-2.5} color="#ee5253" opacity={0.35} /> {/* Üst parça */}
+            <Floor w={5} z={5} x={2.5} zPos={2.5} color="#ee5253" opacity={0.35} /> {/* Sağ alt parça */}
+            <Floor w={5} z={5} x={-2.5} zPos={2.5} color="#10ac84" opacity={0.35} /> {/* Oda */}
         </>}
 
         {type === "2+1" && <>
