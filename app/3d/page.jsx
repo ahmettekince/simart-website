@@ -1,15 +1,27 @@
 "use client";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Line } from "@react-three/drei";
+import { OrbitControls, Line, ContactShadows } from "@react-three/drei";
 import { useState, useRef, useMemo } from "react";
 import * as THREE from "three";
 
-const wallMat = <meshStandardMaterial color="#f4f3ef" roughness={0.95} />;
-const floorMat = <meshStandardMaterial color="#d8cfbf" roughness={0.8} metalness={0.05} />;
+const wallMat = <meshStandardMaterial color="#f4f3ef" roughness={0.6} metalness={0.1} />;
+const floorMat = <meshStandardMaterial color="#d8cfbf" roughness={0.2} metalness={0.15} />;
 
 function Wall({ w, h, t, x, z }) {
-    return <mesh position={[x, h / 2, z]}>
-        <boxGeometry args={[w, h, t]} />{wallMat}</mesh>;
+    const bbH = 0.12, bbT = 0.04;
+    return <group position={[x, 0, z]}>
+        <mesh position={[0, h / 2, 0]}>
+            <boxGeometry args={[w, h, t]} />{wallMat}
+        </mesh>
+        <mesh position={[0, bbH / 2, (t / 2) + (bbT / 2)]}>
+            <boxGeometry args={[w, bbH, bbT]} />
+            <meshStandardMaterial color="#ccc" roughness={0.5} />
+        </mesh>
+        <mesh position={[0, bbH / 2, -(t / 2) - (bbT / 2)]}>
+            <boxGeometry args={[w, bbH, bbT]} />
+            <meshStandardMaterial color="#ccc" roughness={0.5} />
+        </mesh>
+    </group>;
 }
 
 function Floor({ w, z, x, zPos, color, opacity = 0.35 }) {
@@ -23,9 +35,35 @@ function Floor({ w, z, x, zPos, color, opacity = 0.35 }) {
 
 function Station() {
     return <group position={[0, 0, -4.7]}>
-        <mesh position={[0, 0.1, 0]}><boxGeometry args={[0.8, 0.2, 0.5]} /><meshStandardMaterial color="#444" metalness={0.6} roughness={0.4} /></mesh>
-        <mesh position={[0, 0.3, -0.2]}><boxGeometry args={[0.7, 0.6, 0.1]} /><meshStandardMaterial color="#333" /></mesh>
-        <mesh position={[0, 0.5, -0.14]}><sphereGeometry args={[0.03, 16, 16]} /><meshStandardMaterial color="#00ff00" emissive="#00ff00" emissiveIntensity={0.5} /></mesh>
+        {/* TABAN PLAKASI (Z-Fighting Fix: Zeminden hafif yukarıda) */}
+        <mesh position={[0, 0.03, 0.3]}>
+            <boxGeometry args={[0.8, 0.04, 0.9]} />
+            <meshStandardMaterial color="#222" roughness={0.4} metalness={0.1} />
+        </mesh>
+
+        {/* ANA KULE (Gövde) */}
+        <mesh position={[0, 0.5, -0.1]}>
+            <boxGeometry args={[0.7, 1.0, 0.5]} />
+            <meshStandardMaterial color="#1a1a1a" roughness={0.4} />
+        </mesh>
+
+        {/* ÜST KAPAK (Lid) */}
+        <mesh position={[0, 1.05, -0.1]}>
+            <boxGeometry args={[0.72, 0.1, 0.52]} />
+            <meshStandardMaterial color="#222" metalness={0.5} roughness={0.2} />
+        </mesh>
+
+        {/* ÖN PANEL DETAYI (Dokulu Bölüm) */}
+        <mesh position={[0, 0.45, 0.155]}>
+            <boxGeometry args={[0.62, 0.7, 0.01]} />
+            <meshStandardMaterial color="#111" roughness={1} />
+        </mesh>
+
+        {/* LOGO / GÖSTERGE IŞIĞI */}
+        <mesh position={[0, 0.1, 0.16]}>
+            <sphereGeometry args={[0.02, 8, 8]} />
+            <meshStandardMaterial color="#00ff00" emissive="#00ff00" emissiveIntensity={0.5} />
+        </mesh>
     </group>;
 }
 
@@ -39,16 +77,99 @@ function Lintel({ x, z, w, t, h, doorH = 2.15 }) {
 
 function Robot({ posRef, rotRef }) {
     const g = useRef();
-    useFrame(() => {
+    const brushRefL = useRef();
+    const brushRefR = useRef();
+
+    useFrame((state, dt) => {
         if (!g.current) return;
         const p = posRef.current;
-        g.current.position.set(p.x, p.y, p.z);
+        g.current.position.set(p.x, 0.1, p.z); // Yere daha yakın (0.1)
         g.current.rotation.y = rotRef.current;
+
+        // Yan fırçaların TOZ TOPLAMA mantığında zıt yönlü dönüşü
+        // Sol fırça saat yönüne, Sağ fırça saat yönünün tersine döner
+        if (brushRefL.current) brushRefL.current.rotation.y -= 10 * dt; // CW
+        if (brushRefR.current) brushRefR.current.rotation.y += 10 * dt; // CCW
     });
+
+    const bodyCol = "#222";
+    const topCol = "#2d3a5a"; // Daha belirgin lacivert/mavi tonu
+    const sensorCol = "#000000";
+
     return <group ref={g}>
-        <mesh><cylinderGeometry args={[0.32, 0.32, 0.45, 32]} /><meshStandardMaterial color="#2b2b2b" metalness={0.5} roughness={0.35} /></mesh>
-        <mesh position={[0, 0.1, 0.25]}><boxGeometry args={[0.2, 0.1, 0.1]} /><meshStandardMaterial color="#ff3e00" emissive="#ff3e00" emissiveIntensity={2} /></mesh>
-        <mesh position={[0, 0.23, 0]}><cylinderGeometry args={[0.15, 0.15, 0.02, 32]} /><meshStandardMaterial color="#00a8ff" emissive="#00a8ff" emissiveIntensity={1} /></mesh>
+        {/* ANA GÖVDE (Siyah Disk) */}
+        <mesh castShadow>
+            <cylinderGeometry args={[0.35, 0.35, 0.1, 32]} />
+            <meshStandardMaterial color={bodyCol} roughness={0.4} />
+        </mesh>
+
+        {/* ÜST KAPAK (Lacivert/Metalik Bölüm) */}
+        <mesh position={[0, 0.052, 0]}>
+            <cylinderGeometry args={[0.33, 0.33, 0.01, 32]} />
+            <meshStandardMaterial
+                color={topCol}
+                metalness={0.7}
+                roughness={0.2}
+                emissive={topCol}
+                emissiveIntensity={0.1}
+            />
+        </mesh>
+
+        {/* LIDAR KULESİ (LDS Sensor) */}
+        <group position={[0, 0.08, 0]}>
+            <mesh castShadow>
+                <cylinderGeometry args={[0.08, 0.08, 0.05, 16]} />
+                <meshStandardMaterial color={sensorCol} metalness={0.9} roughness={0.1} />
+            </mesh>
+            {/* Kulenin gümüş üst halkası */}
+            <mesh position={[0, 0.026, 0]}>
+                <cylinderGeometry args={[0.082, 0.082, 0.005, 16]} />
+                <meshStandardMaterial color="silver" metalness={1} roughness={0} />
+            </mesh>
+        </group>
+
+        {/* BUTONLAR */}
+        <mesh position={[0.1, 0.06, 0.15]} rotation={[-Math.PI / 2, 0, 0]}>
+            <capsuleGeometry args={[0.02, 0.04, 4, 8]} />
+            <meshStandardMaterial color="#444" />
+        </mesh>
+
+        {/* YAN FIRÇALAR (Helikopter Pervanesi Gibi Sabit Pivot) */}
+        {/* SOL FIRÇA (Robot Solu) */}
+        <group position={[0.22, -0.046, 0.22]} ref={brushRefL}>
+            {/* Merkez Kapak (Hub) */}
+            <mesh position={[0, 0.01, 0]}>
+                <cylinderGeometry args={[0.03, 0.04, 0.02, 16]} />
+                <meshStandardMaterial color="#000" />
+            </mesh>
+            {/* 3 Kollu Fırça */}
+            {[0, 2.1, 4.2].map(r => (
+                <group key={r} rotation={[0, r, 0]}>
+                    <mesh position={[0.09, 0, 0]}>
+                        <boxGeometry args={[0.18, 0.01, 0.012]} />
+                        <meshStandardMaterial color="#111" />
+                    </mesh>
+                </group>
+            ))}
+        </group>
+
+        {/* SAĞ FIRÇA (Robot Sağı) */}
+        <group position={[-0.22, -0.046, 0.22]} ref={brushRefR}>
+            {/* Merkez Kapak (Hub) */}
+            <mesh position={[0, 0.01, 0]}>
+                <cylinderGeometry args={[0.03, 0.04, 0.02, 16]} />
+                <meshStandardMaterial color="#000" />
+            </mesh>
+            {/* 3 Kollu Fırça */}
+            {[0, 2.1, 4.2].map(r => (
+                <group key={r} rotation={[0, r, 0]}>
+                    <mesh position={[-0.09, 0, 0]}>
+                        <boxGeometry args={[0.18, 0.01, 0.012]} />
+                        <meshStandardMaterial color="#111" />
+                    </mesh>
+                </group>
+            ))}
+        </group>
     </group>;
 }
 
@@ -138,7 +259,9 @@ function buildWaypoints(type) {
         // Salon-Mutfak iki parçadan oluşuyor ama tek isimle temizlenecek
         suite.push({ name: "Salon-Mutfak-A", bounds: [[-4.9, 4.9], [-4.9, 0]], isCenter: true, displayName: "Salon-Mutfak" });
         suite.push({ name: "Salon-Mutfak-B", bounds: [[0.1, 4.9], [0, 4.9]], isCenter: true, displayName: "Salon-Mutfak" });
-        suite.push({ name: "Oda", bounds: [[-4.9, -0.1], [0.1, 4.9]], doorPos: [0, 2.5], doorDir: 'x', toPos: false, corridorX: 0.6 });
+        // Oda'da kapı sakınma: Kapı x=0 duvarında, z=[2, 2.9] arasında duruyor.
+        // Robotun z-ekseninde bu bölgeye girmemesi için bounds'u biraz daraltıyoruz.
+        suite.push({ name: "Oda", bounds: [[-4.9, -0.6], [0.1, 4.9]], doorPos: [0, 2.5], doorDir: 'x', toPos: false, corridorX: 0.6 });
 
         push([station], false); push([entrance], false); currentPos = entrance;
         const plan = ["Salon-Mutfak-A", "Salon-Mutfak-B", "Oda"];
@@ -363,6 +486,7 @@ function House({ type, trail, posRef, rotRef }) {
             <Wall w={t} h={h} t={2} x={0} z={1} />
             <Wall w={t} h={h} t={2} x={0} z={4} />
             <Lintel x={0} z={2.5} w={t} t={1} h={h} /> {/* Door to Oda */}
+
         </>}
 
         {/* 2+1 MİMARİ DUVARLAR */}
@@ -375,7 +499,7 @@ function House({ type, trail, posRef, rotRef }) {
             <Wall w={t} h={h} t={1.75} x={-2} z={4} />
             <Wall w={t} h={h} t={1.65} x={-2} z={0.75} /> {/* Wall between Oda 1 and 2 */}
             <Lintel x={-2} z={2.3} w={t} t={1.65} h={h} /> {/* Door to Oda 1 */}
-            <Lintel x={-2} z={-0.8} w={t} t={1.65} h={h} /> {/* Door to Oda 2 */}
+            <Lintel x={-2} z={-0.9} w={t} t={1.65} h={h} /> {/* Door to Oda 2 */}
             <Wall w={5} h={h} t={t} x={-4.5} z={0} />
         </>}
 
@@ -389,9 +513,8 @@ function House({ type, trail, posRef, rotRef }) {
             <Lintel x={1} z={-0.25} w={t} t={1.75} h={h} /> {/* Lintel Salon */}
             <Lintel x={1} z={2.3} w={t} t={1.75} h={h} /> {/* Lintel Mutfak */}
 
-            {/* Sol taraf (Yatak Odaları) */}
-            <Wall w={t} h={h} t={1.75} x={-2.5} z={4} />
-            <Wall w={t} h={h} t={3.75} x={-2.5} z={-0.25} />
+            <Wall w={t} h={h} t={3.2} x={-2.5} z={3.3} />
+            <Wall w={t} h={h} t={1.5} x={-2.5} z={-0.25} />
             <Wall w={t} h={h} t={1.5} x={-2.5} z={-4.25} />
             <Lintel x={-2.5} z={2.37} w={t} t={1.75} h={h} /> {/* Lintel Ebeveyn Odası */}
             <Lintel x={-2.5} z={-2.8} w={t} t={1.75} h={h} /> {/* Lintel Oda 2 */}
@@ -406,7 +529,7 @@ function House({ type, trail, posRef, rotRef }) {
 
             <Wall w={t} h={h} t={6} x={1} z={-3} />
             <Wall w={t} h={h} t={3.75} x={1} z={4} />
-            <Lintel x={1} z={1.1} w={t} t={1.75} h={h} /> {/* Lintel Corridor Entry */}
+            <Lintel x={1} z={1.1} w={t} t={2.25} h={h} />
 
             <Wall w={4} h={h} t={t} x={7} z={2.25} />
             <Wall w={2} h={h} t={t} x={2} z={2.25} />
@@ -544,9 +667,17 @@ export default function Plan3D() {
                 <button onClick={reset} style={{ padding: "9px 18px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.15)", background: "transparent", color: "#ff7675", fontWeight: 600, cursor: "pointer", fontSize: 14 }}>↺ Sıfırla</button>
             </div>
             <Canvas dpr={[1, 1.5]} gl={{ antialias: true }} camera={{ position: [14, 12, 14], fov: 42 }}>
-                <ambientLight intensity={0.4} />
-                <hemisphereLight intensity={0.6} groundColor="#d6d2c8" />
-                <directionalLight position={[2, 10, 4]} intensity={1.3} />
+                <ambientLight intensity={0.5} />
+                <hemisphereLight intensity={0.4} groundColor="#d6d2c8" />
+                <directionalLight position={[0, 10, 0]} intensity={1.5} />
+                <ContactShadows
+                    position={[0, 0.01, 0]}
+                    opacity={0.3}
+                    scale={25}
+                    blur={2.5}
+                    far={4}
+                    resolution={128}
+                />
                 <House type={type} trail={trail} posRef={posRef} rotRef={rotRef} />
                 <Mover />
                 <OrbitControls enablePan={false} maxPolarAngle={Math.PI / 2.1} minDistance={5} maxDistance={26} />
