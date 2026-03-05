@@ -29,6 +29,14 @@ function Station() {
     </group>;
 }
 
+function Lintel({ x, z, w, t, h, doorH = 2.15 }) {
+    const wallH = h - doorH;
+    return <mesh position={[x, doorH + wallH / 2, z]}>
+        <boxGeometry args={[w, wallH, t]} />
+        {wallMat}
+    </mesh>;
+}
+
 function Robot({ posRef, rotRef }) {
     const g = useRef();
     useFrame(() => {
@@ -354,15 +362,20 @@ function House({ type, trail, posRef, rotRef }) {
             <Wall w={5} h={h} t={t} x={-2.5} z={0} />
             <Wall w={t} h={h} t={2} x={0} z={1} />
             <Wall w={t} h={h} t={2} x={0} z={4} />
+            <Lintel x={0} z={2.5} w={t} t={1} h={h} /> {/* Door to Oda */}
         </>}
 
         {/* 2+1 MİMARİ DUVARLAR */}
         {type === "2+1" && <>
             <Wall w={t} h={h} t={6.25} x={2} z={-1.75} />
             <Wall w={t} h={h} t={1.75} x={2} z={4} />
+            <Lintel x={2} z={2.25} w={t} t={1.75} h={h} /> {/* Door to Salon */}
+
             <Wall w={t} h={h} t={3.25} x={-2} z={-3.3} />
             <Wall w={t} h={h} t={1.75} x={-2} z={4} />
-            <Wall w={t} h={h} t={1.5} x={-2} z={0.75} />
+            <Wall w={t} h={h} t={1.65} x={-2} z={0.75} /> {/* Wall between Oda 1 and 2 */}
+            <Lintel x={-2} z={2.3} w={t} t={1.65} h={h} /> {/* Door to Oda 1 */}
+            <Lintel x={-2} z={-0.8} w={t} t={1.65} h={h} /> {/* Door to Oda 2 */}
             <Wall w={5} h={h} t={t} x={-4.5} z={0} />
         </>}
 
@@ -373,11 +386,15 @@ function House({ type, trail, posRef, rotRef }) {
             <Wall w={t} h={h} t={4} x={1} z={-3} />
             <Wall w={t} h={h} t={1} x={1} z={1} />
             <Wall w={t} h={h} t={1.75} x={1} z={4} />
+            <Lintel x={1} z={-0.25} w={t} t={1.75} h={h} /> {/* Lintel Salon */}
+            <Lintel x={1} z={2.3} w={t} t={1.75} h={h} /> {/* Lintel Mutfak */}
 
             {/* Sol taraf (Yatak Odaları) */}
             <Wall w={t} h={h} t={1.75} x={-2.5} z={4} />
             <Wall w={t} h={h} t={3.75} x={-2.5} z={-0.25} />
             <Wall w={t} h={h} t={1.5} x={-2.5} z={-4.25} />
+            <Lintel x={-2.5} z={2.37} w={t} t={1.75} h={h} /> {/* Lintel Ebeveyn Odası */}
+            <Lintel x={-2.5} z={-2.8} w={t} t={1.75} h={h} /> {/* Lintel Oda 2 */}
             <Wall w={4.5} h={h} t={t} x={-4.75} z={0.5} />
         </>}
 
@@ -385,14 +402,24 @@ function House({ type, trail, posRef, rotRef }) {
         {type === "3+2" && <>
             <Wall w={2} h={h} t={t} x={2} z={0} />
             <Wall w={4} h={h} t={t} x={7} z={0} />
+            <Lintel x={4} z={0} w={2} t={t} h={h} /> {/* Lintel Salon */}
+
             <Wall w={t} h={h} t={6} x={1} z={-3} />
             <Wall w={t} h={h} t={3.75} x={1} z={4} />
+            <Lintel x={1} z={1.1} w={t} t={1.75} h={h} /> {/* Lintel Corridor Entry */}
+
             <Wall w={4} h={h} t={t} x={7} z={2.25} />
             <Wall w={2} h={h} t={t} x={2} z={2.25} />
+            <Lintel x={4} z={2.25} w={2} t={t} h={h} /> {/* Lintel Mutfak */}
+
             <Wall w={t} h={h} t={2} x={-4} z={5} />
             <Wall w={t} h={h} t={1.5} x={-4} z={1.5} />
             <Wall w={t} h={h} t={2} x={-4} z={-2} />
             <Wall w={t} h={h} t={1.5} x={-4} z={-5.25} />
+            <Lintel x={-4} z={3.12} w={t} t={1.75} h={h} /> {/* Lintel Ebeveyn */}
+            <Lintel x={-4} z={-0.12} w={t} t={1.75} h={h} /> {/* Lintel Misafir */}
+            <Lintel x={-4} z={-3.75} w={t} t={1.5} h={h} /> {/* Lintel Çocuk */}
+
             <Wall w={5} h={h} t={t} x={-6.5} z={2.25} />
             <Wall w={5} h={h} t={t} x={-6.5} z={-1} />
 
