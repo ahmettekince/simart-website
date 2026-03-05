@@ -11,6 +11,7 @@ import ShopFilter from "./ShopFilter";
 export default function MagazaDisplay({ products: initialProducts = [], categories = [] }) {
     const [products, setProducts] = useState(initialProducts);
     const [finalSorted, setFinalSorted] = useState([]);
+    const lastTrackedIds = React.useRef("");
 
     // Sayfa ilk yüklendiğinde ürünleri set et
     useEffect(() => {
@@ -21,6 +22,12 @@ export default function MagazaDisplay({ products: initialProducts = [], categori
     useEffect(() => {
         const listToTrack = finalSorted.length > 0 ? finalSorted : products;
         if (listToTrack && listToTrack.length > 0) {
+            // Liste içeriğini ID bazlı kontrol et (Mükerrer gönderimi önle)
+            const currentIds = listToTrack.map(p => p.id || p.productId).join(',');
+            if (lastTrackedIds.current === currentIds) return;
+
+            lastTrackedIds.current = currentIds;
+
             import('@/utils/analytics').then(({ trackViewItemList }) => {
                 trackViewItemList(listToTrack, 'Mağaza Ürün Listesi', 'shop_page');
             });
