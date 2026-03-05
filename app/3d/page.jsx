@@ -680,7 +680,14 @@ export default function Plan3D() {
                 />
                 <House type={type} trail={trail} posRef={posRef} rotRef={rotRef} />
                 <Mover />
-                <OrbitControls enablePan={false} maxPolarAngle={Math.PI / 2.1} minDistance={5} maxDistance={26} />
+                <OrbitControls
+                    enablePan={true}
+                    enableDamping={true}
+                    dampingFactor={0.05}
+                    maxPolarAngle={Math.PI / 2}
+                    minDistance={3}
+                    maxDistance={30}
+                />
             </Canvas>
         </div>
     );
