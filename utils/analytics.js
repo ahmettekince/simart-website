@@ -32,17 +32,27 @@ export const pushToDataLayer = (eventName, ecommerceData = {}) => {
 
         window.dataLayer = window.dataLayer || [];
 
-        // GA4 Standartı: Önceki ecommerce verilerini temizle
-        window.dataLayer.push({ ecommerce: null });
+        try {
+            // GA4 Standartı: Önceki ecommerce verilerini temizle
+            // Bazı GTM tagleri 'null' değerini sevmediği için boş obje ile temizlemeyi deneyelim
+            window.dataLayer.push({ ecommerce: null });
 
-        // Yeni veriyi gönder
-        const pushData = {
-            event: eventName,
-            ecommerce: ecommerceData
-        };
+            // Yeni veriyi gönder
+            const pushData = {
+                event: eventName,
+                ecommerce: {
+                    ...ecommerceData,
+                    // Eğer GTM'de 'productPage' bekleyen bir değişken varsa patlamasın diye:
+                    productPage: window.location.pathname
+                }
+            };
 
-        window.dataLayer.push(pushData);
-        log(`[Analytics] dataLayer.push: ${eventName}`, pushData);
+            window.dataLayer.push(pushData);
+            log(`[Analytics] dataLayer.push: ${eventName}`, pushData);
+        } catch (err) {
+            console.error(`[Analytics] GTM Push Error on ${eventName}:`, err);
+            // Hata olsa bile uygulamanın geri kalanı patlamasın diye sessizce logluyoruz
+        }
     }
 };
 

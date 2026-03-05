@@ -333,7 +333,25 @@ export default function OrderSummary({
                         item.product?.cover_image?.url ||
                         item.product?.images?.[0] ||
                         "/images/placeholder.jpg";
-                      const itemPrice = item.discount_price || item.price || 0;
+                      const discountAmount = item.discount_amount ?? item.discountAmount ?? null;
+                      const discountPrice = item.discount_price ?? item.discountPrice ?? null;
+                      const regularPrice = item.price ?? item.product?.price ?? null;
+
+                      let displayRegularPrice = regularPrice || discountPrice || 0;
+                      let displayDiscountPrice = null;
+
+                      if (discountAmount != null && discountPrice != null && discountAmount < discountPrice) {
+                        displayRegularPrice = discountPrice;
+                        displayDiscountPrice = discountAmount;
+                      } else if (discountAmount != null && regularPrice != null && discountAmount < regularPrice) {
+                        displayRegularPrice = regularPrice;
+                        displayDiscountPrice = discountAmount;
+                      } else if (discountPrice != null && regularPrice != null && discountPrice < regularPrice) {
+                        displayRegularPrice = regularPrice;
+                        displayDiscountPrice = discountPrice;
+                      }
+
+                      const itemPrice = displayDiscountPrice ?? displayRegularPrice;
                       const itemTotal = itemPrice * item.quantity;
                       const itemCampaignMessages = getCampaignMessagesForProduct(item);
 
@@ -362,17 +380,19 @@ export default function OrderSummary({
                               )}
                             </div>
                             <span className="price">
-                              {item.discount_price != null && item.discount_price > 0 && item.discount_price < item.price ? (
+                              {displayDiscountPrice != null && displayRegularPrice != null && displayDiscountPrice < displayRegularPrice ? (
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
                                   <span style={{ color: '#0bc15c', fontWeight: '600', whiteSpace: 'nowrap' }}>
-                                    {itemTotal.toLocaleString("tr-TR")} TL
+                                    {(displayDiscountPrice * item.quantity).toLocaleString("tr-TR")} TL
                                   </span>
                                   <span style={{ textDecoration: 'line-through', color: '#999', fontSize: '12px', whiteSpace: 'nowrap' }}>
-                                    {(item.price * item.quantity).toLocaleString("tr-TR")} TL
+                                    {(displayRegularPrice * item.quantity).toLocaleString("tr-TR")} TL
                                   </span>
                                 </div>
                               ) : (
-                                <span style={{ color: '#3c81b5', fontWeight: '600', whiteSpace: 'nowrap' }}>{itemTotal.toLocaleString("tr-TR")} TL</span>
+                                <span style={{ color: '#3c81b5', fontWeight: '600', whiteSpace: 'nowrap' }}>
+                                  {(displayRegularPrice * item.quantity).toLocaleString("tr-TR")} TL
+                                </span>
                               )}
                             </span>
                           </div>

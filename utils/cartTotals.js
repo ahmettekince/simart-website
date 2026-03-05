@@ -34,11 +34,23 @@ export function calculateCartTotals(totals, items) {
   }, 0);
 
   const discountedTotal = items.reduce((total, item) => {
-    const itemPrice = item.discount_price || item.price || 0;
+    const discountAmount = item.discount_amount ?? item.discountAmount ?? null;
+    const discountPrice = item.discount_price ?? item.discountPrice ?? null;
+    const regularPrice = item.price ?? item.product?.price ?? null;
+
+    let itemPrice = regularPrice || discountPrice || 0;
+
+    // En düşük geçerli fiyatı bul (indirimli fiyat tespiti)
+    if (discountAmount != null && discountAmount > 0) {
+      itemPrice = discountAmount;
+    } else if (discountPrice != null && discountPrice > 0 && (regularPrice == null || discountPrice < regularPrice)) {
+      itemPrice = discountPrice;
+    }
+
     return total + itemPrice * item.quantity;
   }, 0);
 
-  const discount = subtotal - discountedTotal;
+  const discount = Math.max(0, subtotal - discountedTotal);
 
   return {
     subtotal: subtotal,
