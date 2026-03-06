@@ -1,7 +1,7 @@
 "use client";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Line, ContactShadows, Html, Text } from "@react-three/drei";
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, Suspense } from "react";
 import * as THREE from "three";
 
 function ForbiddenZone({ position, size }) {
@@ -22,9 +22,18 @@ function ForbiddenZone({ position, size }) {
             <meshStandardMaterial color="#ff0000" transparent opacity={0.6} />
         </mesh>
         <Line points={pts} color="white" lineWidth={4} dashed dashScale={8} dashSize={0.6} gapSize={0.4} />
-        <Html position={[0, 0.02, 0]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
-            <div style={{ color: 'white', fontSize: '9px', fontWeight: 'bold', whiteSpace: 'nowrap', textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>YASAKLI ALAN</div>
-        </Html>
+        <Text
+            position={[0, 0.03, 0]}
+            rotation={[-Math.PI / 2, 0, 0]}
+            fontSize={0.25}
+            color="white"
+            font="/fonts/gilroy/Gilroy-Bold.ttf"
+            anchorX="center"
+            anchorY="middle"
+            letterSpacing={0.1}
+        >
+            YASAKLI ALAN
+        </Text>
     </group>;
 }
 
@@ -34,9 +43,18 @@ function VirtualWall({ p1, p2 }) {
     return <group>
         <Line points={[p1, p2]} color="#0984e3" lineWidth={8} dashed dashScale={5} dashSize={1} gapSize={0.5} transparent opacity={0.9} />
         {/* Yazı (Çizginin biraz önünde/üstünde, çakışmayacak şekilde) */}
-        <Html position={[midX, 0.08, midZ + 0.3]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
-            <div style={{ color: 'white', fontSize: '9px', fontWeight: 'bold', whiteSpace: 'nowrap', textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>SANAL DUVAR</div>
-        </Html>
+        <Text
+            position={[midX, 0.08, midZ + 0.3]}
+            rotation={[-Math.PI / 2, 0, 0]}
+            fontSize={0.25}
+            color="white"
+            font="/fonts/gilroy/Gilroy-Bold.ttf"
+            anchorX="center"
+            anchorY="middle"
+            letterSpacing={0.1}
+        >
+            SANAL DUVAR
+        </Text>
     </group>;
 }
 
@@ -517,12 +535,22 @@ function House({ type, trail, posRef, rotRef }) {
             <Floor w={5} z={5} x={2.5} zPos={2.5} color="#ee5253" opacity={0.35} /> {/* Sağ alt parça */}
             <Floor w={5} z={5} x={-2.5} zPos={2.5} color="#10ac84" opacity={0.35} /> {/* Oda */}
 
-            <Html position={[0, 0.1, -2.5]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
-                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>SALON-MUTFAK</div>
-            </Html>
-            <Html position={[-2.5, 0.1, 2.5]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
-                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>ODA</div>
-            </Html>
+            <Text position={[0, 0.1, -2.5]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.4} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+                SALON-MUTFAK
+            </Text>
+            <group position={[-2.5, 0.1, 2.5]} rotation={[-Math.PI / 2, 0, 0]}>
+                <Text
+
+                    fontSize={0.5}
+                    color="white"
+                    letterSpacing={0.1}
+                    anchorX="center"
+                    anchorY="middle"
+                    fontWeight={700}
+                >
+                    ODA
+                </Text>
+            </group>
         </>}
 
         {type === "2+1" && <>
@@ -535,18 +563,18 @@ function House({ type, trail, posRef, rotRef }) {
             <mesh position={[-4.5, 0.015, 2.5]}><boxGeometry args={[4.8, 0.01, 4.8]} /><meshStandardMaterial color="#10ac84" opacity={0.35} transparent /></mesh>
             <mesh position={[-4.5, 0.015, -2.5]}><boxGeometry args={[4.8, 0.01, 4.8]} /><meshStandardMaterial color="#00d2d3" opacity={0.35} transparent /></mesh>
 
-            <Html position={[4.5, 0.1, 0]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
-                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>SALON</div>
-            </Html>
-            <Html position={[0, 0.1, 0]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
-                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>HOL</div>
-            </Html>
-            <Html position={[-4.5, 0.1, 2.5]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
-                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>ODA 1</div>
-            </Html>
-            <Html position={[-4.5, 0.1, -2.5]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
-                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>ODA 2</div>
-            </Html>
+            <Text position={[4.5, 0.1, 0]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.5} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+                SALON
+            </Text>
+            <Text position={[0, 0.1, 0]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.5} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+                HOL
+            </Text>
+            <Text position={[-4.5, 0.1, 2.5]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.5} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+                ODA 1
+            </Text>
+            <Text position={[-4.5, 0.1, -2.5]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.5} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+                ODA 2
+            </Text>
         </>}
 
         {type === "3+1" && <>
@@ -560,21 +588,21 @@ function House({ type, trail, posRef, rotRef }) {
             <mesh position={[-4.75, 0.015, -2.25]}><boxGeometry args={[4.3, 0.01, 5.3]} /><meshStandardMaterial color="#00d2d3" opacity={0.35} transparent /></mesh>
 
             {/* Oda İsimleri (HTML Overlay - Sıfır GPU Yükü) */}
-            <Html position={[4, 0.1, -1.75]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
-                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>SALON</div>
-            </Html>
-            <Html position={[4, 0.1, 3.25]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
-                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>ODA 1</div>
-            </Html>
-            <Html position={[-0.75, 0.1, 0]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
-                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>HOL</div>
-            </Html>
-            <Html position={[-4.75, 0.1, 2.75]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
-                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>EBEVEYN ODASI</div>
-            </Html>
-            <Html position={[-4.75, 0.1, -2.25]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
-                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>ODA 2</div>
-            </Html>
+            <Text position={[4, 0.1, -1.75]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.5} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+                SALON
+            </Text>
+            <Text position={[4, 0.1, 3.25]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.5} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+                ODA 1
+            </Text>
+            <Text position={[-0.75, 0.1, 0]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.5} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+                HOL
+            </Text>
+            <Text position={[-4.75, 0.1, 2.75]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.4} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+                EBEVEYN ODASI
+            </Text>
+            <Text position={[-4.75, 0.1, -2.25]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.5} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+                ODA 2
+            </Text>
         </>}
 
         {
@@ -587,27 +615,27 @@ function House({ type, trail, posRef, rotRef }) {
                 <mesh position={[5, 0.015, -2]}><boxGeometry args={[8, 0.01, 6]} /><meshStandardMaterial color="#ee5253" opacity={0.35} transparent /></mesh>
                 <mesh position={[5, 0.015, 5.12]}><boxGeometry args={[8, 0.01, 3.75]} /><meshStandardMaterial color="#ee5253" opacity={0.25} transparent /></mesh>
 
-                <Html position={[5, 0.1, -2]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
-                    <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>ANA SALON</div>
-                </Html>
-                <Html position={[5, 0.1, 5.12]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
-                    <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>MUTFAK</div>
-                </Html>
-                <Html position={[-1.5, 0.1, 1]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
-                    <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>HOL</div>
-                </Html>
-                <Html position={[-6.5, 0.1, 5.12]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
-                    <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>EBEVEYN ODASI</div>
-                </Html>
-                <Html position={[-6.5, 0.1, 1.62]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
-                    <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>MİSAFİR ODASI</div>
-                </Html>
-                <Html position={[-6.5, 0.1, -2.5]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
-                    <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>ÇOCUK ODASI</div>
-                </Html>
-                <Html position={[5, 0.1, 2.1]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
-                    <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '10px', fontSize: '10px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>KORİDOR</div>
-                </Html>
+                <Text position={[5, 0.1, -2]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.5} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+                    ANA SALON
+                </Text>
+                <Text position={[5, 0.1, 5.12]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.5} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+                    MUTFAK
+                </Text>
+                <Text position={[-1.5, 0.1, 1]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.5} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+                    HOL
+                </Text>
+                <Text position={[-6.5, 0.1, 5.12]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.4} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+                    EBEVEYN ODASI
+                </Text>
+                <Text position={[-6.5, 0.1, 1.62]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.4} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+                    MİSAFİR ODASI
+                </Text>
+                <Text position={[-6.5, 0.1, -2.5]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.4} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+                    ÇOCUK ODASI
+                </Text>
+                <Text position={[5, 0.1, 2.1]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.4} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+                    KORİDOR
+                </Text>
             </>
         }
 
@@ -838,7 +866,9 @@ export default function Plan3D() {
                     far={4}
                     resolution={128}
                 />
-                <House type={type} trail={trail} posRef={posRef} rotRef={rotRef} />
+                <Suspense fallback={null}>
+                    <House type={type} trail={trail} posRef={posRef} rotRef={rotRef} />
+                </Suspense>
                 <Mover />
                 <OrbitControls enablePan={true} maxPolarAngle={Math.PI / 2.1} minDistance={5} maxDistance={26} />
             </Canvas>
