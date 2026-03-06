@@ -29,10 +29,8 @@ function ForbiddenZone({ position, size }) {
 }
 
 function VirtualWall({ p1, p2 }) {
-    // Orta noktayı hesapla (Yazıyı koymak için)
     const midX = (p1[0] + p2[0]) / 2;
     const midZ = (p1[2] + p2[2]) / 2;
-
     return <group>
         <Line points={[p1, p2]} color="#0984e3" lineWidth={8} dashed dashScale={5} dashSize={1} gapSize={0.5} transparent opacity={0.9} />
         {/* Yazı (Çizginin biraz önünde/üstünde, çakışmayacak şekilde) */}
@@ -41,6 +39,7 @@ function VirtualWall({ p1, p2 }) {
         </Html>
     </group>;
 }
+
 
 const wallMat = <meshStandardMaterial color="#f4f3ef" roughness={0.6} metalness={0.1} />;
 const floorMat = <meshStandardMaterial color="#d8cfbf" roughness={0.2} metalness={0.15} />;
@@ -578,37 +577,39 @@ function House({ type, trail, posRef, rotRef }) {
             </Html>
         </>}
 
-        {type === "3+2" && <>
-            <mesh position={[-1.5, 0.015, 1]}><boxGeometry args={[5, 0.01, 12]} /><meshStandardMaterial color="#b2bec3" opacity={0.25} transparent /></mesh>
-            <mesh position={[-6.5, 0.015, 5.12]}><boxGeometry args={[5, 0.01, 3.75]} /><meshStandardMaterial color="#5f27cd" opacity={0.35} transparent /></mesh>
-            <mesh position={[-6.5, 0.015, 1.62]}><boxGeometry args={[5, 0.01, 3.25]} /><meshStandardMaterial color="#10ac84" opacity={0.35} transparent /></mesh>
-            <mesh position={[-6.5, 0.015, -2.5]}><boxGeometry args={[5, 0.01, 5]} /><meshStandardMaterial color="#00d2d3" opacity={0.35} transparent /></mesh>
-            <mesh position={[5, 0.015, 2.1]}><boxGeometry args={[8, 0.01, 2.25]} /><meshStandardMaterial color="#ff9f43" opacity={0.35} transparent /></mesh>
-            <mesh position={[5, 0.015, -2]}><boxGeometry args={[8, 0.01, 6]} /><meshStandardMaterial color="#ee5253" opacity={0.35} transparent /></mesh>
-            <mesh position={[5, 0.015, 5.12]}><boxGeometry args={[8, 0.01, 3.75]} /><meshStandardMaterial color="#ee5253" opacity={0.25} transparent /></mesh>
+        {
+            type === "3+2" && <>
+                <mesh position={[-1.5, 0.015, 1]}><boxGeometry args={[5, 0.01, 12]} /><meshStandardMaterial color="#b2bec3" opacity={0.25} transparent /></mesh>
+                <mesh position={[-6.5, 0.015, 5.12]}><boxGeometry args={[5, 0.01, 3.75]} /><meshStandardMaterial color="#5f27cd" opacity={0.35} transparent /></mesh>
+                <mesh position={[-6.5, 0.015, 1.62]}><boxGeometry args={[5, 0.01, 3.25]} /><meshStandardMaterial color="#10ac84" opacity={0.35} transparent /></mesh>
+                <mesh position={[-6.5, 0.015, -2.5]}><boxGeometry args={[5, 0.01, 5]} /><meshStandardMaterial color="#00d2d3" opacity={0.35} transparent /></mesh>
+                <mesh position={[5, 0.015, 2.1]}><boxGeometry args={[8, 0.01, 2.25]} /><meshStandardMaterial color="#ff9f43" opacity={0.35} transparent /></mesh>
+                <mesh position={[5, 0.015, -2]}><boxGeometry args={[8, 0.01, 6]} /><meshStandardMaterial color="#ee5253" opacity={0.35} transparent /></mesh>
+                <mesh position={[5, 0.015, 5.12]}><boxGeometry args={[8, 0.01, 3.75]} /><meshStandardMaterial color="#ee5253" opacity={0.25} transparent /></mesh>
 
-            <Html position={[5, 0.1, -2]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
-                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>ANA SALON</div>
-            </Html>
-            <Html position={[5, 0.1, 5.12]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
-                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>MUTFAK</div>
-            </Html>
-            <Html position={[-1.5, 0.1, 1]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
-                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>HOL</div>
-            </Html>
-            <Html position={[-6.5, 0.1, 5.12]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
-                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>EBEVEYN ODASI</div>
-            </Html>
-            <Html position={[-6.5, 0.1, 1.62]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
-                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>MİSAFİR ODASI</div>
-            </Html>
-            <Html position={[-6.5, 0.1, -2.5]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
-                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>ÇOCUK ODASI</div>
-            </Html>
-            <Html position={[5, 0.1, 2.1]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
-                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '10px', fontSize: '10px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>KORİDOR</div>
-            </Html>
-        </>}
+                <Html position={[5, 0.1, -2]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
+                    <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>ANA SALON</div>
+                </Html>
+                <Html position={[5, 0.1, 5.12]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
+                    <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>MUTFAK</div>
+                </Html>
+                <Html position={[-1.5, 0.1, 1]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
+                    <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>HOL</div>
+                </Html>
+                <Html position={[-6.5, 0.1, 5.12]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
+                    <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>EBEVEYN ODASI</div>
+                </Html>
+                <Html position={[-6.5, 0.1, 1.62]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
+                    <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>MİSAFİR ODASI</div>
+                </Html>
+                <Html position={[-6.5, 0.1, -2.5]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
+                    <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>ÇOCUK ODASI</div>
+                </Html>
+                <Html position={[5, 0.1, 2.1]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
+                    <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '10px', fontSize: '10px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>KORİDOR</div>
+                </Html>
+            </>
+        }
 
         <Station />
         <Wall w={fw} h={h} t={t} x={0} z={(-fz / 2) + zOff} />
@@ -617,85 +618,95 @@ function House({ type, trail, posRef, rotRef }) {
         <Wall w={t} h={h} t={fz} x={fw / 2} z={zOff} />
 
         {/* ROBOTUN TEMİZLİK ROTASI (Ovalleştirilmiş Beyaz Çizgi) */}
-        {trail.length > 1 && (() => {
-            const curvePoints = trail.map(p => new THREE.Vector3(p[0], 0.05, p[2]));
-            // Eğer yeterli nokta varsa (en az 3) ovalleştir, yoksa düz çizgi
-            if (trail.length > 2) {
-                const curve = new THREE.CatmullRomCurve3(curvePoints, false, 'catmullrom', 0); // Keskin köşeler için 0
-                const points = curve.getPoints(trail.length * 4); // Daha fazla nokta ile pürüzsüzlük
-                return <Line points={points} color="white" lineWidth={2} transparent opacity={0.6} />;
-            } else {
-                return <Line points={curvePoints} color="white" lineWidth={2} transparent opacity={0.6} />;
-            }
-        })()}
+        {
+            trail.length > 1 && (() => {
+                const curvePoints = trail.map(p => new THREE.Vector3(p[0], 0.05, p[2]));
+                // Eğer yeterli nokta varsa (en az 3) ovalleştir, yoksa düz çizgi
+                if (trail.length > 2) {
+                    const curve = new THREE.CatmullRomCurve3(curvePoints, false, 'catmullrom', 0); // Keskin köşeler için 0
+                    const points = curve.getPoints(trail.length * 4); // Daha fazla nokta ile pürüzsüzlük
+                    return <Line points={points} color="white" lineWidth={2} transparent opacity={0.6} />;
+                } else {
+                    return <Line points={curvePoints} color="white" lineWidth={2} transparent opacity={0.6} />;
+                }
+            })()
+        }
 
         {/* 1+1 ÖZEL MİMARİ */}
-        {type === "1+1" && <>
-            <Wall w={5} h={h} t={t} x={-2.5} z={0} />
-            <Wall w={t} h={h} t={2} x={0} z={1} />
-            <Wall w={t} h={h} t={2} x={0} z={4} />
-            <Lintel x={0} z={2.5} w={t} t={1} h={h} /> {/* Door to Oda */}
+        {
+            type === "1+1" && <>
+                <Wall w={5} h={h} t={t} x={-2.5} z={0} />
+                <Wall w={t} h={h} t={2} x={0} z={1} />
+                <Wall w={t} h={h} t={2} x={0} z={4} />
+                <Lintel x={0} z={2.5} w={t} t={1} h={h} /> {/* Door to Oda */}
 
-        </>}
+            </>
+        }
 
         {/* 2+1 MİMARİ DUVARLAR */}
-        {type === "2+1" && <>
-            <Wall w={t} h={h} t={6.25} x={2} z={-1.75} />
-            <Wall w={t} h={h} t={1.75} x={2} z={4} />
-            <Lintel x={2} z={2.25} w={t} t={1.75} h={h} /> {/* Door to Salon */}
+        {
+            type === "2+1" && <>
+                <Wall w={t} h={h} t={6.25} x={2} z={-1.75} />
+                <Wall w={t} h={h} t={1.75} x={2} z={4} />
+                <Lintel x={2} z={2.25} w={t} t={1.75} h={h} /> {/* Door to Salon */}
 
-            <Wall w={t} h={h} t={3.25} x={-2} z={-3.3} />
-            <Wall w={t} h={h} t={1.75} x={-2} z={4} />
-            <Wall w={t} h={h} t={1.65} x={-2} z={0.75} /> {/* Wall between Oda 1 and 2 */}
-            <Lintel x={-2} z={2.3} w={t} t={1.65} h={h} /> {/* Door to Oda 1 */}
-            <Lintel x={-2} z={-0.9} w={t} t={1.65} h={h} /> {/* Door to Oda 2 */}
-            <Wall w={5} h={h} t={t} x={-4.5} z={0} />
-        </>}
+                <Wall w={t} h={h} t={3.25} x={-2} z={-3.3} />
+                <Wall w={t} h={h} t={1.75} x={-2} z={4} />
+                <Wall w={t} h={h} t={1.65} x={-2} z={0.75} /> {/* Wall between Oda 1 and 2 */}
+                <Lintel x={-2} z={2.3} w={t} t={1.65} h={h} /> {/* Door to Oda 1 */}
+                <Lintel x={-2} z={-0.9} w={t} t={1.65} h={h} /> {/* Door to Oda 2 */}
+                <Wall w={5} h={h} t={t} x={-4.5} z={0} />
+            </>
+        }
 
         {/* 3+1 ÖZEL MİMARİ (Premium) */}
-        {type === "3+1" && <>
-            {/* Sağ taraf (Salon-Mutfak) */}
-            <Wall w={6} h={h} t={t} x={4} z={1.5} />
-            <Wall w={t} h={h} t={4} x={1} z={-3} />
-            <Wall w={t} h={h} t={1} x={1} z={1} />
-            <Wall w={t} h={h} t={1.75} x={1} z={4} />
-            <Lintel x={1} z={-0.25} w={t} t={1.75} h={h} /> {/* Lintel Salon */}
-            <Lintel x={1} z={2.3} w={t} t={1.75} h={h} /> {/* Lintel Mutfak */}
+        {
+            type === "3+1" && <>
+                {/* Sağ taraf (Salon-Mutfak) */}
+                <Wall w={6} h={h} t={t} x={4} z={1.5} />
+                <Wall w={t} h={h} t={4} x={1} z={-3} />
+                <Wall w={t} h={h} t={1} x={1} z={1} />
+                <Wall w={t} h={h} t={1.75} x={1} z={4} />
+                <Lintel x={1} z={-0.25} w={t} t={1.75} h={h} /> {/* Lintel Salon */}
+                <Lintel x={1} z={2.3} w={t} t={1.75} h={h} /> {/* Lintel Mutfak */}
 
-            <Wall w={t} h={h} t={2} x={-2.5} z={4} />
-            <Wall w={t} h={h} t={3.30} x={-2.5} z={-0.25} />
-            <Wall w={t} h={h} t={1.5} x={-2.5} z={-4.25} />
-            <Lintel x={-2.5} z={1.75} w={t} t={2.5} h={h} />
-            <Lintel x={-2.5} z={-2.2} w={t} t={2.75} h={h} /> {/* Lintel Oda 2 */}
-            <Wall w={4.5} h={h} t={t} x={-4.75} z={0.5} />
-        </>}
+                <Wall w={t} h={h} t={2} x={-2.5} z={4} />
+                <Wall w={t} h={h} t={3.30} x={-2.5} z={-0.25} />
+                <Wall w={t} h={h} t={1.5} x={-2.5} z={-4.25} />
+                <Lintel x={-2.5} z={1.75} w={t} t={2.5} h={h} />
+                <Lintel x={-2.5} z={-2.2} w={t} t={2.75} h={h} /> {/* Lintel Oda 2 */}
+                <Wall w={4.5} h={h} t={t} x={-4.75} z={0.5} />
+            </>
+        }
 
         {/* 3+2 ÖZEL MİMARİ (Grand Mansion) */}
-        {type === "3+2" && <>
-            <Wall w={2} h={h} t={t} x={2} z={1} />
-            <Wall w={4} h={h} t={t} x={7} z={1} />
-            <Lintel x={4} z={1} w={2} t={t} h={h} /> {/* Lintel Salon */}
+        {
+            type === "3+2" && <>
+                <Wall w={2} h={h} t={t} x={2} z={1} />
+                <Wall w={4} h={h} t={t} x={7} z={1} />
+                <Lintel x={4} z={1} w={2} t={t} h={h} /> {/* Lintel Salon */}
 
-            <Wall w={t} h={h} t={6} x={1} z={-2} />
-            <Wall w={t} h={h} t={3.75} x={1} z={5} />
-            <Lintel x={1} z={2.1} w={t} t={2.25} h={h} />
+                <Wall w={t} h={h} t={6} x={1} z={-2} />
+                <Wall w={t} h={h} t={3.75} x={1} z={5} />
+                <Lintel x={1} z={2.1} w={t} t={2.25} h={h} />
 
-            <Wall w={4} h={h} t={t} x={7} z={3.25} />
-            <Wall w={2} h={h} t={t} x={2} z={3.25} />
-            <Lintel x={4} z={3.25} w={2} t={t} h={h} /> {/* Lintel Mutfak */}
+                <Wall w={4} h={h} t={t} x={7} z={3.25} />
+                <Wall w={2} h={h} t={t} x={2} z={3.25} />
+                <Lintel x={4} z={3.25} w={2} t={t} h={h} /> {/* Lintel Mutfak */}
 
-            <Wall w={t} h={h} t={2} x={-4} z={6} />
-            <Wall w={t} h={h} t={1.5} x={-4} z={2.5} />
-            <Wall w={t} h={h} t={2} x={-4} z={-1} />
-            <Wall w={t} h={h} t={1.5} x={-4} z={-4.25} />
-            <Lintel x={-4} z={4.12} w={t} t={1.75} h={h} /> {/* Lintel Ebeveyn */}
-            <Lintel x={-4} z={0.88} w={t} t={1.75} h={h} /> {/* Lintel Misafir */}
-            <Lintel x={-4} z={-2.75} w={t} t={1.5} h={h} /> {/* Lintel Çocuk */}
+                <Wall w={t} h={h} t={2} x={-4} z={6} />
+                <Wall w={t} h={h} t={1.5} x={-4} z={2.5} />
+                <Wall w={t} h={h} t={2} x={-4} z={-1} />
+                <Wall w={t} h={h} t={1.5} x={-4} z={-4.25} />
+                <Lintel x={-4} z={4.12} w={t} t={1.75} h={h} /> {/* Lintel Ebeveyn */}
+                <Lintel x={-4} z={0.88} w={t} t={1.75} h={h} /> {/* Lintel Misafir */}
+                <Lintel x={-4} z={-2.75} w={t} t={1.5} h={h} /> {/* Lintel Çocuk */}
 
-            <Wall w={5} h={h} t={t} x={-6.5} z={3.25} />
-            <Wall w={5} h={h} t={t} x={-6.5} z={0} />
+                <Wall w={5} h={h} t={t} x={-6.5} z={3.25} />
+                <Wall w={5} h={h} t={t} x={-6.5} z={0} />
 
-        </>}
+            </>
+        }
 
         <Robot posRef={posRef} rotRef={rotRef} />
     </>;
