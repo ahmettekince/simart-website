@@ -786,6 +786,7 @@ export default function Plan3D() {
         setTrail([]); lastTrail.current = null;
         posRef.current.set(0, 0.25, -4.5); rotRef.current = 0;
         setStatus("Başlatmayı Bekliyor"); setPct(0);
+        setMetrekare(null); setPet(null);
     };
 
     function Mover() {
@@ -931,6 +932,7 @@ export default function Plan3D() {
                         {[true, false].map(v => (
                             <button
                                 key={v.toString()}
+                                disabled={!metrekare}
                                 onClick={() => {
                                     setPet(v);
                                     if (type && metrekare && !isAuto) {
@@ -945,7 +947,8 @@ export default function Plan3D() {
                                     border: pet === v ? "2.5px solid #3c81b5" : "1px solid #e0e0e0",
                                     background: pet === v ? "#3c81b5" : "#fff",
                                     color: pet === v ? "#fff" : "#2d3436",
-                                    cursor: "pointer",
+                                    cursor: metrekare ? "pointer" : "not-allowed",
+                                    opacity: metrekare ? 1 : 0.5,
                                     fontWeight: "800",
                                     fontSize: isMobile ? "13px" : "15px",
                                     transition: "all 0.2s ease"
