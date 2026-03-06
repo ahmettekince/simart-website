@@ -28,6 +28,20 @@ function ForbiddenZone({ position, size }) {
     </group>;
 }
 
+function VirtualWall({ p1, p2 }) {
+    // Orta noktayı hesapla (Yazıyı koymak için)
+    const midX = (p1[0] + p2[0]) / 2;
+    const midZ = (p1[2] + p2[2]) / 2;
+
+    return <group>
+        <Line points={[p1, p2]} color="#0984e3" lineWidth={8} dashed dashScale={5} dashSize={1} gapSize={0.5} transparent opacity={0.9} />
+        {/* Yazı (Çizginin biraz önünde/üstünde, çakışmayacak şekilde) */}
+        <Html position={[midX, 0.08, midZ + 0.3]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
+            <div style={{ color: 'white', fontSize: '9px', fontWeight: 'bold', whiteSpace: 'nowrap', textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>SANAL DUVAR</div>
+        </Html>
+    </group>;
+}
+
 const wallMat = <meshStandardMaterial color="#f4f3ef" roughness={0.6} metalness={0.1} />;
 const floorMat = <meshStandardMaterial color="#d8cfbf" roughness={0.2} metalness={0.15} />;
 
@@ -290,6 +304,21 @@ function contourSalon(margin = 0.45) {
     return pts;
 }
 
+function contourSalon21(margin = 0.45) {
+    const pts = [];
+    const vWallZ = -2.5; // 2+1 için Sanal Duvar hattı (Daha da ileriye taşındı)
+    // Salon 2+1 bounds: X [2.1, 6.9], Z [-4.9, 4.9]
+    for (let m = margin; m < 2.2; m += 0.5) {
+        // Robot sadece z > -2.5 olan güvenli bölgeyi temizlesin
+        pts.push([2.1 + m, 0.25, 4.9 - m]);
+        pts.push([2.1 + m, 0.25, vWallZ + 0.2]);
+        pts.push([6.9 - m, 0.25, vWallZ + 0.2]);
+        pts.push([6.9 - m, 0.25, 4.9 - m]);
+        pts.push([2.1 + m, 0.25, 4.9 - m]);
+    }
+    return pts;
+}
+
 function door(x, z, dir, toPositive) {
     const gap = 0.5; // Kapı giriş/çıkış derinliği (Güvenli Mesafe)
     if (dir === 'z') {
@@ -346,7 +375,7 @@ function buildWaypoints(type) {
         suite.push({ name: "Hol", bounds: [[-1.9, 1.9], [-4.9, 4.9]], isCenter: true });
         suite.push({ name: "Oda 1", bounds: [[-6.9, -2.1], [0.1, 4.9]], doorPos: [-2, 2.3], doorDir: 'x', toPos: false });
         suite.push({ name: "Oda 2", bounds: [[-6.9, -2.1], [-4.9, -0.1]], doorPos: [-2, -0.8], doorDir: 'x', toPos: false });
-        suite.push({ name: "Salon", bounds: [[2.1, 6.9], [-4.9, 4.9]], doorPos: [2, 2.25], doorDir: 'x', toPos: true });
+        suite.push({ name: "Salon", customPath: contourSalon21(), bounds: [[2.1, 6.9], [-4.9, 4.9]], doorPos: [2, 2.25], doorDir: 'x', toPos: true });
 
         const plan = ["Hol", "Oda 1", "Oda 2", "Salon"];
         push([station], false); push([entrance], false); currentPos = entrance;
@@ -362,7 +391,7 @@ function buildWaypoints(type) {
                 push(dPts, false);
                 currentPos = dPts[dPts.length - 1];
             }
-            const sPts = sweep(...area.bounds[0], ...area.bounds[1], currentPos, 0.50);
+            const sPts = area.customPath ? area.customPath : sweep(...area.bounds[0], ...area.bounds[1], currentPos, 0.50);
             push(sPts, true);
             if (sPts.length > 0) currentPos = sPts[sPts.length - 1];
 
@@ -499,6 +528,10 @@ function House({ type, trail, posRef, rotRef }) {
 
         {type === "2+1" && <>
             <mesh position={[4.5, 0.015, 0]}><boxGeometry args={[4.8, 0.01, 9.8]} /><meshStandardMaterial color="#ee5253" opacity={0.35} transparent /></mesh>
+
+            {/* Sanal Duvar (2+1 Salonu - Daha da ileriye taşındı) */}
+            <VirtualWall p1={[2.1, 0.05, -2.5]} p2={[6.9, 0.05, -2.5]} />
+
             <mesh position={[0, 0.015, 0]}><boxGeometry args={[3.8, 0.01, 9.8]} /><meshStandardMaterial color="#b2bec3" opacity={0.35} transparent /></mesh>
             <mesh position={[-4.5, 0.015, 2.5]}><boxGeometry args={[4.8, 0.01, 4.8]} /><meshStandardMaterial color="#10ac84" opacity={0.35} transparent /></mesh>
             <mesh position={[-4.5, 0.015, -2.5]}><boxGeometry args={[4.8, 0.01, 4.8]} /><meshStandardMaterial color="#00d2d3" opacity={0.35} transparent /></mesh>
@@ -521,6 +554,7 @@ function House({ type, trail, posRef, rotRef }) {
             <mesh position={[4, 0.015, -1.75]}><boxGeometry args={[5.8, 0.01, 6.3]} /><meshStandardMaterial color="#ee5253" opacity={0.35} transparent /></mesh>
             {/* Yasaklı Alan (Model Zemin Üstüne Çıkartıldı: y=0.022) */}
             <ForbiddenZone position={[5.75, 0.022, -3.75]} size={2.3} />
+
             <mesh position={[4, 0.015, 3.25]}><boxGeometry args={[5.8, 0.01, 3.3]} /><meshStandardMaterial color="#ff9f43" opacity={0.35} transparent /></mesh>
             <mesh position={[-0.75, 0.015, 0]}><boxGeometry args={[3.3, 0.01, 9.8]} /><meshStandardMaterial color="#b2bec3" opacity={0.35} transparent /></mesh>
             <mesh position={[-4.75, 0.015, 2.75]}><boxGeometry args={[4.3, 0.01, 4.3]} /><meshStandardMaterial color="#10ac84" opacity={0.35} transparent /></mesh>
@@ -552,6 +586,28 @@ function House({ type, trail, posRef, rotRef }) {
             <mesh position={[5, 0.015, 2.1]}><boxGeometry args={[8, 0.01, 2.25]} /><meshStandardMaterial color="#ff9f43" opacity={0.35} transparent /></mesh>
             <mesh position={[5, 0.015, -2]}><boxGeometry args={[8, 0.01, 6]} /><meshStandardMaterial color="#ee5253" opacity={0.35} transparent /></mesh>
             <mesh position={[5, 0.015, 5.12]}><boxGeometry args={[8, 0.01, 3.75]} /><meshStandardMaterial color="#ee5253" opacity={0.25} transparent /></mesh>
+
+            <Html position={[5, 0.1, -2]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
+                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>ANA SALON</div>
+            </Html>
+            <Html position={[5, 0.1, 5.12]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
+                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>MUTFAK</div>
+            </Html>
+            <Html position={[-1.5, 0.1, 1]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
+                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>HOL</div>
+            </Html>
+            <Html position={[-6.5, 0.1, 5.12]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
+                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>EBEVEYN ODASI</div>
+            </Html>
+            <Html position={[-6.5, 0.1, 1.62]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
+                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>MİSAFİR ODASI</div>
+            </Html>
+            <Html position={[-6.5, 0.1, -2.5]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
+                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>ÇOCUK ODASI</div>
+            </Html>
+            <Html position={[5, 0.1, 2.1]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
+                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '10px', fontSize: '10px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>KORİDOR</div>
+            </Html>
         </>}
 
         <Station />
