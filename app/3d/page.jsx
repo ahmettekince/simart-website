@@ -181,52 +181,52 @@ function sweep(xMin, xMax, zMin, zMax, fromPos = null, sw = 0.50) {
     if (x0 > x1 || z0 > z1) return [];
 
     const pts = [];
-    if (fromPos) pts.push([fromPos[0], 0.25, fromPos[2]]);
-
-    // --- 1. ADIM: PERİMETRE TEMİZLİĞİ (Köşeler İlk) ---
-    // En yakın köşeden başlayarak tam bir tur at
     let pStartX = x0, pEndX = x1, pStartZ = z0, pEndZ = z1;
+
     if (fromPos) {
         if (Math.abs(fromPos[0] - x1) < Math.abs(fromPos[0] - x0)) { pStartX = x1; pEndX = x0; }
         if (Math.abs(fromPos[2] - z1) < Math.abs(fromPos[2] - z0)) { pStartZ = z1; pEndZ = z0; }
 
-        // ERKEN DÖNÜŞ: "Gidip-gelme" (backtrack) yapmadan köşeye süzül
-        // Önce köşenin derinlik (Z) hizasına git, sonra X köşesine yanaş
-        pts.push([fromPos[0], 0.25, pStartZ]);
+        pts.push([fromPos[0], 0.25, fromPos[2]]);
+        // ÇAPRAZ GİREİŞİ ENGELLE: Önce X aksında köşeye hizalan (L-Entry)
+        pts.push([pStartX, 0.25, fromPos[2]]);
     }
 
-    // Dikdörtgen turu (4 Köşe)
+    // 90 Derecelik akıcı perimeter turu (Geri dönme yok!)
     pts.push([pStartX, 0.25, pStartZ]);
-    pts.push([pEndX, 0.25, pStartZ]);
+    pts.push([pEndX, 0.25, pStartZ]); // Yan duvara geç (90 derece)
     pts.push([pEndX, 0.25, pEndZ]);
-    pts.push([pStartX, 0.25, pEndZ]); // Burada bitti! Geri dönme yok.
+    pts.push([pStartX, 0.25, pEndZ]);
+    pts.push([pStartX, 0.25, pStartZ]); // Tur bitti (90 derece)
 
     // --- 2. ADIM: İÇ ZİGZAG (Fill) ---
-    // Kenarlar temizlendiği için içeriden süzül
     const iz0 = z0 + sw, iz1 = z1 - sw;
-
     if (iz0 < iz1) {
         let stepX = pStartX === x0 ? sw : -sw;
         let targetX = pStartX === x0 ? x1 : x0;
 
-        // BAŞLANGIÇTA BOŞLUĞU KALDIR: Olduğun hattan başla
-        let startX = pStartX;
-        let stopX = targetX - stepX; // Karşı duvara 50cm kala dur!
+        // Perimeter'den zigzag'a AKICI GEÇİŞ: 
+        // Zaten pStartX hattındayız, bir sonraki zigzag hattından başla
+        let startX = pStartX + stepX;
+        let stopX = targetX - (stepX * 0.5);
 
         // Oda çok dar ise sadece perimetre yeterli
-        if ((stepX > 0 && startX > stopX + 0.1) || (stepX < 0 && startX < stopX - 0.1)) return pts;
+        if ((stepX > 0 && startX > x1 - 0.1) || (stepX < 0 && startX < x0 + 0.1)) return pts;
 
-        let curZStart = pEndZ === z1 ? iz1 : iz0;
-        let curZEnd = pEndZ === z1 ? iz0 : iz1;
+        let curZStart = pStartZ === z0 ? iz0 : iz1;
+        let curZEnd = pStartZ === z0 ? iz1 : iz0;
 
         const shouldCont = (curr) => stepX > 0 ? curr <= stopX + 0.05 : curr >= stopX - 0.05;
 
+        let lastZ = pStartZ;
         for (let x = startX; shouldCont(x);) {
+            // ZİGZAG GEÇİŞİNDE L-DÖNÜŞÜ: Bulunulan Z seviyesinde yan hatta kay
+            pts.push([x, 0.25, lastZ]);
+
             pts.push([x, 0.25, curZStart]);
             pts.push([x, 0.25, curZEnd]);
+            lastZ = curZEnd; // Bir sonraki geçiş için son Z'yi kaydet
             [curZStart, curZEnd] = [curZEnd, curZStart];
-
-            // Son noktaya geldiysek döngüden çık, targetX'e gitme!
             if (Math.abs(x - stopX) < 0.1) break;
             x = stepX > 0 ? Math.min(x + sw, stopX) : Math.max(x - sw, stopX);
         }
@@ -256,14 +256,11 @@ function buildWaypoints(type) {
     const areas = [];
     if (type === "1+1") {
         const suite = [];
-        // Salon-Mutfak iki parçadan oluşuyor ama tek isimle temizlenecek
         suite.push({ name: "Salon-Mutfak-A", bounds: [[-4.9, 4.9], [-4.9, 0]], isCenter: true, displayName: "Salon-Mutfak" });
         suite.push({ name: "Salon-Mutfak-B", bounds: [[0.1, 4.9], [0, 4.9]], isCenter: true, displayName: "Salon-Mutfak" });
-        // Oda'da kapı sakınma: Kapı x=0 duvarında, z=[2, 2.9] arasında duruyor.
-        // Robotun z-ekseninde bu bölgeye girmemesi için bounds'u biraz daraltıyoruz.
         suite.push({ name: "Oda", bounds: [[-4.9, -0.6], [0.1, 4.9]], doorPos: [0, 2.5], doorDir: 'x', toPos: false, corridorX: 0.6 });
 
-        push([station], false); push([entrance], false); currentPos = entrance;
+        push([station], false); currentPos = station;
         const plan = ["Salon-Mutfak-A", "Salon-Mutfak-B", "Oda"];
         plan.forEach(name => {
             const area = suite.find(a => a.name === name);
@@ -434,6 +431,13 @@ function House({ type, trail, posRef, rotRef }) {
             <Floor w={10} z={5} x={0} zPos={-2.5} color="#ee5253" opacity={0.35} /> {/* Üst parça */}
             <Floor w={5} z={5} x={2.5} zPos={2.5} color="#ee5253" opacity={0.35} /> {/* Sağ alt parça */}
             <Floor w={5} z={5} x={-2.5} zPos={2.5} color="#10ac84" opacity={0.35} /> {/* Oda */}
+
+            <Html position={[0, 0.1, -2.5]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
+                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>SALON-MUTFAK</div>
+            </Html>
+            <Html position={[-2.5, 0.1, 2.5]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
+                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>ODA</div>
+            </Html>
         </>}
 
         {type === "2+1" && <>
@@ -441,6 +445,19 @@ function House({ type, trail, posRef, rotRef }) {
             <mesh position={[0, 0.015, 0]}><boxGeometry args={[3.8, 0.01, 9.8]} /><meshStandardMaterial color="#b2bec3" opacity={0.35} transparent /></mesh>
             <mesh position={[-4.5, 0.015, 2.5]}><boxGeometry args={[4.8, 0.01, 4.8]} /><meshStandardMaterial color="#10ac84" opacity={0.35} transparent /></mesh>
             <mesh position={[-4.5, 0.015, -2.5]}><boxGeometry args={[4.8, 0.01, 4.8]} /><meshStandardMaterial color="#00d2d3" opacity={0.35} transparent /></mesh>
+
+            <Html position={[4.5, 0.1, 0]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
+                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>SALON</div>
+            </Html>
+            <Html position={[0, 0.1, 0]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
+                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>HOL</div>
+            </Html>
+            <Html position={[-4.5, 0.1, 2.5]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
+                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>ODA 1</div>
+            </Html>
+            <Html position={[-4.5, 0.1, -2.5]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
+                <div style={{ color: 'white', background: 'rgba(0,0,0,0.2)', padding: '4px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: 'Bold', whiteSpace: 'nowrap', userSelect: 'none', border: '1px solid rgba(255,255,255,0.1)' }}>ODA 2</div>
+            </Html>
         </>}
 
         {type === "3+1" && <>
@@ -489,7 +506,7 @@ function House({ type, trail, posRef, rotRef }) {
             const curvePoints = trail.map(p => new THREE.Vector3(p[0], 0.05, p[2]));
             // Eğer yeterli nokta varsa (en az 3) ovalleştir, yoksa düz çizgi
             if (trail.length > 2) {
-                const curve = new THREE.CatmullRomCurve3(curvePoints, false, 'catmullrom', 0.2);
+                const curve = new THREE.CatmullRomCurve3(curvePoints, false, 'catmullrom', 0); // Keskin köşeler için 0
                 const points = curve.getPoints(trail.length * 4); // Daha fazla nokta ile pürüzsüzlük
                 return <Line points={points} color="white" lineWidth={2} transparent opacity={0.6} />;
             } else {

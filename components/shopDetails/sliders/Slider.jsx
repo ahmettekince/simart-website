@@ -260,8 +260,8 @@ export default function Slider({
                 </Item>
               </SwiperSlide>
             ))}
-            <div className="swiper-button-next button-style-arrow thumbs-next"></div>
-            <div className="swiper-button-prev button-style-arrow thumbs-prev"></div>
+            <div className="swiper-button-next button-style-arrow"></div>
+            <div className="swiper-button-prev button-style-arrow"></div>
           </Swiper>
           {images.length > 1 && (
             <div className="tf-product-dots-mobile">
