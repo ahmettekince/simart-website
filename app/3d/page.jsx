@@ -93,7 +93,7 @@ function Robot({ posRef, rotRef }) {
     });
 
     const bodyCol = "#222";
-    const topCol = "#2d3a5a"; // Daha belirgin lacivert/mavi tonu
+    const topCol = "#2d3a5a";
     const sensorCol = "#000000";
 
     return <group ref={g}>
