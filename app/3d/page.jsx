@@ -1,7 +1,8 @@
 "use client";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Line, ContactShadows, Html, Text } from "@react-three/drei";
-import { useState, useRef, useMemo, Suspense } from "react";
+import { useState, useRef, useMemo, Suspense, useEffect } from "react";
+import { useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
 function ForbiddenZone({ position, size }) {
@@ -742,12 +743,22 @@ function House({ type, trail, posRef, rotRef }) {
 
 
 export default function Plan3D() {
-    const [type, setType] = useState("2+1");
+    const [type, setType] = useState("3+1");
     const [isAuto, setIsAuto] = useState(false);
     const [trail, setTrail] = useState([]);
-    const [status, setStatus] = useState("Hazır");
+    const [status, setStatus] = useState("Başlatmayı Bekliyor");
     const [pct, setPct] = useState(0);
     const [speed, setSpeed] = useState(3.5);
+    const [metrekare, setMetrekare] = useState(null);
+    const [pet, setPet] = useState(null);
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const checkMobile = () => setIsMobile(window.innerWidth < 992);
+        checkMobile();
+        window.addEventListener("resize", checkMobile);
+        return () => window.removeEventListener("resize", checkMobile);
+    }, []);
 
     const posRef = useRef(new THREE.Vector3(0, 0.25, -4.5));
     const rotRef = useRef(0);
@@ -755,14 +766,14 @@ export default function Plan3D() {
     const running = useRef(false);
     const lastTrail = useRef(null);
 
-    const rooms = parseInt(type.split("+")[0]);
-    const waypoints = useMemo(() => buildWaypoints(type), [type]);
+    const rooms = type ? parseInt(type.split("+")[0]) : 0;
+    const waypoints = useMemo(() => type ? buildWaypoints(type) : [], [type]);
 
     const startStop = () => {
         if (isAuto) {
             running.current = false;
             setIsAuto(false);
-            setStatus("Duraklatıldı");
+            setStatus("Başlatmayı Bekliyor");
             return;
         }
         setTrail([]); lastTrail.current = null;
@@ -774,7 +785,7 @@ export default function Plan3D() {
         running.current = false; setIsAuto(false);
         setTrail([]); lastTrail.current = null;
         posRef.current.set(0, 0.25, -4.5); rotRef.current = 0;
-        setStatus("Sıfırlandı"); setPct(0);
+        setStatus("Başlatmayı Bekliyor"); setPct(0);
     };
 
     function Mover() {
@@ -783,8 +794,12 @@ export default function Plan3D() {
             const idx = wpIdx.current;
             if (idx >= waypoints.length) {
                 running.current = false; setIsAuto(false);
-                setStatus("✅ Tamamlandı!"); setPct(100); return;
+                setStatus("Tamamlandı / Şarj Oluyor"); setPct(100); return;
             }
+
+            // Son bacak (İstasyona dönüş) kontrolü
+            const isReturning = idx === waypoints.length - 1;
+
             const [tx, ty, tz] = waypoints[idx];
             const cur = posRef.current;
             const tgt = new THREE.Vector3(tx, ty, tz);
@@ -803,8 +818,20 @@ export default function Plan3D() {
             if (dist <= step) {
                 cur.copy(tgt);
                 wpIdx.current = idx + 1;
-                setPct(Math.round((idx + 1) / waypoints.length * 100));
-                if ((idx + 1) < waypoints.length) setStatus(`🧹 Temizleniyor… %${Math.round((idx + 1) / waypoints.length * 100)}`);
+
+                if (isReturning) {
+                    setStatus("Tamamlandı / Şarj Oluyor");
+                    setPct(100);
+                } else {
+                    const progress = Math.round((idx + 1) / (waypoints.length - 1) * 100);
+                    setPct(Math.min(100, progress));
+                    if (idx + 1 === waypoints.length - 1) {
+                        setStatus("İstasyona Dönülüyor");
+                        setPct(100);
+                    } else {
+                        setStatus(`🧹 Temizleniyor… %${progress}`);
+                    }
+                }
             } else {
                 diff.normalize().multiplyScalar(step);
                 cur.add(diff);
@@ -820,58 +847,152 @@ export default function Plan3D() {
     }
 
     return (
-        <div style={{ width: "100%", height: "100vh", background: "#1a1a2e", overflow: "hidden", fontFamily: "Inter,sans-serif" }}>
-            <div style={{ position: "absolute", zIndex: 10, top: 0, left: 0, right: 0, padding: "14px 24px", display: "flex", gap: 16, alignItems: "center", background: "rgba(15,15,30,0.85)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-                <div>
-                    <label style={{ fontSize: 11, display: "block", color: "#aaa", marginBottom: 4, letterSpacing: 1 }}>EV PLANI</label>
-                    <select value={type} onChange={e => { setType(e.target.value); reset(); }}
-                        style={{ padding: "7px 12px", fontSize: 14, borderRadius: 8, border: "1px solid rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.08)", color: "white", cursor: "pointer" }}>
-                        <option style={{ background: "#1a1a2e" }}>1+1</option>
-                        <option style={{ background: "#1a1a2e" }}>2+1</option>
-                        <option style={{ background: "#1a1a2e" }}>3+1</option>
-                        <option style={{ background: "#1a1a2e" }}>3+2</option>
+        <div style={{ width: "100%", minHeight: "100vh", display: "flex", flexDirection: isMobile ? "column" : "row", background: "#fdfdfd", color: "#2d3436", fontFamily: "'Gilroy-Bold', sans-serif", overflow: isMobile ? "auto" : "hidden" }}>
+
+            {/* ÜST/SOL PANEL - KURUMSAL SORU ALANI */}
+            <div style={{
+                width: isMobile ? "100%" : "420px",
+                height: isMobile ? "auto" : "100%",
+                background: "#ffffff",
+                borderRight: isMobile ? "none" : "1px solid #eee",
+                borderBottom: isMobile ? "1px solid #eee" : "none",
+                display: "flex",
+                flexDirection: "column",
+                padding: isMobile ? "30px 20px" : "50px 40px",
+                zIndex: 10,
+                boxShadow: "10px 0 30px rgba(0,0,0,0.02)"
+            }}>
+                <h1 style={{ fontSize: isMobile ? "20px" : "26px", fontWeight: "800", marginBottom: isMobile ? "20px" : "40px", lineHeight: "1.3", color: "#1a1a1a" }}>
+                    Size Uygun Robot Süpürgeyi Seçelim
+                </h1>
+
+                {/* SORU 1: EV TİPİ */}
+                <div style={{ marginBottom: isMobile ? "20px" : "35px" }}>
+                    <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: "12px", fontWeight: "700" }}>Eviniz kaç odalı?</p>
+                    <div style={{
+                        display: "flex",
+                        gap: "10px",
+                        width: "100%"
+                    }}>
+                        {["1+1", "2+1", "3+1", "3+2"].map(t => (
+                            <button
+                                key={t}
+                                onClick={() => { setType(t); reset(); }}
+                                style={{
+                                    flex: 1,
+                                    padding: isMobile ? "10px 5px" : "14px",
+                                    borderRadius: "10px",
+                                    border: type === t ? "2.5px solid #3c81b5" : "1px solid #e0e0e0",
+                                    background: type === t ? "#3c81b5" : "#fff",
+                                    color: type === t ? "#fff" : "#2d3436",
+                                    cursor: "pointer",
+                                    fontWeight: "800",
+                                    fontSize: isMobile ? "13px" : "15px",
+                                    transition: "all 0.2s ease"
+                                }}
+                            >
+                                {t}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* SORU 2: METREKARE */}
+                <div style={{ marginBottom: isMobile ? "20px" : "35px" }}>
+                    <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: "12px", fontWeight: "700" }}>Metrekare Bilgisi</p>
+                    <select
+                        value={metrekare || ""}
+                        onChange={(e) => setMetrekare(e.target.value)}
+                        style={{
+                            width: "100%",
+                            padding: isMobile ? "12px" : "16px",
+                            borderRadius: "10px",
+                            background: "#f8f9fa",
+                            border: metrekare ? "2.5px solid #3c81b5" : "1px solid #e0e0e0",
+                            color: "#2d3436",
+                            fontSize: isMobile ? "13px" : "15px",
+                            fontWeight: "600",
+                            outline: "none",
+                            cursor: "pointer"
+                        }}
+                    >
+                        <option value="" disabled>Seçiniz</option>
+                        <option value="0-80">0m² - 80m²</option>
+                        <option value="80-120">80m² - 120m²</option>
+                        <option value="120-180">120m² - 180m²</option>
+                        <option value="180+">180m² ve Üzeri</option>
                     </select>
                 </div>
-                <div style={{ flex: 1, background: "rgba(255,255,255,0.06)", borderRadius: 10, padding: "8px 16px", color: "#ddd", fontSize: 13, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span>{status}</span>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(0,0,0,0.2)", padding: "4px 8px", borderRadius: 8 }}>
-                        <span style={{ fontSize: 10, color: "#aaa" }}>HIZ</span>
-                        <button onClick={() => setSpeed(prev => Math.max(1, prev - 1))} style={{ width: 24, height: 24, borderRadius: 6, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,118,117,0.15)", color: "#ff7675", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold" }}>-</button>
-                        <span style={{ minWidth: 20, textAlign: "center", fontWeight: "600", fontSize: 12, color: "#55efc4" }}>x{speed.toFixed(1)}</span>
-                        <button onClick={() => setSpeed(prev => Math.min(15, prev + 1))} style={{ width: 24, height: 24, borderRadius: 6, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(85,239,196,0.15)", color: "#55efc4", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold" }}>+</button>
+
+                {/* SORU 3: EVCİL HAYVAN */}
+                <div style={{ marginBottom: isMobile ? "30px" : "40px" }}>
+                    <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: "12px", fontWeight: "700" }}>Evcil Hayvanınız Var mı?</p>
+                    <div style={{ display: "flex", gap: "10px" }}>
+                        {[true, false].map(v => (
+                            <button
+                                key={v.toString()}
+                                onClick={() => {
+                                    setPet(v);
+                                    if (type && metrekare && !isAuto) {
+                                        // startStop fonksiyonunu biraz gecikmeli çağırıyoruz ki state güncellensin
+                                        setTimeout(() => startStop(), 50);
+                                    }
+                                }}
+                                style={{
+                                    flex: 1,
+                                    padding: isMobile ? "10px" : "14px",
+                                    borderRadius: "10px",
+                                    border: pet === v ? "2.5px solid #3c81b5" : "1px solid #e0e0e0",
+                                    background: pet === v ? "#3c81b5" : "#fff",
+                                    color: pet === v ? "#fff" : "#2d3436",
+                                    cursor: "pointer",
+                                    fontWeight: "800",
+                                    fontSize: isMobile ? "13px" : "15px",
+                                    transition: "all 0.2s ease"
+                                }}
+                            >
+                                {v ? "Evet" : "Hayır"}
+                            </button>
+                        ))}
                     </div>
                 </div>
-                <div style={{ width: 160 }}>
-                    <div style={{ fontSize: 11, color: "#aaa", marginBottom: 4, display: "flex", justifyContent: "space-between" }}>
-                        <span>Temizlik</span><span style={{ color: "#55efc4" }}>{pct}%</span>
-                    </div>
-                    <div style={{ background: "rgba(255,255,255,0.1)", borderRadius: 6, height: 8, overflow: "hidden" }}>
-                        <div style={{ width: `${pct}%`, height: "100%", background: "linear-gradient(90deg,#3c81b5,#55efc4)", borderRadius: 6, transition: "width 0.4s" }} />
-                    </div>
-                </div>
-                <button onClick={startStop} style={{ padding: "9px 20px", borderRadius: 9, border: "none", background: isAuto ? "#fdcb6e" : "linear-gradient(135deg,#3c81b5,#55efc4)", color: isAuto ? "#2b2b2b" : "white", fontWeight: 700, cursor: "pointer", fontSize: 14, boxShadow: "0 4px 14px rgba(60,129,181,0.4)" }}>
-                    {isAuto ? "⏸ Durdur" : "⚡ Temizliği Başlat"}
-                </button>
-                <button onClick={reset} style={{ padding: "9px 18px", borderRadius: 9, border: "1px solid rgba(255,255,255,0.15)", background: "transparent", color: "#ff7675", fontWeight: 600, cursor: "pointer", fontSize: 14 }}>↺ Sıfırla</button>
             </div>
-            <Canvas dpr={[1, 1.5]} gl={{ antialias: true }} camera={{ position: [14, 12, 14], fov: 42 }}>
-                <ambientLight intensity={0.5} />
-                <hemisphereLight intensity={0.4} groundColor="#d6d2c8" />
-                <directionalLight position={[0, 10, 0]} intensity={1.5} />
-                <ContactShadows
-                    position={[0, 0.01, 0]}
-                    opacity={0.3}
-                    scale={25}
-                    blur={2.5}
-                    far={4}
-                    resolution={128}
-                />
-                <Suspense fallback={null}>
-                    <House type={type} trail={trail} posRef={posRef} rotRef={rotRef} />
-                </Suspense>
-                <Mover />
-                <OrbitControls enablePan={true} maxPolarAngle={Math.PI / 2.1} minDistance={5} maxDistance={26} />
-            </Canvas>
+
+            {/* ALT/SAĞ PANEL - 3D SAHNE */}
+            <div style={{ flex: 1, position: "relative", background: "#f5f6fa", height: isMobile ? "500px" : "auto", minHeight: isMobile ? "500px" : "auto" }}>
+                <Canvas dpr={[1, 1.5]} gl={{ antialias: true }} camera={{ position: [-8.53, 24.48, 15.09], fov: isMobile ? 50 : 38 }}>
+                    <ambientLight intensity={0.7} />
+                    <hemisphereLight intensity={0.5} groundColor="#f5f6fa" />
+                    <directionalLight position={[10, 15, 10]} intensity={1.5} />
+                    <ContactShadows position={[0, 0.01, 0]} opacity={0.2} scale={30} blur={2.5} far={4} resolution={128} />
+                    <Suspense fallback={null}>
+                        {type && <House type={type} trail={trail} posRef={posRef} rotRef={rotRef} />}
+                    </Suspense>
+                    <Mover />
+                    <OrbitControls
+                        enablePan={false}
+                        maxPolarAngle={Math.PI / 3}
+                        minDistance={8}
+                        maxDistance={45}
+                        makeDefault
+                    />
+                </Canvas>
+
+                {/* DURUM GÖSTERGESİ */}
+                <div style={{ position: "absolute", top: isMobile ? "15px" : "30px", left: isMobile ? "15px" : "30px", padding: "8px 14px", background: "#fff", borderRadius: "10px", boxShadow: "0 4px 15px rgba(0,0,0,0.05)", display: "flex", alignItems: "center", gap: "8px", border: "1px solid #eee" }}>
+                    <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: isAuto ? "#2ed573" : "#ff4757" }} />
+                    <span style={{ fontSize: "11px", fontWeight: "800", color: "#2f3542" }}>{status.toUpperCase()}</span>
+                </div>
+
+
+                {/* HIZ AYARI */}
+                <div style={{ position: "absolute", bottom: isMobile ? "15px" : "30px", right: isMobile ? "15px" : "30px", display: "flex", alignItems: "center", gap: "10px", background: "#fff", padding: "8px 12px", borderRadius: "10px", boxShadow: "0 4px 15px rgba(0,0,0,0.05)", border: "1px solid #eee" }}>
+                    <span style={{ fontSize: "9px", color: "#747d8c", fontWeight: "800" }}>HIZ</span>
+                    <button onClick={() => setSpeed(prev => Math.max(1, prev - 1))} style={{ width: "22px", height: "22px", border: "1px solid #eee", background: "#f8f9fa", borderRadius: "6px", cursor: "pointer" }}>-</button>
+                    <span style={{ color: "#3c81b5", fontWeight: "900", minWidth: "25px", textAlign: "center", fontSize: "12px" }}>x{speed.toFixed(1)}</span>
+                    <button onClick={() => setSpeed(prev => Math.min(15, prev + 1))} style={{ width: "22px", height: "22px", border: "1px solid #eee", background: "#f8f9fa", borderRadius: "6px", cursor: "pointer" }}>+</button>
+                </div>
+            </div>
         </div>
     );
 }

@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import Topbar from "@/components/headers/Topbar";
 
-const HIDE_TOPBAR_PATHS = ["/odeme", "/qr-", "/qr", "/kqr"];
+const HIDE_TOPBAR_PATHS = ["/odeme", "/qr-", "/qr", "/kqr", "/3d"];
 const MOBILE_BREAKPOINT_PX = 768;
 
 function isProductDetailPage(pathname) {

@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import Footer from "@/components/footers/Footer";
 
-const HIDE_FOOTER_PATHS = ["/sepetim", "/odeme", "/qr-", "/qr", "/kqr"];
+const HIDE_FOOTER_PATHS = ["/sepetim", "/odeme", "/qr-", "/qr", "/kqr", "/3d"];
 
 export default function ConditionalFooter({ footerMenus }) {
     const pathname = usePathname();
