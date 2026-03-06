@@ -1,8 +1,32 @@
 "use client";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Line, ContactShadows, Html } from "@react-three/drei";
+import { OrbitControls, Line, ContactShadows, Html, Text } from "@react-three/drei";
 import { useState, useRef, useMemo } from "react";
 import * as THREE from "three";
+
+function ForbiddenZone({ position, size }) {
+    const meshRef = useRef();
+    useFrame(({ clock }) => {
+        if (meshRef.current) {
+            const time = clock.getElapsedTime();
+            meshRef.current.opacity = 0.4 + Math.sin(time * 3) * 0.2;
+        }
+    });
+
+    const h = size / 2;
+    const pts = [[-h, 0.01, -h], [h, 0.01, -h], [h, 0.01, h], [-h, 0.01, h], [-h, 0.01, -h]];
+
+    return <group position={position}>
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.001, 0]}>
+            <planeGeometry args={[size, size]} />
+            <meshStandardMaterial color="#ff0000" transparent opacity={0.6} />
+        </mesh>
+        <Line points={pts} color="white" lineWidth={4} dashed dashScale={8} dashSize={0.6} gapSize={0.4} />
+        <Html position={[0, 0.02, 0]} center transform rotation={[-Math.PI / 2, 0, 0]} pointerEvents="none">
+            <div style={{ color: 'white', fontSize: '9px', fontWeight: 'bold', whiteSpace: 'nowrap', textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>YASAKLI ALAN</div>
+        </Html>
+    </group>;
+}
 
 const wallMat = <meshStandardMaterial color="#f4f3ef" roughness={0.6} metalness={0.1} />;
 const floorMat = <meshStandardMaterial color="#d8cfbf" roughness={0.2} metalness={0.15} />;
@@ -174,8 +198,15 @@ function Robot({ posRef, rotRef }) {
 }
 
 /* --- UTILS --- */
-function sweep(xMin, xMax, zMin, zMax, fromPos = null, sw = 0.50) {
+function sweep(xMin, xMax, zMin, zMax, fromPos = null, sw = 0.50, exclusion = null) {
     const M = 0.41; // Güvenli marj
+
+    // Yasaklı alan kontrolü: Robot yarıçapı kadar marj ekliyoruz
+    const isForbidden = (x, z) => {
+        if (!exclusion) return false;
+        return x >= exclusion[0][0] - 0.2 && x <= exclusion[0][1] + 0.2 &&
+            z >= exclusion[1][0] - 0.2 && z <= exclusion[1][1] + 0.2;
+    };
     const x0 = xMin + M, x1 = xMax - M;
     const z0 = zMin + M, z1 = zMax - M;
     if (x0 > x1 || z0 > z1) return [];
@@ -192,12 +223,13 @@ function sweep(xMin, xMax, zMin, zMax, fromPos = null, sw = 0.50) {
         pts.push([pStartX, 0.25, fromPos[2]]);
     }
 
-    // 90 Derecelik akıcı perimeter turu (Geri dönme yok!)
-    pts.push([pStartX, 0.25, pStartZ]);
-    pts.push([pEndX, 0.25, pStartZ]); // Yan duvara geç (90 derece)
-    pts.push([pEndX, 0.25, pEndZ]);
-    pts.push([pStartX, 0.25, pEndZ]);
-    pts.push([pStartX, 0.25, pStartZ]); // Tur bitti (90 derece)
+    // --- 1. ADIM: PERIMETER ---
+    const cPoints = [
+        [pStartX, pStartZ], [pEndX, pStartZ], [pEndX, pEndZ], [pStartX, pEndZ], [pStartX, pStartZ]
+    ];
+    cPoints.forEach(([cx, cz]) => {
+        if (!isForbidden(cx, cz)) pts.push([cx, 0.25, cz]);
+    });
 
     // --- 2. ADIM: İÇ ZİGZAG (Fill) ---
     const iz0 = z0 + sw, iz1 = z1 - sw;
@@ -205,12 +237,9 @@ function sweep(xMin, xMax, zMin, zMax, fromPos = null, sw = 0.50) {
         let stepX = pStartX === x0 ? sw : -sw;
         let targetX = pStartX === x0 ? x1 : x0;
 
-        // Perimeter'den zigzag'a AKICI GEÇİŞ: 
-        // Zaten pStartX hattındayız, bir sonraki zigzag hattından başla
         let startX = pStartX + stepX;
         let stopX = targetX - (stepX * 0.5);
 
-        // Oda çok dar ise sadece perimetre yeterli
         if ((stepX > 0 && startX > x1 - 0.1) || (stepX < 0 && startX < x0 + 0.1)) return pts;
 
         let curZStart = pStartZ === z0 ? iz0 : iz1;
@@ -220,18 +249,44 @@ function sweep(xMin, xMax, zMin, zMax, fromPos = null, sw = 0.50) {
 
         let lastZ = pStartZ;
         for (let x = startX; shouldCont(x);) {
-            // ZİGZAG GEÇİŞİNDE L-DÖNÜŞÜ: Bulunulan Z seviyesinde yan hatta kay
-            pts.push([x, 0.25, lastZ]);
+            let czStart = curZStart, czEnd = curZEnd;
 
-            pts.push([x, 0.25, curZStart]);
-            pts.push([x, 0.25, curZEnd]);
-            lastZ = curZEnd; // Bir sonraki geçiş için son Z'yi kaydet
+            // Exclusion Clipping: Yasaklı alandan geçiyorsak Z sınırlarını daralt
+            if (exclusion && x >= exclusion[0][0] - 0.1 && x <= exclusion[0][1] + 0.1) {
+                // Kiler özel durumu: Z < -2.5 yasak ise alt sınırı daralt
+                if (czStart < exclusion[1][1]) czStart = exclusion[1][1] + 0.5;
+                if (czEnd < exclusion[1][1]) czEnd = exclusion[1][1] + 0.5;
+            }
+
+            if (czStart < czEnd || czStart > czEnd) { // Basit mesafe varsa temizle
+                pts.push([x, 0.25, lastZ]);
+                pts.push([x, 0.25, czStart]);
+                pts.push([x, 0.25, czEnd]);
+                lastZ = czEnd;
+            }
+
             [curZStart, curZEnd] = [curZEnd, curZStart];
             if (Math.abs(x - stopX) < 0.1) break;
             x = stepX > 0 ? Math.min(x + sw, stopX) : Math.max(x - sw, stopX);
         }
     }
 
+    return pts;
+}
+
+function contourSalon(margin = 0.45) {
+    const pts = [];
+    // Salonun L şeklindeki sınırlarını daraltarak dıştan içe halkalar (Contour Path)
+    for (let m = margin; m < 2.2; m += 0.5) {
+        // Ok yönündeki rota: Kapıdan girş -> Sol Duvar -> Üst Duvar -> Kiler Kenarı -> Kiler Altı -> Sağ Duvar -> Alt Duvar
+        pts.push([1.1 + m, 0.25, 1.4 - m]);  // Sağ-alt başlangıç
+        pts.push([1.1 + m, 0.25, -4.9 + m]); // Sol Duvar Boyunca Yukarı
+        pts.push([4.5 - m, 0.25, -4.9 + m]); // Üst Duvar Boyunca Sağ
+        pts.push([4.5 - m, 0.25, -2.5 + m]); // Kiler Kenarı Aşağı (L-Dönüş)
+        pts.push([6.9 - m, 0.25, -2.5 + m]); // Kiler Altı Sağ
+        pts.push([6.9 - m, 0.25, 1.4 - m]);  // Sağ Duvar Aşağı
+        pts.push([1.1 + m, 0.25, 1.4 - m]);  // Alt Duvar Sol (Halka Tamamlandı)
+    }
     return pts;
 }
 
@@ -323,7 +378,7 @@ function buildWaypoints(type) {
         push([station], false);
         return all;
     } else if (type === "3+1") {
-        areas.push({ name: "Salon", bounds: [[1.1, 6.9], [-4.9, 1.4]], doorPos: [1, -0.25], doorDir: 'x', toPos: true });
+        areas.push({ name: "Salon", customPath: contourSalon(), bounds: [[1.1, 6.9], [-4.9, 1.4]], doorPos: [1, -0.25], doorDir: 'x', toPos: true });
         areas.push({ name: "Mutfak", bounds: [[1.1, 6.9], [1.6, 4.9]], doorPos: [1, 2.3], doorDir: 'x', toPos: true });
         areas.push({ name: "Hol", bounds: [[-2.4, 0.9], [-4.9, 4.9]], doorPos: [0, 0], doorDir: 'x', isCenter: true });
         areas.push({ name: "Ebeveyn Odası", bounds: [[-6.9, -2.6], [0.6, 4.9]], doorPos: [-2.5, 2.37], doorDir: 'x', toPos: false });
@@ -331,13 +386,13 @@ function buildWaypoints(type) {
     } else if (type === "3+2") {
         const suite = [];
         // Orta Koridor: Hem bir merkez alan (isCenter) hem de girişi olan bir alan (doorPos)
-        suite.push({ name: "Orta Koridor", bounds: [[1, 9], [0, 2.25]], doorPos: [1, 1.1], doorDir: 'x', toPos: true, isCenter: true });
-        suite.push({ name: "Ana Salon", bounds: [[1, 9], [-6, 0]], doorPos: [4, 0], doorDir: 'z', toPos: false, corridorX: 4 });
-        suite.push({ name: "Mutfak-Üst", bounds: [[1, 9], [2.25, 6]], doorPos: [4, 2.25], doorDir: 'z', toPos: true, corridorX: 4 });
-        suite.push({ name: "Hol", bounds: [[-4, 1], [-6, 6]], isCenter: true });
-        suite.push({ name: "Ebeveyn", bounds: [[-9, -4], [2.25, 6]], doorPos: [-4, 3.12], doorDir: 'x', toPos: false, corridorX: -2 });
-        suite.push({ name: "Misafir", bounds: [[-9, -4], [-1, 2.25]], doorPos: [-4, -0.12], doorDir: 'x', toPos: false, corridorX: -2 });
-        suite.push({ name: "Çocuk", bounds: [[-9, -4], [-6, -1]], doorPos: [-4, -3.75], doorDir: 'x', toPos: false, corridorX: -2 });
+        suite.push({ name: "Orta Koridor", bounds: [[1, 9], [1, 3.25]], doorPos: [1, 2.1], doorDir: 'x', toPos: true, isCenter: true });
+        suite.push({ name: "Ana Salon", bounds: [[1, 9], [-5, 1]], doorPos: [4, 1], doorDir: 'z', toPos: false, corridorX: 4 });
+        suite.push({ name: "Mutfak-Üst", bounds: [[1, 9], [3.25, 7]], doorPos: [4, 3.25], doorDir: 'z', toPos: true, corridorX: 4 });
+        suite.push({ name: "Hol", bounds: [[-4, 1], [-5, 7]], isCenter: true });
+        suite.push({ name: "Ebeveyn", bounds: [[-9, -4], [3.25, 7]], doorPos: [-4, 4.12], doorDir: 'x', toPos: false, corridorX: -2 });
+        suite.push({ name: "Misafir", bounds: [[-9, -4], [0, 3.25]], doorPos: [-4, 0.88], doorDir: 'x', toPos: false, corridorX: -2 });
+        suite.push({ name: "Çocuk", bounds: [[-9, -4], [-5, 0]], doorPos: [-4, -2.75], doorDir: 'x', toPos: false, corridorX: -2 });
 
         const plan = ["Hol", "Ebeveyn", "Misafir", "Çocuk", "Orta Koridor", "Ana Salon", "Mutfak-Üst"];
 
@@ -372,10 +427,10 @@ function buildWaypoints(type) {
         });
 
         if (currentPos[0] > 1) {
-            push([[4, 0.25, 1.06]]);
-            push([[1, 0.25, 1.06]]);
+            push([[4, 0.25, 2.06]]);
+            push([[1, 0.25, 2.06]]);
         }
-        push([[0, 0.25, 1.06]]);
+        push([[0, 0.25, 2.06]]);
         push([entrance]); push([station]);
         return all;
     }
@@ -399,7 +454,7 @@ function buildWaypoints(type) {
             push(dPts);
             currentPos = dPts[dPts.length - 1];
         }
-        const sPts = sweep(...area.bounds[0], ...area.bounds[1], currentPos, 0.45);
+        const sPts = area.customPath ? area.customPath : sweep(...area.bounds[0], ...area.bounds[1], currentPos, 0.45, area.exclusion);
         push(sPts);
         if (sPts.length > 0) currentPos = sPts[sPts.length - 1];
         if (!area.isCenter) {
@@ -422,8 +477,10 @@ function House({ type, trail, posRef, rotRef }) {
     const is3plus2 = type === "3+2";
     const fw = is3plus2 ? 18 : (is1plus1 ? 10 : 14);
     const fz = is3plus2 ? 12 : 10;
+    const zOff = is3plus2 ? 1 : 0; // 3+2 planını geriye kaydır (arkadaki duvar sabit kalsın)
+
     return <>
-        <mesh position={[0, 0.01, 0]}><boxGeometry args={[fw, 0.01, fz]} />{floorMat}</mesh>
+        <mesh position={[0, 0.01, zOff]}><boxGeometry args={[fw, 0.01, fz]} />{floorMat}</mesh>
 
         {/* ODALARA ÖZEL RENKLİ ZEMİN KAPLAMALARI */}
         {type === "1+1" && <>
@@ -462,6 +519,8 @@ function House({ type, trail, posRef, rotRef }) {
 
         {type === "3+1" && <>
             <mesh position={[4, 0.015, -1.75]}><boxGeometry args={[5.8, 0.01, 6.3]} /><meshStandardMaterial color="#ee5253" opacity={0.35} transparent /></mesh>
+            {/* Yasaklı Alan (Model Zemin Üstüne Çıkartıldı: y=0.022) */}
+            <ForbiddenZone position={[5.75, 0.022, -3.75]} size={2.3} />
             <mesh position={[4, 0.015, 3.25]}><boxGeometry args={[5.8, 0.01, 3.3]} /><meshStandardMaterial color="#ff9f43" opacity={0.35} transparent /></mesh>
             <mesh position={[-0.75, 0.015, 0]}><boxGeometry args={[3.3, 0.01, 9.8]} /><meshStandardMaterial color="#b2bec3" opacity={0.35} transparent /></mesh>
             <mesh position={[-4.75, 0.015, 2.75]}><boxGeometry args={[4.3, 0.01, 4.3]} /><meshStandardMaterial color="#10ac84" opacity={0.35} transparent /></mesh>
@@ -486,20 +545,20 @@ function House({ type, trail, posRef, rotRef }) {
         </>}
 
         {type === "3+2" && <>
-            <mesh position={[-1.5, 0.015, 0]}><boxGeometry args={[5, 0.01, 12]} /><meshStandardMaterial color="#b2bec3" opacity={0.25} transparent /></mesh>
-            <mesh position={[-6.5, 0.015, 4.12]}><boxGeometry args={[5, 0.01, 3.75]} /><meshStandardMaterial color="#5f27cd" opacity={0.35} transparent /></mesh>
-            <mesh position={[-6.5, 0.015, 0.62]}><boxGeometry args={[5, 0.01, 3.25]} /><meshStandardMaterial color="#10ac84" opacity={0.35} transparent /></mesh>
-            <mesh position={[-6.5, 0.015, -3.5]}><boxGeometry args={[5, 0.01, 5]} /><meshStandardMaterial color="#00d2d3" opacity={0.35} transparent /></mesh>
-            <mesh position={[5, 0.015, 1.1]}><boxGeometry args={[8, 0.01, 2.25]} /><meshStandardMaterial color="#ff9f43" opacity={0.35} transparent /></mesh>
-            <mesh position={[5, 0.015, -3]}><boxGeometry args={[8, 0.01, 6]} /><meshStandardMaterial color="#ee5253" opacity={0.35} transparent /></mesh>
-            <mesh position={[5, 0.015, 4.12]}><boxGeometry args={[8, 0.01, 3.75]} /><meshStandardMaterial color="#ee5253" opacity={0.25} transparent /></mesh>
+            <mesh position={[-1.5, 0.015, 1]}><boxGeometry args={[5, 0.01, 12]} /><meshStandardMaterial color="#b2bec3" opacity={0.25} transparent /></mesh>
+            <mesh position={[-6.5, 0.015, 5.12]}><boxGeometry args={[5, 0.01, 3.75]} /><meshStandardMaterial color="#5f27cd" opacity={0.35} transparent /></mesh>
+            <mesh position={[-6.5, 0.015, 1.62]}><boxGeometry args={[5, 0.01, 3.25]} /><meshStandardMaterial color="#10ac84" opacity={0.35} transparent /></mesh>
+            <mesh position={[-6.5, 0.015, -2.5]}><boxGeometry args={[5, 0.01, 5]} /><meshStandardMaterial color="#00d2d3" opacity={0.35} transparent /></mesh>
+            <mesh position={[5, 0.015, 2.1]}><boxGeometry args={[8, 0.01, 2.25]} /><meshStandardMaterial color="#ff9f43" opacity={0.35} transparent /></mesh>
+            <mesh position={[5, 0.015, -2]}><boxGeometry args={[8, 0.01, 6]} /><meshStandardMaterial color="#ee5253" opacity={0.35} transparent /></mesh>
+            <mesh position={[5, 0.015, 5.12]}><boxGeometry args={[8, 0.01, 3.75]} /><meshStandardMaterial color="#ee5253" opacity={0.25} transparent /></mesh>
         </>}
 
         <Station />
-        <Wall w={fw} h={h} t={t} x={0} z={-fz / 2} />
-        <Wall w={fw} h={h} t={t} x={0} z={fz / 2} />
-        <Wall w={t} h={h} t={fz} x={-fw / 2} z={0} />
-        <Wall w={t} h={h} t={fz} x={fw / 2} z={0} />
+        <Wall w={fw} h={h} t={t} x={0} z={(-fz / 2) + zOff} />
+        <Wall w={fw} h={h} t={t} x={0} z={(fz / 2) + zOff} />
+        <Wall w={t} h={h} t={fz} x={-fw / 2} z={zOff} />
+        <Wall w={t} h={h} t={fz} x={fw / 2} z={zOff} />
 
         {/* ROBOTUN TEMİZLİK ROTASI (Ovalleştirilmiş Beyaz Çizgi) */}
         {trail.length > 1 && (() => {
@@ -547,38 +606,38 @@ function House({ type, trail, posRef, rotRef }) {
             <Lintel x={1} z={-0.25} w={t} t={1.75} h={h} /> {/* Lintel Salon */}
             <Lintel x={1} z={2.3} w={t} t={1.75} h={h} /> {/* Lintel Mutfak */}
 
-            <Wall w={t} h={h} t={3.2} x={-2.5} z={3.3} />
-            <Wall w={t} h={h} t={1.5} x={-2.5} z={-0.25} />
+            <Wall w={t} h={h} t={2} x={-2.5} z={4} />
+            <Wall w={t} h={h} t={3.30} x={-2.5} z={-0.25} />
             <Wall w={t} h={h} t={1.5} x={-2.5} z={-4.25} />
-            <Lintel x={-2.5} z={1} w={t} t={1.75} h={h} /> {/* Lintel Ebeveyn Odası */}
+            <Lintel x={-2.5} z={1.75} w={t} t={2.5} h={h} />
             <Lintel x={-2.5} z={-2.2} w={t} t={2.75} h={h} /> {/* Lintel Oda 2 */}
             <Wall w={4.5} h={h} t={t} x={-4.75} z={0.5} />
         </>}
 
         {/* 3+2 ÖZEL MİMARİ (Grand Mansion) */}
         {type === "3+2" && <>
-            <Wall w={2} h={h} t={t} x={2} z={0} />
-            <Wall w={4} h={h} t={t} x={7} z={0} />
-            <Lintel x={4} z={0} w={2} t={t} h={h} /> {/* Lintel Salon */}
+            <Wall w={2} h={h} t={t} x={2} z={1} />
+            <Wall w={4} h={h} t={t} x={7} z={1} />
+            <Lintel x={4} z={1} w={2} t={t} h={h} /> {/* Lintel Salon */}
 
-            <Wall w={t} h={h} t={6} x={1} z={-3} />
-            <Wall w={t} h={h} t={3.75} x={1} z={4} />
-            <Lintel x={1} z={1.1} w={t} t={2.25} h={h} />
+            <Wall w={t} h={h} t={6} x={1} z={-2} />
+            <Wall w={t} h={h} t={3.75} x={1} z={5} />
+            <Lintel x={1} z={2.1} w={t} t={2.25} h={h} />
 
-            <Wall w={4} h={h} t={t} x={7} z={2.25} />
-            <Wall w={2} h={h} t={t} x={2} z={2.25} />
-            <Lintel x={4} z={2.25} w={2} t={t} h={h} /> {/* Lintel Mutfak */}
+            <Wall w={4} h={h} t={t} x={7} z={3.25} />
+            <Wall w={2} h={h} t={t} x={2} z={3.25} />
+            <Lintel x={4} z={3.25} w={2} t={t} h={h} /> {/* Lintel Mutfak */}
 
-            <Wall w={t} h={h} t={2} x={-4} z={5} />
-            <Wall w={t} h={h} t={1.5} x={-4} z={1.5} />
-            <Wall w={t} h={h} t={2} x={-4} z={-2} />
-            <Wall w={t} h={h} t={1.5} x={-4} z={-5.25} />
-            <Lintel x={-4} z={3.12} w={t} t={1.75} h={h} /> {/* Lintel Ebeveyn */}
-            <Lintel x={-4} z={-0.12} w={t} t={1.75} h={h} /> {/* Lintel Misafir */}
-            <Lintel x={-4} z={-3.75} w={t} t={1.5} h={h} /> {/* Lintel Çocuk */}
+            <Wall w={t} h={h} t={2} x={-4} z={6} />
+            <Wall w={t} h={h} t={1.5} x={-4} z={2.5} />
+            <Wall w={t} h={h} t={2} x={-4} z={-1} />
+            <Wall w={t} h={h} t={1.5} x={-4} z={-4.25} />
+            <Lintel x={-4} z={4.12} w={t} t={1.75} h={h} /> {/* Lintel Ebeveyn */}
+            <Lintel x={-4} z={0.88} w={t} t={1.75} h={h} /> {/* Lintel Misafir */}
+            <Lintel x={-4} z={-2.75} w={t} t={1.5} h={h} /> {/* Lintel Çocuk */}
 
-            <Wall w={5} h={h} t={t} x={-6.5} z={2.25} />
-            <Wall w={5} h={h} t={t} x={-6.5} z={-1} />
+            <Wall w={5} h={h} t={t} x={-6.5} z={3.25} />
+            <Wall w={5} h={h} t={t} x={-6.5} z={0} />
 
         </>}
 
@@ -714,7 +773,7 @@ export default function Plan3D() {
                 />
                 <House type={type} trail={trail} posRef={posRef} rotRef={rotRef} />
                 <Mover />
-                <OrbitControls enablePan={false} maxPolarAngle={Math.PI / 2.1} minDistance={5} maxDistance={26} />
+                <OrbitControls enablePan={true} maxPolarAngle={Math.PI / 2.1} minDistance={5} maxDistance={26} />
             </Canvas>
         </div>
     );
