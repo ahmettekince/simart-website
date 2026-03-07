@@ -11,8 +11,7 @@ import QRContent from "@/components/common/QRContent";
 // Engellenen istekler
 const blockedSlugs = [
   "meta.json",
-  "queue.php",
-  "robots.txt"
+  "queue.php"
 ];
 
 // Dinamik metadata oluşturma

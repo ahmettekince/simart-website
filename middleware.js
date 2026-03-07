@@ -4,6 +4,11 @@ import { NextResponse } from "next/server";
 export async function middleware(request) {
   const response = NextResponse.next();
   const url = new URL(request.url);
+
+  if (url.pathname === '/robots.txt') {
+    return NextResponse.next();
+  }
+
   const ref = url.searchParams.get("ref");
 
   if (request.url.includes("ref")) {
