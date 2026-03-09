@@ -559,7 +559,7 @@ export default function Detail({ product }) {
                       </div>
                     )}
 
-                    {timeBasedDiscount && countdownTargetDate && (
+                    {timeBasedDiscount && countdownTargetDate && (product.is_in_stock || product.is_pre_order) && (
                       <div className="tf-product-info-countdown" style={{ marginBottom: "24px" }}>
                         <CountdownComponent
                           targetDate={countdownTargetDate}
