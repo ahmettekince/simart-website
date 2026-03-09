@@ -215,12 +215,21 @@ export const trackBeginCheckout = (items, totals, couponCode = null) => {
 export const trackPurchase = (orderData) => {
     if (!orderData) return;
 
+    const transactionId = String(orderData.id || orderData.order_number || orderData.order_id);
+
+    // ÇİFT GÖNDERİM KONTROLÜ (Hem GTM hem Meta için)
+    // pushToDataLayer zaten içten kontrol ediyor ama Meta Pixel için ayrıca burada kontrol ediyoruz
+    if (transactionId && isOrderProcessed(transactionId, 'purchase')) {
+        log(`[Analytics] Duplicate Meta Pixel event blocked for purchase: ${transactionId}`);
+        return; // İşlem daha önce yapılmışsa fonksiyonu sonlandır, tekrarlayan gönderimi engelle
+    }
+
     const normalizedItems = (orderData.items || []).map(item => normalizeItem(item));
     const totalValue = Number(orderData.total || orderData.grand_total || 0);
 
     // GTM
     pushToDataLayer('purchase', {
-        transaction_id: String(orderData.id || orderData.order_number || orderData.order_id),
+        transaction_id: transactionId,
         value: totalValue,
         tax: Number(orderData.tax_total || 0),
         shipping: Number(orderData.shipping_total || 0),
