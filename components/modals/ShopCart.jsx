@@ -13,6 +13,8 @@ import MaxQuantityToast from "@/components/common/MaxQuantityToast";
 import SimartButton from "@/components/common/SimartButton";
 import { calculateCartTotals } from "@/utils/cartTotals";
 import ErrorToast from "@/components/common/ErrorToast";
+import { useLangStore } from "@/stores/langStore";
+import { getLocalizedUrl } from "@/utils/i18n";
 
 export default function ShopCart() {
   const { items, updateQuantity, removeItem, applyCoupon, removeCoupon } = useCartStore();
@@ -21,6 +23,7 @@ export default function ShopCart() {
   const [isRemovingCoupon, setIsRemovingCoupon] = useState(false);
   const [couponError, setCouponError] = useState("");
   const [couponSuccess, setCouponSuccess] = useState(false);
+  const lang = useLangStore((state) => state.lang);
 
   // API'den gelen totals değerlerini ayrı selector'la al (infinite loop'u önlemek için)
   const totals = useCartStore((state) => state.totals);
@@ -370,7 +373,7 @@ export default function ShopCart() {
                                       item.product?.item_category?.slug ||
                                       "urunler";
                                     const productSlug = item.product?.slug || item.slug || item.id;
-                                    const productUrl = `/magaza/${categorySlug}/${productSlug}`;
+                                    const productUrl = getLocalizedUrl(`/magaza/${categorySlug}/${productSlug}`, lang);
                                     const imageUrl =
                                       item.image ||
                                       item.product?.cover_image?.url ||
@@ -579,7 +582,7 @@ export default function ShopCart() {
                                       giftItem.product?.item_category?.slug ||
                                       "urunler";
                                     const productSlug = giftItem.product?.slug || giftItem.slug || giftItem.id;
-                                    const productUrl = `/magaza/${categorySlug}/${productSlug}`;
+                                    const productUrl = getLocalizedUrl(`/magaza/${categorySlug}/${productSlug}`, lang);
                                     const imageUrl =
                                       giftItem.image ||
                                       giftItem.product?.cover_image?.url ||
@@ -843,7 +846,7 @@ export default function ShopCart() {
                             <div className="col-12 fs-18 text-center mb-3">Sepetinizde ürün bulunmamaktadır.</div>
                             <div className="col-12 text-center">
                               <SimartButton
-                                href="/magaza"
+                                href={getLocalizedUrl("/magaza", lang)}
                                 variant="fill"
                                 style={{ width: "fit-content" }}
                               >
@@ -1123,8 +1126,25 @@ export default function ShopCart() {
                       )}
                       <div className="tf-mini-cart-view-checkout">
                         <SimartButton
-                          href="/sepetim"
+                          href={getLocalizedUrl("/sepetim", lang)}
                           variant="outline"
+                          onClick={() => {
+                            if (typeof window !== "undefined") {
+                              const el = document.getElementById("shoppingCart");
+                              if (el) {
+                                const bootstrap = require("bootstrap");
+                                const modal = bootstrap.Modal.getInstance(el);
+                                if (modal) modal.hide();
+                              }
+                              // Hızlı temizlik
+                              setTimeout(() => {
+                                document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+                                document.body.classList.remove('modal-open');
+                                document.body.style.overflow = "";
+                                document.body.style.paddingRight = "";
+                              }, 100);
+                            }
+                          }}
                           style={{
                             flex: 1,
                             minWidth: 0,
@@ -1136,9 +1156,25 @@ export default function ShopCart() {
                           Sepeti Görüntüle
                         </SimartButton>
                         <SimartButton
-                          href="/odeme"
+                          href={getLocalizedUrl("/odeme", lang)}
                           variant="fill"
-                          onClick={() => { }}
+                          onClick={() => {
+                            if (typeof window !== "undefined") {
+                              const el = document.getElementById("shoppingCart");
+                              if (el) {
+                                const bootstrap = require("bootstrap");
+                                const modal = bootstrap.Modal.getInstance(el);
+                                if (modal) modal.hide();
+                              }
+                              // Hızlı temizlik
+                              setTimeout(() => {
+                                document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+                                document.body.classList.remove('modal-open');
+                                document.body.style.overflow = "";
+                                document.body.style.paddingRight = "";
+                              }, 100);
+                            }
+                          }}
                           style={{
                             flex: 1,
                             minWidth: 0,

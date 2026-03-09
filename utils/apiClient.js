@@ -1,4 +1,5 @@
 import axios from "axios";
+import { useLangStore } from "@/stores/langStore";
 
 const apiClient = axios.create({
     baseURL: "/api/proxy",
@@ -8,8 +9,13 @@ const apiClient = axios.create({
     withCredentials: true, // Cookie'leri otomatik gönder (client-side için gerekli)
 });
 
-// FormData gönderildiğinde Content-Type'ı kaldır (axios otomatik boundary ile set eder)
+// Interceptor for language and FormData
 apiClient.interceptors.request.use((config) => {
+    // Add language from state
+    const lang = useLangStore.getState().lang || "tr";
+    config.headers["Accept-Language"] = lang;
+
+    // Remove Content-Type if it's FormData
     if (config.data instanceof FormData) {
         delete config.headers["Content-Type"];
     }

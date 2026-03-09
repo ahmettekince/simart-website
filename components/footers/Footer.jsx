@@ -8,7 +8,9 @@ import SimartButton from "@/components/common/SimartButton";
 import apiClient from "@/utils/apiClient";
 import AppStoreButtons from "./AppStoreButtons";
 
-export default function Footer({ bgColor = "", footerMenus = null }) {
+import { getLocalizedUrl } from "@/utils/i18n";
+
+export default function Footer({ bgColor = "", footerMenus = null, lang = "tr" }) {
   useEffect(() => {
     const headings = document.querySelectorAll(".footer-heading-moblie");
 
@@ -79,7 +81,7 @@ export default function Footer({ bgColor = "", footerMenus = null }) {
               <div className="col-xl-3 col-md-6 col-12">
                 <div className="footer-infor">
                   <div className="footer-logo">
-                    <Link href={`/`}>
+                    <Link href={getLocalizedUrl("/", lang)}>
                       <Image
                         alt="image"
                         src="/images/logo/logo.svg"
@@ -108,14 +110,14 @@ export default function Footer({ bgColor = "", footerMenus = null }) {
                       </p>
                     </li>
                   </ul>
-                  <Link href={`/iletisim`} className="tf-btn btn-line">
+                  <Link href={getLocalizedUrl("/iletisim", lang)} className="tf-btn btn-line">
                     Haritada İncele
                     <i className="icon icon-arrow1-top-left" />
                   </Link>
                   <AppStoreButtons />
                 </div>
               </div>
-              {/* Footer menüleri - slug'a göre dinamik olarak render edilir */}
+              {/* Footer menüleri */}
               {Array.isArray(footerMenus) &&
                 footerMenus.map(
                   (menu) =>
@@ -131,7 +133,7 @@ export default function Footer({ bgColor = "", footerMenus = null }) {
                         <ul className="footer-menu-list tf-collapse-content">
                           {menu.items.map((item) => (
                             <li key={item.id}>
-                              <Link href={item.url || "#"} className="footer-menu_item" target={item.target || "_self"}>
+                              <Link href={getLocalizedUrl(item.url, lang) || "#"} className="footer-menu_item" target={item.target || "_self"}>
                                 {item.title}
                               </Link>
                             </li>

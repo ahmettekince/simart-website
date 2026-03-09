@@ -3,6 +3,8 @@ import React from "react";
 import { Autoplay } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 
+import LanguageSelect from "@/components/common/LanguageSelect";
+
 export default function Topbar({ data = [], isActive = false }) {
   if (!isActive || !data || data.length === 0) return null;
 
@@ -36,6 +38,11 @@ export default function Topbar({ data = [], isActive = false }) {
               ))}
             </Swiper>
           </div>
+          {/* <div className="tf-top-bar_right">
+            <div className="d-flex gap-30 text_white fw-5 justify-content-end">
+              <LanguageSelect />
+            </div>
+          </div> */}
 
         </div>
       </div>

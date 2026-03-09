@@ -48,13 +48,15 @@ export const metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function Home() {
+export default async function Home({ params }) {
+  const { lang } = await params;
+
   const [menuItems, banners, collectionBanner, collections, reviews] = await Promise.all([
-    getMenus(),
-    getBanners(),
-    getCollectionBanner(),
-    getCollections(),
-    getReviews(),
+    getMenus(lang),
+    getBanners(lang),
+    getCollectionBanner(lang),
+    getCollections(lang),
+    getReviews(lang),
   ]);
 
   const organizationJsonLd = organizationSchema({
@@ -71,7 +73,7 @@ export default async function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
       />
       <div className="color-primary-15">
-        <Header textClass={"text-black"} menuItems={menuItems} />
+        <Header textClass={"text-black"} menuItems={menuItems} lang={lang} />
         <Hero banners={banners} />
         <Categories />
         <CollectionBanner banner={collectionBanner} />

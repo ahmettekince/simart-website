@@ -19,13 +19,22 @@ const CampaignTab = dynamic(() => import("@/components/common/CampaignTab"), { s
 const ScrollTop = dynamic(() => import("@/components/common/ScrollTop"), { ssr: false });
 const Analytics = dynamic(() => import("@/components/common/Analytics"), { ssr: false });
 
-export default function ClientLayout({ children }) {
+import { useLangStore } from "@/stores/langStore";
+
+export default function ClientLayout({ children, lang }) {
     const pathname = usePathname();
     const lastScrollY = useRef(0);
     const lastScrollDirection = useRef("down");
     const [scrollDirection, setScrollDirection] = useState("down");
     const isSynced = useCartStore((state) => state.isSynced);
     const initAuth = useAuthStore((state) => state.initAuth);
+    const setLang = useLangStore((state) => state.setLang);
+
+    useEffect(() => {
+        if (lang) {
+            setLang(lang);
+        }
+    }, [lang, setLang]);
 
     useEffect(() => {
         initAuth();
@@ -103,6 +112,15 @@ export default function ClientLayout({ children }) {
             const offcanvasInstance = bootstrap.Offcanvas.getInstance(offcanvas);
             if (offcanvasInstance) offcanvasInstance.hide();
         });
+
+        // HATA ÖNLEME: Eğer Bootstrap temizleyemezse manuel olarak temizle
+        if (typeof document !== "undefined") {
+            const backdrops = document.querySelectorAll('.modal-backdrop, .offcanvas-backdrop');
+            backdrops.forEach(el => el.remove());
+            document.body.classList.remove('modal-open', 'offcanvas-open');
+            document.body.style.overflow = "";
+            document.body.style.paddingRight = "";
+        }
 
         // Drift zoom overlay'leri kaldır (ürün detaydan çıkınca kare ekranda kalmasın)
         if (typeof document !== "undefined") {

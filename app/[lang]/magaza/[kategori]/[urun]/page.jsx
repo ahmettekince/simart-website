@@ -14,7 +14,7 @@ import { productSchema } from "@/lib/schema";
  * Dinamik metadata oluşturma
  */
 export async function generateMetadata({ params }) {
-  const { kategori, urun } = await params;
+  const { kategori, urun, lang } = await params;
 
   if (!urun) {
     return {
@@ -23,7 +23,7 @@ export async function generateMetadata({ params }) {
     };
   }
 
-  const product = await getProductBySlug(urun);
+  const product = await getProductBySlug(urun, lang);
   if (!product) {
     return {
       title: "Ürün Bulunamadı - Şımart Teknoloji",
@@ -72,14 +72,14 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function page({ params }) {
-  const { kategori, urun } = await params;
+  const { kategori, urun, lang } = await params;
 
   if (!urun) {
     notFound();
   }
 
   // API'den ürünü çek
-  const product = await getProductBySlug(urun);
+  const product = await getProductBySlug(urun, lang);
 
   if (!product) {
     notFound();
@@ -89,7 +89,7 @@ export default async function page({ params }) {
   const categorySlug = product.primary_category?.slug || product.categories?.[0]?.slug;
   let categoryProducts = [];
   if (categorySlug) {
-    const allCategoryProducts = await getProductsByCategory(categorySlug);
+    const allCategoryProducts = await getProductsByCategory(categorySlug, lang);
     // Açık olan ürünü listeden çıkar
     categoryProducts = allCategoryProducts
       .filter((p) => p.id !== product.id && p.slug !== product.slug)
@@ -174,7 +174,7 @@ export default async function page({ params }) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <ProductDetailHit productSlug={urun} />
-      <Header />
+      <Header lang={lang} />
       <div className="tf-breadcrumb">
         <div className="container">
           <div className="tf-breadcrumb-wrap d-flex justify-content-between flex-wrap align-items-center">

@@ -3,7 +3,7 @@ import Header from "@/components/headers/Header";
 import React from "react";
 import Link from "next/link";
 import { getBlogs } from "@/api/blogs";
-import { webPageSchema } from "../../lib/schema";
+import { webPageSchema } from "@/lib/schema";
 
 export const metadata = {
   title: "Blog - Şımart Teknoloji",

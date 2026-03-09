@@ -4,7 +4,7 @@ import Header from "@/components/headers/Header";
 import SssPageContent from "@/components/othersPages/faq/SssPageContent";
 import { getCategories } from "@/api/home";
 import { getCategoryWithProducts } from "@/api/products";
-import { webPageSchema } from "../../lib/schema";
+import { webPageSchema } from "@/lib/schema";
 
 export const metadata = {
   title: "Destek - Şımart Teknoloji",

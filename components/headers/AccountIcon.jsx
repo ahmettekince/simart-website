@@ -2,7 +2,9 @@
 import Link from "next/link";
 import { useAuthStore } from "@/stores/authStore";
 
-export default function AccountIcon() {
+import { getLocalizedUrl } from "@/utils/i18n";
+
+export default function AccountIcon({ lang = "tr" }) {
   const { isAuthenticated, isInitialized } = useAuthStore();
 
   if (!isInitialized) return (
@@ -12,7 +14,7 @@ export default function AccountIcon() {
   );
 
   return (
-    <Link href={isAuthenticated ? "/hesabim" : "/giris-yap"} className="nav-icon-item">
+    <Link href={getLocalizedUrl(isAuthenticated ? "/hesabim" : "/giris-yap", lang)} className="nav-icon-item">
       <i className="icon icon-account" />
     </Link>
   );

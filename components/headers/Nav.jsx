@@ -1,9 +1,9 @@
-"use client";
-import Link from "next/link";
-import React from "react";
-import { usePathname } from "next/navigation";
 
-export default function Nav({ isArrow = true, textColor = "", Linkfs = "", menuItems: initialMenuItems = [] }) {
+"use client";
+import { getLocalizedUrl } from "@/utils/i18n";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+export default function Nav({ isArrow = true, textColor = "", Linkfs = "", menuItems: initialMenuItems = [], lang = "tr" }) {
   const pathname = usePathname();
   const menuItems = initialMenuItems;
 
@@ -20,9 +20,13 @@ export default function Nav({ isArrow = true, textColor = "", Linkfs = "", menuI
       pathToCheck = url;
     }
 
-    const isHome = pathToCheck === "/" || pathToCheck === "";
-    const isCurrentHome = pathname === "/";
-    if (isHome) return isCurrentHome;
+    // pathToCheck zaten Header içinde yerelleştirildiği için pathname ile doğrudan kıyaslanabilir
+    const isHome = pathToCheck === "/" || pathToCheck === "" || pathToCheck === `/${lang}/` || pathToCheck === `/${lang}`;
+
+    // Eğer anasayfa ise
+    if (isHome) {
+      return pathname === "/" || pathname === `/${lang}` || pathname === `/${lang}/`;
+    }
 
     const isActive = pathToCheck !== "/" && pathname.startsWith(pathToCheck);
     if (isActive) return true;

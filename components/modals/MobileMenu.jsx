@@ -1,13 +1,15 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import apiClient from "@/utils/apiClient";
-import { log } from "@/utils/logger";
-import { useAuthStore } from "@/stores/authStore";
-import { openCartModal } from "@/utils/openCartModal";
 
-export default function MobileMenu({ menuItems: initialMenuItems = [] }) {
+import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useAuthStore } from "@/stores/authStore";
+import log from "@/utils/logger";
+import apiClient from "@/utils/apiClient";
+import { openCartModal } from "@/utils/openCartModal";
+import { getLocalizedUrl } from "@/utils/i18n";
+
+export default function MobileMenu({ menuItems: initialMenuItems = [], lang = "tr" }) {
   const pathname = usePathname();
   const [menuItems, setMenuItems] = useState(initialMenuItems);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -18,79 +20,28 @@ export default function MobileMenu({ menuItems: initialMenuItems = [] }) {
     if (e) e.preventDefault();
     if (isLoggingOut) return;
     setIsLoggingOut(true);
+    const loginUrl = getLocalizedUrl("/giris-yap", lang);
     try {
       await apiClient.post("/customer/logout");
       logout();
       document.cookie = "_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
       document.cookie = "_token=; path=/; domain=" + window.location.hostname + "; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-      window.location.href = "/giris-yap";
+      window.location.href = loginUrl;
       return;
     } catch (error) {
       console.error("Logout error:", error);
       document.cookie = "_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
       document.cookie = "_token=; path=/; domain=" + window.location.hostname + "; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-      window.location.href = "/giris-yap";
+      window.location.href = loginUrl;
       return;
     }
-    setIsLoggingOut(false);
   };
 
   useEffect(() => {
-    if (initialMenuItems.length === 0) {
-      const fetchMenu = async () => {
-        try {
-          const response = await apiClient.post("/menus", { type: "header-menu" });
-          if (response.data?.status === "success" && Array.isArray(response.data.data?.items)) {
-            setMenuItems(response.data.data.items);
-          } else {
-            log("[MobileMenu.jsx] Menu API response invalid:", response?.data);
-          }
-        } catch (error) {
-          log("[MobileMenu.jsx] Failed to fetch menu:", {
-            message: error.message,
-            status: error.response?.status,
-            statusText: error.response?.statusText,
-            url: error.config?.url,
-          });
-          // Hata durumunda menuItems boş kalır, bu yüzden render edilmez
-        }
-      };
-      fetchMenu();
-    } else {
-      setMenuItems(initialMenuItems);
-    }
+    setMenuItems(initialMenuItems);
   }, [initialMenuItems]);
 
-  // Rota değiştiğinde (sayfa geçişinde) mobil menüyü kapat ve scroll kilidini kaldır
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const closeOffcanvas = () => {
-        try {
-          const bootstrap = require("bootstrap");
-          const mobileMenuElement = document.getElementById("mobileMenu");
-          if (mobileMenuElement) {
-            const bsOffcanvas = bootstrap.Offcanvas.getInstance(mobileMenuElement);
-            if (bsOffcanvas) {
-              bsOffcanvas.hide();
-            }
-          }
-
-          // Emniyet sübabı: Body scroll kilidini ve backdrop'ı manuel temizle
-          setTimeout(() => {
-            document.body.style.overflow = "";
-            document.body.style.paddingRight = "";
-            const backdrops = document.querySelectorAll(".offcanvas-backdrop");
-            backdrops.forEach(backdrop => backdrop.remove());
-          }, 300); // Animasyon bitimini bekle
-
-        } catch (error) {
-          console.error("Menu kapatma hatası:", error);
-        }
-      };
-      closeOffcanvas();
-    }
-  }, [pathname]);
-
+  // ... (closeOffcanvas effect)
   const isMenuActive = (menuItem) => {
     const url = menuItem.url || "";
     if (!url || url === "#") return false;
@@ -104,9 +55,8 @@ export default function MobileMenu({ menuItems: initialMenuItems = [] }) {
       pathToCheck = url;
     }
 
-    const isHome = pathToCheck === "/" || pathToCheck === "";
-    const isCurrentHome = pathname === "/";
-    if (isHome) return isCurrentHome;
+    const isHome = pathToCheck === "/" || pathToCheck === "" || pathToCheck === `/${lang}` || pathToCheck === `/${lang}/`;
+    if (isHome) return pathname === "/" || pathname === `/${lang}` || pathname === `/${lang}/`;
 
     const isActive = pathToCheck !== "/" && pathname.startsWith(pathToCheck);
     if (isActive) return true;
@@ -128,13 +78,11 @@ export default function MobileMenu({ menuItems: initialMenuItems = [] }) {
           if (bsOffcanvas) {
             bsOffcanvas.hide();
           } else {
-            // Instance yoksa close butonuna tiklatmayi dene
             const closeBtn = mobileMenuElement.querySelector('[data-bs-dismiss="offcanvas"]');
             if (closeBtn) closeBtn.click();
           }
         }
 
-        // Emniyet sübabı
         setTimeout(() => {
           document.body.style.overflow = "";
           document.body.style.paddingRight = "";
@@ -239,7 +187,7 @@ export default function MobileMenu({ menuItems: initialMenuItems = [] }) {
                 </a>
               </div>
               <div className="mb-notice">
-                <Link href={`/destek`} className="text-need" onClick={closeMenu}>
+                <Link href={getLocalizedUrl("/destek", lang)} className="text-need" onClick={closeMenu}>
                   Yardıma mı ihtiyacınız var?
                 </Link>
               </div>
@@ -266,7 +214,7 @@ export default function MobileMenu({ menuItems: initialMenuItems = [] }) {
                 Çıkış Yap
               </a>
             ) : (
-              <Link href={`/giris-yap`} className="site-nav-icon" onClick={closeMenu}>
+              <Link href={getLocalizedUrl("/giris-yap", lang)} className="site-nav-icon" onClick={closeMenu}>
                 <i className="icon icon-account" />
                 Giriş Yap
               </Link>

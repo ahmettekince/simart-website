@@ -5,20 +5,24 @@ import React from "react";
 import { checkAuthServer } from "@/utils/authServer";
 import { redirect } from "next/navigation";
 
+import { getLocalizedUrl } from "@/utils/i18n";
+
 export const metadata = {
   title: "Siparişlerim - Şımart Teknoloji",
   description: "Şımart Teknoloji",
 };
-export default async function page() {
+
+export default async function page({ params }) {
+  const { lang } = await params;
   const isAuthenticated = await checkAuthServer();
 
   if (!isAuthenticated) {
-    redirect("/giris-yap");
+    redirect(getLocalizedUrl("/giris-yap", lang));
   }
 
   return (
     <>
-      <Header />
+      <Header lang={lang} />
       <section className="flat-spacing-11">
         <div className="container">
           <div className="row">

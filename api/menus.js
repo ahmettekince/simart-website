@@ -6,15 +6,13 @@ import { API_REVALIDATE } from "@/config/apiConfig";
  * Header menülerini getirir.
  * @returns {Promise<Array>} Menu items array'i
  */
-export async function getMenus() {
-    const data = await getMenuByType("header-menu");
+export async function getMenus(lang = "tr") {
+    const data = await getMenuByType("header-menu", lang);
 
     if (data) {
-        // API direkt menü array'ini döndürüyor olabilir
         if (Array.isArray(data)) {
             return data;
         }
-        // Veya data.items içinde olabilir
         if (data.items && Array.isArray(data.items)) {
             return data.items;
         }
@@ -26,9 +24,10 @@ export async function getMenus() {
 /**
  * Menu type'a göre menü getirir (footer menüleri için)
  * @param {string} menuType - Menu type (örn: "yardim", "hakkimizda")
+ * @param {string} lang - Dil kodu
  * @returns {Promise<Object|null>} Menu objesi veya null
  */
-export async function getMenuByType(menuType) {
+export async function getMenuByType(menuType, lang = "tr") {
     if (!menuType) {
         log("[API menus.js] getMenuByType: menuType is required");
         return null;
@@ -37,6 +36,7 @@ export async function getMenuByType(menuType) {
     const response = await serverFetch("/menus", {
         method: "POST",
         body: { type: menuType },
+        lang, // Arka plana iletiliyor
         next: { revalidate: API_REVALIDATE.MENUS }
     });
 
@@ -50,16 +50,14 @@ export async function getMenuByType(menuType) {
 
 /**
  * Footer menülerini getirir (Yardım ve Hakkımızda)
- * Slug'a göre dinamik olarak eşleştirir - API'den gelen slug değerine göre
  * @returns {Promise<Array>} Menu array'i (slug field'ı ile)
  */
-export async function getFooterMenus() {
+export async function getFooterMenus(lang = "tr") {
     const [yardimMenu, hakkimizdaMenu] = await Promise.all([
-        getMenuByType("yardim"),
-        getMenuByType("hakkimizda"),
+        getMenuByType("yardim", lang),
+        getMenuByType("hakkimizda", lang),
     ]);
 
-    // Menüleri array olarak döndür (slug field'ı ile birlikte)
     const menus = [];
 
     if (yardimMenu?.slug && yardimMenu?.items?.length > 0) {

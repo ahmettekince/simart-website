@@ -17,6 +17,20 @@ const isOrderProcessed = (orderId, eventName) => {
 };
 
 /**
+ * Meta Pixel (Facebook) Etkinliği Gönderir
+ */
+export const trackMetaEvent = (eventName, params = {}) => {
+    if (typeof window !== 'undefined' && window.fbq) {
+        try {
+            window.fbq('track', eventName, params);
+            log(`[Analytics] Meta Pixel: ${eventName}`, params);
+        } catch (err) {
+            console.error(`[Analytics] Meta Pixel Error on ${eventName}:`, err);
+        }
+    }
+};
+
+/**
  * Veri katmanına (dataLayer) olay gönderir.
  * @param {string} eventName 
  * @param {Object} ecommerceData 
@@ -42,7 +56,6 @@ export const pushToDataLayer = (eventName, ecommerceData = {}) => {
                 event: eventName,
                 ecommerce: {
                     ...ecommerceData,
-                    // Eğer GTM'de 'productPage' bekleyen bir değişken varsa patlamasın diye:
                     productPage: window.location.pathname
                 }
             };
@@ -50,8 +63,7 @@ export const pushToDataLayer = (eventName, ecommerceData = {}) => {
             window.dataLayer.push(pushData);
             log(`[Analytics] dataLayer.push: ${eventName}`, pushData);
         } catch (err) {
-            console.error(`[Analytics] GTM Push Error on ${eventName}:`, err);
-            // Hata olsa bile uygulamanın geri kalanı patlamasın diye sessizce logluyoruz
+            log(`[Analytics] GTM Push Error on ${eventName}:`, err);
         }
     }
 };
@@ -156,11 +168,21 @@ export const trackViewItem = (product) => {
  */
 export const trackAddToCart = (product, quantity = 1) => {
     const item = normalizeItem(product, quantity);
+
+    // GTM
     pushToDataLayer('add_to_cart', {
         currency: 'TRY',
         value: item.price * item.quantity,
         items: [item]
     });
+
+    // Meta Pixel
+    // trackMetaEvent('AddToCart', {
+    //     content_ids: [item.item_id],
+    //     content_type: 'product',
+    //     value: item.price * item.quantity,
+    //     currency: 'TRY'
+    // });
 };
 
 /**
@@ -168,12 +190,23 @@ export const trackAddToCart = (product, quantity = 1) => {
  */
 export const trackBeginCheckout = (items, totals, couponCode = null) => {
     const normalizedItems = items.map(item => normalizeItem(item));
+    const totalValue = Number(totals?.total || totals?.grand_total || 0);
+
+    // GTM
     pushToDataLayer('begin_checkout', {
         currency: 'TRY',
-        value: Number(totals?.total || totals?.grand_total || 0),
+        value: totalValue,
         coupon: couponCode || undefined,
         items: normalizedItems
     });
+
+    // // Meta Pixel
+    // trackMetaEvent('InitiateCheckout', {
+    //     content_ids: normalizedItems.map(i => i.item_id),
+    //     content_type: 'product',
+    //     value: totalValue,
+    //     currency: 'TRY'
+    // });
 };
 
 /**
@@ -183,15 +216,26 @@ export const trackPurchase = (orderData) => {
     if (!orderData) return;
 
     const normalizedItems = (orderData.items || []).map(item => normalizeItem(item));
+    const totalValue = Number(orderData.total || orderData.grand_total || 0);
 
+    // GTM
     pushToDataLayer('purchase', {
         transaction_id: String(orderData.id || orderData.order_number || orderData.order_id),
-        value: Number(orderData.total || orderData.grand_total || 0),
+        value: totalValue,
         tax: Number(orderData.tax_total || 0),
         shipping: Number(orderData.shipping_total || 0),
         currency: 'TRY',
         coupon: orderData.coupon || undefined,
         items: normalizedItems
+    });
+
+    // Meta Pixel
+    trackMetaEvent('Purchase', {
+        content_ids: normalizedItems.map(i => i.item_id),
+        content_type: 'product',
+        value: totalValue,
+        currency: 'TRY',
+        num_items: normalizedItems.length
     });
 };
 

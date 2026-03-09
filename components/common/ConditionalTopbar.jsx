@@ -7,9 +7,16 @@ import Topbar from "@/components/headers/Topbar";
 const HIDE_TOPBAR_PATHS = ["/odeme", "/qr-", "/qr", "/kqr", "/3d"];
 const MOBILE_BREAKPOINT_PX = 768;
 
+import { i18n } from "@/config/i18n";
+
 function isProductDetailPage(pathname) {
   const segments = pathname.split("/").filter(Boolean);
-  return segments.length >= 3 && segments[0] === "magaza";
+  if (segments.length === 0) return false;
+
+  // Eğer ilk segment dil prefixi ise onu atla
+  const startIndex = i18n.locales.includes(segments[0]) ? 1 : 0;
+
+  return segments.length >= startIndex + 3 && segments[startIndex] === "magaza";
 }
 
 export default function ConditionalTopbar({ data, isActive }) {
@@ -24,7 +31,13 @@ export default function ConditionalTopbar({ data, isActive }) {
     return () => mql.removeEventListener("change", update);
   }, []);
 
-  const hideByPath = HIDE_TOPBAR_PATHS.some((path) => pathname.startsWith(path));
+  const hideByPath = HIDE_TOPBAR_PATHS.some((path) => {
+    // Prefix varsa onu temizleyip kontrol et
+    const cleanPath = i18n.locales.includes(pathname.split("/").filter(Boolean)[0])
+      ? pathname.replace(/^\/[^\/]+/, "") || "/"
+      : pathname;
+    return cleanPath.startsWith(path);
+  });
   const hideByProductDetail = isProductDetailPage(pathname) && isMobile;
   const hideTopbar = hideByPath || hideByProductDetail;
 

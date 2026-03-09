@@ -8,6 +8,8 @@ import AccountIcon from "@/components/headers/AccountIcon";
 import { getMenus } from "@/api/menus";
 import SimartLogo from "@/components/common/SimartLogo";
 
+import { getLocalizedUrl } from "@/utils/i18n";
+
 export default async function Header({
   textClass,
   bgColor = "",
@@ -15,11 +17,12 @@ export default async function Header({
   isArrow = true,
   Linkfs = "",
   menuItems = [],
+  lang = "tr", // lang prop eklendi
 }) {
   const activeMenuItems =
-    menuItems && menuItems.length > 0 ? menuItems : await getMenus();
+    menuItems && menuItems.length > 0 ? menuItems : await getMenus(lang);
 
-  // Kurumsal menü sıralaması
+  // Kurumsal menü sıralaması... (aynı mantık devam)
   const corporateOrder = [
     "hikayemiz",
     "kilometre-taslari",
@@ -31,14 +34,22 @@ export default async function Header({
   ];
 
   const resolvedMenuItems = activeMenuItems.map((item) => {
-    // İçinde "hikayemiz" geçen alt menü varsa, bu Kurumsal menüsüdür
+    // URL'leri yerelleştir
+    const localizedUrl = getLocalizedUrl(item.url, lang);
+    const localizedChildren = item.children?.map(child => ({
+      ...child,
+      url: getLocalizedUrl(child.url, lang)
+    }));
+
+    // Kurumsal sıralama mantığını koru ama urlleri de güncellemiş olalım
     if (item.children && item.children.some((c) => c.url?.includes("hikayemiz"))) {
-      const sortedChildren = [...item.children].sort((a, b) => {
+      const sortedChildren = [...(localizedChildren || [])].sort((a, b) => {
         const getSlug = (url) => {
           if (!url) return "";
-          // url sonundaki slug'ı al (örn: /kurumsal/hikayemiz -> hikayemiz)
           const parts = url.split("/").filter(Boolean);
-          return parts[parts.length - 1];
+          // Eğer en başta dil prefixi varsa (en/kurumsal/hikayemiz), onu atlayıp slug'ı bul
+          const filteredParts = parts.filter(p => !i18n.locales.includes(p));
+          return filteredParts[filteredParts.length - 1];
         };
 
         const slugA = getSlug(a.url);
@@ -47,16 +58,15 @@ export default async function Header({
         const indexA = corporateOrder.indexOf(slugA);
         const indexB = corporateOrder.indexOf(slugB);
 
-        // Listede olmayanlar en sona
         const valA = indexA === -1 ? 999 : indexA;
         const valB = indexB === -1 ? 999 : indexB;
 
         return valA - valB;
       });
 
-      return { ...item, children: sortedChildren };
+      return { ...item, url: localizedUrl, children: sortedChildren };
     }
-    return item;
+    return { ...item, url: localizedUrl, children: localizedChildren };
   });
 
   return (
@@ -67,6 +77,7 @@ export default async function Header({
       >
         <div className="px_15 lg-px_40">
           <div className="row wrapper-header align-items-center">
+            {/* ... (mobile menu toggle) */}
             <div className="col-md-4 col-3 tf-lg-hidden">
               <a
                 href="#mobileMenu"
@@ -88,7 +99,7 @@ export default async function Header({
               </a>
             </div>
             <div className="col-xl-3 col-md-4 col-6">
-              <Link href={`/`} className="logo-header">
+              <Link href={getLocalizedUrl("/", lang)} className="logo-header">
                 <SimartLogo width="136" height="21" className="logo" />
               </Link>
             </div>
@@ -99,6 +110,7 @@ export default async function Header({
                     isArrow={isArrow}
                     Linkfs={Linkfs}
                     menuItems={resolvedMenuItems}
+                    lang={lang}
                   />
 
                 </ul>
@@ -117,7 +129,7 @@ export default async function Header({
                   </a>
                 </li>
                 <li className="nav-account">
-                  <AccountIcon />
+                  <AccountIcon lang={lang} />
                 </li>
 
                 <li className="nav-cart">
@@ -137,7 +149,7 @@ export default async function Header({
           </div>
         </div>
       </header>
-      <MobileMenu menuItems={resolvedMenuItems} />
+      <MobileMenu menuItems={resolvedMenuItems} lang={lang} />
     </>
   );
 }

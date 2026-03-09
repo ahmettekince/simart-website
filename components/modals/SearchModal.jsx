@@ -5,8 +5,11 @@ import Image from "next/image";
 import Link from "next/link";
 import apiClient from "@/utils/apiClient";
 import StarRating from "@/components/common/StarRating";
+import { useLangStore } from "@/stores/langStore";
+import { getLocalizedUrl } from "@/utils/i18n";
 
 export default function SearchModal() {
+  const { lang } = useLangStore();
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [recommendations, setRecommendations] = useState([]);
@@ -110,12 +113,12 @@ export default function SearchModal() {
   const getProductLink = (product) => {
     // Slug'dan kategori çıkarmaya çalış veya varsayılan kullan
     const categorySlug = product.category?.slug || (product.categories && product.categories.length > 0 ? product.categories[0].slug : "urunler");
-    return `/magaza/${categorySlug}/${product.slug}`;
+    return getLocalizedUrl(`/magaza/${categorySlug}/${product.slug}`, lang);
   };
 
   // Fiyat formatı
   const formatPrice = (price) => {
-    return new Intl.NumberFormat("tr-TR", {
+    return new Intl.NumberFormat(lang === "tr" ? "tr-TR" : lang, {
       minimumFractionDigits: 0,
       maximumFractionDigits: 2,
     }).format(price) + " TL";
@@ -249,12 +252,12 @@ export default function SearchModal() {
                           <div className="tf-search-content-title fw-5">Hızlı Bağlantılar</div>
                           <ul className="tf-quicklink-list">
                             <li className="tf-quicklink-item">
-                              <Link href={`/magaza`} className="">
+                              <Link href={getLocalizedUrl("/magaza", lang)} className="">
                                 Tüm Ürünler
                               </Link>
                             </li>
                             <li className="tf-quicklink-item">
-                              <Link href={`/magaza`} className="">
+                              <Link href={getLocalizedUrl("/magaza", lang)} className="">
                                 Kategoriler
                               </Link>
                             </li>

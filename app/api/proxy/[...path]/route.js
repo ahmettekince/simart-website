@@ -103,8 +103,8 @@ async function handleRequest(request, params, method) {
             headers: {
                 "X-API-Key": apiKey,
                 "Content-Type": isMultipartReq ? reqContentType : "application/json",
-                "X-Signature": signature,
-                "X-Timestamp": timestamp.toString(),
+                //"X-Signature": signature,
+                //"X-Timestamp": timestamp.toString(),
                 "User-Agent": userAgent,
                 "X-Forwarded-For": clientIp,
                 ...(cookieHeader && { "Cookie": cookieHeader }),

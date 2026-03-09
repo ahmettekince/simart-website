@@ -6,12 +6,12 @@ export const metadata = {
   title: "Sepetim - Şımart Teknoloji",
   description: "Sepetim sayfası. Sepetinizdeki ürünleri görüntüleyin ve sipariş verin.",
 };
-export default function page() {
+export default async function page({ params }) {
+  const { lang } = await params;
   return (
     <>
-      <Header />
+      <Header lang={lang} />
       <Cart />
-
     </>
   );
 }

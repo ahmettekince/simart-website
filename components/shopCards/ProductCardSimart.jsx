@@ -9,9 +9,12 @@ import ErrorToast from "@/components/common/ErrorToast";
 import StarRating from "@/components/common/StarRating";
 import CircularLoading from "@/components/common/CircularLoading";
 import { getProductButtonState } from "@/utils/productStock";
+import { getLocalizedUrl } from "@/utils/i18n";
+import { useLangStore } from "@/stores/langStore";
 
 export default function ProductCardSimart({ product, isPriority = false }) {
   const router = useRouter();
+  const { lang } = useLangStore();
   const { addItem } = useCartStore();
   const cartItems = useCartStore((s) => s.items);
   const [isAdding, setIsAdding] = React.useState(false);
@@ -46,7 +49,7 @@ export default function ProductCardSimart({ product, isPriority = false }) {
     return "urunler";
   };
   const categorySlug = getCategorySlug();
-  const detailUrl = `/magaza/${categorySlug}/${productSlug}`;
+  const detailUrl = getLocalizedUrl(`/magaza/${categorySlug}/${productSlug}`, lang);
 
   // Navigasyon Yükleniyor Kontrolü
   const handleNavigate = (e) => {
@@ -171,9 +174,9 @@ export default function ProductCardSimart({ product, isPriority = false }) {
           {!isMuseumItem && buttonText !== "Stokta Yok" && (
             <>
               <span className={`price-new fw-bold ${oldPrice ? "price-discount" : "price-normal"}`}>
-                {finalPrice.toLocaleString("tr-TR")} TL
+                {finalPrice.toLocaleString(lang === "tr" ? "tr-TR" : lang)} TL
               </span>
-              {oldPrice && <span className="price-old">{oldPrice.toLocaleString("tr-TR")} TL</span>}
+              {oldPrice && <span className="price-old">{oldPrice.toLocaleString(lang === "tr" ? "tr-TR" : lang)} TL</span>}
             </>
           )}
         </div>

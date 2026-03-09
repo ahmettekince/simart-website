@@ -1,4 +1,4 @@
-import "../public/scss/main.scss";
+import "@/public/scss/main.scss";
 import "photoswipe/dist/photoswipe.css";
 import "rc-slider/assets/index.css";
 import ClientLayout from "@/components/common/ClientLayout";
@@ -20,17 +20,25 @@ export const metadata = {
   // og, twitter ve itemprop her sayfada ayrı tanımlanacak
 };
 
-export default async function RootLayout({ children }) {
+import { i18n } from "@/config/i18n";
+
+export async function generateStaticParams() {
+  return i18n.locales.map((locale) => ({ lang: locale }));
+}
+
+export default async function RootLayout({ children, params }) {
+  const { lang } = await params;
+
   // Server-side veriler
   const [topbarData, footerMenus] = await Promise.all([
-    getTopbar(),
-    getFooterMenus(),
+    getTopbar(lang),
+    getFooterMenus(lang),
   ]);
 
   const gtmId = siteConfig.site.tracking.gtm;
 
   return (
-    <html lang="tr">
+    <html lang={lang || i18n.defaultLocale}>
       <head>
         {/* Google Consent Mode v2 - Default Deny */}
         <Script
@@ -107,10 +115,10 @@ fbq('track', 'PageView');`,
           </div>
         </div>
         <ConditionalTopbar data={topbarData.data} isActive={topbarData.isActive} />
-        <ClientLayout>
+        <ClientLayout lang={lang}>
           {children}
         </ClientLayout>
-        <ConditionalFooter footerMenus={footerMenus} />
+        <ConditionalFooter footerMenus={footerMenus} lang={lang} />
       </body>
     </html>
   );

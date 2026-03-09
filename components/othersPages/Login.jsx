@@ -4,13 +4,16 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import apiClient from "@/utils/apiClient";
 import { useAuthStore } from "@/stores/authStore";
+import { useLangStore } from "@/stores/langStore";
+import { getLocalizedUrl } from "@/utils/i18n";
 import { siteConfig } from "@/config/site";
 import RecaptchaV3 from "@/components/common/RecaptchaV3";
 
 export default function Login() {
   const router = useRouter();
+  const { lang } = useLangStore();
   const searchParams = useSearchParams();
-  const returnUrl = searchParams.get("returnUrl") || "/";
+  const returnUrl = searchParams.get("returnUrl") || getLocalizedUrl("/", lang);
   const { setAuthenticated } = useAuthStore();
   const executeRecaptchaRef = useRef(null);
   const [loginData, setLoginData] = useState({
@@ -93,7 +96,7 @@ export default function Login() {
         // }
 
         // returnUrl varsa oraya, yoksa ana sayfaya yönlendir
-        window.location.href = returnUrl.startsWith("/") ? returnUrl : "/";
+        window.location.href = returnUrl;
       } else {
         setError(response.data?.message || "Giriş işlemi başarısız oldu.");
       }
@@ -257,7 +260,7 @@ export default function Login() {
                     )}
                   </div>
                   <div className="mb_20">
-                    <Link href="/sifremi-sifirlama" className="tf-btn btn-line">
+                    <Link href={getLocalizedUrl("/sifremi-sifirlama", lang)} className="tf-btn btn-line">
                       Şifrenizi mi unuttunuz?
                     </Link>
                   </div>
@@ -288,7 +291,7 @@ export default function Login() {
             <p className="mb_20">
               Şımart Teknoloji'ye kayıt olun ve erken satış erişimine, yeni gelenler, trendler ve promosyonlara erişin.
             </p>
-            <Link href={`/kayit-ol`} className="tf-btn btn-line">
+            <Link href={getLocalizedUrl("/kayit-ol", lang)} className="tf-btn btn-line">
               Kayıt Ol
               <i className="icon icon-arrow1-top-left" />
             </Link>

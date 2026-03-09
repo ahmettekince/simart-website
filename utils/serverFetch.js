@@ -57,10 +57,10 @@ export async function serverFetch(endpoint, options = {}) {
     const headers = {
         "Content-Type": "application/json",
         "Accept": "application/json",
-        "Accept-Language": "en-US,en;q=0.9",
+        "Accept-Language": options.lang || "tr",
         "X-API-Key": process.env.API_KEY || "",
-        "X-Signature": signature,
-        "X-Timestamp": timestamp.toString(),
+        //"X-Signature": signature,
+        //"X-Timestamp": timestamp.toString(),
         "User-Agent": clientUserAgent,
         "X-Forwarded-For": clientIp,
         ...options.headers,

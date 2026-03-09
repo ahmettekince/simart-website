@@ -6,9 +6,9 @@ import { ProductModel } from "@/models/Product";
 /**
  * Tüm ürünleri veya belirli filtredeki ürünleri getirir.
  */
-export async function getProducts(params = "") {
+export async function getProducts(params = "", lang = "tr") {
     const endpoint = `/products${params ? `?${params}` : ""}`;
-    const response = await serverFetch(endpoint, { next: { revalidate: API_REVALIDATE.PRODUCTS } });
+    const response = await serverFetch(endpoint, { lang, next: { revalidate: API_REVALIDATE.PRODUCTS } });
 
     if (response?.status === "success") {
         return response.data || [];
@@ -24,14 +24,14 @@ export async function getProducts(params = "") {
  * @param {string} categorySlug - Kategori slug'ı (örn: "robotlar")
  * @returns {Promise<Array>} Ürün listesi
  */
-export async function getProductsByCategory(categorySlug) {
+export async function getProductsByCategory(categorySlug, lang = "tr") {
     if (!categorySlug) {
         log("[API products.js] getProductsByCategory: categorySlug is required");
         return [];
     }
 
     const endpoint = `/products/category/${categorySlug}`;
-    const response = await serverFetch(endpoint, { next: { revalidate: API_REVALIDATE.PRODUCTS } });
+    const response = await serverFetch(endpoint, { lang, next: { revalidate: API_REVALIDATE.PRODUCTS } });
 
     if (response?.status === "success") {
         return response.data || [];
@@ -46,14 +46,14 @@ export async function getProductsByCategory(categorySlug) {
  * @param {string} categorySlug - Kategori slug'ı
  * @returns {Promise<{products: Array, category: {name, slug, product_count}|null}>}
  */
-export async function getCategoryWithProducts(categorySlug) {
+export async function getCategoryWithProducts(categorySlug, lang = "tr") {
     if (!categorySlug) {
         log("[API products.js] getCategoryWithProducts: categorySlug is required");
         return { products: [], category: null };
     }
 
     const endpoint = `/products/category/${categorySlug}`;
-    const response = await serverFetch(endpoint, { next: { revalidate: API_REVALIDATE.PRODUCTS } });
+    const response = await serverFetch(endpoint, { lang, next: { revalidate: API_REVALIDATE.PRODUCTS } });
 
     if (response?.status === "success") {
         return {
@@ -71,14 +71,14 @@ export async function getCategoryWithProducts(categorySlug) {
  * @param {string} productSlug - Ürün slug'ı
  * @returns {Promise<Product|null>} Normalize edilmiş ürün objesi veya null
  */
-export async function getProductBySlug(productSlug) {
+export async function getProductBySlug(productSlug, lang = "tr") {
     if (!productSlug) {
         log("[API products.js] getProductBySlug: productSlug is required");
         return null;
     }
 
     const endpoint = `/products/${productSlug}`;
-    const response = await serverFetch(endpoint, { next: { revalidate: API_REVALIDATE.PRODUCTS } });
+    const response = await serverFetch(endpoint, { lang, next: { revalidate: API_REVALIDATE.PRODUCTS } });
 
     if (response?.status === "success" && response.data) {
         try {

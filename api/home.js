@@ -5,12 +5,13 @@ import { API_REVALIDATE } from "@/config/apiConfig";
 /**
  * Tüm kategorileri getirir.
  */
-export async function getCategories() {
+export async function getCategories(lang = "tr") {
     log("[API home.js] getCategories: İstek gönderiliyor - URL: /categories");
 
     const response = await serverFetch("/categories", {
-        next: { revalidate: API_REVALIDATE.HOME }, // Cache'i devre dışı bırak
-        cache: "no-store" // Cache'i tamamen devre dışı bırak
+        lang,
+        next: { revalidate: API_REVALIDATE.HOME },
+        cache: "no-store"
     });
 
     if (response?.status === "success") {
@@ -24,202 +25,118 @@ export async function getCategories() {
 
 /**
  * Anasayfa slider bannerlarını getirir.
- * Cloudflare challenge sorunları için özel retry ayarları kullanılır.
  */
-export async function getBanners() {
+export async function getBanners(lang = "tr") {
     try {
-        // Banner için retry - POST ile body'de type gönder
         const response = await serverFetch("/banners", {
             method: "POST",
             body: { type: "slider" },
+            lang,
             cache: "no-store",
-            retries: 2, // Banner için 2 retry
+            retries: 2,
         });
 
-        // serverFetch hata durumunda null döndürür
         if (!response) {
-            log("[API home.js] getBanners: API response is null (serverFetch returned null)");
+            log("[API home.js] getBanners: API response is null");
             return [];
         }
 
         if (response?.status === "success") {
             const banners = response.data || [];
-            if (banners.length > 0) {
-                log(`[API home.js] getBanners success: ${banners.length} banner(s) loaded`);
-            }
             return banners;
         }
-
-        // API'den error response geldi
-        log("[API home.js] getBanners failed:", {
-            status: response?.status,
-            message: response?.message,
-            hasData: !!response?.data,
-            response: response,
-        });
         return [];
     } catch (error) {
-        log("[API home.js] getBanners exception:", {
-            message: error.message,
-            stack: error.stack,
-        });
+        log("[API home.js] getBanners exception:", error.message);
         return [];
     }
 }
 
 /**
  * Collection banner'ı getirir.
- * @returns {Promise<Object|null>} Collection banner objesi veya null
  */
-export async function getCollectionBanner() {
+export async function getCollectionBanner(lang = "tr") {
     try {
         const response = await serverFetch("/banners", {
             method: "POST",
             body: { type: "collectionbanner" },
+            lang,
             next: { revalidate: API_REVALIDATE.HOME }
         });
 
-        // serverFetch hata durumunda null döndürür
-        if (!response) {
-            log("[API home.js] getCollectionBanner: API response is null (serverFetch returned null)");
-            return null;
-        }
+        if (!response) return null;
 
         if (response?.status === "success" && response.data) {
-            // API'den dizi gelirse ilk elemanı, obje gelirse direkt döndür
             const banner = Array.isArray(response.data) ? response.data[0] : response.data;
-            if (banner) {
-                log(`[API home.js] getCollectionBanner success`);
-                return banner;
-            }
+            return banner;
         }
-
-        // API'den error response geldi
-        log("[API home.js] getCollectionBanner failed:", {
-            status: response?.status,
-            message: response?.message,
-            hasData: !!response?.data,
-            response: response,
-        });
         return null;
     } catch (error) {
-        log("[API home.js] getCollectionBanner exception:", {
-            message: error.message,
-            stack: error.stack,
-        });
         return null;
     }
 }
 
 /**
- * Collections listesini getirir (birden fazla collection banner).
- * @returns {Promise<Array>} Collections array'i
+ * Collections listesini getirir.
  */
-export async function getCollections() {
+export async function getCollections(lang = "tr") {
     try {
         const response = await serverFetch("/banners", {
             method: "POST",
             body: { type: "collections" },
+            lang,
             next: { revalidate: API_REVALIDATE.HOME }
         });
 
-        // serverFetch hata durumunda null döndürür
-        if (!response) {
-            log("[API home.js] getCollections: API response is null (serverFetch returned null)");
-            return [];
-        }
+        if (!response) return [];
 
         if (response?.status === "success") {
-            const collections = Array.isArray(response.data) ? response.data : (response.data ? [response.data] : []);
-            if (collections.length > 0) {
-                log(`[API home.js] getCollections success: ${collections.length} collection(s) loaded`);
-            }
-            return collections;
+            return Array.isArray(response.data) ? response.data : (response.data ? [response.data] : []);
         }
-
-        // API'den error response geldi
-        log("[API home.js] getCollections failed:", {
-            status: response?.status,
-            message: response?.message,
-            hasData: !!response?.data,
-            response: response,
-        });
         return [];
     } catch (error) {
-        log("[API home.js] getCollections exception:", {
-            message: error.message,
-            stack: error.stack,
-        });
         return [];
     }
 }
 
 /**
  * Anasayfa için yorumları getirir.
- * @returns {Promise<Array>} Yorumlar array'i
  */
-export async function getReviews() {
+export async function getReviews(lang = "tr") {
     try {
         const response = await serverFetch("/reviews", {
             method: "GET",
-            next: { revalidate: API_REVALIDATE.REVIEWS } // Config'den cache süresi
+            lang,
+            next: { revalidate: API_REVALIDATE.REVIEWS }
         });
 
-        if (!response) {
-            log("[API home.js] getReviews: API response is null");
-            return [];
-        }
+        if (!response) return [];
 
         if (response?.status === "success") {
-            const reviews = response.data?.reviews || [];
-            if (reviews.length > 0) {
-                log(`[API home.js] getReviews success: ${reviews.length} review(s) loaded`);
-            }
-            return reviews;
+            return response.data?.reviews || [];
         }
-
-        log("[API home.js] getReviews failed:", {
-            status: response?.status,
-            message: response?.message,
-            response: response,
-        });
         return [];
     } catch (error) {
-        log("[API home.js] getReviews exception:", {
-            message: error.message,
-            stack: error.stack,
-        });
         return [];
     }
 }
 
 /**
  * Topbar verilerini getirir.
- * @returns {Promise<Object>} { data: Array, isActive: boolean }
  */
-export async function getTopbar() {
+export async function getTopbar(lang = "tr") {
     const response = await serverFetch("/topbars", {
         method: "POST",
+        lang,
         next: { revalidate: API_REVALIDATE.TOPBAR }
     });
 
     if (response?.status === "success") {
-        const data = response.data || [];
-        const isActive = !!response.is_active;
-
-        if (isActive && data.length > 0) {
-            log(`[API home.js] getTopbar success: ${data.length} topbar item(s) loaded`);
-        }
-
         return {
-            data,
-            isActive
+            data: response.data || [],
+            isActive: !!response.is_active
         };
     }
 
-    log("[API home.js] getTopbar failed:", response);
-    return {
-        data: [],
-        isActive: false
-    };
+    return { data: [], isActive: false };
 }

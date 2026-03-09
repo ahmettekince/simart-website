@@ -8,8 +8,8 @@ import { notFound } from "next/navigation";
  * Dinamik metadata oluşturma
  */
 export async function generateMetadata({ params }) {
-  const { kategori } = await params;
-  const { products, category } = await getCategoryWithProducts(kategori);
+  const { kategori, lang } = await params;
+  const { products, category } = await getCategoryWithProducts(kategori, lang);
 
   if (!category) {
     return {
@@ -34,7 +34,7 @@ export async function generateMetadata({ params }) {
  * URL: /magaza/[kategori]
  */
 export default async function KategoriPage({ params }) {
-  const { kategori } = await params;
+  const { kategori, lang } = await params;
 
   if (!kategori) {
     notFound();
@@ -42,8 +42,8 @@ export default async function KategoriPage({ params }) {
 
   // Kategori bilgisi ve ürünleri (API'den category objesi gelir)
   const [{ products, category }, categories] = await Promise.all([
-    getCategoryWithProducts(kategori),
-    getCategories(),
+    getCategoryWithProducts(kategori, lang),
+    getCategories(lang),
   ]);
 
   // Eğer kategori objesi gelmediyse (API'de öyle bir kategori yoksa) 404 fırlat
@@ -56,7 +56,7 @@ export default async function KategoriPage({ params }) {
 
   return (
     <main className="magaza-page">
-      <Header />
+      <Header lang={lang} />
 
       {/* Sayfa Başlığı */}
       <div className="tf-page-title">
