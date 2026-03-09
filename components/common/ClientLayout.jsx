@@ -140,10 +140,10 @@ export default function ClientLayout({ children }) {
         return () => document.body.classList.remove("product-detail-page");
     }, [pathname]);
 
-    // Ödeme sayfasında alt navbar gizle
+    // Ödeme sayfasında ve 3D sayfasında alt navbar gizle
     useEffect(() => {
-        const isOdemePage = pathname === "/odeme";
-        if (isOdemePage) {
+        const isHideToolbarPage = pathname === "/odeme" || pathname === "/3d";
+        if (isHideToolbarPage) {
             document.body.classList.add("odeme-page");
         } else {
             document.body.classList.remove("odeme-page");

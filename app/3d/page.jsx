@@ -1,8 +1,7 @@
 "use client";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Line, ContactShadows, Html, Text } from "@react-three/drei";
+import { OrbitControls, Line, ContactShadows, Text } from "@react-three/drei";
 import { useState, useRef, useMemo, Suspense, useEffect } from "react";
-import { useThree } from "@react-three/fiber";
 import * as THREE from "three";
 
 function ForbiddenZone({ position, size }) {
@@ -850,6 +849,13 @@ export default function Plan3D() {
     return (
         <div style={{ width: "100%", minHeight: "100vh", display: "flex", flexDirection: isMobile ? "column" : "row", background: "#fdfdfd", color: "#2d3436", fontFamily: "'Gilroy-Bold', sans-serif", overflow: isMobile ? "auto" : "hidden" }}>
 
+            <style>{`
+                @keyframes pulseGlow {
+                    0% { border-color: #e0e0e0; box-shadow: 0 0 0px rgba(60, 129, 181, 0); }
+                    50% { border-color: #3c81b5; box-shadow: 0 0 12px rgba(60, 129, 181, 0.4); }
+                    100% { border-color: #e0e0e0; box-shadow: 0 0 0px rgba(60, 129, 181, 0); }
+                }
+            `}</style>
             {/* ÜST/SOL PANEL - KURUMSAL SORU ALANI */}
             <div style={{
                 width: isMobile ? "100%" : "420px",
@@ -859,17 +865,17 @@ export default function Plan3D() {
                 borderBottom: isMobile ? "1px solid #eee" : "none",
                 display: "flex",
                 flexDirection: "column",
-                padding: isMobile ? "30px 20px" : "50px 40px",
+                padding: isMobile ? "5px 20px" : "50px 40px",
                 zIndex: 10,
                 boxShadow: "10px 0 30px rgba(0,0,0,0.02)"
             }}>
-                <h1 style={{ fontSize: isMobile ? "20px" : "26px", fontWeight: "800", marginBottom: isMobile ? "20px" : "40px", lineHeight: "1.3", color: "#1a1a1a" }}>
+                <h1 style={{ fontSize: isMobile ? "20px" : "26px", fontWeight: "800", marginBottom: isMobile ? "15px" : "40px", lineHeight: "1.3", color: "#1a1a1a" }}>
                     Size Uygun Robot Süpürgeyi Seçelim
                 </h1>
 
                 {/* SORU 1: EV TİPİ */}
-                <div style={{ marginBottom: isMobile ? "20px" : "35px" }}>
-                    <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: "12px", fontWeight: "700" }}>Eviniz kaç odalı?</p>
+                <div style={{ marginBottom: isMobile ? "12px" : "35px" }}>
+                    <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: isMobile ? "6px" : "12px", fontWeight: "700" }}>Eviniz kaç odalı?</p>
                     <div style={{
                         display: "flex",
                         gap: "10px",
@@ -899,8 +905,8 @@ export default function Plan3D() {
                 </div>
 
                 {/* SORU 2: METREKARE */}
-                <div style={{ marginBottom: isMobile ? "20px" : "35px" }}>
-                    <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: "12px", fontWeight: "700" }}>Metrekare Bilgisi</p>
+                <div style={{ marginBottom: isMobile ? "12px" : "35px" }}>
+                    <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: isMobile ? "6px" : "12px", fontWeight: "700" }}>Eviniz Kaç Metrekare?</p>
                     <select
                         value={metrekare || ""}
                         onChange={(e) => setMetrekare(e.target.value)}
@@ -910,6 +916,7 @@ export default function Plan3D() {
                             borderRadius: "10px",
                             background: "#f8f9fa",
                             border: metrekare ? "2.5px solid #3c81b5" : "1px solid #e0e0e0",
+                            animation: (!metrekare && !isAuto) ? "pulseGlow 2s infinite ease-in-out" : "none",
                             color: "#2d3436",
                             fontSize: isMobile ? "13px" : "15px",
                             fontWeight: "600",
@@ -926,8 +933,8 @@ export default function Plan3D() {
                 </div>
 
                 {/* SORU 3: EVCİL HAYVAN */}
-                <div style={{ marginBottom: isMobile ? "30px" : "40px" }}>
-                    <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: "12px", fontWeight: "700" }}>Evcil Hayvanınız Var mı?</p>
+                <div style={{ marginBottom: isMobile ? "15px" : "40px" }}>
+                    <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: isMobile ? "6px" : "12px", fontWeight: "700" }}>Evcil Hayvanınız Var mı?</p>
                     <div style={{ display: "flex", gap: "10px" }}>
                         {[true, false].map(v => (
                             <button
@@ -945,6 +952,7 @@ export default function Plan3D() {
                                     padding: isMobile ? "10px" : "14px",
                                     borderRadius: "10px",
                                     border: pet === v ? "2.5px solid #3c81b5" : "1px solid #e0e0e0",
+                                    animation: (metrekare && pet === null && !isAuto) ? "pulseGlow 2s infinite ease-in-out" : "none",
                                     background: pet === v ? "#3c81b5" : "#fff",
                                     color: pet === v ? "#fff" : "#2d3436",
                                     cursor: metrekare ? "pointer" : "not-allowed",
@@ -976,7 +984,7 @@ export default function Plan3D() {
                         enablePan={false}
                         maxPolarAngle={Math.PI / 3}
                         minDistance={8}
-                        maxDistance={45}
+                        maxDistance={33}
                         makeDefault
                     />
                 </Canvas>
