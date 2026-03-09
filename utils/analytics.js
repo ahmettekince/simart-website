@@ -231,11 +231,8 @@ export const trackPurchase = (orderData) => {
 
     // Meta Pixel
     trackMetaEvent('Purchase', {
-        content_ids: normalizedItems.map(i => i.item_id),
-        content_type: 'product',
         value: totalValue,
         currency: 'TRY',
-        num_items: normalizedItems.length
     });
 };
 
