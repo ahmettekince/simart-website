@@ -41,7 +41,7 @@ export default async function RootLayout({ children, params }) {
   const gtmId = siteConfig.site.tracking.gtm;
 
   return (
-    <html lang={lang || i18n.defaultLocale}>
+    <html lang={lang || i18n.defaultLocale} data-scroll-behavior="smooth">
       <head>
         {/* Google Consent Mode v2 - Default Deny */}
         <Script

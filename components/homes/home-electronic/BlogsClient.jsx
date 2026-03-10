@@ -53,7 +53,7 @@ export default function BlogsClient({ blogs = [] }) {
                                         suppressHydrationWarning
                                     >
                                         <div className="article-thumb" style={{ position: 'relative', aspectRatio: '550/354', overflow: 'hidden' }}>
-                                            <Link href={`/${slug}`}>
+                                            <Link href={`/${slug}`} style={{ display: 'block', position: 'relative', width: '100%', height: '100%' }}>
                                                 <Image
                                                     className="lazyload"
                                                     alt={article.title || article.name}

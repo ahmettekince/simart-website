@@ -87,6 +87,7 @@ export default function Footer({ bgColor = "", footerMenus = null, lang = "tr" }
                         src="/images/logo/logo.svg"
                         width={136}
                         height={21}
+                        style={{ height: 'auto' }}
                         loading="lazy"
                         fetchPriority="low"
                         unoptimized
@@ -248,6 +249,7 @@ export default function Footer({ bgColor = "", footerMenus = null, lang = "tr" }
                         alt="ETBİS"
                         width={70}
                         height={81}
+                        style={{ height: 'auto' }}
                         loading="lazy"
                       />
                     </a>
