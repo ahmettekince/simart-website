@@ -2,7 +2,7 @@ import { getPageBySlug } from "@/api/pages"
 import { notFound } from "next/navigation";
 import { getQrCard } from "@/api/qr";
 import { getMenus, getFooterMenus } from "@/api/menus";
-import Header from "@/components/headers/Header";
+
 import { webPageSchema } from "@/lib/schema";
 import { siteConfig } from "@/config/site";
 import DynamicPageContent from "@/components/common/DynamicPageContent";
@@ -132,8 +132,6 @@ export default async function DynamicPage({ params }) {
         suppressHydrationWarning
         dangerouslySetInnerHTML={{ __html: JSON.stringify(pageJsonLd) }}
       />
-      <Header />
-
       {/* Sayfa Başlığı */}
       {!page.image?.url && page.title && (
         <div className="tf-page-title">

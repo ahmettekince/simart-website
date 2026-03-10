@@ -362,7 +362,6 @@ export default function SmartStickyBar({
 
         .ss-price-row {
           display: flex;
-          gap: 8px;
         }
 
         .ss-current-price {

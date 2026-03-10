@@ -1,4 +1,4 @@
-import Header from "@/components/headers/Header";
+
 import DashboardNav from "@/components/othersPages/dashboard/DashboardNav";
 import Orders from "@/components/othersPages/dashboard/Orders";
 import React from "react";
@@ -22,7 +22,6 @@ export default async function page({ params }) {
 
   return (
     <>
-      <Header lang={lang} />
       <section className="flat-spacing-11">
         <div className="container">
           <div className="row">

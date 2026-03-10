@@ -1,4 +1,4 @@
-import Header from "@/components/headers/Header"
+
 import { AboutLayout } from "@/components/about/about-layout"
 import { ContentSection } from "@/components/about/content-section"
 
@@ -58,7 +58,6 @@ const sectionData = {
 export default function NeYapiyoruzPage() {
     return (
         <>
-            <Header />
             <AboutLayout currentSectionId="neler-yapiyoruz">
                 {/* Section Title */}
                 <div className="mb-4">

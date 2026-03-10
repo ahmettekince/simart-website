@@ -1,4 +1,4 @@
-import Header from "@/components/headers/Header"
+
 import { AboutLayout } from "@/components/about/about-layout"
 import { CareerSection } from "@/components/about/career-section"
 
@@ -49,7 +49,6 @@ const careerFAQs = [
 export default function KariyerPage() {
     return (
         <>
-            <Header />
             <AboutLayout currentSectionId="kariyer">
                 {/* Section Title */}
                 <div className="mb-4">

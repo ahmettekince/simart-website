@@ -1,4 +1,4 @@
-import Header from "@/components/headers/Header";
+
 import DashboardNav from "@/components/othersPages/dashboard/DashboardNav";
 import Coupons from "@/components/othersPages/dashboard/Coupons";
 import React from "react";
@@ -20,8 +20,6 @@ export default async function page() {
 
   return (
     <>
-      <Header />
-
       <section className="flat-spacing-11">
         <div className="container">
           <div className="row">

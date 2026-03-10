@@ -1,4 +1,4 @@
-import Header from "@/components/headers/Header";
+
 import PaymentFailure from "@/components/othersPages/PaymentFailure";
 import React from "react";
 
@@ -9,7 +9,6 @@ export const metadata = {
 export default function page() {
   return (
     <>
-      <Header />
       <div className="tf-page-title">
         <div className="container-full">
           <div className="heading text-center">Ödeme Başarısız</div>

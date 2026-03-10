@@ -1,6 +1,6 @@
 import React from "react";
 import SupportForm from "@/components/support/SupportForm";
-import Header from "@/components/headers/Header";
+
 import SssPageContent from "@/components/othersPages/faq/SssPageContent";
 import { getCategories } from "@/api/home";
 import { getCategoryWithProducts } from "@/api/products";
@@ -40,7 +40,6 @@ export default async function SupportPage() {
         suppressHydrationWarning
         dangerouslySetInnerHTML={{ __html: JSON.stringify(supportJsonLd) }}
       />
-      <Header />
       <main className="support-page-main">
         {/* Mobilde form üstte, desktopta altta */}
         <section className="support-page-layout flat-spacing-11">

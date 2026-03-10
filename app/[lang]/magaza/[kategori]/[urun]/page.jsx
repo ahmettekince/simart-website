@@ -1,4 +1,4 @@
-import Header from "@/components/headers/Header";
+
 import Detail from "@/components/shopDetails/Detail";
 import Products from "@/components/shopDetails/Products";
 import ShopDetailsTab from "@/components/shopDetails/ShopDetailsTab";
@@ -174,7 +174,6 @@ export default async function page({ params }) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <ProductDetailHit productSlug={urun} />
-      <Header lang={lang} />
       <div className="tf-breadcrumb">
         <div className="container">
           <div className="tf-breadcrumb-wrap d-flex justify-content-between flex-wrap align-items-center">
@@ -185,10 +184,10 @@ export default async function page({ params }) {
       </div>
       <Detail product={product} />
 
-      {/* Detaylı Açıklama - Sekmelerden ayrıldı (re-render performans sorunu için) */}
+      {/* Detaylı Açıklama Alanı */}
       <ProductDescription product={product} />
 
-      {/* Birlikte Al - Sadece mobilde Açıklama ve Sekmeler arasında */}
+      {/* Birlikte Al - Mobilde Açıklama ve Sekmeler arasında */}
       {allVariations.length > 0 && (
         <div className="container d-md-none" style={{ marginTop: 0, marginBottom: 24 }}>
           <BirlikteAlNew

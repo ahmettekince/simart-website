@@ -1,6 +1,6 @@
 
 import React from "react";
-import Header from "@/components/headers/Header";
+
 import OrderTrackingForm from "./OrderTrackingForm";
 
 export const metadata = {
@@ -11,7 +11,6 @@ export const metadata = {
 export default function OrderTracking() {
     return (
         <>
-            <Header />
             <OrderTrackingForm />
         </>
     );

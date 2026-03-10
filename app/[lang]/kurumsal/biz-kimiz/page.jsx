@@ -1,4 +1,4 @@
-import Header from "@/components/headers/Header"
+
 import { AboutLayout } from "@/components/about/about-layout"
 import { VideoSection } from "@/components/about/video-section"
 import { ContentSection } from "@/components/about/content-section"
@@ -62,7 +62,6 @@ export default function BizKimizPage() {
                 suppressHydrationWarning
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
             />
-            <Header />
             <AboutLayout currentSectionId="biz-kimiz">
                 {/* Video Section */}
                 <section className="mb-4">

@@ -1,4 +1,4 @@
-import Header from "@/components/headers/Header";
+
 import Login from "@/components/othersPages/Login";
 import React from "react";
 import { checkAuthServer } from "@/utils/authServer";
@@ -84,7 +84,6 @@ export default async function page() {
           }),
         }}
       />
-      <Header />
       <Login />
     </>
   );

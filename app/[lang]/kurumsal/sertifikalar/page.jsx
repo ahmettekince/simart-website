@@ -1,4 +1,4 @@
-import Header from "@/components/headers/Header"
+
 import { AboutLayout } from "@/components/about/about-layout"
 import { CertificatesSection } from "@/components/about/certificates-section"
 import { getCertificates } from "@/api/certificates";
@@ -37,7 +37,6 @@ export default async function SertifikalarPage() {
 
     return (
         <>
-            <Header />
             <AboutLayout currentSectionId="sertifikalar">
                 {/* Section Title */}
                 <div className="mb-4">

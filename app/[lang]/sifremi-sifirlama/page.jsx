@@ -1,4 +1,4 @@
-import Header from "@/components/headers/Header";
+
 import ForgotPassword from "@/components/othersPages/ForgotPassword";
 import React from "react";
 import { checkAuthServer } from "@/utils/authServer";
@@ -82,7 +82,6 @@ export default async function page() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(webPageSchema) }}
       />
-      <Header />
       <ForgotPassword />
     </>
   );

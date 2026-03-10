@@ -1,4 +1,4 @@
-import Header from "@/components/headers/Header";
+
 import SssPageContent from "@/components/othersPages/faq/SssPageContent";
 import { getCategories } from "@/api/home";
 import { getCategoryWithProducts } from "@/api/products";
@@ -24,7 +24,6 @@ export default async function SssPage() {
 
   return (
     <>
-      <Header />
       <section className="flat-spacing-11">
         <div className="container">
           <SssPageContent

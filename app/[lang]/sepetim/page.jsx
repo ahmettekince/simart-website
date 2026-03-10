@@ -1,4 +1,4 @@
-import Header from "@/components/headers/Header";
+
 import Cart from "@/components/othersPages/Cart";
 import React from "react";
 
@@ -10,7 +10,6 @@ export default async function page({ params }) {
   const { lang } = await params;
   return (
     <>
-      <Header lang={lang} />
       <Cart />
     </>
   );

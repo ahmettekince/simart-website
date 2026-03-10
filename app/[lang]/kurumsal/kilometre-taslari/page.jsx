@@ -1,6 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import Header from "@/components/headers/Header";
+
 import { getTimeline } from "@/api/timeline";
 import { AboutLayout } from "@/components/about/about-layout";
 import { VideoSection } from "@/components/about/video-section";
@@ -22,7 +22,6 @@ export default async function KilometreTaslariPage() {
 
   return (
     <>
-      <Header />
       <AboutLayout currentSectionId="kilometre-taslari">
         {/* Section Title */}
         <div className="mb-4">

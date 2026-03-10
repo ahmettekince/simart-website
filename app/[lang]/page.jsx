@@ -1,4 +1,4 @@
-import Header from "@/components/headers/Header";
+
 import Hero from "@/components/homes/home-electronic/Hero";
 import nextDynamic from "next/dynamic";
 
@@ -73,7 +73,6 @@ export default async function Home({ params }) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
       />
       <div className="color-primary-15">
-        <Header textClass={"text-black"} menuItems={menuItems} lang={lang} />
         <Hero banners={banners} />
         <Categories />
         <CollectionBanner banner={collectionBanner} />

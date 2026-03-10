@@ -1,11 +1,9 @@
 import { Suspense } from "react";
 import PaymentResultContent from "@/components/othersPages/PaymentResultContent";
-import Header from "@/components/headers/Header";
 
 export default function PaymentResultPage() {
   return (
     <>
-      <Header />
       <Suspense fallback={
         <div className="container" style={{ textAlign: "center", padding: "100px 0" }}>
           <div className="spinner-border text-primary" role="status">

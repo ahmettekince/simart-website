@@ -1,4 +1,4 @@
-import Header from "@/components/headers/Header";
+
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
@@ -9,7 +9,6 @@ export const metadata = {
 export default function notFound() {
   return (
     <>
-      <Header />
       <section className="page-404-wrap">
         <div className="container">
           <div className="row">

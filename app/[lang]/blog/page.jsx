@@ -1,5 +1,5 @@
 import BlogGrid from "@/components/blogs/BlogGrid";
-import Header from "@/components/headers/Header";
+
 import React from "react";
 import Link from "next/link";
 import { getBlogs } from "@/api/blogs";
@@ -31,7 +31,6 @@ export default async function page() {
         suppressHydrationWarning
         dangerouslySetInnerHTML={{ __html: JSON.stringify(blogJsonLd) }}
       />
-      <Header />
       <div className="tf-page-title">
         <div className="container-full">
           <div className="row">

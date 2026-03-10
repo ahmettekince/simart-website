@@ -1,4 +1,4 @@
-import Header from "@/components/headers/Header"
+
 import { AboutLayout } from "@/components/about/about-layout"
 import { PressSection } from "@/components/about/press-section"
 import { webPageSchema } from "@/lib/schema"
@@ -51,7 +51,6 @@ export default async function BasindaBizPage() {
                 suppressHydrationWarning
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(pageJsonLd) }}
             />
-            <Header />
             <AboutLayout currentSectionId="basinda-biz">
                 {/* Section Title */}
                 <div className="mb-4">

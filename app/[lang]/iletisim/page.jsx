@@ -1,5 +1,5 @@
 import Footer from "@/components/footers/Footer";
-import Header from "@/components/headers/Header";
+
 import ContactForm from "@/components/contact/ContactForm";
 import Map from "@/components/contact/Map";
 import React from "react";
@@ -11,7 +11,6 @@ export const metadata = {
 export default function Contact() {
     return (
         <>
-            <Header />
             <ContactForm />
             <Map />
         </>

@@ -1,4 +1,4 @@
-import Header from "@/components/headers/Header";
+
 import ResetPassword from "@/components/othersPages/ResetPassword";
 import React from "react";
 import { checkAuthServer } from "@/utils/authServer";
@@ -25,7 +25,6 @@ export default async function page({ params }) {
 
     return (
         <>
-            <Header />
             <div className="tf-page-title style-2">
                 <div className="container-full">
                     <div className="heading text-center">Şifre Sıfırlama</div>

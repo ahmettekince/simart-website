@@ -5,9 +5,11 @@ import ClientLayout from "@/components/common/ClientLayout";
 
 //Api İstekleri
 import { getTopbar } from "@/api/home";
-import { getFooterMenus } from "@/api/menus";
+import { getFooterMenus, getMenus } from "@/api/menus";
 import ConditionalFooter from "@/components/common/ConditionalFooter";
 import ConditionalTopbar from "@/components/common/ConditionalTopbar";
+import ConditionalHeader from "@/components/common/ConditionalHeader";
+import Header from "@/components/headers/Header";
 import { siteConfig } from "@/config/site";
 import Script from "next/script";
 
@@ -30,9 +32,10 @@ export default async function RootLayout({ children, params }) {
   const { lang } = await params;
 
   // Server-side veriler
-  const [topbarData, footerMenus] = await Promise.all([
+  const [topbarData, footerMenus, menuItems] = await Promise.all([
     getTopbar(lang),
     getFooterMenus(lang),
+    getMenus(lang),
   ]);
 
   const gtmId = siteConfig.site.tracking.gtm;
@@ -115,6 +118,9 @@ fbq('track', 'PageView');`,
           </div>
         </div>
         <ConditionalTopbar data={topbarData.data} isActive={topbarData.isActive} />
+        <ConditionalHeader>
+          <Header lang={lang} menuItems={menuItems} />
+        </ConditionalHeader>
         <ClientLayout lang={lang}>
           {children}
         </ClientLayout>

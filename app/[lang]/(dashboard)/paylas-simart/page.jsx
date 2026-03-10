@@ -1,7 +1,7 @@
 import DashboardNav from "@/components/othersPages/dashboard/DashboardNav";
 import { checkAuthServer } from "@/utils/authServer";
 import { redirect } from "next/navigation";
-import Header from "@/components/headers/Header";
+
 import AffiliateSection from "@/components/othersPages/dashboard/AffiliateSection";
 
 export const metadata = {
@@ -17,7 +17,6 @@ export default async function PaylasSimartPage() {
 
   return (
     <>
-      <Header />
       <section className="flat-spacing-11">
         <div className="container">
           <div className="row">

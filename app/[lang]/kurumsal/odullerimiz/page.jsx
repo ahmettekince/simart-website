@@ -1,4 +1,4 @@
-import Header from "@/components/headers/Header"
+
 import { AboutLayout } from "@/components/about/about-layout"
 import { AwardsSection } from "@/components/about/awards-section"
 
@@ -48,7 +48,6 @@ const awardsData = [
 export default function OdullerimizPage() {
     return (
         <>
-            <Header />
             <AboutLayout currentSectionId="odullerimiz">
                 {/* Section Title */}
                 <div className="mb-4">

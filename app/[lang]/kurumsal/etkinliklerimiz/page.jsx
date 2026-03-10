@@ -1,4 +1,4 @@
-import Header from "@/components/headers/Header"
+
 import { AboutLayout } from "@/components/about/about-layout"
 import { EventsSection } from "@/components/about/events-section"
 import { getEvents } from "@/api/events";
@@ -37,7 +37,6 @@ export default async function EtkinliklerimizPage() {
 
     return (
         <>
-            <Header />
             <AboutLayout currentSectionId="etkinliklerimiz">
                 {/* Section Title */}
                 <div className="mb-4">

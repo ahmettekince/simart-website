@@ -1,4 +1,4 @@
-import Header from "@/components/headers/Header";
+
 import AccountEdit from "@/components/othersPages/dashboard/AccountEdit";
 import AccountProfileSection from "@/components/othersPages/dashboard/AccountProfileSection";
 import DashboardNav from "@/components/othersPages/dashboard/DashboardNav";
@@ -20,8 +20,6 @@ export default async function page() {
 
   return (
     <>
-      <Header />
-
       <section className="flat-spacing-11">
         <div className="container">
           <div className="row">

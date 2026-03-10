@@ -1,4 +1,4 @@
-import Header from "@/components/headers/Header";
+
 import MagazaDisplay from "@/components/shop/MagazaDisplay";
 import { getProducts } from "@/api/products";
 import { getCategories } from "@/api/home";
@@ -22,8 +22,6 @@ export default async function MagazaPage() {
 
   return (
     <main className="magaza-page">
-      <Header />
-
       {/* Sayfa Başlığı */}
       <div className="tf-page-title">
         <div className="container-full">
