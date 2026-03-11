@@ -41,7 +41,7 @@ export default function Nav({ isArrow = true, textColor = "", Linkfs = "", menuI
   return (
     <>
       {menuItems.map((item, index) => (
-        <li key={index} className="menu-item position-relative">
+        <li key={`${index}-${pathname}`} className="menu-item position-relative">
           <Link
             href={item.url || "#"}
             target={item.target || "_self"}
@@ -53,7 +53,9 @@ export default function Nav({ isArrow = true, textColor = "", Linkfs = "", menuI
           </Link>
 
           {item.children?.length > 0 && (
-            <div className="sub-menu submenu-default">
+            <div
+              className="sub-menu submenu-default"
+            >
               <ul className="menu-list">
                 {item.children.map((subItem, subIndex) => (
                   <li key={subIndex} className={subItem.children?.length > 0 ? "menu-item-2" : ""}>
@@ -66,7 +68,9 @@ export default function Nav({ isArrow = true, textColor = "", Linkfs = "", menuI
                       {subItem.title}
                     </Link>
                     {subItem.children?.length > 0 && (
-                      <div className="sub-menu submenu-default">
+                      <div
+                        className="sub-menu submenu-default"
+                      >
                         <ul className="menu-list">
                           {subItem.children.map((subItem2, subIndex2) => (
                             <li key={subIndex2}>
