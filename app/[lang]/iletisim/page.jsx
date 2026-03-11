@@ -1,5 +1,3 @@
-import Footer from "@/components/footers/Footer";
-
 import ContactForm from "@/components/contact/ContactForm";
 import Map from "@/components/contact/Map";
 import React from "react";
