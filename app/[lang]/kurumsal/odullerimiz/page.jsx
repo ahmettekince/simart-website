@@ -60,6 +60,10 @@ export default function OdullerimizPage() {
                         paddingBottom: '8px',
                         textTransform: 'uppercase',
                         marginBottom: '24px',
+                        whiteSpace: 'nowrap',
+                        maxWidth: '100%',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
                     }}>
                         ÖDÜLLERİMİZ
                     </h1>

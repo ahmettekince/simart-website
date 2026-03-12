@@ -64,7 +64,7 @@ export function AwardsSection({ awards = [] }) {
                         <div className="col-lg-6">
                             <div className="award-content-wrapper" style={{
                                 position: 'relative',
-                                padding: '40px',
+                                padding: '15px',
                                 minHeight: '400px',
                                 display: 'flex',
                                 flexDirection: 'column',
@@ -111,7 +111,7 @@ export function AwardsSection({ awards = [] }) {
                                 }}>
                                     {award.title && (
                                         <h2 style={{
-                                            fontSize: '28px',
+                                            fontSize: '21px',
                                             fontWeight: 'bold',
                                             color: 'var(--primary, #3c81b5)',
                                             marginBottom: '20px',
