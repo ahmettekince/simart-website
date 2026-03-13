@@ -19,7 +19,7 @@ export default function AppStoreButtons() {
                         </svg>
                     </div>
                     <div className="app-text">
-                        <span className="app-sub">App Store'dan</span>
+                        <span className="app-sub">App Store</span>
                         <span className="app-name">'dan indirin</span>
                     </div>
                 </a>
