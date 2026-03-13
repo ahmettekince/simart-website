@@ -1,8 +1,12 @@
 "use client";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Line, ContactShadows, Text } from "@react-three/drei";
+import { OrbitControls, Line, ContactShadows, Text, useTexture } from "@react-three/drei";
 import { useState, useRef, useMemo, Suspense, useEffect } from "react";
 import * as THREE from "three";
+
+//components
+import Robot from "./components/Robot";
+import Station from "./components/Station";
 
 function ForbiddenZone({ position, size }) {
     const meshRef = useRef();
@@ -59,14 +63,23 @@ function VirtualWall({ p1, p2 }) {
 }
 
 
-const wallMat = <meshStandardMaterial color="#f4f3ef" roughness={0.6} metalness={0.1} />;
+function WallMaterial() {
+    const tex = useTexture('/images/3d/wallpaper.jpg');
+    if (tex) {
+        tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+        tex.repeat.set(4, 2); // Duvar boyutuna göre ayarlanabilir
+    }
+
+    return <meshStandardMaterial map={tex} roughness={0.8} metalness={0.0} />;
+}
 const floorMat = <meshStandardMaterial color="#d8cfbf" roughness={0.2} metalness={0.15} />;
 
 function Wall({ w, h, t, x, z }) {
     const bbH = 0.12, bbT = 0.04;
     return <group position={[x, 0, z]}>
         <mesh position={[0, h / 2, 0]}>
-            <boxGeometry args={[w, h, t]} />{wallMat}
+            <boxGeometry args={[w, h, t]} />
+            <WallMaterial />
         </mesh>
         <mesh position={[0, bbH / 2, (t / 2) + (bbT / 2)]}>
             <boxGeometry args={[w, bbH, bbT]} />
@@ -79,6 +92,46 @@ function Wall({ w, h, t, x, z }) {
     </group>;
 }
 
+const ROBOTS = [
+    {
+        id: "katya-v-akilli-robot-supurge",
+        name: "Katya V Akilli Robot Supurge",
+        slug: "katya-v-akilli-robot-supurge",
+        image: "/images/3d/robot.webp",
+        coupon: "SIMART10",
+        price: "12.999 TL",
+        features: { station: "hayir", area: "small", pet: false, carpet: "Az" }
+    },
+    {
+        id: "katya-v-plus-akilli-robot-supurge",
+        name: "katya V+ Akilli Robot Supurge",
+        slug: "katya-v-plus-akilli-robot-supurge",
+        image: "/images/3d/robot.webp",
+        coupon: "STATION20",
+        price: "18.499 TL",
+        features: { station: "toz", area: "medium", pet: false, carpet: "Orta" }
+    },
+    {
+        id: "katya-p-akilli-robot-supurge",
+        name: "katya P Akıllı Robot Süpürge",
+        slug: "katya-p-akilli-robot-supurge",
+        image: "/images/3d/robot.webp",
+        coupon: "AERO15",
+        price: "14.999 TL",
+        features: { station: "hayir", area: "medium", pet: true, carpet: "Orta" }
+    },
+    {
+        id: "katya-z-akilli-robot-supurge",
+        name: "katya Z Akıllı Robot Süpürge",
+        slug: "katyaz-akilli-robot-supurge",
+        image: "/images/3d/robot.webp",
+        coupon: "ULTRA25",
+        price: "25.999 TL",
+        features: { station: "toz", area: "large", pet: true, carpet: "Yoğun" }
+    }
+
+];
+
 function Floor({ w, z, x, zPos, color, opacity = 0.35 }) {
     return (
         <mesh position={[x, 0.015, zPos]}>
@@ -88,145 +141,47 @@ function Floor({ w, z, x, zPos, color, opacity = 0.35 }) {
     );
 }
 
-function Station() {
-    return <group position={[0, 0, -4.7]}>
-        {/* TABAN PLAKASI (Z-Fighting Fix: Zeminden hafif yukarıda) */}
-        <mesh position={[0, 0.03, 0.3]}>
-            <boxGeometry args={[0.8, 0.04, 0.9]} />
-            <meshStandardMaterial color="#222" roughness={0.4} metalness={0.1} />
-        </mesh>
 
-        {/* ANA KULE (Gövde) */}
-        <mesh position={[0, 0.5, -0.1]}>
-            <boxGeometry args={[0.7, 1.0, 0.5]} />
-            <meshStandardMaterial color="#1a1a1a" roughness={0.4} />
-        </mesh>
-
-        {/* ÜST KAPAK (Lid) */}
-        <mesh position={[0, 1.05, -0.1]}>
-            <boxGeometry args={[0.72, 0.1, 0.52]} />
-            <meshStandardMaterial color="#222" metalness={0.5} roughness={0.2} />
-        </mesh>
-
-        {/* ÖN PANEL DETAYI (Dokulu Bölüm) */}
-        <mesh position={[0, 0.45, 0.155]}>
-            <boxGeometry args={[0.62, 0.7, 0.01]} />
-            <meshStandardMaterial color="#111" roughness={1} />
-        </mesh>
-
-        {/* LOGO / GÖSTERGE IŞIĞI */}
-        <mesh position={[0, 0.1, 0.16]}>
-            <sphereGeometry args={[0.02, 8, 8]} />
-            <meshStandardMaterial color="#00ff00" emissive="#00ff00" emissiveIntensity={0.5} />
-        </mesh>
-    </group>;
-}
 
 function Lintel({ x, z, w, t, h, doorH = 2.15 }) {
     const wallH = h - doorH;
     return <mesh position={[x, doorH + wallH / 2, z]}>
         <boxGeometry args={[w, wallH, t]} />
-        {wallMat}
+        <WallMaterial />
     </mesh>;
 }
 
-function Robot({ posRef, rotRef }) {
-    const g = useRef();
-    const brushRefL = useRef();
-    const brushRefR = useRef();
-
-    useFrame((state, dt) => {
-        if (!g.current) return;
-        const p = posRef.current;
-        g.current.position.set(p.x, 0.1, p.z); // Yere daha yakın (0.1)
-        g.current.rotation.y = rotRef.current;
-
-        // Yan fırçaların TOZ TOPLAMA mantığında zıt yönlü dönüşü
-        // Sol fırça saat yönüne, Sağ fırça saat yönünün tersine döner
-        if (brushRefL.current) brushRefL.current.rotation.y -= 10 * dt; // CW
-        if (brushRefR.current) brushRefR.current.rotation.y += 10 * dt; // CCW
-    });
-
-    const bodyCol = "#222";
-    const topCol = "#2d3a5a";
-    const sensorCol = "#000000";
-
-    return <group ref={g}>
-        {/* ANA GÖVDE (Siyah Disk) */}
-        <mesh castShadow>
-            <cylinderGeometry args={[0.35, 0.35, 0.1, 32]} />
-            <meshStandardMaterial color={bodyCol} roughness={0.4} />
+function Window({ x, z, w, t, h, winH = 1.2, bottomH = 0.9, rotate = false }) {
+    const topH = h - (bottomH + winH);
+    return <group position={[x, 0, z]} rotation={[0, rotate ? Math.PI / 2 : 0, 0]}>
+        {/* Alt Duvar */}
+        <mesh position={[0, bottomH / 2, 0]}>
+            <boxGeometry args={[w, bottomH, t]} />
+            <WallMaterial />
         </mesh>
-
-        {/* ÜST KAPAK (Lacivert/Metalik Bölüm) */}
-        <mesh position={[0, 0.052, 0]}>
-            <cylinderGeometry args={[0.33, 0.33, 0.01, 32]} />
-            <meshStandardMaterial
-                color={topCol}
-                metalness={0.7}
-                roughness={0.2}
-                emissive={topCol}
-                emissiveIntensity={0.1}
-            />
+        {/* Üst Duvar */}
+        <mesh position={[0, h - topH / 2, 0]}>
+            <boxGeometry args={[w, topH, t]} />
+            <WallMaterial />
         </mesh>
-
-        {/* LIDAR KULESİ (LDS Sensor) */}
-        <group position={[0, 0.08, 0]}>
-            <mesh castShadow>
-                <cylinderGeometry args={[0.08, 0.08, 0.05, 16]} />
-                <meshStandardMaterial color={sensorCol} metalness={0.9} roughness={0.1} />
-            </mesh>
-            {/* Kulenin gümüş üst halkası */}
-            <mesh position={[0, 0.026, 0]}>
-                <cylinderGeometry args={[0.082, 0.082, 0.005, 16]} />
-                <meshStandardMaterial color="silver" metalness={1} roughness={0} />
-            </mesh>
-        </group>
-
-        {/* BUTONLAR */}
-        <mesh position={[0.1, 0.06, 0.15]} rotation={[-Math.PI / 2, 0, 0]}>
-            <capsuleGeometry args={[0.02, 0.04, 4, 8]} />
-            <meshStandardMaterial color="#444" />
+        {/* Kenar Çerçeveler */}
+        <mesh position={[-(w / 2 - 0.05), bottomH + winH / 2, 0]}>
+            <boxGeometry args={[0.1, winH, t + 0.02]} />
+            <meshStandardMaterial color="#333" />
         </mesh>
-
-        {/* YAN FIRÇALAR (Helikopter Pervanesi Gibi Sabit Pivot) */}
-        {/* SOL FIRÇA (Robot Solu) */}
-        <group position={[0.22, -0.046, 0.22]} ref={brushRefL}>
-            {/* Merkez Kapak (Hub) */}
-            <mesh position={[0, 0.01, 0]}>
-                <cylinderGeometry args={[0.03, 0.04, 0.02, 16]} />
-                <meshStandardMaterial color="#000" />
-            </mesh>
-            {/* 3 Kollu Fırça */}
-            {[0, 2.1, 4.2].map(r => (
-                <group key={r} rotation={[0, r, 0]}>
-                    <mesh position={[0.09, 0, 0]}>
-                        <boxGeometry args={[0.18, 0.01, 0.012]} />
-                        <meshStandardMaterial color="#111" />
-                    </mesh>
-                </group>
-            ))}
-        </group>
-
-        {/* SAĞ FIRÇA (Robot Sağı) */}
-        <group position={[-0.22, -0.046, 0.22]} ref={brushRefR}>
-            {/* Merkez Kapak (Hub) */}
-            <mesh position={[0, 0.01, 0]}>
-                <cylinderGeometry args={[0.03, 0.04, 0.02, 16]} />
-                <meshStandardMaterial color="#000" />
-            </mesh>
-            {/* 3 Kollu Fırça */}
-            {[0, 2.1, 4.2].map(r => (
-                <group key={r} rotation={[0, r, 0]}>
-                    <mesh position={[-0.09, 0, 0]}>
-                        <boxGeometry args={[0.18, 0.01, 0.012]} />
-                        <meshStandardMaterial color="#111" />
-                    </mesh>
-                </group>
-            ))}
-        </group>
+        <mesh position={[w / 2 - 0.05, bottomH + winH / 2, 0]}>
+            <boxGeometry args={[0.1, winH, t + 0.02]} />
+            <meshStandardMaterial color="#333" />
+        </mesh>
+        {/* Cam */}
+        <mesh position={[0, bottomH + winH / 2, 0]}>
+            <boxGeometry args={[w - 0.2, winH, 0.02]} />
+            <meshStandardMaterial color="#87ceeb" opacity={0.4} transparent roughness={0} metalness={0.8} />
+        </mesh>
     </group>;
 }
+
+
 
 /* --- UTILS --- */
 function sweep(xMin, xMax, zMin, zMax, fromPos = null, sw = 0.50, exclusion = null) {
@@ -359,7 +314,7 @@ function buildWaypoints(type) {
         const suite = [];
         suite.push({ name: "Salon-Mutfak-A", bounds: [[-4.9, 4.9], [-4.9, 0]], isCenter: true, displayName: "Salon-Mutfak" });
         suite.push({ name: "Salon-Mutfak-B", bounds: [[0.1, 4.9], [0, 4.9]], isCenter: true, displayName: "Salon-Mutfak" });
-        suite.push({ name: "Oda", bounds: [[-4.9, -0.6], [0.1, 4.9]], doorPos: [0, 2.5], doorDir: 'x', toPos: false, corridorX: 0.6 });
+        suite.push({ name: "Oda", bounds: [[-4.9, -0.1], [0.1, 4.9]], doorPos: [0, 2.5], doorDir: 'x', toPos: false, corridorX: 0.6 });
 
         push([station], false); currentPos = station;
         const plan = ["Salon-Mutfak-A", "Salon-Mutfak-B", "Oda"];
@@ -641,9 +596,22 @@ function House({ type, trail, posRef, rotRef }) {
 
         <Station />
         <Wall w={fw} h={h} t={t} x={0} z={(-fz / 2) + zOff} />
-        <Wall w={fw} h={h} t={t} x={0} z={(fz / 2) + zOff} />
-        <Wall w={t} h={h} t={fz} x={-fw / 2} z={zOff} />
-        <Wall w={t} h={h} t={fz} x={fw / 2} z={zOff} />
+        {/* Dış Duvarlar (Pencere Mantığıyla 1+1 Oda Duvarı Bölünüyor) */}
+        {type === "1+1" ? (
+            <>
+                <Wall w={fw} h={h} t={t} x={0} z={(fz / 2) + zOff} />
+                <Wall w={t} h={h} t={6.5} x={-fw / 2} z={-1.75} />
+                <Window x={-fw / 2} z={2.5} w={2} t={t} h={h} rotate={true} />
+                <Wall w={t} h={h} t={1.5} x={-fw / 2} z={4.25} />
+                <Wall w={t} h={h} t={fz} x={fw / 2} z={zOff} />
+            </>
+        ) : (
+            <>
+                <Wall w={fw} h={h} t={t} x={0} z={(fz / 2) + zOff} />
+                <Wall w={t} h={h} t={fz} x={-fw / 2} z={zOff} />
+                <Wall w={t} h={h} t={fz} x={fw / 2} z={zOff} />
+            </>
+        )}
 
         {/* ROBOTUN TEMİZLİK ROTASI (Ovalleştirilmiş Beyaz Çizgi) */}
         {
@@ -750,7 +718,69 @@ export default function Plan3D() {
     const [speed, setSpeed] = useState(3.5);
     const [metrekare, setMetrekare] = useState(null);
     const [pet, setPet] = useState(null);
+    const [currentStep, setCurrentStep] = useState(1);
+    const [carpet, setCarpet] = useState(null);
+    const [station, setStation] = useState(null);
     const [isMobile, setIsMobile] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [analysisIdx, setAnalysisIdx] = useState(0);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [isCleaning, setIsCleaning] = useState(false);
+
+    const analysisMessages = useMemo(() => [
+        `${type} aranıyor..`,
+        `Alan: ${metrekare} m² hesaplanıyor...`,
+        `Halı Yoğunluğu: ${carpet} kontrol ediliyor...`,
+        `Evcil Hayvan: ${pet ? "Var" : "Yok"}...`,
+        `Tercih: ${station === "toz" ? "Toz Boşaltmalı" : "Standart"}...`,
+        "En uygun robot aranıyor...",
+        "Model eşleştiriliyor...",
+    ], [type, metrekare, carpet, pet, station]);
+
+    // Önerilen Robotu Seçme Mantığı
+    const recommendedRobot = useMemo(() => {
+        if (!station || !metrekare || !carpet) return ROBOTS[0];
+
+        // Alan büyüklüğünü kategorize et
+        const areaLevel = metrekare > 150 ? "large" : (metrekare > 80 ? "medium" : "small");
+
+        // Puanlama Sistemi
+        const scores = ROBOTS.map(robot => {
+            let score = 0;
+            if (robot.features.station === station) score += 10;
+            if (robot.features.area === areaLevel) score += 5;
+            if (robot.features.pet === pet) score += 3;
+            if (robot.features.carpet === carpet) score += 2;
+            return { ...robot, score };
+        });
+
+        // En yüksek puanlıyı döndür
+        return scores.sort((a, b) => b.score - a.score)[0];
+    }, [station, metrekare, pet, carpet]);
+
+    useEffect(() => {
+        let timer;
+        if (isAuto && isAnalyzing && !showModal) {
+            timer = setInterval(() => {
+                setAnalysisIdx(prev => (prev + 1) % analysisMessages.length);
+            }, 800);
+        }
+        return () => clearInterval(timer);
+    }, [isAuto, isAnalyzing, showModal, analysisMessages.length]);
+
+    // Mobile auto-scroll logic
+    useEffect(() => {
+        let scrollTimer;
+        if (isMobile && isCleaning && !isAnalyzing) {
+            scrollTimer = setTimeout(() => {
+                const element = document.getElementById("simulation-area");
+                if (element) {
+                    element.scrollIntoView({ behavior: "smooth" });
+                }
+            }, 3000);
+        }
+        return () => clearTimeout(scrollTimer);
+    }, [isMobile, isCleaning, isAnalyzing]);
 
     useEffect(() => {
         const checkMobile = () => setIsMobile(window.innerWidth < 992);
@@ -772,20 +802,38 @@ export default function Plan3D() {
         if (isAuto) {
             running.current = false;
             setIsAuto(false);
+            setIsCleaning(false);
+            setIsAnalyzing(false);
             setStatus("Başlatmayı Bekliyor");
             return;
         }
+
+        // --- SÜREÇ BAŞLIYOR ---
         setTrail([]); lastTrail.current = null;
-        wpIdx.current = 1; running.current = true; setIsAuto(true); setPct(0);
-        setStatus("Temizlik başlıyor…");
+        setIsAuto(true);
+        setIsAnalyzing(true); // Önce Analiz
+        setIsCleaning(false); // Robot Beklemede
+        setPct(0);
+        setStatus("Veriler analiz ediliyor…");
+
+        // 3.5 Saniye sonra robotu harekete geçir ve ürünü göster
+        setTimeout(() => {
+            setIsAnalyzing(false);
+            setIsCleaning(true);
+            running.current = true;
+            wpIdx.current = 1;
+            setStatus("En uygun robot bulundu. Temizlik başlıyor…");
+        }, 1500);
     };
 
     const reset = () => {
         running.current = false; setIsAuto(false);
+        setIsCleaning(false); setIsAnalyzing(false);
         setTrail([]); lastTrail.current = null;
         posRef.current.set(0, 0.25, -4.5); rotRef.current = 0;
         setStatus("Başlatmayı Bekliyor"); setPct(0);
-        setMetrekare(null); setPet(null);
+        setMetrekare(null); setPet(null); setCarpet(null); setStation(null);
+        setCurrentStep(1);
     };
 
     function Mover() {
@@ -822,6 +870,7 @@ export default function Plan3D() {
                 if (isReturning) {
                     setStatus("Tamamlandı / Şarj Oluyor");
                     setPct(100);
+                    setTimeout(() => setShowModal(true), 800);
                 } else {
                     const progress = Math.round((idx + 1) / (waypoints.length - 1) * 100);
                     setPct(Math.min(100, progress));
@@ -855,6 +904,16 @@ export default function Plan3D() {
                     50% { border-color: #3c81b5; box-shadow: 0 0 12px rgba(60, 129, 181, 0.4); }
                     100% { border-color: #e0e0e0; box-shadow: 0 0 0px rgba(60, 129, 181, 0); }
                 }
+                .step-enter { animation: fadeIn 0.5s ease-out; }
+                @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+                
+                @keyframes slideUpFade {
+                    0% { opacity: 0; transform: translateY(20px); }
+                    10% { opacity: 1; transform: translateY(0); }
+                    90% { opacity: 1; transform: translateY(0); }
+                    100% { opacity: 0; transform: translateY(-20px); }
+                }
+                .analysis-text { animation: slideUpFade 2.5s infinite; }
             `}</style>
             {/* ÜST/SOL PANEL - KURUMSAL SORU ALANI */}
             <div style={{
@@ -865,112 +924,292 @@ export default function Plan3D() {
                 borderBottom: isMobile ? "1px solid #eee" : "none",
                 display: "flex",
                 flexDirection: "column",
-                padding: isMobile ? "5px 20px" : "50px 40px",
+                padding: isMobile ? "20px" : "50px 40px",
                 zIndex: 10,
                 boxShadow: "10px 0 30px rgba(0,0,0,0.02)"
             }}>
-                <h1 style={{ fontSize: isMobile ? "20px" : "26px", fontWeight: "800", marginBottom: isMobile ? "15px" : "40px", lineHeight: "1.3", color: "#1a1a1a" }}>
-                    Size Uygun Robot Süpürgeyi Seçelim
-                </h1>
-
-                {/* SORU 1: EV TİPİ */}
-                <div style={{ marginBottom: isMobile ? "12px" : "35px" }}>
-                    <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: isMobile ? "6px" : "12px", fontWeight: "700" }}>Eviniz kaç odalı?</p>
-                    <div style={{
-                        display: "flex",
-                        gap: "10px",
-                        width: "100%"
-                    }}>
-                        {["1+1", "2+1", "3+1", "3+2"].map(t => (
-                            <button
-                                key={t}
-                                onClick={() => { setType(t); reset(); }}
-                                style={{
-                                    flex: 1,
-                                    padding: isMobile ? "10px 5px" : "14px",
-                                    borderRadius: "10px",
-                                    border: type === t ? "2.5px solid #3c81b5" : "1px solid #e0e0e0",
-                                    background: type === t ? "#3c81b5" : "#fff",
-                                    color: type === t ? "#fff" : "#2d3436",
-                                    cursor: "pointer",
-                                    fontWeight: "800",
-                                    fontSize: isMobile ? "13px" : "15px",
-                                    transition: "all 0.2s ease"
-                                }}
-                            >
-                                {t}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* SORU 2: METREKARE */}
-                <div style={{ marginBottom: isMobile ? "12px" : "35px" }}>
-                    <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: isMobile ? "6px" : "12px", fontWeight: "700" }}>Eviniz Kaç Metrekare?</p>
-                    <select
-                        value={metrekare || ""}
-                        onChange={(e) => setMetrekare(e.target.value)}
-                        style={{
-                            width: "100%",
-                            padding: isMobile ? "12px" : "16px",
-                            borderRadius: "10px",
-                            background: "#f8f9fa",
-                            border: metrekare ? "2.5px solid #3c81b5" : "1px solid #e0e0e0",
-                            animation: (!metrekare && !isAuto) ? "pulseGlow 2s infinite ease-in-out" : "none",
-                            color: "#2d3436",
-                            fontSize: isMobile ? "13px" : "15px",
-                            fontWeight: "600",
-                            outline: "none",
-                            cursor: "pointer"
-                        }}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: isMobile ? "20px" : "40px" }}>
+                    <h1 style={{ fontSize: isMobile ? "20px" : "26px", fontWeight: "800", margin: 0, lineHeight: "1.3", color: "#1a1a1a" }}>
+                        Size Uygun Robot Süpürgeyi Seçelim
+                    </h1>
+                    <button
+                        onClick={reset}
+                        style={{ background: "none", border: "none", color: "#636e72", cursor: "pointer", fontWeight: "700", fontSize: "13px", padding: "5px 10px", borderRadius: "5px", border: "1px solid #eee" }}
                     >
-                        <option value="" disabled>Seçiniz</option>
-                        <option value="0-80">0m² - 80m²</option>
-                        <option value="80-120">80m² - 120m²</option>
-                        <option value="120-180">120m² - 180m²</option>
-                        <option value="180+">180m² ve Üzeri</option>
-                    </select>
+                        ↻
+                    </button>
                 </div>
 
-                {/* SORU 3: EVCİL HAYVAN */}
-                <div style={{ marginBottom: isMobile ? "15px" : "40px" }}>
-                    <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: isMobile ? "6px" : "12px", fontWeight: "700" }}>Evcil Hayvanınız Var mı?</p>
-                    <div style={{ display: "flex", gap: "10px" }}>
-                        {[true, false].map(v => (
-                            <button
-                                key={v.toString()}
-                                disabled={!metrekare}
-                                onClick={() => {
-                                    setPet(v);
-                                    if (type && metrekare && !isAuto) {
-                                        // startStop fonksiyonunu biraz gecikmeli çağırıyoruz ki state güncellensin
-                                        setTimeout(() => startStop(), 50);
-                                    }
-                                }}
-                                style={{
-                                    flex: 1,
-                                    padding: isMobile ? "10px" : "14px",
-                                    borderRadius: "10px",
-                                    border: pet === v ? "2.5px solid #3c81b5" : "1px solid #e0e0e0",
-                                    animation: (metrekare && pet === null && !isAuto) ? "pulseGlow 2s infinite ease-in-out" : "none",
-                                    background: pet === v ? "#3c81b5" : "#fff",
-                                    color: pet === v ? "#fff" : "#2d3436",
-                                    cursor: metrekare ? "pointer" : "not-allowed",
-                                    opacity: metrekare ? 1 : 0.5,
-                                    fontWeight: "800",
-                                    fontSize: isMobile ? "13px" : "15px",
-                                    transition: "all 0.2s ease"
-                                }}
-                            >
-                                {v ? "Evet" : "Hayır"}
-                            </button>
+                {/* ADIM GÖSTERGESİ */}
+                {!isAuto && (
+                    <div style={{ display: "flex", gap: "5px", marginBottom: "30px" }}>
+                        {[1, 2, 3, 4, 5].map(s => (
+                            <div key={s} style={{ flex: 1, height: "4px", background: s <= currentStep ? "#3c81b5" : "#eee", borderRadius: "2px", transition: "all 0.3s ease" }} />
                         ))}
                     </div>
-                </div>
+                )}
+
+                {isAuto ? (
+                    <div className="step-enter">
+                        <div>
+                            {/* ANALİZ EDİLİYOR TEXT (Dinamik) */}
+                            {isAnalyzing && (
+                                <div style={{
+                                    marginTop: "25px",
+                                    padding: "20px",
+                                    background: "#f1f2f6",
+                                    borderRadius: "12px",
+                                    border: "1px solid #3c81b5",
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: "15px",
+                                    boxShadow: "0 5px 15px rgba(60, 129, 181, 0.1)"
+                                }}>
+                                    <div style={{ height: "30px", overflow: "hidden" }}>
+                                        <div key={analysisIdx} className="analysis-text" style={{ fontSize: "13px", fontWeight: "600", color: "#2f3542" }}>
+                                            {analysisMessages[analysisIdx]}
+                                        </div>
+                                    </div>
+                                    <div style={{ height: "4px", background: "#eee", borderRadius: "2px", overflow: "hidden" }}>
+                                        <div style={{ width: "100%", height: "100%", background: "#3c81b5", animation: "loadingBar 1.5s linear forwards" }} />
+                                    </div>
+                                    <style>{`
+                                        @keyframes loadingBar { from { width: 0%; } to { width: 100%; } }
+                                    `}</style>
+                                </div>
+                            )}
+
+                            {/* ÖNERİLEN ÜRÜN ALANI (Analiz Bittikten Sonra) */}
+                            {/* ÖNERİLEN ÜRÜN ALANI (Analiz Bittikten Sonra) */}
+                            {(!isAnalyzing && isCleaning) && (
+                                <div className="step-enter" style={{ marginTop: "30px" }}>
+                                    <div style={{
+                                        background: "#fff",
+                                        borderRadius: "15px",
+                                        padding: "20px",
+                                        boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
+                                        border: "1px solid #eee",
+                                        textAlign: "center"
+                                    }}>
+                                        <div style={{
+                                            width: "100%",
+                                            height: "240px",
+                                            background: "#fff",
+                                            borderRadius: "10px",
+                                            marginBottom: "15px",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center",
+                                            overflow: "hidden",
+                                            border: "1px solid #f0f0f0"
+                                        }}>
+                                            <img src="/images/3d/robot.webp" alt={recommendedRobot.name} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                                        </div>
+
+                                        <h3 style={{ fontSize: "16px", fontWeight: "800", margin: "0 0 5px 0", color: "#1a1a1a" }}>{recommendedRobot.name}</h3>
+                                        <p style={{ fontSize: "12px", color: "#747d8c", margin: "0 0 15px 0" }}>Seçimlerinize en uygun modelimiz.</p>
+
+                                        <div style={{ background: "#f1f2f6", padding: "10px", borderRadius: "10px", marginBottom: "15px" }}>
+                                            <p style={{ fontSize: "10px", color: "#636e72", margin: "0 0 5px 0", fontWeight: "700" }}>SİZE ÖZEL KUPON KODU</p>
+                                            <p style={{ fontSize: "18px", color: "#3c81b5", margin: 0, fontWeight: "900", letterSpacing: "1px" }}>{recommendedRobot.coupon}</p>
+                                        </div>
+
+                                        <button
+                                            onClick={() => window.open(`https://simart.me/magaza/robotlar/${recommendedRobot.slug}`, "_blank")}
+                                            style={{
+                                                width: "100%",
+                                                padding: "14px",
+                                                background: "#3c81b5",
+                                                color: "#fff",
+                                                border: "none",
+                                                borderRadius: "10px",
+                                                fontWeight: "800",
+                                                cursor: "pointer",
+                                                boxShadow: "0 5px 15px rgba(60,129,181,0.2)"
+                                            }}
+                                        >
+                                            Ürünü İncele
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+
+                        </div>
+                    </div>
+                ) : (
+                    <>
+                        {/* SORU 1: EV TİPİ */}
+                        {currentStep === 1 && (
+                            <div className="step-enter">
+                                <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: "15px", fontWeight: "700" }}>Eviniz kaç odalı?</p>
+                                <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+                                    {["1+1", "2+1", "3+1", "3+2"].map(t => (
+                                        <button
+                                            key={t}
+                                            onClick={() => { setType(t); setCurrentStep(2); }}
+                                            style={{
+                                                flex: "1 1 calc(50% - 10px)",
+                                                padding: "16px",
+                                                borderRadius: "12px",
+                                                border: type === t ? "2.5px solid #3c81b5" : "1px solid #e0e0e0",
+                                                background: type === t ? "#3c81b5" : "#fff",
+                                                color: type === t ? "#fff" : "#2d3436",
+                                                cursor: "pointer",
+                                                fontWeight: "800",
+                                                transition: "all 0.2s ease"
+                                            }}
+                                        >
+                                            {t}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* SORU 2: METREKARE */}
+                        {currentStep === 2 && (
+                            <div className="step-enter">
+                                <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: "15px", fontWeight: "700" }}>Eviniz Kaç Metrekare?</p>
+                                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                                    {(type === "1+1" ? ["0-60", "61-70", "71-80", "81-90", "90+"] :
+                                        type === "2+1" ? ["0-60", "61-75", "76-89", "90-100", "150+"] :
+                                            ["0-90", "91-110", "111-120", "121-130", "150+", "200+"]).map(m => (
+                                                <button
+                                                    key={m}
+                                                    onClick={() => { setMetrekare(m); setCurrentStep(3); }}
+                                                    style={{
+                                                        width: "100%",
+                                                        padding: "14px",
+                                                        borderRadius: "10px",
+                                                        border: metrekare === m ? "2.5px solid #3c81b5" : "1px solid #e0e0e0",
+                                                        background: metrekare === m ? "#3c81b5" : "#f8f9fa",
+                                                        color: metrekare === m ? "#fff" : "#2d3436",
+                                                        textAlign: "left",
+                                                        cursor: "pointer",
+                                                        fontWeight: "600",
+                                                        transition: "all 0.2s ease"
+                                                    }}
+                                                >
+                                                    {m} m²
+                                                </button>
+                                            ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* SORU 3: HALI YOĞUNLUĞU */}
+                        {currentStep === 3 && (
+                            <div className="step-enter">
+                                <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: "15px", fontWeight: "700" }}>Evinizdeki Halı Yoğunluğu Ne Kadar?</p>
+                                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                                    {[
+                                        { id: "Az", label: "Az", desc: "Çoğunlukla parke veya fayans." },
+                                        { id: "Orta", label: "Orta", desc: "Küçük ve ince halılarım var." },
+                                        { id: "Çok", label: "Yoğun", desc: "Evin büyük bir kısmı halı kaplı." }
+                                    ].map(c => (
+                                        <button
+                                            key={c.id}
+                                            onClick={() => { setCarpet(c.id); setCurrentStep(4); }}
+                                            style={{
+                                                width: "100%",
+                                                padding: "16px",
+                                                borderRadius: "12px",
+                                                border: carpet === c.id ? "2.5px solid #3c81b5" : "1px solid #e0e0e0",
+                                                background: carpet === c.id ? "#3c81b5" : "#fff",
+                                                color: carpet === c.id ? "#fff" : "#2d3436",
+                                                textAlign: "left",
+                                                cursor: "pointer",
+                                                transition: "all 0.2s ease"
+                                            }}
+                                        >
+                                            <div style={{ fontWeight: "800", fontSize: "15px" }}>{c.label}</div>
+                                            <div style={{ fontSize: "12px", opacity: 0.8, marginTop: "4px" }}>{c.desc}</div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* SORU 4: EVCİL HAYVAN */}
+                        {currentStep === 4 && (
+                            <div className="step-enter">
+                                <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: "15px", fontWeight: "700" }}>Evcil Hayvanınız Var mı?</p>
+                                <div style={{ display: "flex", gap: "12px" }}>
+                                    {[
+                                        { val: true, label: "Evet", icon: "🐾" },
+                                        { val: false, label: "Hayır", icon: "❌" }
+                                    ].map(v => (
+                                        <button
+                                            key={v.val.toString()}
+                                            onClick={() => {
+                                                setPet(v.val);
+                                                setCurrentStep(5);
+                                            }}
+                                            style={{
+                                                flex: 1,
+                                                padding: "30px 20px",
+                                                borderRadius: "15px",
+                                                border: pet === v.val ? "2.5px solid #3c81b5" : "1px solid #e0e0e0",
+                                                background: pet === v.val ? "#3c81b5" : "#fff",
+                                                color: pet === v.val ? "#fff" : "#2d3436",
+                                                cursor: "pointer",
+                                                fontWeight: "800",
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                gap: "10px",
+                                                alignItems: "center",
+                                                transition: "all 0.2s ease"
+                                            }}
+                                        >
+                                            <span style={{ fontSize: "24px" }}>{v.icon}</span>
+                                            <span>{v.label}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* SORU 5: İSTASYON (TOZ TOPLAMA ÜNİTESİ) */}
+                        {currentStep === 5 && (
+                            <div className="step-enter">
+                                <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: "5px", fontWeight: "700" }}>Toz Toplama Ünitesi İstiyor musunuz?</p>
+                                <p style={{ fontSize: "11px", color: "#95a5a6", marginBottom: "20px" }}>İstasyonlu modeller toz haznesini otomatik boşaltır.</p>
+                                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                                    {[
+                                        { id: "toz", label: "İstasyonlu - Toz Toplama Ünitesi", desc: "Toz haznesini otomatik boşaltır." },
+                                        { id: "hayir", label: "İstasyonsuz", desc: "Sadece şarj ünitesi içerir." }
+                                    ].map(s => (
+                                        <button
+                                            key={s.id}
+                                            onClick={() => {
+                                                setStation(s.id);
+                                                setTimeout(() => startStop(), 100);
+                                            }}
+                                            style={{
+                                                width: "100%",
+                                                padding: "16px",
+                                                borderRadius: "12px",
+                                                border: station === s.id ? "2.5px solid #3c81b5" : "1px solid #e0e0e0",
+                                                background: station === s.id ? "#3c81b5" : "#fff",
+                                                color: station === s.id ? "#fff" : "#2d3436",
+                                                textAlign: "left",
+                                                cursor: "pointer",
+                                                transition: "all 0.2s ease"
+                                            }}
+                                        >
+                                            <div style={{ fontWeight: "800", fontSize: "15px" }}>{s.label}</div>
+                                            <div style={{ fontSize: "12px", opacity: 0.8, marginTop: "4px" }}>{s.desc}</div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </>
+                )}
             </div>
 
             {/* ALT/SAĞ PANEL - 3D SAHNE */}
-            <div style={{ flex: 1, position: "relative", background: "#f5f6fa", height: isMobile ? "500px" : "auto", minHeight: isMobile ? "500px" : "auto" }}>
+            <div id="simulation-area" style={{ flex: 1, position: "relative", background: "#f5f6fa", height: isMobile ? "500px" : "auto", minHeight: isMobile ? "500px" : "auto" }}>
                 <Canvas dpr={[1, 1.5]} gl={{ antialias: true }} camera={{ position: [-8.53, 24.48, 15.09], fov: isMobile ? 50 : 38 }}>
                     <ambientLight intensity={0.7} />
                     <hemisphereLight intensity={0.5} groundColor="#f5f6fa" />
@@ -1004,6 +1243,97 @@ export default function Plan3D() {
                     <button onClick={() => setSpeed(prev => Math.min(15, prev + 1))} style={{ width: "22px", height: "22px", border: "1px solid #eee", background: "#f8f9fa", borderRadius: "6px", cursor: "pointer" }}>+</button>
                 </div>
             </div>
+
+            {/* PRODUCT RECOMMENDATION MODAL */}
+            {showModal && (
+                <div style={{
+                    position: "fixed",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    zIndex: 1000,
+                    background: "rgba(0,0,0,0.7)",
+                    backdropFilter: "blur(8px)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "20px"
+                }} onClick={() => setShowModal(false)}>
+                    <div
+                        style={{
+                            background: "#fff",
+                            width: "100%",
+                            maxWidth: "450px",
+                            borderRadius: "24px",
+                            padding: "40px",
+                            textAlign: "center",
+                            position: "relative",
+                            boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+                            animation: "modalSlideUp 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards"
+                        }}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <style>{`
+                            @keyframes modalSlideUp {
+                                from { opacity: 0; transform: translateY(50px) scale(0.9); }
+                                to { opacity: 1; transform: translateY(0) scale(1); }
+                            }
+                        `}</style>
+
+                        <button
+                            onClick={() => setShowModal(false)}
+                            style={{ position: "absolute", top: "20px", right: "20px", background: "#f5f6fa", border: "none", width: "32px", height: "32px", borderRadius: "50%", cursor: "pointer", color: "#747d8c", fontWeight: "bold" }}
+                        >
+                            ✕
+                        </button>
+
+
+                        <p style={{ color: "#636e72", fontSize: "15px", marginBottom: "30px", lineHeight: "1.5" }}>
+                            Evinizin yapısı ve tercihleriniz için en yüksek verimi sağlayacak modelimizi inceleyin.
+                        </p>
+
+                        <div style={{
+                            background: "#f8f9fa",
+                            borderRadius: "12px",
+                            padding: "8px",
+                            marginBottom: "16px",
+                            border: "1px solid #eee"
+                        }}>
+                            <div style={{
+                                width: "100%",
+                                height: "300px",
+                                background: "#fff",
+                                borderRadius: "12px",
+                                marginBottom: "20px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                boxShadow: "0 5px 15px rgba(0,0,0,0.03)",
+                                overflow: "hidden"
+                            }}>
+                                <img src="/images/3d/robot.webp" alt="Robot Önerisi" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                            </div>
+                            <h3 style={{ fontSize: "18px", fontWeight: "800", margin: "0 0 8px 0", color: "#3c81b5" }}>Robot süpürge</h3>
+                            <p style={{ fontSize: "13px", color: "#747d8c", margin: 0 }}>Akıllı Haritalama & Maksimum Emiş Gücü</p>
+                        </div>
+
+                        <div style={{ display: "flex", gap: "12px" }}>
+                            <button
+                                onClick={() => setShowModal(false)}
+                                style={{ flex: 1, padding: "16px", borderRadius: "12px", border: "1px solid #e0e0e0", background: "#fff", color: "#2d3436", fontWeight: "700", cursor: "pointer" }}
+                            >
+                                Kapat
+                            </button>
+                            <button
+                                style={{ flex: 2, padding: "16px", borderRadius: "12px", border: "none", background: "#3c81b5", color: "#fff", fontWeight: "700", cursor: "pointer", boxShadow: "0 10px 20px rgba(60, 129, 181, 0.2)" }}
+                            >
+                                Ürünü Şimdi İncele
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

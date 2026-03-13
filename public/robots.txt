@@ -2,3 +2,8 @@ User-agent: *
 Allow: /
 Disallow: /api/
 Disallow: /_next/
+
+Sitemap: https://simart.me/sitemap-categories.xml
+Sitemap: https://simart.me/sitemap-contents.xml
+Sitemap: https://simart.me/sitemap-pages.xml
+Sitemap: https://simart.me/sitemap-products.xml
