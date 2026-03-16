@@ -3,6 +3,10 @@ import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 export const metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
   title: "Sayfa Bulunamadı - Şımart Teknoloji",
   description: "Sayfa bulunamadı. Ana sayfaya dönün ve en son ürünlerimizi görüntüleyin.",
 };

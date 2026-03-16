@@ -257,11 +257,11 @@ export default function ContactForm() {
                 <div className="d-flex align-items-center gap-10">
                   <i className="icon-whatsapp fs-20" style={{ color: "#25D366" }} />
                   <Link
-                    href="https://api.whatsapp.com/send/?phone=%2B908503466126&text&type=phone_number&app_absent=0"
+                    href="https://api.whatsapp.com/send/?phone=%2B905526428208&text&type=phone_number&app_absent=0"
                     target="_blank"
                     className="text-black"
                   >
-                    +90 850 346 6126 (WhatsApp Hattı)
+                    +90 552 642 8208 (WhatsApp Hattı)
                   </Link>
                 </div>
               </div>

@@ -14,8 +14,8 @@ import { useLangStore } from "@/stores/langStore";
 
 export default function ProductCardSimart({ product, isPriority = false }) {
   const router = useRouter();
-  const { lang } = useLangStore();
   const { addItem } = useCartStore();
+  const lang = useLangStore((s) => s.lang);
   const cartItems = useCartStore((s) => s.items);
   const [isAdding, setIsAdding] = React.useState(false);
   const [isNavigating, setIsNavigating] = React.useState(false);
@@ -174,9 +174,9 @@ export default function ProductCardSimart({ product, isPriority = false }) {
           {!isMuseumItem && buttonText !== "Stokta Yok" && (
             <>
               <span className={`price-new fw-bold ${oldPrice ? "price-discount" : "price-normal"}`}>
-                {finalPrice.toLocaleString(lang === "tr" ? "tr-TR" : lang)} TL
+                {finalPrice.toLocaleString()} TL
               </span>
-              {oldPrice && <span className="price-old">{oldPrice.toLocaleString(lang === "tr" ? "tr-TR" : lang)} TL</span>}
+              {oldPrice && <span className="price-old">{oldPrice.toLocaleString()} TL</span>}
             </>
           )}
         </div>

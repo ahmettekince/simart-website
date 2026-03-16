@@ -276,20 +276,6 @@ function contourSalon(margin = 0.45) {
     return pts;
 }
 
-function contourSalon21(margin = 0.45) {
-    const pts = [];
-    const vWallZ = -2.5; // 2+1 için Sanal Duvar hattı (Daha da ileriye taşındı)
-    // Salon 2+1 bounds: X [2.1, 6.9], Z [-4.9, 4.9]
-    for (let m = margin; m < 2.2; m += 0.5) {
-        // Robot sadece z > -2.5 olan güvenli bölgeyi temizlesin
-        pts.push([2.1 + m, 0.25, 4.9 - m]);
-        pts.push([2.1 + m, 0.25, vWallZ + 0.2]);
-        pts.push([6.9 - m, 0.25, vWallZ + 0.2]);
-        pts.push([6.9 - m, 0.25, 4.9 - m]);
-        pts.push([2.1 + m, 0.25, 4.9 - m]);
-    }
-    return pts;
-}
 
 function door(x, z, dir, toPositive) {
     const gap = 0.5; // Kapı giriş/çıkış derinliği (Güvenli Mesafe)
@@ -347,7 +333,7 @@ function buildWaypoints(type) {
         suite.push({ name: "Hol", bounds: [[-1.9, 1.9], [-4.9, 4.9]], isCenter: true });
         suite.push({ name: "Oda 1", bounds: [[-6.9, -2.1], [0.1, 4.9]], doorPos: [-2, 2.3], doorDir: 'x', toPos: false });
         suite.push({ name: "Oda 2", bounds: [[-6.9, -2.1], [-4.9, -0.1]], doorPos: [-2, -0.8], doorDir: 'x', toPos: false });
-        suite.push({ name: "Salon", customPath: contourSalon21(), bounds: [[2.1, 6.9], [-4.9, 4.9]], doorPos: [2, 2.25], doorDir: 'x', toPos: true });
+        suite.push({ name: "Salon", bounds: [[2.1, 6.9], [-2.5, 4.9]], doorPos: [2, 2.25], doorDir: 'x', toPos: true });
 
         const plan = ["Hol", "Oda 1", "Oda 2", "Salon"];
         push([station], false); push([entrance], false); currentPos = entrance;

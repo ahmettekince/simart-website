@@ -163,7 +163,8 @@ async function handleRequest(request, params, method) {
                             options.sameSite = sameSiteValue;
                         }
                     } else if (trimmed.toLowerCase() === 'secure') {
-                        options.secure = true;
+                        // Geliştirme ortamında (HTTP) Secure flag'ini kapat ki cookie'ler kaydedilsin
+                        options.secure = process.env.NODE_ENV === 'production';
                     }
                 });
 
@@ -195,7 +196,7 @@ async function handleRequest(request, params, method) {
                         options.sameSite = sameSiteValue;
                     }
                 } else if (trimmed.toLowerCase() === 'secure') {
-                    options.secure = true;
+                    options.secure = process.env.NODE_ENV === 'production';
                 }
             });
 
