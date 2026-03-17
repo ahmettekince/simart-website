@@ -33,6 +33,23 @@ export default function Register() {
       filtered = formatFirstNameValue(filterNameValue(value));
     } else if (name === "last_name") {
       filtered = formatLastNameValue(filterNameValue(value));
+    } else if (name === "email") {
+      filtered = value
+        .replace(/Ç/g, "c")
+        .replace(/ç/g, "c")
+        .replace(/Ğ/g, "g")
+        .replace(/ğ/g, "g")
+        .replace(/I/g, "i")
+        .replace(/ı/g, "i")
+        .replace(/İ/g, "i")
+        .replace(/Ö/g, "o")
+        .replace(/ö/g, "o")
+        .replace(/Ş/g, "s")
+        .replace(/ş/g, "s")
+        .replace(/Ü/g, "u")
+        .replace(/ü/g, "u")
+        .toLowerCase()
+        .replace(/[^a-z0-9@._+-]/g, "");
     }
     setFormData((prev) => ({
       ...prev,

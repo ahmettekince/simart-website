@@ -1,5 +1,5 @@
 "use client";
-import React, { useCallback } from "react";
+import { useCallback, useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "@/stores/cartStore";
@@ -17,13 +17,13 @@ export default function ProductCardSimart({ product, isPriority = false }) {
   const { addItem } = useCartStore();
   const lang = useLangStore((s) => s.lang);
   const cartItems = useCartStore((s) => s.items);
-  const [isAdding, setIsAdding] = React.useState(false);
-  const [isNavigating, setIsNavigating] = React.useState(false);
-  const [showSuccess, setShowSuccess] = React.useState(false);
-  const [showMaxReachedToast, setShowMaxReachedToast] = React.useState(false);
-  const [maxQuantityForToast, setMaxQuantityForToast] = React.useState(null);
-  const [showErrorToast, setShowErrorToast] = React.useState(false);
-  const [errorToastMessage, setErrorToastMessage] = React.useState("");
+  const [isAdding, setIsAdding] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showMaxReachedToast, setShowMaxReachedToast] = useState(false);
+  const [maxQuantityForToast, setMaxQuantityForToast] = useState(null);
+  const [showErrorToast, setShowErrorToast] = useState(false);
+  const [errorToastMessage, setErrorToastMessage] = useState("");
 
   // -- Veriler --
   const title = product.name || product.title;
@@ -82,7 +82,7 @@ export default function ProductCardSimart({ product, isPriority = false }) {
   // -- Buton Metin Mantığı --
   const { buttonText, buttonDisabled } = getProductButtonState(product);
   // Sepetteki mevcut ürünü bul - tüm olası ID alanlarını kontrol et
-  const existingCartItem = React.useMemo(() => {
+  const existingCartItem = useMemo(() => {
     if (!cartItems || !Array.isArray(cartItems) || !product?.id) return null;
     return cartItems.find((it) =>
       it?.product?.id === product.id ||
@@ -93,7 +93,7 @@ export default function ProductCardSimart({ product, isPriority = false }) {
   }, [cartItems, product?.id]);
 
   // Global sepet başarısı dinleyicisi (Hediye seçimi sonrası vb. animasyonu tetiklemek için)
-  React.useEffect(() => {
+  useEffect(() => {
     const handleCartSuccess = (e) => {
       if (e.detail?.productId === product?.id) {
         setShowSuccess(true);
@@ -115,7 +115,7 @@ export default function ProductCardSimart({ product, isPriority = false }) {
     ? Number(product.stock_quantity)
     : null;
 
-  const effectiveMaxLimit = React.useMemo(() => {
+  const effectiveMaxLimit = useMemo(() => {
     let limit = rawMax === 0 || rawMax == null ? null : Number(rawMax);
     // Ön siparişte stok limitini görmezden gel
     if (!product?.is_pre_order && stockLimit !== null) {
@@ -125,7 +125,7 @@ export default function ProductCardSimart({ product, isPriority = false }) {
     return limit === null ? 999 : Math.max(1, limit);
   }, [rawMax, stockLimit, product?.is_pre_order]);
 
-  const isStockLimitTriggered = React.useMemo(() => {
+  const isStockLimitTriggered = useMemo(() => {
     if (product?.is_pre_order) return false;
     if (stockLimit === null) return false;
     let purchaseLimit = rawMax === 0 || rawMax == null ? null : Number(rawMax);

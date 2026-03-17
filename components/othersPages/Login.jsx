@@ -28,9 +28,28 @@ export default function Login() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    let filtered = value;
+    if (name === "email") {
+      filtered = value
+        .replace(/Ç/g, "c")
+        .replace(/ç/g, "c")
+        .replace(/Ğ/g, "g")
+        .replace(/ğ/g, "g")
+        .replace(/I/g, "i")
+        .replace(/ı/g, "i")
+        .replace(/İ/g, "i")
+        .replace(/Ö/g, "o")
+        .replace(/ö/g, "o")
+        .replace(/Ş/g, "s")
+        .replace(/ş/g, "s")
+        .replace(/Ü/g, "u")
+        .replace(/ü/g, "u")
+        .toLowerCase()
+        .replace(/[^a-z0-9@._+-]/g, "");
+    }
     setLoginData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: filtered,
     }));
     // Mesajları temizle
     setMessage("");
