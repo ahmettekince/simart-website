@@ -3,7 +3,6 @@ import { i18n } from "./config/i18n";
 
 export async function middleware(request) {
   const { pathname } = request.nextUrl;
-  const response = NextResponse.next();
 
   // 0. API ve Statik Dosyaları Atla (Matcher'a ek olarak garanti olsun)
   if (
@@ -12,10 +11,35 @@ export async function middleware(request) {
     pathname.startsWith("/_next/") ||
     pathname.includes(".")
   ) {
-    return response;
+    return NextResponse.next();
   }
 
-  // 1. Affiliate/Ref Mantığı (Mevcut kodun)
+  // 1. i18n Mantığına Göre İlk Response'u Belirle
+  const pathnameIsMissingLocale = i18n.locales
+    .filter((locale) => locale !== i18n.defaultLocale)
+    .every(
+      (locale) => !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`
+    );
+
+  let response;
+
+  if (pathnameIsMissingLocale) {
+    // Kullanıcı manuel olarak /tr/... yazdıysa, prefixi silip yönlendir (SEO ve Prefixsiz TR kuralı için)
+    if (pathname.startsWith(`/${i18n.defaultLocale}/`) || pathname === `/${i18n.defaultLocale}`) {
+      const newPathname = pathname.replace(`/${i18n.defaultLocale}`, "") || "/";
+      response = NextResponse.redirect(new URL(newPathname, request.url));
+    } else {
+      // Prefix yoksa, arka planda /tr/... olarak REWRITE yap
+      response = NextResponse.rewrite(
+        new URL(`/${i18n.defaultLocale}${pathname}`, request.url)
+      );
+    }
+  } else {
+    response = NextResponse.next();
+  }
+
+  // 2. Affiliate/Ref Mantığı
+  // Belirlenen nihai response (next, redirect veya rewrite) üzerinden çerezi set et
   const ref = request.nextUrl.searchParams.get("ref");
   if (ref) {
     response.cookies.set("affiliate_ref", ref, {
@@ -25,28 +49,6 @@ export async function middleware(request) {
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
     });
-  }
-
-  // 2. i18n Mantığı
-  // Desteklenen dillerden birinin prefixi var mı kontrol et (varsayılan Dil hariç)
-  const pathnameIsMissingLocale = i18n.locales
-    .filter((locale) => locale !== i18n.defaultLocale)
-    .every(
-      (locale) => !pathname.startsWith(`/${locale}/`) && pathname !== `/${locale}`
-    );
-
-  // Eğer prefix yoksa (veya varsayılan dilden geliyorsa)
-  if (pathnameIsMissingLocale) {
-    // Kullanıcı manuel olarak /tr/... yazdıysa, prefixi silip yönlendir (SEO ve Prefixsiz TR kuralı için)
-    if (pathname.startsWith(`/${i18n.defaultLocale}/`) || pathname === `/${i18n.defaultLocale}`) {
-      const newPathname = pathname.replace(`/${i18n.defaultLocale}`, "") || "/";
-      return NextResponse.redirect(new URL(newPathname, request.url));
-    }
-
-    // Prefix yoksa, arka planda /tr/... olarak REWRITE yap (URL değişmez, Next.js içerde [lang]=tr görür)
-    return NextResponse.rewrite(
-      new URL(`/${i18n.defaultLocale}${pathname}`, request.url)
-    );
   }
 
   return response;
