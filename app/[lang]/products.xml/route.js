@@ -17,8 +17,7 @@ export async function GET() {
       headers: {
         'Accept': 'application/xml',
       },
-
-      next: { revalidate: 60 }
+      cache: 'no-store'
     });
 
     if (!response.ok) {
@@ -32,7 +31,7 @@ export async function GET() {
       status: 200,
       headers: {
         'Content-Type': 'application/xml; charset=utf-8',
-        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
       },
     });
   } catch (error) {
