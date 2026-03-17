@@ -174,9 +174,9 @@ export default function ProductCardSimart({ product, isPriority = false }) {
           {!isMuseumItem && buttonText !== "Stokta Yok" && (
             <>
               <span className={`price-new fw-bold ${oldPrice ? "price-discount" : "price-normal"}`}>
-                {finalPrice.toLocaleString()} TL
+                {finalPrice.toLocaleString("tr-TR")} TL
               </span>
-              {oldPrice && <span className="price-old">{oldPrice.toLocaleString()} TL</span>}
+              {oldPrice && <span className="price-old">{oldPrice.toLocaleString("tr-TR")} TL</span>}
             </>
           )}
         </div>
