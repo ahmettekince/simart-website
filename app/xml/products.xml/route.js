@@ -13,10 +13,12 @@ export async function GET() {
     }
 
     // Backend'den orijinal XML verisini çekiyoruz
+    const authHeader = `Basic ${Buffer.from('simart:Simart!!2020').toString('base64')}`;
     const response = await fetch(targetUrl, {
       method: 'GET',
       headers: {
         'Accept': 'application/xml',
+        'Authorization': authHeader,
       },
       cache: 'no-store',
     });
@@ -61,16 +63,16 @@ export async function GET() {
             // Availability mantığı
             let availability = "in stock";
             if (item.stock_quantity === "0" && item.unlimited_stock !== "1" && item.is_pre_order !== "1") {
-               availability = "out of stock";
+              availability = "out of stock";
             } else if (item.is_pre_order === "1") {
-               availability = "preorder";
+              availability = "preorder";
             }
 
             // Image Link Mantığı
             let imageLink = "https://simart.me/images/logo.png"; // Fallback URL
-            
+
             if (item.cover_image && typeof item.cover_image === 'string' && item.cover_image.trim() !== '') {
-               imageLink = `https://cdn.simart.cloud/uploads/${item.cover_image}`;
+              imageLink = `https://cdn.simart.cloud/uploads/${item.cover_image}`;
             }
 
             // Meta için yeni obje
@@ -78,7 +80,7 @@ export async function GET() {
               "g:id": item.sku || item.id || "",
               "g:title": item.name || "",
               "g:description": typeof item.short_description === 'string' ? item.short_description.replace(/<[^>]*>?/gm, '') : (item.short_description?._ || "").replace(/<[^>]*>?/gm, ''), // HTML taglarını sil
-              "g:link": `https://simart.me/magaza/${item.category_slug || "kategori"}/${item.slug || ""}`,
+              "g:link": `https://simart.me/magaza/${item.slug || ""}`,
               "g:image_link": imageLink,
               "g:brand": "Şımart Teknoloji",
               "g:condition": "new",
@@ -91,8 +93,7 @@ export async function GET() {
             }
 
             // Kategori veya diğer ek metrikler
-            metaItem["g:google_product_category"] = "Electronics > Smart Home";
-            metaItem["g:custom_label_0"] = "Made in Turkey";
+            metaItem["g:google_product_category"] = "Electronics"; // Varsayılan
 
             return metaItem;
           })
@@ -101,7 +102,7 @@ export async function GET() {
     };
 
     // 3. Obje verisini tekrar Meta'ya uygun XML formatına dönüştür
-    const builder = new xml2js.Builder();
+    const builder = new xml2js.Builder({ cdata: true });
     const metaXmlData = builder.buildObject(metaRssData);
 
     // Meta'nın okuyacağı XML cevabını gönder
