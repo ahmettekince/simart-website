@@ -93,7 +93,8 @@ export async function GET() {
             }
 
             // Kategori veya diğer ek metrikler
-            metaItem["g:google_product_category"] = "Electronics"; // Varsayılan
+            metaItem["g:google_product_category"] = "Electronics > Smart Home";
+            metaItem["g:custom_label_0"] = "Made in Turkey";
 
             return metaItem;
           })
@@ -102,7 +103,7 @@ export async function GET() {
     };
 
     // 3. Obje verisini tekrar Meta'ya uygun XML formatına dönüştür
-    const builder = new xml2js.Builder({ cdata: true });
+    const builder = new xml2js.Builder({ cdata: false });
     const metaXmlData = builder.buildObject(metaRssData);
 
     // Meta'nın okuyacağı XML cevabını gönder
