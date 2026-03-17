@@ -80,7 +80,7 @@ export async function GET() {
               "g:id": item.sku || item.id || "",
               "g:title": item.name || "",
               "g:description": typeof item.short_description === 'string' ? item.short_description.replace(/<[^>]*>?/gm, '') : (item.short_description?._ || "").replace(/<[^>]*>?/gm, ''), // HTML taglarını sil
-              "g:link": `https://simart.me/magaza/${item.slug || ""}`,
+              "g:link": `https://simart.me/magaza/${item.category_slug ? item.category_slug + "/" : ""}${item.slug || ""}`,
               "g:image_link": imageLink,
               "g:brand": "Şımart Teknoloji",
               "g:condition": "new",
