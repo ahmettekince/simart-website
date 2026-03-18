@@ -32,8 +32,17 @@ export async function generateMetadata({ params }) {
   }
 
   const productName = product.name || product.title || "Ürün";
-  const metaDescription = `${productName} ile evinizi akıllı hale getirin! Hemen ${productName} ürününe sahip olun, evinizi geleceğin teknolojisiyle buluşturun!`;
-  const metaKeywords = `${productName}, Akıllı ev cihazı, IoT teknolojisi, Akıllı telefon kontrolü, Enerji tasarrufu IoT, Güvenlik IoT ürünü, Akıllı yaşam teknolojisi, Evinizi akıllandırın, IoT ile akıllı ev, Akıllı ev otomasyonu`;
+  
+  // SEO Bilgileri
+  // const metaDescription = `${productName} ile evinizi akıllı hale getirin! Hemen ${productName} ürününe sahip olun, evinizi geleceğin teknolojisiyle buluşturun!`;
+  // const metaKeywords = `${productName}, Akıllı ev cihazı, IoT teknolojisi, Akıllı telefon kontrolü, Enerji tasarrufu IoT, Güvenlik IoT ürünü, Akıllı yaşam teknolojisi, Evinizi akıllandırın, IoT ile akıllı ev, Akıllı ev otomasyonu`;
+  
+  const seoTitle = product.seo?.title || `${productName} - Şımart Teknoloji`;
+  const metaDescription = product.seo?.description || `${productName} ile evinizi akıllı hale getirin! Hemen ${productName} ürününe sahip olun, evinizi geleceğin teknolojisiyle buluşturun!`;
+  const metaKeywords = product.seo?.keywords || `${productName}, Akıllı ev cihazı, IoT teknolojisi, Akıllı telefon kontrolü, Enerji tasarrufu IoT, Güvenlik IoT ürünü, Akıllı yaşam teknolojisi, Evinizi akıllandırın, IoT ile akıllı ev, Akıllı ev otomasyonu`;
+  
+  // Robots ayarları (index/noindex, follow/nofollow)
+  const robots = `${product.seo?.no_index ? "noindex" : "index"}, ${product.seo?.no_follow ? "nofollow" : "follow"}`;
 
   // gallery_images içindeki objelerden url çıkar
   const normalizeImages = (images) => {
@@ -52,11 +61,12 @@ export async function generateMetadata({ params }) {
   const productUrl = `https://simart.me/magaza/${kategori}/${urun}`;
 
   return {
-    title: `${productName} - Şımart Teknoloji`,
+    title: seoTitle,
     description: metaDescription,
     keywords: metaKeywords,
+    robots: robots,
     openGraph: {
-      title: `${productName} - Şımart Teknoloji`,
+      title: seoTitle,
       description: metaDescription,
       images: "https://simart.me/uploads/systems/og.jpg",
       url: productUrl,
@@ -64,7 +74,7 @@ export async function generateMetadata({ params }) {
     },
     other: {
       "og:type": "product",
-      "itemprop:name": `${productName} - Şımart Teknoloji`,
+      "itemprop:name": seoTitle,
       "itemprop:description": metaDescription,
       "itemprop:image": "https://simart.me/uploads/systems/og.jpg",
     },
@@ -97,7 +107,8 @@ export default async function page({ params }) {
   }
 
   const productName = product.name || product.title || "Ürün";
-  const productDescription = `${productName} ile evinizi akıllı hale getirin! Hemen ${productName} ürününe sahip olun, evinizi geleceğin teknolojisiyle buluşturun!`;
+  // const productDescription = `${productName} ile evinizi akıllı hale getirin! Hemen ${productName} ürününe sahip olun, evinizi geleceğin teknolojisiyle buluşturun!`;
+  const productDescription = product.seo?.description || `${productName} ile evinizi akıllı hale getirin! Hemen ${productName} ürününe sahip olun, evinizi geleceğin teknolojisiyle buluşturun!`;
 
   // Kategori adını bul (primary_category veya categories[0] veya slug'dan)
   const categoryName =
