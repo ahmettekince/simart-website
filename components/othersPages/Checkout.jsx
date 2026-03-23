@@ -12,7 +12,7 @@ import OrderSummary from "@/components/othersPages/checkout/OrderSummary";
 import CircularLoading from "@/components/common/CircularLoading";
 import PhoneInput from "@/components/common/PhoneInput";
 import { calculateCartTotals } from "@/utils/cartTotals";
-import { formatTcInput, formatTaxNumberInput, formatNameInput } from "@/utils/inputFormatters";
+import { formatTcInput, formatTaxNumberInput, formatNameInput, formatFirstNameInput, formatLastNameInput } from "@/utils/inputFormatters";
 
 
 export default function Checkout() {
@@ -1055,18 +1055,18 @@ export default function Checkout() {
                           style={{ marginTop: "20px" }}
                         >
                           <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
-                            <label htmlFor="address-title">Adres Başlığı Örneğin Evim veya İş Yerim*</label>
+                            <label htmlFor="address-title">Adres Başlığı: Örneğin Evim veya İş Yerim*</label>
                             <input required type="text" id="address-title" name="address_title" placeholder="Örn: Evim" />
                           </fieldset>
 
                           <div className="box grid-2" style={{ marginBottom: "20px", gap: "15px" }}>
                             <fieldset className="fieldset">
                               <label htmlFor="first-name">Ad</label>
-                              <input required type="text" id="first-name" name="delivery[first_name]" onInput={formatNameInput} />
+                              <input required type="text" id="first-name" name="delivery[first_name]" onInput={formatFirstNameInput} />
                             </fieldset>
                             <fieldset className="fieldset">
                               <label htmlFor="last-name">Soyad</label>
-                              <input required type="text" id="last-name" name="delivery[last_name]" onInput={formatNameInput} />
+                              <input required type="text" id="last-name" name="delivery[last_name]" onInput={formatLastNameInput} />
                             </fieldset>
                           </div>
                           <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
@@ -1592,11 +1592,11 @@ export default function Checkout() {
                               <div className="box grid-2" style={{ marginBottom: "20px", gap: "15px" }}>
                                 <fieldset className="fieldset">
                                   <label htmlFor="billing-first-name">Ad</label>
-                                  <input required type="text" id="billing-first-name" name="billing[first_name]" onInput={formatNameInput} />
+                                  <input required type="text" id="billing-first-name" name="billing[first_name]" onInput={formatFirstNameInput} />
                                 </fieldset>
                                 <fieldset className="fieldset">
                                   <label htmlFor="billing-last-name">Soyad</label>
-                                  <input required type="text" id="billing-last-name" name="billing[last_name]" onInput={formatNameInput} />
+                                  <input required type="text" id="billing-last-name" name="billing[last_name]" onInput={formatLastNameInput} />
                                 </fieldset>
                               </div>
                               <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>

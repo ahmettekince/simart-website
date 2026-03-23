@@ -9,7 +9,7 @@ import AddAddressButton from "@/components/common/AddAddressButton";
 import PhoneInput from "@/components/common/PhoneInput";
 import SimartButton from "@/components/common/SimartButton";
 import AccountTabs from "@/components/common/AccountTabs";
-import { formatNameInput, filterTcValue, filterTaxNumberValue } from "@/utils/inputFormatters";
+import { formatFirstNameInput, formatLastNameInput, formatNameInput, filterTcValue, filterTaxNumberValue } from "@/utils/inputFormatters";
 
 export default function AccountAddress() {
   const [activeTab, setActiveTab] = useState("delivery"); // "delivery" veya "billing"
@@ -454,7 +454,7 @@ export default function AccountAddress() {
 
           {/* Adres Başlığı */}
           <fieldset className="box fieldset">
-            <label htmlFor="address-title">Adres Başlığı Örneğin Evim veya İş Yerim*</label>
+            <label htmlFor="address-title">Adres Başlığı: Örneğin Evim veya İş Yerim*</label>
             <input required type="text" id="address-title" name="address_title" placeholder="Örn: Evim" />
             {fieldErrors.address_title && (
               <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
@@ -467,7 +467,7 @@ export default function AccountAddress() {
           <div className="box grid-3" style={{ gap: "15px" }}>
             <fieldset className="fieldset">
               <label htmlFor="first-name">Ad*</label>
-              <input required type="text" id="first-name" name="first_name" onInput={formatNameInput} />
+              <input required type="text" id="first-name" name="first_name" onInput={formatFirstNameInput} />
               {fieldErrors.first_name && (
                 <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
                   {fieldErrors.first_name[0]}
@@ -476,7 +476,7 @@ export default function AccountAddress() {
             </fieldset>
             <fieldset className="fieldset">
               <label htmlFor="last-name">Soyad*</label>
-              <input required type="text" id="last-name" name="last_name" onInput={formatNameInput} />
+              <input required type="text" id="last-name" name="last_name" onInput={formatLastNameInput} />
               {fieldErrors.last_name && (
                 <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
                   {fieldErrors.last_name[0]}
@@ -968,7 +968,7 @@ export default function AccountAddress() {
 
           {/* Adres Başlığı */}
           <fieldset className="box fieldset">
-            <label htmlFor="edit-address-title">Adres Başlığı Örneğin Evim veya İş Yerim*</label>
+            <label htmlFor="edit-address-title">Adres Başlığı: Örneğin Evim veya İş Yerim*</label>
             <input required type="text" id="edit-address-title" name="address_title" placeholder="Örn: Evim" />
             {fieldErrors.address_title && (
               <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
@@ -981,7 +981,7 @@ export default function AccountAddress() {
           <div className="box grid-3" style={{ gap: "15px" }}>
             <fieldset className="fieldset">
               <label htmlFor="edit-first-name">Ad*</label>
-              <input required type="text" id="edit-first-name" name="first_name" onInput={formatNameInput} />
+              <input required type="text" id="edit-first-name" name="first_name" onInput={formatFirstNameInput} />
               {fieldErrors.first_name && (
                 <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
                   {fieldErrors.first_name[0]}
@@ -990,7 +990,7 @@ export default function AccountAddress() {
             </fieldset>
             <fieldset className="fieldset">
               <label htmlFor="edit-last-name">Soyad*</label>
-              <input required type="text" id="edit-last-name" name="last_name" onInput={formatNameInput} />
+              <input required type="text" id="edit-last-name" name="last_name" onInput={formatLastNameInput} />
               {fieldErrors.last_name && (
                 <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
                   {fieldErrors.last_name[0]}

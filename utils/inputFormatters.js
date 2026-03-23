@@ -61,6 +61,31 @@ export function formatLastNameValue(str) {
   return str.replace(NAME_REGEX, "").toLocaleUpperCase("tr-TR");
 }
 
+/** onInput: Ad (Her kelime baş harf büyük) */
+export function formatFirstNameInput(e) {
+  const cursor = e.target.selectionStart;
+  const originalValue = e.target.value;
+  const formatted = formatFirstNameValue(originalValue);
+  
+  if (originalValue !== formatted) {
+    e.target.value = formatted;
+    // İmleç konumunu korumaya çalış (basit yaklaşım)
+    e.target.setSelectionRange(cursor, cursor);
+  }
+}
+
+/** onInput: Soyad (Tamamı büyük) */
+export function formatLastNameInput(e) {
+  const cursor = e.target.selectionStart;
+  const originalValue = e.target.value;
+  const formatted = formatLastNameValue(originalValue);
+  
+  if (originalValue !== formatted) {
+    e.target.value = formatted;
+    e.target.setSelectionRange(cursor, cursor);
+  }
+}
+
 /** Telefon: +90 5XX XXX XX XX formatında giriş için uncontrolled input yardımcısı */
 export function formatPhoneWithPlus90(e) {
   const value = e.target.value;
