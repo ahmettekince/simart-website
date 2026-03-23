@@ -7,6 +7,7 @@ import * as THREE from "three";
 //components
 import Robot from "./components/Robot";
 import Station from "./components/Station";
+import { ROBOTS } from "./robots";
 
 function ForbiddenZone({ position, size }) {
     const meshRef = useRef();
@@ -92,45 +93,7 @@ function Wall({ w, h, t, x, z }) {
     </group>;
 }
 
-const ROBOTS = [
-    {
-        id: "katya-v-akilli-robot-supurge",
-        name: "Katya V Akilli Robot Supurge",
-        slug: "katya-v-akilli-robot-supurge",
-        image: "/images/3d/robot.webp",
-        coupon: "SIMART10",
-        price: "12.999 TL",
-        features: { station: "hayir", area: "small", pet: false, carpet: "Az" }
-    },
-    {
-        id: "katya-v-plus-akilli-robot-supurge",
-        name: "katya V+ Akilli Robot Supurge",
-        slug: "katya-v-plus-akilli-robot-supurge",
-        image: "/images/3d/robot.webp",
-        coupon: "STATION20",
-        price: "18.499 TL",
-        features: { station: "toz", area: "medium", pet: false, carpet: "Orta" }
-    },
-    {
-        id: "katya-p-akilli-robot-supurge",
-        name: "katya P Akıllı Robot Süpürge",
-        slug: "katya-p-akilli-robot-supurge",
-        image: "/images/3d/robot.webp",
-        coupon: "AERO15",
-        price: "14.999 TL",
-        features: { station: "hayir", area: "medium", pet: true, carpet: "Orta" }
-    },
-    {
-        id: "katya-z-akilli-robot-supurge",
-        name: "katya Z Akıllı Robot Süpürge",
-        slug: "katyaz-akilli-robot-supurge",
-        image: "/images/3d/robot.webp",
-        coupon: "ULTRA25",
-        price: "25.999 TL",
-        features: { station: "toz", area: "large", pet: true, carpet: "Yoğun" }
-    }
 
-];
 
 function Floor({ w, z, x, zPos, color, opacity = 0.35 }) {
     return (
@@ -184,7 +147,7 @@ function Window({ x, z, w, t, h, winH = 1.2, bottomH = 0.9, rotate = false }) {
 
 
 /* --- UTILS --- */
-function sweep(xMin, xMax, zMin, zMax, fromPos = null, sw = 0.50, exclusion = null) {
+function sweep(xMin, xMax, zMin, zMax, fromPos = null, sw = 0.50, exclusion = null, skipPerimeter = false, orientation = 'vertical') {
     const M = 0.41; // Güvenli marj
 
     // Yasaklı alan kontrolü: Robot yarıçapı kadar marj ekliyoruz
@@ -209,51 +172,87 @@ function sweep(xMin, xMax, zMin, zMax, fromPos = null, sw = 0.50, exclusion = nu
         pts.push([pStartX, 0.25, fromPos[2]]);
     }
 
-    // --- 1. ADIM: PERIMETER ---
-    const cPoints = [
-        [pStartX, pStartZ], [pEndX, pStartZ], [pEndX, pEndZ], [pStartX, pEndZ], [pStartX, pStartZ]
-    ];
-    cPoints.forEach(([cx, cz]) => {
-        if (!isForbidden(cx, cz)) pts.push([cx, 0.25, cz]);
-    });
+    // --- 1. ADIM: PERIMETER (Çevreleme) ---
+    if (!skipPerimeter) {
+        const cPoints = [
+            [pStartX, pStartZ], [pEndX, pStartZ], [pEndX, pEndZ], [pStartX, pEndZ], [pStartX, pStartZ]
+        ];
+        cPoints.forEach(([cx, cz]) => {
+            // Eğer köşe yasaklı alan içindeyse (Salon Kiler), etrafından dolan
+            if (exclusion && cx >= exclusion[0][0] - 0.1 && cx <= exclusion[0][1] + 0.1 && cz >= exclusion[1][0] - 0.1 && cz <= exclusion[1][1] + 0.1) {
+                if (cx === pEndX && cz === pEndZ) {
+                    pts.push([pEndX, 0.25, exclusion[1][1] + 0.5]);
+                    pts.push([exclusion[0][0] - 0.5, 0.25, exclusion[1][1] + 0.5]);
+                    pts.push([exclusion[0][0] - 0.5, 0.25, pEndZ]);
+                }
+            } else {
+                pts.push([cx, 0.25, cz]);
+            }
+        });
+    }
 
     // --- 2. ADIM: İÇ ZİGZAG (Fill) ---
-    const iz0 = z0 + sw, iz1 = z1 - sw;
-    if (iz0 < iz1) {
-        let stepX = pStartX === x0 ? sw : -sw;
-        let targetX = pStartX === x0 ? x1 : x0;
+    if (orientation === 'horizontal') {
+        const iz0 = z0 + sw, iz1 = z1 - sw;
+        let stepZ = pStartZ === z1 ? -sw : sw;
+        let targetZ = pStartZ === z1 ? z0 : z1;
+        let startZ = pStartZ + stepZ;
+        let stopZ = targetZ - (stepZ * 0.5);
 
-        let startX = pStartX + stepX;
-        let stopX = targetX - (stepX * 0.5);
+        const ix0 = x0 + sw, ix1 = x1 - sw;
+        let curXStart = pStartX === x0 ? ix0 : ix1;
+        let curXEnd = pStartX === x0 ? ix1 : ix0;
+        const shouldCont = (curr) => stepZ > 0 ? curr <= stopZ + 0.05 : curr >= stopZ - 0.05;
 
-        if ((stepX > 0 && startX > x1 - 0.1) || (stepX < 0 && startX < x0 + 0.1)) return pts;
-
-        let curZStart = pStartZ === z0 ? iz0 : iz1;
-        let curZEnd = pStartZ === z0 ? iz1 : iz0;
-
-        const shouldCont = (curr) => stepX > 0 ? curr <= stopX + 0.05 : curr >= stopX - 0.05;
-
-        let lastZ = pStartZ;
-        for (let x = startX; shouldCont(x);) {
-            let czStart = curZStart, czEnd = curZEnd;
-
-            // Exclusion Clipping: Yasaklı alandan geçiyorsak Z sınırlarını daralt
-            if (exclusion && x >= exclusion[0][0] - 0.1 && x <= exclusion[0][1] + 0.1) {
-                // Kiler özel durumu: Z < -2.5 yasak ise alt sınırı daralt
-                if (czStart < exclusion[1][1]) czStart = exclusion[1][1] + 0.5;
-                if (czEnd < exclusion[1][1]) czEnd = exclusion[1][1] + 0.5;
+        let lastX = pStartX;
+        for (let z = startZ; shouldCont(z);) {
+            let cxStart = curXStart, cxEnd = curXEnd;
+            // Yatayda yasaklı alan (kiler) kontrolü (0.50 tampon payı ile)
+            if (exclusion && z >= exclusion[1][0] - 0.5 && z <= exclusion[1][1] + 0.5) {
+                if (cxStart > exclusion[0][0]) cxStart = exclusion[0][0] - 0.5;
+                if (cxEnd > exclusion[0][0]) cxEnd = exclusion[0][0] - 0.5;
             }
-
-            if (czStart < czEnd || czStart > czEnd) { // Basit mesafe varsa temizle
-                pts.push([x, 0.25, lastZ]);
-                pts.push([x, 0.25, czStart]);
-                pts.push([x, 0.25, czEnd]);
-                lastZ = czEnd;
+            if (cxStart < cxEnd || cxStart > cxEnd) {
+                pts.push([lastX, 0.25, z]);
+                pts.push([cxStart, 0.25, z]);
+                pts.push([cxEnd, 0.25, z]);
+                lastX = cxEnd;
             }
+            [curXStart, curXEnd] = [curXEnd, curXStart];
+            if (Math.abs(z - stopZ) < 0.1) break;
+            z = stepZ > 0 ? Math.min(z + sw, stopZ) : Math.max(z - sw, stopZ);
+        }
+    } else {
+        const iz0 = z0 + sw, iz1 = z1 - sw;
+        if (iz0 < iz1) {
+            let stepX = pStartX === x0 ? sw : -sw;
+            let targetX = pStartX === x0 ? x1 : x0;
+            let startX = pStartX + stepX;
+            let stopX = targetX - (stepX * 0.5);
 
-            [curZStart, curZEnd] = [curZEnd, curZStart];
-            if (Math.abs(x - stopX) < 0.1) break;
-            x = stepX > 0 ? Math.min(x + sw, stopX) : Math.max(x - sw, stopX);
+            if ((stepX > 0 && startX > x1 - 0.1) || (stepX < 0 && startX < x0 + 0.1)) return pts;
+
+            let curZStart = pStartZ === z0 ? iz0 : iz1;
+            let curZEnd = pStartZ === z0 ? iz1 : iz0;
+            const shouldCont = (curr) => stepX > 0 ? curr <= stopX + 0.05 : curr >= stopX - 0.05;
+
+            let lastZ = pStartZ;
+            for (let x = startX; shouldCont(x);) {
+                let czStart = curZStart, czEnd = curZEnd;
+                if (exclusion && x >= exclusion[0][0] - 0.1 && x <= exclusion[0][1] + 0.1) {
+                    if (czStart < exclusion[1][1]) czStart = exclusion[1][1] + 0.5;
+                    if (czEnd < exclusion[1][1]) czEnd = exclusion[1][1] + 0.5;
+                }
+                if (czStart < czEnd || czStart > czEnd) {
+                    pts.push([x, 0.25, lastZ]);
+                    pts.push([x, 0.25, czStart]);
+                    pts.push([x, 0.25, czEnd]);
+                    lastZ = czEnd;
+                }
+                [curZStart, curZEnd] = [curZEnd, curZStart];
+                if (Math.abs(x - stopX) < 0.1) break;
+                x = stepX > 0 ? Math.min(x + sw, stopX) : Math.max(x - sw, stopX);
+            }
         }
     }
 
@@ -365,11 +364,41 @@ function buildWaypoints(type) {
         push([station], false);
         return all;
     } else if (type === "3+1") {
-        areas.push({ name: "Salon", customPath: contourSalon(), bounds: [[1.1, 6.9], [-4.9, 1.4]], doorPos: [1, -0.25], doorDir: 'x', toPos: true });
-        areas.push({ name: "Mutfak", bounds: [[1.1, 6.9], [1.6, 4.9]], doorPos: [1, 2.3], doorDir: 'x', toPos: true });
-        areas.push({ name: "Hol", bounds: [[-2.4, 0.9], [-4.9, 4.9]], doorPos: [0, 0], doorDir: 'x', isCenter: true });
-        areas.push({ name: "Ebeveyn Odası", bounds: [[-6.9, -2.6], [0.6, 4.9]], doorPos: [-2.5, 2.37], doorDir: 'x', toPos: false });
-        areas.push({ name: "Oda 2", bounds: [[-6.9, -2.6], [-4.9, 0.4]], doorPos: [-2.5, -2.8], doorDir: 'x', toPos: false });
+        const suite = [
+            { name: "Hol", bounds: [[-2.4, 0.9], [-4.9, 4.9]], isCenter: true },
+            { name: "Salon", bounds: [[1.1, 6.9], [-4.9, 1.4]], doorPos: [1, -0.25], doorDir: 'x', toPos: true, isCenter: false, orientation: 'horizontal', exclusion: [[4.6, 6.9], [-4.65, -2.35]] },
+            { name: "Mutfak", bounds: [[1.1, 6.9], [1.6, 4.9]], doorPos: [1, 2.3], doorDir: 'x', toPos: true },
+            { name: "Ebeveyn Odası", bounds: [[-6.9, -2.6], [0.6, 4.9]], doorPos: [-2.5, 2.37], doorDir: 'x', toPos: false },
+            { name: "Oda 2", bounds: [[-6.9, -2.6], [-4.9, 0.4]], doorPos: [-2.5, -2.8], doorDir: 'x', toPos: false }
+        ];
+
+        const plan = ["Hol", "Salon", "Mutfak", "Ebeveyn Odası", "Oda 2"];
+        push([station], false); push([entrance], false); currentPos = entrance;
+
+        plan.forEach(name => {
+            const area = suite.find(a => a.name === name);
+            if (area.doorPos) {
+                push([[0, 0.25, currentPos[2]]], false);
+                push([[0, 0.25, area.doorPos[1]]], false);
+                const dPts = door(area.doorPos[0], area.doorPos[1], area.doorDir, area.toPos);
+                push(dPts, false);
+                currentPos = dPts[dPts.length - 1];
+            }
+            const sPts = sweep(...area.bounds[0], ...area.bounds[1], currentPos, 0.45, area.exclusion, area.skipPerimeter, area.orientation);
+            push(sPts, true);
+            if (sPts.length > 0) currentPos = sPts[sPts.length - 1];
+
+            if (!area.isCenter) {
+                if (area.doorDir === 'z') push([[area.doorPos[0], 0.25, currentPos[2]]], false);
+                else push([[currentPos[0], 0.25, area.doorPos[1]]], false);
+                const rPts = door(area.doorPos[0], area.doorPos[1], area.doorDir, !area.toPos);
+                push(rPts, false);
+                push([[0, 0.25, area.doorPos[1]]], false);
+                currentPos = [0, 0.25, area.doorPos[1]];
+            }
+        });
+        push([station], false);
+        return all;
     } else if (type === "3+2") {
         const suite = [];
         // Orta Koridor: Hem bir merkez alan (isCenter) hem de girişi olan bir alan (doorPos)
@@ -458,7 +487,7 @@ function buildWaypoints(type) {
 }
 
 /* --- COMPONENTS --- */
-function House({ type, trail, posRef, rotRef }) {
+function House({ type, trail, posRef, rotRef, recommendedRobot }) {
     const h = 2.7, t = 0.18;
     const is1plus1 = type === "1+1";
     const is3plus2 = type === "3+2";
@@ -521,7 +550,7 @@ function House({ type, trail, posRef, rotRef }) {
         {type === "3+1" && <>
             <mesh position={[4, 0.015, -1.75]}><boxGeometry args={[5.8, 0.01, 6.3]} /><meshStandardMaterial color="#ee5253" opacity={0.35} transparent /></mesh>
             {/* Yasaklı Alan (Model Zemin Üstüne Çıkartıldı: y=0.022) */}
-            <ForbiddenZone position={[5.75, 0.022, -3.75]} size={2.3} />
+            <ForbiddenZone position={[5.75, 0.022, -3.5]} size={2.3} />
 
             <mesh position={[4, 0.015, 3.25]}><boxGeometry args={[5.8, 0.01, 3.3]} /><meshStandardMaterial color="#ff9f43" opacity={0.35} transparent /></mesh>
             <mesh position={[-0.75, 0.015, 0]}><boxGeometry args={[3.3, 0.01, 9.8]} /><meshStandardMaterial color="#b2bec3" opacity={0.35} transparent /></mesh>
@@ -580,7 +609,7 @@ function House({ type, trail, posRef, rotRef }) {
             </>
         }
 
-        <Station />
+        <Station type={recommendedRobot?.features?.station} />
         <Wall w={fw} h={h} t={t} x={0} z={(-fz / 2) + zOff} />
         {/* Dış Duvarlar (Pencere Mantığıyla 1+1 Oda Duvarı Bölünüyor) */}
         {type === "1+1" ? (
@@ -690,7 +719,7 @@ function House({ type, trail, posRef, rotRef }) {
             </>
         }
 
-        <Robot posRef={posRef} rotRef={rotRef} />
+        <Robot posRef={posRef} rotRef={rotRef} id={recommendedRobot?.id} />
     </>;
 }
 
@@ -701,7 +730,7 @@ export default function Plan3D() {
     const [trail, setTrail] = useState([]);
     const [status, setStatus] = useState("Başlatmayı Bekliyor");
     const [pct, setPct] = useState(0);
-    const [speed, setSpeed] = useState(3.5);
+    const [speed, setSpeed] = useState(0.1);
     const [metrekare, setMetrekare] = useState(null);
     const [pet, setPet] = useState(null);
     const [currentStep, setCurrentStep] = useState(1);
@@ -723,26 +752,41 @@ export default function Plan3D() {
         "Model eşleştiriliyor...",
     ], [type, metrekare, carpet, pet, station]);
 
-    // Önerilen Robotu Seçme Mantığı
+    // Önerilen Robotu Seçme Mantığı (Kullanıcı Kurallarına Göre Taslak)
     const recommendedRobot = useMemo(() => {
-        if (!station || !metrekare || !carpet) return ROBOTS[0];
+        if (!metrekare) return ROBOTS[0]; // Katya V default
 
-        // Alan büyüklüğünü kategorize et
-        const areaLevel = metrekare > 150 ? "large" : (metrekare > 80 ? "medium" : "small");
+        // Metrekareyi sayıya çevir (ör: "0-60" -> 0, "150+" -> 150)
+        const mSq = parseInt(metrekare) || 0;
 
-        // Puanlama Sistemi
-        const scores = ROBOTS.map(robot => {
-            let score = 0;
-            if (robot.features.station === station) score += 10;
-            if (robot.features.area === areaLevel) score += 5;
-            if (robot.features.pet === pet) score += 3;
-            if (robot.features.carpet === carpet) score += 2;
-            return { ...robot, score };
-        });
+        // 1. İSTASYON İSTEMEYENLER (HAYIR) - KIRMIZI ÇİZGİ
+        if (station === "hayir") {
+            // Halı Çok veya Büyük Ev ise -> Katya V (Dayanıklı)
+            if (carpet === "Çok" || mSq > 165) {
+                return ROBOTS.find(r => r.id === "katya-v-akilli-robot-supurge") || ROBOTS[0];
+            }
+            // Evcil Hayvan + Düşük/Orta Halı -> Katya P
+            if (pet && (carpet === "Az" || carpet === "Orta")) {
+                return ROBOTS.find(r => r.id === "katya-p-akilli-robot-supurge") || ROBOTS[0];
+            }
+            // Diğer Durumlar (Zaten Z modeline uyar) -> Katya Z
+            return ROBOTS.find(r => r.id === "katya-z-akilli-robot-supurge") || ROBOTS[0];
+        }
 
-        // En yüksek puanlıyı döndür
-        return scores.sort((a, b) => b.score - a.score)[0];
-    }, [station, metrekare, pet, carpet]);
+        // 2. TAM OTOMASYON VEYA ÇOK HALI (Katya U: Mop kaldırma ve tam istasyon)
+        // Eğer istasyon isteniyorsa (hepsi veya toz) ve halı çoksa
+        if (station === "hepsi" || carpet === "Çok") {
+            return ROBOTS.find(r => r.id === "katya-u-akilli-robot-supurge") || ROBOTS[0];
+        }
+
+        // 3. TOZ BOŞALTMA İSTEYENLER
+        if (station === "toz") {
+            return ROBOTS.find(r => r.id === "katya-v-plus-akilli-robot-supurge") || ROBOTS[0];
+        }
+
+        // 4. VARSAYILAN (Katya V)
+        return ROBOTS.find(r => r.id === "katya-v-akilli-robot-supurge") || ROBOTS[0];
+    }, [metrekare, pet, carpet, station]);
 
     useEffect(() => {
         let timer;
@@ -914,7 +958,7 @@ export default function Plan3D() {
                 zIndex: 10,
                 boxShadow: "10px 0 30px rgba(0,0,0,0.02)"
             }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: isMobile ? "20px" : "40px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
                     <h1 style={{ fontSize: isMobile ? "20px" : "26px", fontWeight: "800", margin: 0, lineHeight: "1.3", color: "#1a1a1a" }}>
                         Size Uygun Robot Süpürgeyi Seçelim
                     </h1>
@@ -972,7 +1016,7 @@ export default function Plan3D() {
                                     <div style={{
                                         background: "#fff",
                                         borderRadius: "15px",
-                                        padding: "20px",
+                                        padding: "10px",
                                         boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
                                         border: "1px solid #eee",
                                         textAlign: "center"
@@ -987,21 +1031,15 @@ export default function Plan3D() {
                                             alignItems: "center",
                                             justifyContent: "center",
                                             overflow: "hidden",
-                                            border: "1px solid #f0f0f0"
                                         }}>
-                                            <img src="/images/3d/robot.webp" alt={recommendedRobot.name} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                                            <img src={recommendedRobot.image} alt={recommendedRobot.name} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
                                         </div>
 
-                                        <h3 style={{ fontSize: "16px", fontWeight: "800", margin: "0 0 5px 0", color: "#1a1a1a" }}>{recommendedRobot.name}</h3>
-                                        <p style={{ fontSize: "12px", color: "#747d8c", margin: "0 0 15px 0" }}>Seçimlerinize en uygun modelimiz.</p>
-
-                                        <div style={{ background: "#f1f2f6", padding: "10px", borderRadius: "10px", marginBottom: "15px" }}>
-                                            <p style={{ fontSize: "10px", color: "#636e72", margin: "0 0 5px 0", fontWeight: "700" }}>SİZE ÖZEL KUPON KODU</p>
-                                            <p style={{ fontSize: "18px", color: "#3c81b5", margin: 0, fontWeight: "900", letterSpacing: "1px" }}>{recommendedRobot.coupon}</p>
-                                        </div>
+                                        <h3 style={{ fontSize: "16px", fontWeight: "800", color: "#1a1a1a" }}>{recommendedRobot.name}</h3>
+                                        <p style={{ fontSize: "12px", color: "#747d8c" }}>Seçimlerinize en uygun modelimiz.</p>
 
                                         <button
-                                            onClick={() => window.open(`https://simart.me/magaza/robotlar/${recommendedRobot.slug}`, "_blank")}
+                                            onClick={() => window.open(recommendedRobot.link, "_blank")}
                                             style={{
                                                 width: "100%",
                                                 padding: "14px",
@@ -1016,6 +1054,29 @@ export default function Plan3D() {
                                         >
                                             Ürünü İncele
                                         </button>
+                                    </div>
+
+                                    {/* BÜYÜK SEÇİM ÖZETİ (FOTOĞRAF 1 TASARIMI) - KARTIN ALTINDA */}
+                                    <div style={{ marginTop: "25px", paddingTop: "0px" }}>
+                                        <div style={{ fontSize: "14px", fontWeight: "800", color: "#3c81b5", textTransform: "uppercase", marginBottom: "15px", letterSpacing: "1px" }}>Seçim Özetiniz</div>
+                                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                                            <div style={{ background: "#f8f9fa", padding: "12px", borderRadius: "12px", border: "1px solid #f1f2f6" }}>
+                                                <div style={{ fontSize: "10px", color: "#b2bec3", fontWeight: "700", marginBottom: "5px" }}>ALAN</div>
+                                                <div style={{ fontSize: "14px", color: "#2d3436", fontWeight: "800" }}>{metrekare ? `${metrekare} m²` : "-"}</div>
+                                            </div>
+                                            <div style={{ background: "#f8f9fa", padding: "12px", borderRadius: "12px", border: "1px solid #f1f2f6" }}>
+                                                <div style={{ fontSize: "10px", color: "#b2bec3", fontWeight: "700", marginBottom: "5px" }}>EVCİL HAYVAN</div>
+                                                <div style={{ fontSize: "14px", color: "#2d3436", fontWeight: "800" }}>{pet === null ? "-" : (pet ? "Var" : "Yok")}</div>
+                                            </div>
+                                            <div style={{ background: "#f8f9fa", padding: "12px", borderRadius: "12px", border: "1px solid #f1f2f6" }}>
+                                                <div style={{ fontSize: "10px", color: "#b2bec3", fontWeight: "700", marginBottom: "5px" }}>HALI YOĞUNLUĞU</div>
+                                                <div style={{ fontSize: "14px", color: "#2d3436", fontWeight: "800" }}>{carpet || "-"}</div>
+                                            </div>
+                                            <div style={{ background: "#f8f9fa", padding: "12px", borderRadius: "12px", border: "1px solid #f1f2f6" }}>
+                                                <div style={{ fontSize: "10px", color: "#b2bec3", fontWeight: "700", marginBottom: "5px" }}>İSTASYON</div>
+                                                <div style={{ fontSize: "14px", color: "#2d3436", fontWeight: "800" }}>{station ? (station === "toz" ? "Toz Boşaltmalı" : station === "hepsi" ? "Tam İstasyon" : "İstenmiyor") : "-"}</div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             )}
@@ -1162,8 +1223,9 @@ export default function Plan3D() {
                                 <p style={{ fontSize: "11px", color: "#95a5a6", marginBottom: "20px" }}>İstasyonlu modeller toz haznesini otomatik boşaltır.</p>
                                 <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                                     {[
-                                        { id: "toz", label: "İstasyonlu - Toz Toplama Ünitesi", desc: "Toz haznesini otomatik boşaltır." },
-                                        { id: "hayir", label: "İstasyonsuz", desc: "Sadece şarj ünitesi içerir." }
+                                        { id: "hepsi", label: "Toz Boşaltsın + Su Yenilesin", desc: "Toz, su ve paspas yıkama servisi sunar." },
+                                        { id: "toz", label: "Otomatik Toz Boşaltsın", desc: "Toz haznesini otomatik temizler." },
+                                        { id: "hayir", label: "İstasyon Yok", desc: "Sadece şarj ünitesi içerir." }
                                     ].map(s => (
                                         <button
                                             key={s.id}
@@ -1202,7 +1264,7 @@ export default function Plan3D() {
                     <directionalLight position={[10, 15, 10]} intensity={1.5} />
                     <ContactShadows position={[0, 0.01, 0]} opacity={0.2} scale={30} blur={2.5} far={4} resolution={128} />
                     <Suspense fallback={null}>
-                        {type && <House type={type} trail={trail} posRef={posRef} rotRef={rotRef} />}
+                        {type && <House type={type} trail={trail} posRef={posRef} rotRef={rotRef} recommendedRobot={recommendedRobot} />}
                     </Suspense>
                     <Mover />
                     <OrbitControls
@@ -1275,8 +1337,8 @@ export default function Plan3D() {
                         </button>
 
 
-                        <p style={{ color: "#636e72", fontSize: "15px", marginBottom: "30px", lineHeight: "1.5" }}>
-                            Evinizin yapısı ve tercihleriniz için en yüksek verimi sağlayacak modelimizi inceleyin.
+                        <p style={{ color: "#636e72", fontSize: "14px", marginBottom: "20px", lineHeight: "1.5", fontWeight: "500" }}>
+                            {recommendedRobot.description}
                         </p>
 
                         <div style={{
@@ -1288,21 +1350,38 @@ export default function Plan3D() {
                         }}>
                             <div style={{
                                 width: "100%",
-                                height: "300px",
+                                height: "260px",
                                 background: "#fff",
                                 borderRadius: "12px",
-                                marginBottom: "20px",
+                                marginBottom: "15px",
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
                                 boxShadow: "0 5px 15px rgba(0,0,0,0.03)",
                                 overflow: "hidden"
                             }}>
-                                <img src="/images/3d/robot.webp" alt="Robot Önerisi" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                                <img src={recommendedRobot.image} alt={recommendedRobot.name} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
                             </div>
-                            <h3 style={{ fontSize: "18px", fontWeight: "800", margin: "0 0 8px 0", color: "#3c81b5" }}>Robot süpürge</h3>
-                            <p style={{ fontSize: "13px", color: "#747d8c", margin: 0 }}>Akıllı Haritalama & Maksimum Emiş Gücü</p>
+                            <h3 style={{ fontSize: "18px", fontWeight: "800", margin: "0 0 4px 0", color: "#3c81b5" }}>{recommendedRobot.name}</h3>
+                            <div style={{ display: "flex", justifyContent: "center", gap: "10px", alignItems: "center", marginBottom: "8px" }}>
+                                <span style={{ fontSize: "16px", fontWeight: "700", color: "#2d3436" }}>{recommendedRobot.price}</span>
+                                <span style={{ fontSize: "13px", color: "#eb4d4b", fontWeight: "600", background: "#ffeaa7", padding: "2px 8px", borderRadius: "20px" }}>-{recommendedRobot.discount} İndirim</span>
+                            </div>
+
+
+
+                            <div style={{
+                                border: "2px dashed #3c81b5",
+                                background: "#e1f5fe",
+                                padding: "10px",
+                                borderRadius: "10px",
+                                marginTop: "10px"
+                            }}>
+                                <div style={{ fontSize: "20px", fontWeight: "900", color: "#0984e3", letterSpacing: "2px" }}>{recommendedRobot.couponCode}</div>
+                            </div>
                         </div>
+
+
 
                         <div style={{ display: "flex", gap: "12px" }}>
                             <button
@@ -1312,6 +1391,7 @@ export default function Plan3D() {
                                 Kapat
                             </button>
                             <button
+                                onClick={() => window.open(recommendedRobot.link, '_blank')}
                                 style={{ flex: 2, padding: "16px", borderRadius: "12px", border: "none", background: "#3c81b5", color: "#fff", fontWeight: "700", cursor: "pointer", boxShadow: "0 10px 20px rgba(60, 129, 181, 0.2)" }}
                             >
                                 Ürünü Şimdi İncele
