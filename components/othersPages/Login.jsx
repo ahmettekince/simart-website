@@ -279,7 +279,7 @@ export default function Login() {
                     )}
                   </div>
                   <div className="mb_20">
-                    <Link href={getLocalizedUrl("/sifremi-sifirlama", lang)} className="tf-btn btn-line">
+                    <Link href={getLocalizedUrl("/sifremi-unuttum", lang)} className="tf-btn btn-line">
                       Şifrenizi mi unuttunuz?
                     </Link>
                   </div>

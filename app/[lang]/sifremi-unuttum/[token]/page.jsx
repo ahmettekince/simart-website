@@ -10,7 +10,7 @@ export const metadata = {
     title: "Şifre Sıfırla - Şımart Teknoloji",
     description,
     robots: {
-        index: false, // Bu sayfa indekslenmesin
+        index: false,
         follow: false,
     },
 };

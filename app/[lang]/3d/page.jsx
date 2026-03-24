@@ -1,13 +1,16 @@
 "use client";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Line, ContactShadows, Text, useTexture } from "@react-three/drei";
-import { useState, useRef, useMemo, Suspense, useEffect } from "react";
+
 import * as THREE from "three";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { useState, useRef, useMemo, Suspense, useEffect } from "react";
+import { OrbitControls, Line, ContactShadows, Text, useTexture } from "@react-three/drei";
 
 //components
+import { ROBOTS } from "./robots";
 import Robot from "./components/Robot";
 import Station from "./components/Station";
-import { ROBOTS } from "./robots";
+import RecommendationModal from "./components/RecommendationModal";
+
 
 function ForbiddenZone({ position, size }) {
     const meshRef = useRef();
@@ -63,7 +66,6 @@ function VirtualWall({ p1, p2 }) {
     </group>;
 }
 
-
 function WallMaterial() {
     const tex = useTexture('/images/3d/wallpaper.jpg');
     if (tex) {
@@ -93,8 +95,6 @@ function Wall({ w, h, t, x, z }) {
     </group>;
 }
 
-
-
 function Floor({ w, z, x, zPos, color, opacity = 0.35 }) {
     return (
         <mesh position={[x, 0.015, zPos]}>
@@ -103,8 +103,6 @@ function Floor({ w, z, x, zPos, color, opacity = 0.35 }) {
         </mesh>
     );
 }
-
-
 
 function Lintel({ x, z, w, t, h, doorH = 2.15 }) {
     const wallH = h - doorH;
@@ -143,8 +141,6 @@ function Window({ x, z, w, t, h, winH = 1.2, bottomH = 0.9, rotate = false }) {
         </mesh>
     </group>;
 }
-
-
 
 /* --- UTILS --- */
 function sweep(xMin, xMax, zMin, zMax, fromPos = null, sw = 0.50, exclusion = null, skipPerimeter = false, orientation = 'vertical') {
@@ -258,23 +254,6 @@ function sweep(xMin, xMax, zMin, zMax, fromPos = null, sw = 0.50, exclusion = nu
 
     return pts;
 }
-
-function contourSalon(margin = 0.45) {
-    const pts = [];
-    // Salonun L şeklindeki sınırlarını daraltarak dıştan içe halkalar (Contour Path)
-    for (let m = margin; m < 2.2; m += 0.5) {
-        // Ok yönündeki rota: Kapıdan girş -> Sol Duvar -> Üst Duvar -> Kiler Kenarı -> Kiler Altı -> Sağ Duvar -> Alt Duvar
-        pts.push([1.1 + m, 0.25, 1.4 - m]);  // Sağ-alt başlangıç
-        pts.push([1.1 + m, 0.25, -4.9 + m]); // Sol Duvar Boyunca Yukarı
-        pts.push([4.5 - m, 0.25, -4.9 + m]); // Üst Duvar Boyunca Sağ
-        pts.push([4.5 - m, 0.25, -2.5 + m]); // Kiler Kenarı Aşağı (L-Dönüş)
-        pts.push([6.9 - m, 0.25, -2.5 + m]); // Kiler Altı Sağ
-        pts.push([6.9 - m, 0.25, 1.4 - m]);  // Sağ Duvar Aşağı
-        pts.push([1.1 + m, 0.25, 1.4 - m]);  // Alt Duvar Sol (Halka Tamamlandı)
-    }
-    return pts;
-}
-
 
 function door(x, z, dir, toPositive) {
     const gap = 0.5; // Kapı giriş/çıkış derinliği (Güvenli Mesafe)
@@ -723,19 +702,19 @@ function House({ type, trail, posRef, rotRef, recommendedRobot }) {
     </>;
 }
 
-
 export default function Plan3D() {
     const [type, setType] = useState("3+1");
     const [isAuto, setIsAuto] = useState(false);
     const [trail, setTrail] = useState([]);
     const [status, setStatus] = useState("Başlatmayı Bekliyor");
     const [pct, setPct] = useState(0);
-    const [speed, setSpeed] = useState(0.1);
+    const [speed, setSpeed] = useState(1);
     const [metrekare, setMetrekare] = useState(null);
     const [pet, setPet] = useState(null);
     const [currentStep, setCurrentStep] = useState(1);
     const [carpet, setCarpet] = useState(null);
     const [station, setStation] = useState(null);
+    const [mopPref, setMopPref] = useState(null);
     const [isMobile, setIsMobile] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [analysisIdx, setAnalysisIdx] = useState(0);
@@ -756,37 +735,52 @@ export default function Plan3D() {
     const recommendedRobot = useMemo(() => {
         if (!metrekare) return ROBOTS[0]; // Katya V default
 
-        // Metrekareyi sayıya çevir (ör: "0-60" -> 0, "150+" -> 150)
-        const mSq = parseInt(metrekare) || 0;
+        // Metrekare değerine göre sayısal eşik belirle (ör: "151-180" -> 180, "180+" -> 181)
+        let mSq = 0;
+        if (metrekare === "180+") mSq = 181;
+        else if (metrekare.includes("-")) mSq = parseInt(metrekare.split("-")[1]);
+        else mSq = parseInt(metrekare);
 
-        // 1. İSTASYON İSTEMEYENLER (HAYIR) - KIRMIZI ÇİZGİ
+        // 1. Durum: Kullanıcı Paspas Konforu (Auto Mop Lifting) İstemesi VEYA İstasyonun "Hepsi Bir Arada" seçilmesi
+        if (mopPref === "auto" || station === "hepsi") {
+            return ROBOTS.find(r => r.id === "katya-u-akilli-robot-supurge") || ROBOTS[0];
+        }
+
+        // --- BÜYÜK EVLER (150+ m2) ---
+        // 150m2 üzerindeyse Katya U yerine V+ (İstasyonlu) veya V (İstasyonsuz) daha makul.
+        if (mSq > 150) {
+            if (station === "toz") {
+                return ROBOTS.find(r => r.id === "katya-v-plus-akilli-robot-supurge") || ROBOTS[0];
+            }
+            if (station === "hayir") {
+                return ROBOTS.find(r => r.id === "katya-v-akilli-robot-supurge") || ROBOTS[0];
+            }
+            // Varsayılan koca ev robotu: V+
+            return ROBOTS.find(r => r.id === "katya-v-plus-akilli-robot-supurge") || ROBOTS[0];
+        }
+
+        // 2. İSTASYON İSTEMEYENLER (HAYIR)
         if (station === "hayir") {
-            // Halı Çok veya Büyük Ev ise -> Katya V (Dayanıklı)
-            if (carpet === "Çok" || mSq > 165) {
+            // Halı Çok ise -> Katya V (Dayanıklı)
+            if (carpet === "Çok") {
                 return ROBOTS.find(r => r.id === "katya-v-akilli-robot-supurge") || ROBOTS[0];
             }
             // Evcil Hayvan + Düşük/Orta Halı -> Katya P
             if (pet && (carpet === "Az" || carpet === "Orta")) {
                 return ROBOTS.find(r => r.id === "katya-p-akilli-robot-supurge") || ROBOTS[0];
             }
-            // Diğer Durumlar (Zaten Z modeline uyar) -> Katya Z
+            // Diğer Durumlar -> Katya Z
             return ROBOTS.find(r => r.id === "katya-z-akilli-robot-supurge") || ROBOTS[0];
         }
 
-        // 2. TAM OTOMASYON VEYA ÇOK HALI (Katya U: Mop kaldırma ve tam istasyon)
-        // Eğer istasyon isteniyorsa (hepsi veya toz) ve halı çoksa
-        if (station === "hepsi" || carpet === "Çok") {
-            return ROBOTS.find(r => r.id === "katya-u-akilli-robot-supurge") || ROBOTS[0];
-        }
-
-        // 3. TOZ BOŞALTMA İSTEYENLER
-        if (station === "toz") {
+        // 3. ÇOK HALI VE STANDART İSTASYON İSTEYENLER
+        if (carpet === "Çok" || station === "toz") {
             return ROBOTS.find(r => r.id === "katya-v-plus-akilli-robot-supurge") || ROBOTS[0];
         }
 
         // 4. VARSAYILAN (Katya V)
         return ROBOTS.find(r => r.id === "katya-v-akilli-robot-supurge") || ROBOTS[0];
-    }, [metrekare, pet, carpet, station]);
+    }, [metrekare, pet, carpet, station, mopPref]);
 
     useEffect(() => {
         let timer;
@@ -798,7 +792,16 @@ export default function Plan3D() {
         return () => clearInterval(timer);
     }, [isAuto, isAnalyzing, showModal, analysisMessages.length]);
 
-    // Mobile auto-scroll logic
+    // TEMİZLİK BİTTİĞİNDE MODALI AÇ
+    useEffect(() => {
+        if (isCleaning && pct >= 100 && !showModal) {
+            setShowModal(true);
+            setIsCleaning(false);
+            setStatus("Temizlik başarıyla tamamlandı!");
+        }
+    }, [isCleaning, pct, showModal]);
+
+    // MOBİLDE ANALİZ BİTİNCE (1.5 SN) ROBOT HAREKET ETTİKTEN 3 SN SONRA HARİTAYA KAYDIR
     useEffect(() => {
         let scrollTimer;
         if (isMobile && isCleaning && !isAnalyzing) {
@@ -807,7 +810,7 @@ export default function Plan3D() {
                 if (element) {
                     element.scrollIntoView({ behavior: "smooth" });
                 }
-            }, 3000);
+            }, 3000); // Temizlikten tam 3 saniye sonra
         }
         return () => clearTimeout(scrollTimer);
     }, [isMobile, isCleaning, isAnalyzing]);
@@ -862,7 +865,7 @@ export default function Plan3D() {
         setTrail([]); lastTrail.current = null;
         posRef.current.set(0, 0.25, -4.5); rotRef.current = 0;
         setStatus("Başlatmayı Bekliyor"); setPct(0);
-        setMetrekare(null); setPet(null); setCarpet(null); setStation(null);
+        setMetrekare(null); setPet(null); setCarpet(null); setStation(null); setMopPref(null);
         setCurrentStep(1);
     };
 
@@ -973,7 +976,7 @@ export default function Plan3D() {
                 {/* ADIM GÖSTERGESİ */}
                 {!isAuto && (
                     <div style={{ display: "flex", gap: "5px", marginBottom: "30px" }}>
-                        {[1, 2, 3, 4, 5].map(s => (
+                        {[1, 2, 3, 4, 5, 6].map(s => (
                             <div key={s} style={{ flex: 1, height: "4px", background: s <= currentStep ? "#3c81b5" : "#eee", borderRadius: "2px", transition: "all 0.3s ease" }} />
                         ))}
                     </div>
@@ -1037,6 +1040,10 @@ export default function Plan3D() {
 
                                         <h3 style={{ fontSize: "16px", fontWeight: "800", color: "#1a1a1a" }}>{recommendedRobot.name}</h3>
                                         <p style={{ fontSize: "12px", color: "#747d8c" }}>Seçimlerinize en uygun modelimiz.</p>
+
+                                        <div style={{ background: "#f1f2f6", padding: "10px", borderRadius: "10px", marginBottom: "15px" }}>
+                                            <p style={{ fontSize: "18px", color: "#3c81b5", margin: 0, fontWeight: "900", letterSpacing: "1px" }}>{recommendedRobot.couponCode}</p>
+                                        </div>
 
                                         <button
                                             onClick={() => window.open(recommendedRobot.link, "_blank")}
@@ -1117,29 +1124,25 @@ export default function Plan3D() {
                         {currentStep === 2 && (
                             <div className="step-enter">
                                 <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: "15px", fontWeight: "700" }}>Eviniz Kaç Metrekare?</p>
-                                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                                    {(type === "1+1" ? ["0-60", "61-70", "71-80", "81-90", "90+"] :
-                                        type === "2+1" ? ["0-60", "61-75", "76-89", "90-100", "150+"] :
-                                            ["0-90", "91-110", "111-120", "121-130", "150+", "200+"]).map(m => (
-                                                <button
-                                                    key={m}
-                                                    onClick={() => { setMetrekare(m); setCurrentStep(3); }}
-                                                    style={{
-                                                        width: "100%",
-                                                        padding: "14px",
-                                                        borderRadius: "10px",
-                                                        border: metrekare === m ? "2.5px solid #3c81b5" : "1px solid #e0e0e0",
-                                                        background: metrekare === m ? "#3c81b5" : "#f8f9fa",
-                                                        color: metrekare === m ? "#fff" : "#2d3436",
-                                                        textAlign: "left",
-                                                        cursor: "pointer",
-                                                        fontWeight: "600",
-                                                        transition: "all 0.2s ease"
-                                                    }}
-                                                >
-                                                    {m} m²
-                                                </button>
-                                            ))}
+                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                                    {["0-60", "61-90", "91-120", "121-150", "151-180", "180+"].map(m => (
+                                        <button
+                                            key={m}
+                                            onClick={() => { setMetrekare(m); setCurrentStep(3); }}
+                                            style={{
+                                                padding: "16px",
+                                                borderRadius: "10px",
+                                                border: metrekare === m ? "2.5px solid #3c81b5" : "1px solid #e0e0e0",
+                                                background: metrekare === m ? "#3c81b5" : "#fff",
+                                                color: metrekare === m ? "#fff" : "#2d3436",
+                                                fontWeight: "800",
+                                                cursor: "pointer",
+                                                transition: "all 0.2s ease"
+                                            }}
+                                        >
+                                            {m} m²
+                                        </button>
+                                    ))}
                                 </div>
                             </div>
                         )}
@@ -1151,8 +1154,8 @@ export default function Plan3D() {
                                 <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                                     {[
                                         { id: "Az", label: "Az", desc: "Çoğunlukla parke veya fayans." },
-                                        { id: "Orta", label: "Orta", desc: "Küçük ve ince halılarım var." },
-                                        { id: "Çok", label: "Yoğun", desc: "Evin büyük bir kısmı halı kaplı." }
+                                        { id: "Orta", label: "Orta", desc: "Küçük ve ince halılarım var. Parke veya fayans alanım daha çok" },
+                                        { id: "Çok", label: "Yoğun", desc: "Parke veya fayans alanım az, halı alanım daha çok" }
                                     ].map(c => (
                                         <button
                                             key={c.id}
@@ -1220,33 +1223,77 @@ export default function Plan3D() {
                         {currentStep === 5 && (
                             <div className="step-enter">
                                 <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: "5px", fontWeight: "700" }}>Toz Toplama Ünitesi İstiyor musunuz?</p>
-                                <p style={{ fontSize: "11px", color: "#95a5a6", marginBottom: "20px" }}>İstasyonlu modeller toz haznesini otomatik boşaltır.</p>
+                                <p style={{ fontSize: "12px", color: "#95a5a6", marginBottom: "20px" }}>İstasyonlu modeller toz haznesini otomatik boşaltır. </p>
                                 <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                                     {[
-                                        { id: "hepsi", label: "Toz Boşaltsın + Su Yenilesin", desc: "Toz, su ve paspas yıkama servisi sunar." },
-                                        { id: "toz", label: "Otomatik Toz Boşaltsın", desc: "Toz haznesini otomatik temizler." },
-                                        { id: "hayir", label: "İstasyon Yok", desc: "Sadece şarj ünitesi içerir." }
+                                        { id: "hepsi", label: "Toz Boşaltsın + Su Yenilesin", desc: "Toz boşaltma ile birlikte otomatik su değişimi ve paspas yıkama servisi sunar." },
+                                        { id: "toz", label: "Otomatik Toz Boşaltsın", desc: "Toz haznesini otomatik boşaltır." },
+                                        { id: "hayir", label: "İstasyon Yok", desc: "Sadece şarj ünitesi içerir. Su tankı ve toz haznesini manuel olarak temizlemek gerekir." }
                                     ].map(s => (
                                         <button
                                             key={s.id}
                                             onClick={() => {
                                                 setStation(s.id);
-                                                setTimeout(() => startStop(), 100);
+                                                if (s.id === "toz") {
+                                                    setCurrentStep(6);
+                                                } else {
+                                                    startStop();
+                                                }
                                             }}
                                             style={{
                                                 width: "100%",
                                                 padding: "16px",
                                                 borderRadius: "12px",
                                                 border: station === s.id ? "2.5px solid #3c81b5" : "1px solid #e0e0e0",
-                                                background: station === s.id ? "#3c81b5" : "#fff",
+                                                background: station === s.id ? "#3c81b5" : "#f8f9fa",
                                                 color: station === s.id ? "#fff" : "#2d3436",
+                                                textAlign: "left",
+                                                cursor: "pointer",
+                                                transition: "all 0.2s ease",
+                                                display: "flex",
+                                                flexDirection: "column",
+                                                gap: "4px"
+                                            }}
+                                        >
+                                            <div style={{ fontWeight: "800", fontSize: "15px" }}>{s.label}</div>
+                                            <div style={{ fontSize: "12px", opacity: 0.8, marginTop: "4px" }}>{s.desc}</div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* SORU 6: PASPAS KONFORU */}
+                        {currentStep === 6 && (
+                            <div className="step-enter">
+                                <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: "5px", fontWeight: "700" }}>Paspas Konforu Sizin İçin Ne Kadar Önemli?</p>
+                                <p style={{ fontSize: "11px", color: "#95a5a6", marginBottom: "20px" }}>Bazı modeller halıyı tanır ve paspasını otomatik kaldırır.</p>
+                                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                                    {[
+                                        { id: "manual", label: "Manuel Yönetim", desc: "Halı gibi alanları uygulama üzerinden yasaklı alan veya sanal duvar oluşturarak yönetebilirim" },
+                                        { id: "auto", label: "Otomatik Paspas Kaldırma", desc: "Halı zeminlerde paspasını otomatik kaldırır. Halıda leke oluşması ihtimalinin tamamen önüne geçer." }
+
+                                    ].map(m => (
+                                        <button
+                                            key={m.id}
+                                            onClick={() => {
+                                                setMopPref(m.id);
+                                                startStop();
+                                            }}
+                                            style={{
+                                                width: "100%",
+                                                padding: "16px",
+                                                borderRadius: "12px",
+                                                border: mopPref === m.id ? "2.5px solid #3c81b5" : "1px solid #e0e0e0",
+                                                background: mopPref === m.id ? "#3c81b5" : "#f8f9fa",
+                                                color: mopPref === m.id ? "#fff" : "#2d3436",
                                                 textAlign: "left",
                                                 cursor: "pointer",
                                                 transition: "all 0.2s ease"
                                             }}
                                         >
-                                            <div style={{ fontWeight: "800", fontSize: "15px" }}>{s.label}</div>
-                                            <div style={{ fontSize: "12px", opacity: 0.8, marginTop: "4px" }}>{s.desc}</div>
+                                            <div style={{ fontWeight: "800", fontSize: "15px" }}>{m.label}</div>
+                                            <div style={{ fontSize: "12px", opacity: 0.8, marginTop: "4px" }}>{m.desc}</div>
                                         </button>
                                     ))}
                                 </div>
@@ -1292,114 +1339,13 @@ export default function Plan3D() {
                 </div>
             </div>
 
-            {/* PRODUCT RECOMMENDATION MODAL */}
-            {showModal && (
-                <div style={{
-                    position: "fixed",
-                    top: 0,
-                    left: 0,
-                    width: "100%",
-                    height: "100%",
-                    zIndex: 1000,
-                    background: "rgba(0,0,0,0.7)",
-                    backdropFilter: "blur(8px)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    padding: "20px"
-                }} onClick={() => setShowModal(false)}>
-                    <div
-                        style={{
-                            background: "#fff",
-                            width: "100%",
-                            maxWidth: "450px",
-                            borderRadius: "24px",
-                            padding: "40px",
-                            textAlign: "center",
-                            position: "relative",
-                            boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
-                            animation: "modalSlideUp 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards"
-                        }}
-                        onClick={e => e.stopPropagation()}
-                    >
-                        <style>{`
-                            @keyframes modalSlideUp {
-                                from { opacity: 0; transform: translateY(50px) scale(0.9); }
-                                to { opacity: 1; transform: translateY(0) scale(1); }
-                            }
-                        `}</style>
-
-                        <button
-                            onClick={() => setShowModal(false)}
-                            style={{ position: "absolute", top: "20px", right: "20px", background: "#f5f6fa", border: "none", width: "32px", height: "32px", borderRadius: "50%", cursor: "pointer", color: "#747d8c", fontWeight: "bold" }}
-                        >
-                            ✕
-                        </button>
-
-
-                        <p style={{ color: "#636e72", fontSize: "14px", marginBottom: "20px", lineHeight: "1.5", fontWeight: "500" }}>
-                            {recommendedRobot.description}
-                        </p>
-
-                        <div style={{
-                            background: "#f8f9fa",
-                            borderRadius: "12px",
-                            padding: "8px",
-                            marginBottom: "16px",
-                            border: "1px solid #eee"
-                        }}>
-                            <div style={{
-                                width: "100%",
-                                height: "260px",
-                                background: "#fff",
-                                borderRadius: "12px",
-                                marginBottom: "15px",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                boxShadow: "0 5px 15px rgba(0,0,0,0.03)",
-                                overflow: "hidden"
-                            }}>
-                                <img src={recommendedRobot.image} alt={recommendedRobot.name} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-                            </div>
-                            <h3 style={{ fontSize: "18px", fontWeight: "800", margin: "0 0 4px 0", color: "#3c81b5" }}>{recommendedRobot.name}</h3>
-                            <div style={{ display: "flex", justifyContent: "center", gap: "10px", alignItems: "center", marginBottom: "8px" }}>
-                                <span style={{ fontSize: "16px", fontWeight: "700", color: "#2d3436" }}>{recommendedRobot.price}</span>
-                                <span style={{ fontSize: "13px", color: "#eb4d4b", fontWeight: "600", background: "#ffeaa7", padding: "2px 8px", borderRadius: "20px" }}>-{recommendedRobot.discount} İndirim</span>
-                            </div>
-
-
-
-                            <div style={{
-                                border: "2px dashed #3c81b5",
-                                background: "#e1f5fe",
-                                padding: "10px",
-                                borderRadius: "10px",
-                                marginTop: "10px"
-                            }}>
-                                <div style={{ fontSize: "20px", fontWeight: "900", color: "#0984e3", letterSpacing: "2px" }}>{recommendedRobot.couponCode}</div>
-                            </div>
-                        </div>
-
-
-
-                        <div style={{ display: "flex", gap: "12px" }}>
-                            <button
-                                onClick={() => setShowModal(false)}
-                                style={{ flex: 1, padding: "16px", borderRadius: "12px", border: "1px solid #e0e0e0", background: "#fff", color: "#2d3436", fontWeight: "700", cursor: "pointer" }}
-                            >
-                                Kapat
-                            </button>
-                            <button
-                                onClick={() => window.open(recommendedRobot.link, '_blank')}
-                                style={{ flex: 2, padding: "16px", borderRadius: "12px", border: "none", background: "#3c81b5", color: "#fff", fontWeight: "700", cursor: "pointer", boxShadow: "0 10px 20px rgba(60, 129, 181, 0.2)" }}
-                            >
-                                Ürünü Şimdi İncele
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+            {/* PRODUCT RECOMMENDATION MODAL (Refactored to separate component) */}
+            <RecommendationModal
+                showModal={showModal}
+                setShowModal={setShowModal}
+                recommendedRobot={recommendedRobot}
+                onReset={reset}
+            />
         </div>
     );
 }

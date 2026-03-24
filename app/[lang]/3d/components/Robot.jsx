@@ -16,12 +16,13 @@ export default function Robot({ posRef, rotRef, id = "katya-v-akilli-robot-supur
         if (brushRefR.current) brushRefR.current.rotation.y += 10 * dt;
     });
 
-    const config = useMemo(() => {
-        if (id.includes("katya-u")) return { body: "#ffffff", top: "#f1f2f6", sensor: "#dfe4ea", detail: "#f1c40f" }; // Ultra White
-        if (id.includes("katya-z")) return { body: "#57606f", top: "#2f3542", sensor: "#111", detail: "#747d8c" }; // Silver/Gray
-        if (id.includes("katya-p")) return { body: "#1a1a1a", top: "#000", sensor: "#000", detail: "#444" }; // All Black
-        return { body: "#222", top: "#2d3a5a", sensor: "#000", detail: "#c0392b" }; // V / Default
-    }, [id]);
+    // TEK TİP ŞIMART SİYAHI ROBOT (Standardized)
+    const config = { 
+        body: "#1a1a1a", 
+        top: "#000000", 
+        sensor: "#111", 
+        detail: "#3c81b5" 
+    };
 
     return (
         <group ref={g}>

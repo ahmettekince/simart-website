@@ -18,7 +18,7 @@ export const metadata = {
   openGraph: {
     title: "Şifremi Sıfırla - Şımart Teknoloji",
     description,
-    url: "https://simart.me/sifremi-sifirlama",
+    url: "https://simart.me/sifremi-unuttum",
     siteName: "Şımart Teknoloji",
     images: [
       {
@@ -50,7 +50,7 @@ const webPageSchema = {
   "@context": "https://schema.org",
   "@type": "WebPage",
   name: "Şifremi Sıfırla - Şımart Teknoloji",
-  url: "https://simart.me/sifremi-sifirlama",
+  url: "https://simart.me/sifremi-unuttum",
   description,
   primaryImageOfPage: {
     "@type": "ImageObject",

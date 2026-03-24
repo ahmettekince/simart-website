@@ -1,10 +1,12 @@
 import { useMemo } from "react";
 
 export default function Station({ type = "toz" }) {
+    // TEK TİP STANDART ŞIMART İSTASYONU (Standardized)
     const config = useMemo(() => {
-        if (type === "hayir") return { w: 0.4, h: 0.15, d: 0.3, color: "#222", details: false };
-        if (type === "hepsi") return { w: 1.0, h: 1.2, d: 0.6, color: "#1a1a1a", details: true };
-        return { w: 0.7, h: 1.0, d: 0.5, color: "#1a1a1a", details: true }; // "toz"
+        if (type === "hayir") return { w: 0.4, h: 0.15, d: 0.3, color: "#111", details: false };
+        // Tüm istasyonlar (Toz veya Hepsi) aynı standart boyutta ve renkte
+        // Artık 'toz' ve 'hepsi' arasında fark yok, tek tip standart istasyon
+        return { w: 0.7, h: 1.0, d: 0.5, color: "#0a0a0a", details: true }; 
     }, [type]);
 
     return <group position={[0, 0, -4.7]}>
