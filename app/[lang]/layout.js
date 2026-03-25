@@ -43,6 +43,19 @@ export default async function RootLayout({ children, params }) {
   return (
     <html lang={lang || i18n.defaultLocale} data-scroll-behavior="smooth">
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                var path = window.location.pathname;
+                var clean = path.replace(/\\/+/g, "/");
+                if (path !== clean) {
+                  window.location.replace(clean + window.location.search);
+                }
+              })();
+            `,
+          }}
+        />
         {/* Google Consent Mode v2 - Default Deny */}
         <Script
           id="google-consent-mode"
