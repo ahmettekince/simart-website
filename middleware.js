@@ -2,14 +2,20 @@ import { NextResponse } from "next/server";
 import { i18n } from "./config/i18n";
 
 export async function middleware(request) {
-  const { pathname, search } = request.nextUrl;
+  const url = request.url;
+  const origin = request.nextUrl.origin;
+  const pathWithSearch = url.slice(origin.length);
 
   // 0. URL Normalizasyonu: Çift bölü (//) işaretlerini temizle (SecurityError engelleyici)
-  if (pathname.includes("//")) {
-    const cleanPathname = pathname.replace(/\/+/g, "/");
-    const redirectUrl = new URL(`${cleanPathname}${search}`, request.url);
+  // Domain'den hemen sonra // geliyorsa veya path içinde // varsa yakala
+  if (pathWithSearch.startsWith("//") || pathWithSearch.includes("//")) {
+    const cleanPathWithSearch = pathWithSearch.replace(/\/+/g, "/");
+    const redirectUrl = new URL(cleanPathWithSearch, origin);
     return NextResponse.redirect(redirectUrl, { status: 301 });
   }
+
+  const { pathname } = request.nextUrl;
+  const { search } = request.nextUrl;
 
   // 1. API ve Statik Dosyaları Atla (Matcher'a ek olarak garanti olsun)
   if (
