@@ -66,7 +66,7 @@ export function formatFirstNameInput(e) {
   const cursor = e.target.selectionStart;
   const originalValue = e.target.value;
   const formatted = formatFirstNameValue(originalValue);
-  
+
   if (originalValue !== formatted) {
     e.target.value = formatted;
     // İmleç konumunu korumaya çalış (basit yaklaşım)
@@ -79,7 +79,7 @@ export function formatLastNameInput(e) {
   const cursor = e.target.selectionStart;
   const originalValue = e.target.value;
   const formatted = formatLastNameValue(originalValue);
-  
+
   if (originalValue !== formatted) {
     e.target.value = formatted;
     e.target.setSelectionRange(cursor, cursor);

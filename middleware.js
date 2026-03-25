@@ -2,9 +2,16 @@ import { NextResponse } from "next/server";
 import { i18n } from "./config/i18n";
 
 export async function middleware(request) {
-  const { pathname } = request.nextUrl;
+  const { pathname, search } = request.nextUrl;
 
-  // 0. API ve Statik Dosyaları Atla (Matcher'a ek olarak garanti olsun)
+  // 0. URL Normalizasyonu: Çift bölü (//) işaretlerini temizle (SecurityError engelleyici)
+  if (pathname.includes("//")) {
+    const cleanPathname = pathname.replace(/\/+/g, "/");
+    const redirectUrl = new URL(`${cleanPathname}${search}`, request.url);
+    return NextResponse.redirect(redirectUrl, { status: 301 });
+  }
+
+  // 1. API ve Statik Dosyaları Atla (Matcher'a ek olarak garanti olsun)
   if (
     pathname.startsWith("/api/") ||
     pathname === "/api" ||

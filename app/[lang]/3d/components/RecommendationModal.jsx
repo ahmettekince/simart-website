@@ -4,7 +4,7 @@ export default function RecommendationModal({ showModal, setShowModal, recommend
     if (!showModal || !recommendedRobot) return null;
 
     return (
-        <div 
+        <div
             style={{
                 position: "fixed",
                 top: 0,
@@ -18,7 +18,7 @@ export default function RecommendationModal({ showModal, setShowModal, recommend
                 alignItems: "center",
                 justifyContent: "center",
                 padding: "20px"
-            }} 
+            }}
             onClick={() => setShowModal(false)}
         >
             <div
@@ -44,18 +44,18 @@ export default function RecommendationModal({ showModal, setShowModal, recommend
 
                 <button
                     onClick={() => setShowModal(false)}
-                    style={{ 
-                        position: "absolute", 
-                        top: "20px", 
-                        right: "20px", 
-                        background: "#f5f6fa", 
-                        border: "none", 
-                        width: "32px", 
-                        height: "32px", 
-                        borderRadius: "50%", 
-                        cursor: "pointer", 
-                        color: "#747d8c", 
-                        fontWeight: "bold" 
+                    style={{
+                        position: "absolute",
+                        top: "20px",
+                        right: "20px",
+                        background: "#f5f6fa",
+                        border: "none",
+                        width: "32px",
+                        height: "32px",
+                        borderRadius: "50%",
+                        cursor: "pointer",
+                        color: "#747d8c",
+                        fontWeight: "bold"
                     }}
                 >
                     ✕
@@ -112,16 +112,16 @@ export default function RecommendationModal({ showModal, setShowModal, recommend
                     </button>
                     <button
                         onClick={() => window.open(recommendedRobot.link, '_blank')}
-                        style={{ 
-                            flex: 2, 
-                            padding: "16px", 
-                            borderRadius: "12px", 
-                            border: "none", 
-                            background: "#3c81b5", 
-                            color: "#fff", 
-                            fontWeight: "700", 
-                            cursor: "pointer", 
-                            boxShadow: "0 10px 20px rgba(60, 129, 181, 0.2)" 
+                        style={{
+                            flex: 2,
+                            padding: "16px",
+                            borderRadius: "12px",
+                            border: "none",
+                            background: "#3c81b5",
+                            color: "#fff",
+                            fontWeight: "700",
+                            cursor: "pointer",
+                            boxShadow: "0 10px 20px rgba(60, 129, 181, 0.2)"
                         }}
                     >
                         Ürünü Şimdi İncele
