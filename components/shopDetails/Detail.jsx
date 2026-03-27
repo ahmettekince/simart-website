@@ -29,13 +29,7 @@ import { trackViewItem } from "@/utils/analytics";
 const TOOLTIP_MAX_WIDTH = 360;
 const TOOLTIP_MARGIN = 16;
 
-const CAMPAIGN_ROBOT_SLUGS = [
-  "katya-v-akilli-robot-supurge",
-  "katya-v-plus-akilli-robot-supurge",
-  "katya-p-akilli-robot-supurge",
-  "katya-z-akilli-robot-supurge",
-  "katya-u-akilli-robot-supurge"
-];
+import { ROBOTS } from "@/app/[lang]/3d/robots";
 
 function ProductProtocolHelp({ description, protocolName }) {
   const [open, setOpen] = useState(false);
@@ -147,8 +141,9 @@ export default function Detail({ product }) {
   const { addItem } = useCartStore();
   const searchParams = useSearchParams();
   const couponParam = searchParams.get("kupon");
-  const isCampaignProduct = CAMPAIGN_ROBOT_SLUGS.includes(product?.slug);
-  const showPromoBox = !!(couponParam && isCampaignProduct);
+  const campaignRobot = ROBOTS.find(r => r.id === product?.slug);
+  const isCampaignProduct = !!campaignRobot;
+  const showPromoBox = !!(couponParam && isCampaignProduct && campaignRobot?.inStock);
 
   const cartItems = useCartStore((s) => s.items);
 
@@ -335,8 +330,13 @@ export default function Detail({ product }) {
 
   // Stok durumuna göre buton metni ve durumu
   const buttonState = useMemo(() => {
-    return getProductButtonState(product);
-  }, [product]);
+    const baseState = getProductButtonState(product);
+    // Eğer kampanya ürünüyse ve bizim listede stok yoksa override et
+    if (isCampaignProduct && campaignRobot && !campaignRobot.inStock) {
+      return { buttonText: "Stokta Yok", buttonDisabled: true };
+    }
+    return baseState;
+  }, [product, isCampaignProduct, campaignRobot]);
 
   const handleAddToCartAnimated = async () => {
     if (isAdding || showSuccess) return;
@@ -691,34 +691,78 @@ export default function Detail({ product }) {
                     )}
 
                     {!showPromoBox && product?.name !== "katya Robot Süpürge" && product?.name !== "Katya Akıllı Robot Süpürge" && (
-                      <div className="tf-product-info-buy-button">
-                        <form onSubmit={(e) => e.preventDefault()} className="">
-                          <div className="tf-product-buy-actions d-none d-md-flex" style={{ alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                            <div className="tf-product-info-quantity" style={{ margin: 0 }}>
-                              <Quantity setQuantity={setQuantity} initialValue={quantity} minQuantity={minQuantity} maxQuantity={maxQuantity} disabled={buttonState.buttonDisabled} />
-                            </div>
-                            <button
-                              type="button"
-                              onClick={handleAddToCartAnimated}
-                              disabled={isAdding || showSuccess || buttonState.buttonDisabled}
-                              className={`main-cart-btn ${showSuccess ? "success-animation" : ""} ${buttonState.buttonText === "Stokta Yok" ? "out-of-stock" : ""}`}
-                            >
-                              <span className="button-text-main">
-                                {showSuccess
-                                  ? "Sepete Eklendi"
-                                  : isAdding
-                                    ? "Ekleniyor..."
-                                    : buttonState.buttonText}
-                              </span>
-                              {showSuccess && (
-                                <span className="button-text-slide">
-                                  Sepete Eklendi
-                                </span>
-                              )}
-                            </button>
-                          </div>
-                        </form>
-                      </div>
+                        <div className="tf-product-info-buy-button">
+                            <form onSubmit={(e) => e.preventDefault()} className="">
+                                <div className="tf-product-buy-actions d-none d-md-flex" style={{ alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                                    <div className="tf-product-info-quantity" style={{ margin: 0 }}>
+                                        <Quantity setQuantity={setQuantity} initialValue={quantity} minQuantity={minQuantity} maxQuantity={maxQuantity} disabled={buttonState.buttonDisabled} />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={handleAddToCartAnimated}
+                                        disabled={isAdding || showSuccess || buttonState.buttonDisabled}
+                                        className={`main-cart-btn ${showSuccess ? "success-animation" : ""} ${buttonState.buttonText === "Stokta Yok" ? "out-of-stock" : ""}`}
+                                    >
+                                        <span className="button-text-main">
+                                          {showSuccess
+                                              ? "Sepete Eklendi"
+                                              : isAdding
+                                                  ? "Ekleniyor..."
+                                                  : buttonState.buttonText}
+                                        </span>
+                                        {showSuccess && (
+                                            <span className="button-text-slide">
+                                              Sepete Eklendi
+                                            </span>
+                                        )}
+                                    </button>
+                                </div>
+                            </form>
+
+                            {/* STOKTA YOKSA ALTERNATİF ÖNERİSİ */}
+                            {buttonState.buttonText === "Stokta Yok" && isCampaignProduct && (
+                                <div style={{
+                                    marginTop: "20px",
+                                    padding: "16px",
+                                    backgroundColor: "#f0f7ff",
+                                    border: "1px solid #3c81b5",
+                                    borderRadius: "12px",
+                                    textAlign: "center"
+                                }}>
+                                    <p style={{ margin: "0 0 10px 0", fontSize: "14px", color: "#666" }}>
+                                        Bu ürünümüz şu an tükendi ama hemen teslim alabileceğiniz <strong>en yakın alternatif</strong> modelimiz:
+                                    </p>
+                                    {(() => {
+                                        const tierList = [
+                                            { id: "katya-v-akilli-robot-supurge", name: "Katya V", link: "/magaza/robotlar/katya-v-akilli-robot-supurge" },
+                                            { id: "katya-p-akilli-robot-supurge", name: "Katya P", link: "/magaza/robotlar/katya-p-akilli-robot-supurge" },
+                                            { id: "katya-v-plus-akilli-robot-supurge", name: "Katya V+", link: "/magaza/robotlar/katya-v-plus-akilli-robot-supurge" },
+                                            { id: "katya-z-akilli-robot-supurge", name: "Katya Z", link: "/magaza/robotlar/katya-z-akilli-robot-supurge" },
+                                            { id: "katya-u-akilli-robot-supurge", name: "Katya U", link: "/magaza/robotlar/katya-u-akilli-robot-supurge" }
+                                        ];
+                                        const currentIdx = tierList.findIndex(t => t.id === product.slug);
+                                        // Bir üst modele bak (currentIdx+1), yoksa bir alt (currentIdx-1)
+                                        const alt = tierList[currentIdx + 1] || tierList[currentIdx - 1];
+                                        if (alt) {
+                                            return (
+                                                <Link href={alt.link} style={{
+                                                    display: "inline-block",
+                                                    padding: "8px 20px",
+                                                    backgroundColor: "#3c81b5",
+                                                    color: "#fff",
+                                                    borderRadius: "8px",
+                                                    fontWeight: "600",
+                                                    textDecoration: "none"
+                                                }}>
+                                                    {alt.name} Modelini İncele
+                                                </Link>
+                                            );
+                                        }
+                                        return null;
+                                    })()}
+                                </div>
+                            )}
+                        </div>
                     )}
 
                     <VolumeDiscount product={product} setQuantity={setQuantity} />

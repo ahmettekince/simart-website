@@ -9,6 +9,7 @@ export const ROBOTS = [
         oldPrice: "14.299 TL",
         discount: "1.300 TL",
         couponCode: "SIMART10",
+        inStock: true,
         features: { station: "hayir", area: "medium", pet: false, carpet: "Yüksek", moplifting: false }
     },
     {
@@ -21,6 +22,7 @@ export const ROBOTS = [
         oldPrice: "20.999 TL",
         discount: "2.500 TL",
         couponCode: "KATYA20",
+        inStock: true,
         features: { station: "toz", area: "large", pet: true, carpet: "Orta", moplifting: false }
     },
     {
@@ -33,6 +35,7 @@ export const ROBOTS = [
         oldPrice: "17.299 TL",
         discount: "1.800 TL",
         couponCode: "PROMO15",
+        inStock: true,
         features: { station: "hayir", area: "medium", pet: true, carpet: "Orta", moplifting: false }
     },
     {
@@ -45,6 +48,7 @@ export const ROBOTS = [
         oldPrice: "28.999 TL",
         discount: "3.000 TL",
         couponCode: "ZPOWER",
+        inStock: true,
         features: { station: "hayir", area: "large", pet: false, carpet: "Orta", moplifting: false }
     },
     {
@@ -57,6 +61,7 @@ export const ROBOTS = [
         oldPrice: "30.999 TL",
         discount: "2.000 TL",
         couponCode: "SIMART10",
+        inStock: true,
         features: { station: "hepsi", area: "large", pet: true, carpet: "Yoğun", moplifting: true }
     }
 ];

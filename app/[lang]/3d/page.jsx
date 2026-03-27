@@ -731,55 +731,70 @@ export default function Plan3D() {
         "Model eşleştiriliyor...",
     ], [type, metrekare, carpet, pet, station]);
 
-    // Önerilen Robotu Seçme Mantığı (Kullanıcı Kurallarına Göre Taslak)
+    // Önerilen Robotu Seçme Mantığı (Stok Kontrolü Dahil)
     const recommendedRobot = useMemo(() => {
-        if (!metrekare) return ROBOTS[0]; // Katya V default
+        // En uygun robotu seçen yardımcı fonksiyon (ideal senaryo)
+        const getIdeal = () => {
+            if (!metrekare) return ROBOTS[0];
 
-        // Metrekare değerine göre sayısal eşik belirle (ör: "151-180" -> 180, "180+" -> 181)
-        let mSq = 0;
-        if (metrekare === "180+") mSq = 181;
-        else if (metrekare.includes("-")) mSq = parseInt(metrekare.split("-")[1]);
-        else mSq = parseInt(metrekare);
+            let mSq = 0;
+            if (metrekare === "180+") mSq = 181;
+            else if (metrekare.includes("-")) mSq = parseInt(metrekare.split("-")[1]);
+            else mSq = parseInt(metrekare);
 
-        // 1. Durum: Kullanıcı Paspas Konforu (Auto Mop Lifting) İstemesi VEYA İstasyonun "Hepsi Bir Arada" seçilmesi
-        if (mopPref === "auto" || station === "hepsi") {
-            return ROBOTS.find(r => r.id === "katya-u-akilli-robot-supurge") || ROBOTS[0];
-        }
-
-        // --- BÜYÜK EVLER (150+ m2) ---
-        // 150m2 üzerindeyse Katya U yerine V+ (İstasyonlu) veya V (İstasyonsuz) daha makul.
-        if (mSq > 150) {
-            if (station === "toz") {
-                return ROBOTS.find(r => r.id === "katya-v-plus-akilli-robot-supurge") || ROBOTS[0];
+            if (mopPref === "auto" || station === "hepsi") {
+                return ROBOTS.find(r => r.id === "katya-u-akilli-robot-supurge");
             }
+
+            if (mSq > 150) {
+                if (station === "toz") return ROBOTS.find(r => r.id === "katya-v-plus-akilli-robot-supurge");
+                if (station === "hayir") return ROBOTS.find(r => r.id === "katya-v-akilli-robot-supurge");
+                return ROBOTS.find(r => r.id === "katya-v-plus-akilli-robot-supurge");
+            }
+
             if (station === "hayir") {
-                return ROBOTS.find(r => r.id === "katya-v-akilli-robot-supurge") || ROBOTS[0];
+                if (carpet === "Çok") return ROBOTS.find(r => r.id === "katya-v-akilli-robot-supurge");
+                if (pet && (carpet === "Az" || carpet === "Orta")) return ROBOTS.find(r => r.id === "katya-p-akilli-robot-supurge");
+                return ROBOTS.find(r => r.id === "katya-z-akilli-robot-supurge");
             }
-            // Varsayılan koca ev robotu: V+
-            return ROBOTS.find(r => r.id === "katya-v-plus-akilli-robot-supurge") || ROBOTS[0];
+
+            if (carpet === "Çok" || station === "toz") {
+                return ROBOTS.find(r => r.id === "katya-v-plus-akilli-robot-supurge");
+            }
+
+            return ROBOTS.find(r => r.id === "katya-v-akilli-robot-supurge");
+        };
+
+        const ideal = getIdeal() || ROBOTS[0];
+
+        // 2. STOK KONTROLÜ VE ALTERNATİF BULMA
+        if (ideal.inStock) return ideal;
+
+        // Stokta yoksa: En yakın alternatifi bul.
+        // Hassas Tercih Sırası: V -> P -> V+ -> Z -> U
+        const tierList = [
+            "katya-v-akilli-robot-supurge",
+            "katya-p-akilli-robot-supurge",
+            "katya-v-plus-akilli-robot-supurge",
+            "katya-z-akilli-robot-supurge",
+            "katya-u-akilli-robot-supurge"
+        ];
+
+        const idealIdx = tierList.indexOf(ideal.id);
+
+        // Önce bir üst modele bak (Daha iyi öneri)
+        for (let i = idealIdx + 1; i < tierList.length; i++) {
+            const alt = ROBOTS.find(r => r.id === tierList[i]);
+            if (alt?.inStock) return alt;
         }
 
-        // 2. İSTASYON İSTEMEYENLER (HAYIR)
-        if (station === "hayir") {
-            // Halı Çok ise -> Katya V (Dayanıklı)
-            if (carpet === "Çok") {
-                return ROBOTS.find(r => r.id === "katya-v-akilli-robot-supurge") || ROBOTS[0];
-            }
-            // Evcil Hayvan + Düşük/Orta Halı -> Katya P
-            if (pet && (carpet === "Az" || carpet === "Orta")) {
-                return ROBOTS.find(r => r.id === "katya-p-akilli-robot-supurge") || ROBOTS[0];
-            }
-            // Diğer Durumlar -> Katya Z
-            return ROBOTS.find(r => r.id === "katya-z-akilli-robot-supurge") || ROBOTS[0];
+        // Üst modeller de yoksa alta bak (Alternatif)
+        for (let i = idealIdx - 1; i >= 0; i--) {
+            const alt = ROBOTS.find(r => r.id === tierList[i]);
+            if (alt?.inStock) return alt;
         }
 
-        // 3. ÇOK HALI VE STANDART İSTASYON İSTEYENLER
-        if (carpet === "Çok" || station === "toz") {
-            return ROBOTS.find(r => r.id === "katya-v-plus-akilli-robot-supurge") || ROBOTS[0];
-        }
-
-        // 4. VARSAYILAN (Katya V)
-        return ROBOTS.find(r => r.id === "katya-v-akilli-robot-supurge") || ROBOTS[0];
+        return ideal; // Hiç bir şey bulunamazsa yine ideal kalsın (hata koruması)
     }, [metrekare, pet, carpet, station, mopPref]);
 
     useEffect(() => {
