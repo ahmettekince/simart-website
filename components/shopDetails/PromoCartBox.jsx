@@ -106,7 +106,7 @@ export default function PromoCartBox({
 
       <style jsx global>{`
         .promo-tr-box {
-          background-color: #f0f7ff;
+          background-color: #ffffff;
           border: 2px solid #3c81b5;
           border-radius: 12px;
         }

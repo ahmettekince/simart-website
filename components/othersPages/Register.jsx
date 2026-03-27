@@ -351,7 +351,7 @@ export default function Register() {
                     style={{ fontSize: "14px", lineHeight: "1.5", cursor: "pointer" }}
                   >
                     <Link
-                      href="/kullanım-sartlari"
+                      href="/sartlar-kosullar"
                       target="_blank"
                       style={{ color: "#007bff", textDecoration: "underline" }}
                       onClick={(e) => e.stopPropagation()}

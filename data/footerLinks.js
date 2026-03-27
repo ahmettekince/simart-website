@@ -2,7 +2,7 @@ export const footerLinks = [
   { href: "/gizlilik-politikasi", text: "Gizlilik Politikası" },
   { href: "/geri-donus", text: "Geri Dönüş" },
   { href: "/kargo", text: "Kargo" },
-  { href: "/kullanım-sartlari", text: "Kullanım Şartları" },
+  { href: "/sartlar-kosullar", text: "Kullanım Şartları" },
   { href: "/sss", text: "SSS" },
   { href: "/karsilastirma", text: "Karşılaştırma" },
   { href: "/favoriler", text: "Favorilerim" },

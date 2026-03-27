@@ -60,6 +60,9 @@ export default function Trendyol({ productSlug }) {
             "katya-robot-supurge-yenileme-seti": "https://www.trendyol.com/simart-teknoloji/simart-katya-robot-supurge-yenileme-seti-1-p-382155184?boutiqueId=61&merchantId=790294&filterOverPriceListings=false&sav=true",
             "katya-z-sarf-seti-silme-supurme": "https://www.trendyol.com/simart-teknoloji/eski-seri-uyumlu-katya-z-robot-supurge-sarf-seti-silme-supurme-p-717661209?boutiqueId=61&merchantId=790294&filterOverPriceListings=false&sav=true",
             "katya-u-akilli-robot-supurge-silme-supurme-sarf-seti": "https://www.trendyol.com/simart/katya-u-akilli-robot-supurge-silme-supurme-sarf-seti-p-1010962709?boutiqueId=61&merchantId=790294&filterOverPriceListings=false&sav=true",
+            "hava-nemlendirici": "https://www.trendyol.com/simart/akilli-hava-nemlendirici-wi-fi-kontrollu-5lt-su-hazneli-p-1120562886",
+            "akilli-led-serit-2-5-metre": "https://www.trendyol.com/simart/akilli-led-serit-2-5-metre-wi-fi-kontrollu-rgb-led-aydinlatma-p-1118764736",
+            "akilli-led-serit-5-metre": "https://www.trendyol.com/simart/akilli-led-serit-5-metre-wi-fi-kontrollu-rgb-led-aydinlatma-p-1118766002"
         };
 
         const foundUrl = mapping[slug];

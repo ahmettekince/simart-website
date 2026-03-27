@@ -466,7 +466,7 @@ function buildWaypoints(type) {
 }
 
 /* --- COMPONENTS --- */
-function House({ type, trail, posRef, rotRef, recommendedRobot }) {
+function House({ type, trail, posRef, rotRef, recommendedRobot, isCleaning }) {
     const h = 2.7, t = 0.18;
     const is1plus1 = type === "1+1";
     const is3plus2 = type === "3+2";
@@ -1336,7 +1336,7 @@ export default function Plan3D() {
                     <directionalLight position={[10, 15, 10]} intensity={1.5} />
                     <ContactShadows position={[0, 0.01, 0]} opacity={0.2} scale={30} blur={2.5} far={4} resolution={128} />
                     <Suspense fallback={null}>
-                        {type && <House type={type} trail={trail} posRef={posRef} rotRef={rotRef} recommendedRobot={recommendedRobot} />}
+                        {type && <House type={type} trail={trail} posRef={posRef} rotRef={rotRef} recommendedRobot={recommendedRobot} isCleaning={isCleaning} />}
                     </Suspense>
                     <Mover />
                     <OrbitControls

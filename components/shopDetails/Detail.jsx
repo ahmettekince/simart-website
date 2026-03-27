@@ -330,13 +330,8 @@ export default function Detail({ product }) {
 
   // Stok durumuna göre buton metni ve durumu
   const buttonState = useMemo(() => {
-    const baseState = getProductButtonState(product);
-    // Eğer kampanya ürünüyse ve bizim listede stok yoksa override et
-    if (isCampaignProduct && campaignRobot && !campaignRobot.inStock) {
-      return { buttonText: "Stokta Yok", buttonDisabled: true };
-    }
-    return baseState;
-  }, [product, isCampaignProduct, campaignRobot]);
+    return getProductButtonState(product);
+  }, [product]);
 
   const handleAddToCartAnimated = async () => {
     if (isAdding || showSuccess) return;
