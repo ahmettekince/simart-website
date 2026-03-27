@@ -49,6 +49,22 @@ export default function HomeReviews({ reviews = [] }) {
                         }}
                     >
                         {reviews.map((review, index) => {
+                            // Mask name logic: Al*** AK***
+                            const maskName = (name) => {
+                                if (!name) return "M*** K***";
+                                const parts = name.trim().split(" ");
+                                return parts.map(part => {
+                                    if (part.length === 0) return "";
+                                    if (part.length <= 2) return part + "***";
+                                    return part.substring(0, 2) + "***";
+                                }).join(" ");
+                            };
+
+                            const fullName = review.customer?.full_name ||
+                                (review.customer?.first_name ? `${review.customer.first_name} ${review.customer.last_name || ''}` : "Misafir Kullanıcı");
+
+                            const maskedName = maskName(fullName);
+
                             // Construct product link
                             const categorySlug = review.product?.categories?.[0]?.slug || "urunler";
                             const productSlug = review.product?.slug;
@@ -65,13 +81,22 @@ export default function HomeReviews({ reviews = [] }) {
                                         <div className="rating">
                                             <StarRating rating={review.rating} showNumber={false} showReviewCount={false} />
                                         </div>
-                                        <div className="text" style={{ flex: 1, marginBottom: '15px' }}>
+                                        <div className="text" style={{
+                                            flex: 1,
+                                            marginBottom: '15px',
+                                            minHeight: '52px',
+                                            lineHeight: '1.3',
+                                            display: '-webkit-box',
+                                            WebkitLineClamp: 3,
+                                            WebkitBoxOrient: 'vertical',
+                                            overflow: 'hidden',
+                                            fontSize: '16px'
+                                        }}>
                                             "{review.comment}"
                                         </div>
                                         <div className="author" style={{ marginBottom: '15px' }}>
                                             <div className="name" style={{ fontWeight: '600' }}>
-                                                {review.customer?.full_name ||
-                                                    (review.customer?.first_name ? `${review.customer.first_name} ${review.customer.last_name || ''}` : "Misafir Kullanıcı")}
+                                                {maskedName}
                                             </div>
                                         </div>
 
