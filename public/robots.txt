@@ -1,8 +1,55 @@
-User-agent: *
-Allow: /
-Disallow: /api/
-Disallow: /_next/
+# robots.txt for simart.me
+# Optimized for Search Engines & AI/LLM Indexers
 
+# Section 1: Explicitly Allow Major Search & AI Bots
+User-agent: Googlebot
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# Section 2: Default Rules for All Other Bots
+User-agent: *
+# Block Admin and System Files
+Disallow: /wp-admin/
+Disallow: /admin/
+Disallow: /xmlrpc.php
+
+# Block E-commerce Functional Pages
+Disallow: /cart/
+Disallow: /sepet/
+Disallow: /checkout/
+Disallow: /odeme/
+Disallow: /my-account/
+Disallow: /hesabim/
+
+# Block Query Strings & Search Results to Save Crawl Budget
+Disallow: /?s=
+Disallow: /search/
+Disallow: /ara/
+Disallow: /*?utm_
+Disallow: /*?ref=
+
+# Section 3: AEO (Answer Engine Optimization) Directives
+# Machine policy for AI agents
+Machine-policy: https://simart.me/ai-policy.json
+# Discovery file for LLMs
+Discovery: https://simart.me/llms.txt
+
+# Section 4: Sitemap Declaration
+Sitemap: https://simart.me/sitemap.xml
 Sitemap: https://simart.me/sitemap-categories.xml
 Sitemap: https://simart.me/sitemap-contents.xml
 Sitemap: https://simart.me/sitemap-pages.xml

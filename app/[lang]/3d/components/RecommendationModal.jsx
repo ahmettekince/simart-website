@@ -111,7 +111,7 @@ export default function RecommendationModal({ showModal, setShowModal, recommend
                         Kapat
                     </button>
                     <button
-                        onClick={() => window.open(recommendedRobot.link, '_blank')}
+                        onClick={() => window.open(`${recommendedRobot.link}?coupon=${recommendedRobot.couponCode}`, '_blank')}
                         style={{
                             flex: 2,
                             padding: "16px",

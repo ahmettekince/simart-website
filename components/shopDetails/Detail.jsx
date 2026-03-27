@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useLayoutEffect, useMemo, useState, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 import ReactDOM from "react-dom";
 import Link from "next/link";
 import { decodeHtmlEntities, addLazyLoadToDescriptionImages } from "@/utils/stripHtml";
@@ -22,10 +23,19 @@ import OverlayCtaButton, { Model3dIcon, PlayIcon, ArrowIcon } from "@/components
 import VolumeDiscount from "./VolumeDiscount";
 import InfoTicker from "./InfoTicker";
 import Trendyol from "@/components/common/Trendyol";
+import PromoCartBox from "./PromoCartBox";
 import { trackViewItem } from "@/utils/analytics";
 
 const TOOLTIP_MAX_WIDTH = 360;
 const TOOLTIP_MARGIN = 16;
+
+const CAMPAIGN_ROBOT_SLUGS = [
+  "katya-v-akilli-robot-supurge",
+  "katya-v-plus-akilli-robot-supurge",
+  "katya-p-akilli-robot-supurge",
+  "katya-z-akilli-robot-supurge",
+  "katya-u-akilli-robot-supurge"
+];
 
 function ProductProtocolHelp({ description, protocolName }) {
   const [open, setOpen] = useState(false);
@@ -135,7 +145,13 @@ export default function Detail({ product }) {
   }, [product?.id]);
 
   const { addItem } = useCartStore();
+  const searchParams = useSearchParams();
+  const couponParam = searchParams.get("coupon");
+  const isCampaignProduct = CAMPAIGN_ROBOT_SLUGS.includes(product?.slug);
+  const showPromoBox = !!(couponParam && isCampaignProduct);
+
   const cartItems = useCartStore((s) => s.items);
+
   const [isAdding, setIsAdding] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showMaxReachedToast, setShowMaxReachedToast] = useState(false);
@@ -521,6 +537,19 @@ export default function Detail({ product }) {
                       </div>
                     )}
                     <Trendyol productSlug={product.slug} />
+                    
+                    {showPromoBox && (
+                      <PromoCartBox 
+                        product={product}
+                        couponCode={couponParam}
+                        quantity={quantity}
+                        setQuantity={setQuantity}
+                        minQuantity={minQuantity}
+                        maxQuantity={maxQuantity}
+                        buttonState={buttonState}
+                        onOpen3dModel={() => setModel3dModalOpen(true)}
+                      />
+                    )}
 
                     {/* Yeni Sade Bilgi Kaydırağı */}
                     {(product.is_in_stock || product.is_pre_order) && announcementMessages && announcementMessages.length > 0 && (
@@ -661,7 +690,7 @@ export default function Detail({ product }) {
                       </>
                     )}
 
-                    {product?.name !== "katya Robot Süpürge" && product?.name !== "Katya Akıllı Robot Süpürge" && (
+                    {!showPromoBox && product?.name !== "katya Robot Süpürge" && product?.name !== "Katya Akıllı Robot Süpürge" && (
                       <div className="tf-product-info-buy-button">
                         <form onSubmit={(e) => e.preventDefault()} className="">
                           <div className="tf-product-buy-actions d-none d-md-flex" style={{ alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
@@ -1012,7 +1041,7 @@ export default function Detail({ product }) {
         </div>
       </section>
 
-      {product?.name !== "katya Robot Süpürge" && product?.name !== "Katya Akıllı Robot Süpürge" && (
+      {!showPromoBox && product?.name !== "katya Robot Süpürge" && product?.name !== "Katya Akıllı Robot Süpürge" && (
         <SmartStickyBar
           product={product}
           quantity={quantity}

@@ -32,15 +32,15 @@ export async function generateMetadata({ params }) {
   }
 
   const productName = product.name || product.title || "Ürün";
-  
+
   // SEO Bilgileri
   // const metaDescription = `${productName} ile evinizi akıllı hale getirin! Hemen ${productName} ürününe sahip olun, evinizi geleceğin teknolojisiyle buluşturun!`;
   // const metaKeywords = `${productName}, Akıllı ev cihazı, IoT teknolojisi, Akıllı telefon kontrolü, Enerji tasarrufu IoT, Güvenlik IoT ürünü, Akıllı yaşam teknolojisi, Evinizi akıllandırın, IoT ile akıllı ev, Akıllı ev otomasyonu`;
-  
+
   const seoTitle = product.seo?.title || `${productName} - Şımart Teknoloji`;
   const metaDescription = product.seo?.description || `${productName} ile evinizi akıllı hale getirin! Hemen ${productName} ürününe sahip olun, evinizi geleceğin teknolojisiyle buluşturun!`;
   const metaKeywords = product.seo?.keywords || `${productName}, Akıllı ev cihazı, IoT teknolojisi, Akıllı telefon kontrolü, Enerji tasarrufu IoT, Güvenlik IoT ürünü, Akıllı yaşam teknolojisi, Evinizi akıllandırın, IoT ile akıllı ev, Akıllı ev otomasyonu`;
-  
+
   // Robots ayarları (index/noindex, follow/nofollow)
   const robots = `${product.seo?.no_index ? "noindex" : "index"}, ${product.seo?.no_follow ? "nofollow" : "follow"}`;
 
@@ -145,8 +145,8 @@ export default async function page({ params }) {
     gtin: product.sku,
     price: product.discount_price || product.price,
     url,
-    ratingValue: ratingValueFromApi ?? 5,
-    reviewCount: reviewCountFromApi ?? 18,
+    ratingValue: ratingValueFromApi ?? 0,
+    reviewCount: reviewCountFromApi ?? 0,
     reviews: product.reviews?.items || [],
   });
 
