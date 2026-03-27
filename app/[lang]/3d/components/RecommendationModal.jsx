@@ -66,7 +66,7 @@ export default function RecommendationModal({ showModal, setShowModal, recommend
                 </p>
 
                 <div style={{
-                    background: "#f8f9fa",
+                    background: "#fff",
                     borderRadius: "12px",
                     padding: "8px",
                     marginBottom: "16px",
@@ -87,9 +87,9 @@ export default function RecommendationModal({ showModal, setShowModal, recommend
                         <img src={recommendedRobot.image} alt={recommendedRobot.name} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
                     </div>
                     <h3 style={{ fontSize: "18px", fontWeight: "800", margin: "0 0 4px 0", color: "#3c81b5" }}>{recommendedRobot.name}</h3>
-                    <div style={{ display: "flex", justifyContent: "center", gap: "10px", alignItems: "center", marginBottom: "8px" }}>
-                        <span style={{ fontSize: "16px", fontWeight: "700", color: "#2d3436" }}>{recommendedRobot.price}</span>
-                        <span style={{ fontSize: "13px", color: "#eb4d4b", fontWeight: "600", background: "#ffeaa7", padding: "2px 8px", borderRadius: "20px" }}>-{recommendedRobot.discount} İndirim</span>
+                    <div style={{ display: "flex", justifyContent: "center", gap: "12px", alignItems: "baseline", marginBottom: "8px" }}>
+                        <span style={{ fontSize: "20px", fontWeight: "800", color: "rgb(11, 193, 92)" }}>{recommendedRobot.price}</span>
+                        <span style={{ fontSize: "14px", color: "#95a5a6", fontWeight: "500", textDecoration: "line-through" }}>{recommendedRobot.oldPrice}</span>
                     </div>
 
                     <div style={{
@@ -105,13 +105,13 @@ export default function RecommendationModal({ showModal, setShowModal, recommend
 
                 <div style={{ display: "flex", gap: "12px" }}>
                     <button
-                        onClick={() => { setShowModal(false); onReset(); }}
+                        onClick={() => { setShowModal(false); }}
                         style={{ flex: 1, padding: "16px", borderRadius: "12px", border: "1px solid #e0e0e0", background: "#fff", color: "#2d3436", fontWeight: "700", cursor: "pointer" }}
                     >
                         Kapat
                     </button>
                     <button
-                        onClick={() => window.open(`${recommendedRobot.link}?coupon=${recommendedRobot.couponCode}`, '_blank')}
+                        onClick={() => window.open(`${recommendedRobot.link}?kupon=${recommendedRobot.couponCode}`, '_blank')}
                         style={{
                             flex: 2,
                             padding: "16px",

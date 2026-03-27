@@ -158,9 +158,19 @@ export default function ClientLayout({ children, lang }) {
         return () => document.body.classList.remove("product-detail-page");
     }, [pathname]);
 
-    // Ödeme sayfasında ve 3D sayfasında alt navbar gizle
+    // Ödeme sayfasında, 3D sayfasında ve QR sayfalarında alt navbar gizle
     useEffect(() => {
-        const isHideToolbarPage = pathname === "/odeme" || pathname === "/3d";
+        const parts = pathname.split("/").filter(Boolean);
+        // Dil önekini temizleyip temiz yolu alalım (ör: /tr/qr-genar -> /qr-genar)
+        const cleanPath = (parts.length > 0 && ["tr", "en"].includes(parts[0]))
+            ? "/" + parts.slice(1).join("/")
+            : pathname;
+
+        const isHideToolbarPage =
+            cleanPath === "/odeme" ||
+            cleanPath === "/3d" ||
+            cleanPath.startsWith("/qr");
+
         if (isHideToolbarPage) {
             document.body.classList.add("odeme-page");
         } else {

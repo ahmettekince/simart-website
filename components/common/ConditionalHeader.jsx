@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { i18n } from "@/config/i18n";
 
-const HIDE_HEADER_PATHS = ["/odeme", "/qr-", "/qr", "/kqr", "/3d"];
+const HIDE_HEADER_PATHS = ["/odeme", "/qr-", "/qr", "/3d"];
 
 export default function ConditionalHeader({ children }) {
     const pathname = usePathname();

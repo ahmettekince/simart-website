@@ -42,6 +42,9 @@ Disallow: /ara/
 Disallow: /*?utm_
 Disallow: /*?ref=
 
+#Pages blocked for coming from 3d model page
+Disallow: /*?kupon=
+
 # Section 3: AEO (Answer Engine Optimization) Directives
 # Machine policy for AI agents
 Machine-policy: https://simart.me/ai-policy.json

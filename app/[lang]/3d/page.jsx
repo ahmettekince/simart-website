@@ -270,7 +270,7 @@ function buildWaypoints(type) {
     const all = [];
     const push = arr => arr.forEach(p => all.push(p));
     const station = [0, 0.25, -4.5];
-    const entrance = [0, 0.25, -4]; // Koridor giriş noktası
+    const entrance = [0, 0.25, -3.85]; // İstasyona 65cm mesafe
     let currentPos = station;
 
     const areas = [];
@@ -698,7 +698,7 @@ function House({ type, trail, posRef, rotRef, recommendedRobot }) {
             </>
         }
 
-        <Robot posRef={posRef} rotRef={rotRef} id={recommendedRobot?.id} />
+        <Robot posRef={posRef} rotRef={rotRef} isCleaning={isCleaning} id={recommendedRobot?.id} />
     </>;
 }
 
@@ -874,7 +874,7 @@ export default function Plan3D() {
             if (!running.current) return;
             const idx = wpIdx.current;
             if (idx >= waypoints.length) {
-                running.current = false; setIsAuto(false);
+                running.current = false; 
                 setStatus("Tamamlandı / Şarj Oluyor"); setPct(100); return;
             }
 
@@ -887,36 +887,47 @@ export default function Plan3D() {
             const diff = new THREE.Vector3().subVectors(tgt, cur);
             const dist = diff.length();
 
+            let da = 0;
+            const isFinalLeg = idx === waypoints.length - 1;
+            const isCloseToStation = isFinalLeg && dist < 0.65;
+
             if (dist > 0.02) {
-                const ang = Math.atan2(diff.x, diff.z);
-                let da = ang - rotRef.current;
+                let ang = Math.atan2(diff.x, diff.z);
+                if (isCloseToStation) {
+                    ang = 0; // Park manevrası başladı: Odaya bak
+                }
+                da = ang - rotRef.current;
                 while (da > Math.PI) da -= 2 * Math.PI;
                 while (da < -Math.PI) da += 2 * Math.PI;
                 rotRef.current += da * Math.min(1, dt * 10);
             }
 
             const step = speed * dt;
-            if (dist <= step) {
+            // Eğer istasyona çok yakınsak ve hala dönüyorsak hareketi durdur
+            const isTurningBeforePark = isCloseToStation && (Math.abs(da) > 0.1);
+
+            if (dist <= step && !isTurningBeforePark) {
                 cur.copy(tgt);
                 wpIdx.current = idx + 1;
 
                 if (isReturning) {
                     setStatus("Tamamlandı / Şarj Oluyor");
                     setPct(100);
-                    setTimeout(() => setShowModal(true), 800);
+                    rotRef.current = 0;
                 } else {
-                    const progress = Math.round((idx + 1) / (waypoints.length - 1) * 100);
+                    const progress = Math.round((idx - 1) / (waypoints.length - 1) * 100);
                     setPct(Math.min(100, progress));
                     if (idx + 1 === waypoints.length - 1) {
                         setStatus("İstasyona Dönülüyor");
-                        setPct(100);
                     } else {
                         setStatus(`🧹 Temizleniyor… %${progress}`);
                     }
                 }
             } else {
-                diff.normalize().multiplyScalar(step);
-                cur.add(diff);
+                if (!isTurningBeforePark) {
+                    diff.normalize().multiplyScalar(step);
+                    cur.add(diff);
+                }
             }
 
             const ltp = lastTrail.current;
@@ -1013,8 +1024,7 @@ export default function Plan3D() {
                             )}
 
                             {/* ÖNERİLEN ÜRÜN ALANI (Analiz Bittikten Sonra) */}
-                            {/* ÖNERİLEN ÜRÜN ALANI (Analiz Bittikten Sonra) */}
-                            {(!isAnalyzing && isCleaning) && (
+                            {(!isAnalyzing) && (
                                 <div className="step-enter" style={{ marginTop: "30px" }}>
                                     <div style={{
                                         background: "#fff",

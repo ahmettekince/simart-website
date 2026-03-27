@@ -146,7 +146,7 @@ export default function Detail({ product }) {
 
   const { addItem } = useCartStore();
   const searchParams = useSearchParams();
-  const couponParam = searchParams.get("coupon");
+  const couponParam = searchParams.get("kupon");
   const isCampaignProduct = CAMPAIGN_ROBOT_SLUGS.includes(product?.slug);
   const showPromoBox = !!(couponParam && isCampaignProduct);
 

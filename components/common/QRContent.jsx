@@ -62,8 +62,7 @@ export default function QRContent({ qrData, menuItems }) {
                                 </div>
                             </div>
 
-                            <h1 style={{ fontSize: "26px", fontWeight: "700", marginBottom: "8px", letterSpacing: "-0.5px" }}>{userData.name}</h1>
-                            <p style={{ fontSize: "16px", opacity: 0.85, marginBottom: "35px" }}>{userData.title}</p>
+                            <h1 style={{ fontSize: "26px", fontWeight: "700", marginBottom: "8px", letterSpacing: "-0.5px", color: "#fff" }}>{userData.name}</h1>
 
                             <div className="social-links" style={{ display: "flex", gap: "20px" }}>
                                 {userData.socials.map((social, idx) => (
@@ -85,15 +84,21 @@ export default function QRContent({ qrData, menuItems }) {
                     </div>
                 </div>
 
-                <div className="qr-content-full" style={{ backgroundColor: "#ffffff", width: "100%", padding: "50px 0", flex: 1 }}>
+                <div className="qr-content-full" style={{ backgroundColor: "#ffffff", width: "100%", padding: "50px 0 30px 0", flex: 1 }}>
                     <div className="container" style={{ maxWidth: "800px", margin: "0 auto", padding: "0 20px" }}>
                         <div style={{
-                            display: "grid",
-                            gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
-                            gap: "40px",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "50px",
                             marginBottom: "60px"
                         }}>
-                            <div style={{ display: "flex", flexDirection: "column", gap: "40px", alignItems: "center" }}>
+                            {/* ÜST SATIR: TELEFON VE E-POSTA */}
+                            <div style={{
+                                display: "grid",
+                                gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+                                gap: "30px",
+                                width: "100%"
+                            }}>
                                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", textAlign: "center" }}>
                                     <div style={{
                                         backgroundColor: "#f0f7ff",
@@ -111,9 +116,7 @@ export default function QRContent({ qrData, menuItems }) {
                                         <span style={{ fontSize: "13px", color: "#888", display: "block", marginTop: "2px" }}>Telefon</span>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div style={{ display: "flex", flexDirection: "column", gap: "40px", alignItems: "center" }}>
                                 {userData.email && (
                                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", textAlign: "center" }}>
                                         <div style={{
@@ -133,22 +136,24 @@ export default function QRContent({ qrData, menuItems }) {
                                         </div>
                                     </div>
                                 )}
-                                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", textAlign: "center" }}>
-                                    <div style={{
-                                        backgroundColor: "#f0f7ff",
-                                        padding: "15px",
-                                        borderRadius: "50%",
-                                        color: "#3c81b5",
-                                        display: "flex"
-                                    }}>
-                                        <Globe size={24} strokeWidth={2} />
-                                    </div>
-                                    <div>
-                                        <Link href={`https://${userData.website}`} target="_blank" style={{ display: "block", fontSize: "18px", fontWeight: "600", color: "#333", letterSpacing: "-0.3px" }}>
-                                            {userData.website}
-                                        </Link>
-                                        <span style={{ fontSize: "13px", color: "#888", display: "block", marginTop: "2px" }}>Web Sitesi</span>
-                                    </div>
+                            </div>
+
+                            {/* ALT SATIR: WEB SİTESİ (ORTALI) */}
+                            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px", textAlign: "center" }}>
+                                <div style={{
+                                    backgroundColor: "#f0f7ff",
+                                    padding: "15px",
+                                    borderRadius: "50%",
+                                    color: "#3c81b5",
+                                    display: "flex"
+                                }}>
+                                    <Globe size={24} strokeWidth={2} />
+                                </div>
+                                <div>
+                                    <Link href={`https://${userData.website}`} target="_blank" style={{ display: "block", fontSize: "18px", fontWeight: "600", color: "#333", letterSpacing: "-0.3px" }}>
+                                        {userData.website}
+                                    </Link>
+                                    <span style={{ fontSize: "13px", color: "#888", display: "block", marginTop: "2px" }}>Web Sitesi</span>
                                 </div>
                             </div>
                         </div>

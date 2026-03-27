@@ -102,21 +102,23 @@ export default function HomeReviews({ reviews = [] }) {
                             );
                         })}
                     </Swiper>
-                    <div className="nav-sw nav-next-slider nav-next-testimonial lg snbp3">
-                        <span className="icon icon-arrow-left" />
-                    </div>
-                    <div className="nav-sw nav-prev-slider nav-prev-testimonial lg snbn3">
-                        <span className="icon icon-arrow-right" />
-                    </div>
-                    {reviews.length > 1 && (
-                        <div className="d-flex justify-content-center" style={{ marginTop: "20px" }}>
-                            <NavDotsPill
-                                total={reviews.length}
-                                activeIndex={activeIndex}
-                                onDotClick={(i) => swiperRef.current?.slideToLoop?.(i) ?? swiperRef.current?.slideTo?.(i)}
-                                ariaLabel="Kullanıcı yorumları"
-                            />
-                        </div>
+                    {reviews.length >= 3 && (
+                        <>
+                            <div className="nav-sw nav-next-slider nav-next-testimonial lg snbp3">
+                                <span className="icon icon-arrow-left" />
+                            </div>
+                            <div className="nav-sw nav-prev-slider nav-prev-testimonial lg snbn3">
+                                <span className="icon icon-arrow-right" />
+                            </div>
+                            <div className="d-flex justify-content-center" style={{ marginTop: "20px" }}>
+                                <NavDotsPill
+                                    total={reviews.length}
+                                    activeIndex={activeIndex}
+                                    onDotClick={(i) => swiperRef.current?.slideToLoop?.(i) ?? swiperRef.current?.slideTo?.(i)}
+                                    ariaLabel="Kullanıcı yorumları"
+                                />
+                            </div>
+                        </>
                     )}
                 </div>
             </div>

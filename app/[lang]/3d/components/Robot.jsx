@@ -1,7 +1,7 @@
 import { useFrame } from "@react-three/fiber";
 import { useRef, useMemo } from "react";
 
-export default function Robot({ posRef, rotRef, id = "katya-v-akilli-robot-supurge" }) {
+export default function Robot({ posRef, rotRef, isCleaning, id = "katya-v-akilli-robot-supurge" }) {
     const g = useRef();
     const brushRefL = useRef();
     const brushRefR = useRef();
@@ -12,16 +12,18 @@ export default function Robot({ posRef, rotRef, id = "katya-v-akilli-robot-supur
         g.current.position.set(p.x, 0.1, p.z);
         g.current.rotation.y = rotRef.current;
 
-        if (brushRefL.current) brushRefL.current.rotation.y -= 10 * dt;
-        if (brushRefR.current) brushRefR.current.rotation.y += 10 * dt;
+        if (isCleaning) {
+            if (brushRefL.current) brushRefL.current.rotation.y -= 10 * dt;
+            if (brushRefR.current) brushRefR.current.rotation.y += 10 * dt;
+        }
     });
 
     // TEK TİP ŞIMART SİYAHI ROBOT (Standardized)
-    const config = { 
-        body: "#1a1a1a", 
-        top: "#000000", 
-        sensor: "#111", 
-        detail: "#3c81b5" 
+    const config = {
+        body: "#1a1a1a",
+        top: "#000000",
+        sensor: "#111",
+        detail: "#3c81b5"
     };
 
     return (
@@ -93,3 +95,4 @@ export default function Robot({ posRef, rotRef, id = "katya-v-akilli-robot-supur
         </group>
     );
 }
+
