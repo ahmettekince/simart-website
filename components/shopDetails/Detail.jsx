@@ -714,49 +714,6 @@ export default function Detail({ product }) {
                                 </div>
                             </form>
 
-                            {/* STOKTA YOKSA ALTERNATİF ÖNERİSİ */}
-                            {buttonState.buttonText === "Stokta Yok" && isCampaignProduct && (
-                                <div style={{
-                                    marginTop: "20px",
-                                    padding: "16px",
-                                    backgroundColor: "#f0f7ff",
-                                    border: "1px solid #3c81b5",
-                                    borderRadius: "12px",
-                                    textAlign: "center"
-                                }}>
-                                    <p style={{ margin: "0 0 10px 0", fontSize: "14px", color: "#666" }}>
-                                        Bu ürünümüz şu an tükendi ama hemen teslim alabileceğiniz <strong>en yakın alternatif</strong> modelimiz:
-                                    </p>
-                                    {(() => {
-                                        const tierList = [
-                                            { id: "katya-v-akilli-robot-supurge", name: "Katya V", link: "/magaza/robotlar/katya-v-akilli-robot-supurge" },
-                                            { id: "katya-p-akilli-robot-supurge", name: "Katya P", link: "/magaza/robotlar/katya-p-akilli-robot-supurge" },
-                                            { id: "katya-v-plus-akilli-robot-supurge", name: "Katya V+", link: "/magaza/robotlar/katya-v-plus-akilli-robot-supurge" },
-                                            { id: "katya-z-akilli-robot-supurge", name: "Katya Z", link: "/magaza/robotlar/katya-z-akilli-robot-supurge" },
-                                            { id: "katya-u-akilli-robot-supurge", name: "Katya U", link: "/magaza/robotlar/katya-u-akilli-robot-supurge" }
-                                        ];
-                                        const currentIdx = tierList.findIndex(t => t.id === product.slug);
-                                        // Bir üst modele bak (currentIdx+1), yoksa bir alt (currentIdx-1)
-                                        const alt = tierList[currentIdx + 1] || tierList[currentIdx - 1];
-                                        if (alt) {
-                                            return (
-                                                <Link href={alt.link} style={{
-                                                    display: "inline-block",
-                                                    padding: "8px 20px",
-                                                    backgroundColor: "#3c81b5",
-                                                    color: "#fff",
-                                                    borderRadius: "8px",
-                                                    fontWeight: "600",
-                                                    textDecoration: "none"
-                                                }}>
-                                                    {alt.name} Modelini İncele
-                                                </Link>
-                                            );
-                                        }
-                                        return null;
-                                    })()}
-                                </div>
-                            )}
                         </div>
                     )}
 
