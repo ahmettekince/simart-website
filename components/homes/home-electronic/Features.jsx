@@ -43,10 +43,11 @@ const DEFAULT_FEATURES = [
     color: "#3c81b5",
   },
   {
-    image: "/images/home/yerli_uretim.png",
+    image: "/images/home/yerli_uretim.svg",
     title: "Yerli Üretim",
     description: "Kaliteli ve yerli üretim ürünlerimizle Türkiye'nin geleceğine katkı sağlıyoruz.",
     color: "#7c3aed",
+    imgStyle: { height: "40px" } // İkonun boyutunu diğerlerine uyumlu hale getirdik
   },
 ];
 
@@ -115,7 +116,13 @@ export default function Features({ items = DEFAULT_FEATURES }) {
                       alt={item.title}
                       width={120} // Maksimum genişlik
                       height={60}  // Sabit yükseklik
-                      style={{ width: "auto", height: "100%", objectFit: "contain" }}
+                      style={{ 
+                        width: "auto", 
+                        height: "100%", 
+                        objectFit: "contain",
+                        objectPosition: "left center", // Resmi sola hizala
+                        ...item.imgStyle
+                      }}
                     />
                   ) : (
                     ICONS[item.icon] ?? ICONS.shipping
