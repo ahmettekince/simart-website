@@ -127,7 +127,7 @@ export default function HomeReviews({ reviews = [] }) {
                             );
                         })}
                     </Swiper>
-                    {reviews.length >= 3 && (
+                    {reviews.length > 3 && (
                         <>
                             <div className="nav-sw nav-next-slider nav-next-testimonial lg snbp3">
                                 <span className="icon icon-arrow-left" />
