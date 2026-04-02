@@ -62,10 +62,15 @@ select:focus,
   outline: none !important;
 }
 
-/* Abone Olun input - font size 24px */
+/* Abone Olun input - font size 14px */
 .footer-newsletter .form-newsletter .subscribe-email,
 .footer-newsletter .subscribe-content input {
-  font-size: 16px !important;
+  font-size: 14px !important;
+}
+
+.footer-newsletter .form-newsletter .subscribe-email::placeholder,
+.footer-newsletter .subscribe-content input::placeholder {
+  font-size: 14px !important;
 }
 
 /* Giriş Yap ve Kayıt Ol inputları - font size 16px */
