@@ -46,8 +46,7 @@ Disallow: /*?ref=
 Disallow: /*?kupon=
 
 # Section 3: AEO (Answer Engine Optimization) Directives
-# Machine policy for AI agents
-Machine-policy: https://simart.me/ai-policy.json
+
 # Discovery file for LLMs
 Discovery: https://simart.me/llms.txt
 

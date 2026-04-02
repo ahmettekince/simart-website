@@ -47,6 +47,25 @@ export default function SupportForm() {
     fetchProducts();
   }, []);
 
+  // Hash kontrolü ve otomatik kaydırma
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.location.hash === "#destek-formu") {
+      const element = document.getElementById("destek-formu");
+      if (element) {
+        setTimeout(() => {
+          const headerOffset = 120; // Sticky header yüksekliği + pay
+          const elementPosition = element.getBoundingClientRect().top;
+          const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: "smooth"
+          });
+        }, 100); // Sayfanın tam render olması için kısa bir gecikme
+      }
+    }
+  }, []);
+
   const [message, setMessage] = useState("");
 
   const handleMessageChange = (e) => {
@@ -136,7 +155,7 @@ export default function SupportForm() {
   };
 
   return (
-    <section className="flat-spacing-21 support-form-section">
+    <section id="destek-formu" className="flat-spacing-21 support-form-section">
       <div className="container">
         <div className="row justify-content-center">
           <div className="col-12 col-md-6">
