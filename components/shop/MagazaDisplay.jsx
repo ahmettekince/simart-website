@@ -9,13 +9,23 @@ import ShopFilter from "./ShopFilter";
  * Bu bileşen artık filtreleme ve sıralama özelliklerini de içeriyor.
  */
 export default function MagazaDisplay({ products: initialProducts = [], categories = [] }) {
-    const [products, setProducts] = useState(initialProducts);
+    const sortByDefault = (list) => {
+        const isAvailable = (p) => p.is_in_stock || p.is_pre_order;
+        return [...list].sort((a, b) => {
+            const availA = isAvailable(a);
+            const availB = isAvailable(b);
+            if (availA === availB) return 0;
+            return availA ? -1 : 1;
+        });
+    };
+
+    const [products, setProducts] = useState(() => sortByDefault(initialProducts));
     const [finalSorted, setFinalSorted] = useState([]);
     const lastTrackedIds = React.useRef("");
 
-    // Sayfa ilk yüklendiğinde ürünleri set et
+    // Sayfa ilk yüklendiğinde veya prop değiştiğinde ürünleri set et (sıralayarak)
     useEffect(() => {
-        setProducts(initialProducts);
+        setProducts(sortByDefault(initialProducts));
     }, [initialProducts]);
 
     // GTM - view_item_list takibi

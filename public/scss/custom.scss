@@ -3239,3 +3239,19 @@ body.header-scroll-hide header.header-default {
     }
   }
 }
+/* HomeReviews swiper slides equal height fix */
+.tf-sw-testimonial .swiper-wrapper {
+  display: flex !important;
+  align-items: stretch !important;
+}
+
+.tf-sw-testimonial .swiper-slide {
+  height: auto !important;
+  display: flex;
+}
+
+.testimonial-item.style-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}

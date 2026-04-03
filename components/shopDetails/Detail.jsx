@@ -532,9 +532,9 @@ export default function Detail({ product }) {
                       </div>
                     )}
                     <Trendyol productSlug={product.slug} />
-                    
+
                     {showPromoBox && (
-                      <PromoCartBox 
+                      <PromoCartBox
                         product={product}
                         couponCode={couponParam}
                         quantity={quantity}
@@ -686,35 +686,35 @@ export default function Detail({ product }) {
                     )}
 
                     {!showPromoBox && product?.name !== "katya Robot Süpürge" && product?.name !== "Katya Akıllı Robot Süpürge" && (
-                        <div className="tf-product-info-buy-button">
-                            <form onSubmit={(e) => e.preventDefault()} className="">
-                                <div className="tf-product-buy-actions d-none d-md-flex" style={{ alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-                                    <div className="tf-product-info-quantity" style={{ margin: 0 }}>
-                                        <Quantity setQuantity={setQuantity} initialValue={quantity} minQuantity={minQuantity} maxQuantity={maxQuantity} disabled={buttonState.buttonDisabled} />
-                                    </div>
-                                    <button
-                                        type="button"
-                                        onClick={handleAddToCartAnimated}
-                                        disabled={isAdding || showSuccess || buttonState.buttonDisabled}
-                                        className={`main-cart-btn ${showSuccess ? "success-animation" : ""} ${buttonState.buttonText === "Stokta Yok" ? "out-of-stock" : ""}`}
-                                    >
-                                        <span className="button-text-main">
-                                          {showSuccess
-                                              ? "Sepete Eklendi"
-                                              : isAdding
-                                                  ? "Ekleniyor..."
-                                                  : buttonState.buttonText}
-                                        </span>
-                                        {showSuccess && (
-                                            <span className="button-text-slide">
-                                              Sepete Eklendi
-                                            </span>
-                                        )}
-                                    </button>
-                                </div>
-                            </form>
+                      <div className="tf-product-info-buy-button">
+                        <form onSubmit={(e) => e.preventDefault()} className="">
+                          <div className="tf-product-buy-actions d-none d-md-flex" style={{ alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                            <div className="tf-product-info-quantity" style={{ margin: 0 }}>
+                              <Quantity setQuantity={setQuantity} initialValue={quantity} minQuantity={minQuantity} maxQuantity={maxQuantity} disabled={buttonState.buttonDisabled} />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={handleAddToCartAnimated}
+                              disabled={isAdding || showSuccess || buttonState.buttonDisabled}
+                              className={`main-cart-btn ${showSuccess ? "success-animation" : ""} ${buttonState.buttonText === "Stokta Yok" ? "out-of-stock" : ""}`}
+                            >
+                              <span className="button-text-main">
+                                {showSuccess
+                                  ? "Sepete Eklendi"
+                                  : isAdding
+                                    ? "Ekleniyor..."
+                                    : buttonState.buttonText}
+                              </span>
+                              {showSuccess && (
+                                <span className="button-text-slide">
+                                  Sepete Eklendi
+                                </span>
+                              )}
+                            </button>
+                          </div>
+                        </form>
 
-                        </div>
+                      </div>
                     )}
 
                     <VolumeDiscount product={product} setQuantity={setQuantity} />

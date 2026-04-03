@@ -44,7 +44,7 @@ export async function getProductsByCategory(categorySlug, lang = "tr") {
 /**
  * Kategori bilgisi ve ürünlerini getirir. API'den category objesi döner.
  * @param {string} categorySlug - Kategori slug'ı
- * @returns {Promise<{products: Array, category: {name, slug, product_count}|null}>}
+ * @returns {Promise<{products: Array, category: {name, slug, product_count, seo_keywords, seo_description}|null}>}
  */
 export async function getCategoryWithProducts(categorySlug, lang = "tr") {
     if (!categorySlug) {

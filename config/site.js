@@ -22,7 +22,7 @@ export const siteConfig = {
             support: "destek@simart.me",
         },
         address: {
-            street: "Yeşilova Mah. 4023 Cad. Ser Tower Apt. Dış Kapı: 1",
+            street: "Yeşilova Mah. 4023 Cad. Ser Tower Apt. Dış Kapı: 1 G",
             city: "Ankara",
             country: "Türkiye",
             postalCode: "06796",
@@ -39,13 +39,6 @@ export const siteConfig = {
             icon: "icon-fb",
             iconSize: "fs-14",
             className: "social-facebook",
-        },
-        {
-            name: "twitter",
-            url: "https://x.com/simartteknoloji",
-            icon: "icon-Icon-x",
-            iconSize: "fs-12",
-            className: "social-twiter",
         },
         {
             name: "instagram",
@@ -74,6 +67,13 @@ export const siteConfig = {
             icon: "icon-youtube",
             iconSize: "fs-14",
             className: "social-youtube",
+        },
+        {
+            name: "twitter",
+            url: "https://x.com/simartteknoloji",
+            icon: "icon-Icon-x",
+            iconSize: "fs-12",
+            className: "social-twiter",
         },
         {
             name: "linkedin",

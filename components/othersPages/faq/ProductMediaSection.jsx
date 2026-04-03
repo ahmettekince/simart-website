@@ -194,7 +194,7 @@ export default function ProductMediaSection({ product }) {
       {mediaData?.faq_data && mediaData.faq_data.length > 0 && (
         <div className="row mt-5">
           <div className="col-12">
-            <h5 className="mb-4">Sıkça Sorulan Sorular</h5>
+            <h5 className="mb-4">{productName} Hakkında Merak Edilenler</h5>
             <div className="accordion-section">
               <Accordion
                 faqs={mediaData.faq_data.map(item => ({

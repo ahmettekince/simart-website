@@ -16,11 +16,11 @@ export const API_REVALIDATE = {
 
     // Module specific mappings
     HOME: 0,
-    PRODUCTS: 10,
+    PRODUCTS: 0,
     BLOGS: 600,
     MENUS: 600,
     PAGES: 0,
-    CAMPAIGNS: 60,
+    CAMPAIGNS: 5,
     REVIEWS: 60,
     TOPBAR: 60,
     FAQ: 60,

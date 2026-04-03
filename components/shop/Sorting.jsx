@@ -15,44 +15,67 @@ export default function Sorting({ products = [], setFinalSorted }) {
   useEffect(() => {
     const currentLabel = (selectedOptions?.text || "").trim().toLowerCase();
     const defaultLabel = (sortingOptions?.[0]?.text || "").trim().toLowerCase();
+
+    // Yardımcı: Stokta mı? (Stokta var veya Ön Sipariş)
+    const isAvailable = (p) => p.is_in_stock || p.is_pre_order;
+
+    const baseSort = (a, b, compareFn) => {
+      const availA = isAvailable(a);
+      const availB = isAvailable(b);
+
+      if (availA !== availB) {
+        return availA ? -1 : 1;
+      }
+      return compareFn(a, b);
+    };
+
     if (
       currentLabel === defaultLabel ||
       currentLabel === "varsayılan" ||
       currentLabel === "önerilen sıralama" ||
       currentLabel === "onerilen siralama"
     ) {
-      setFinalSorted([...products]);
+      // Önerilen sıralamada sadece stok durumuna bakarak başla
+      setFinalSorted([...products].sort((a, b) => baseSort(a, b, () => 0)));
     } else if (selectedOptions.text == "Alfabetik, A-Z") {
       setFinalSorted(
-        [...products].sort((a, b) => {
-          const nameA = (a.name || a.title || "").toLowerCase();
-          const nameB = (b.name || b.title || "").toLowerCase();
-          return nameA.localeCompare(nameB);
-        })
+        [...products].sort((a, b) =>
+          baseSort(a, b, (item1, item2) => {
+            const nameA = (item1.name || item1.title || "").toLowerCase();
+            const nameB = (item2.name || item2.title || "").toLowerCase();
+            return nameA.localeCompare(nameB);
+          })
+        )
       );
     } else if (selectedOptions.text == "Alfabetik, Z-A") {
       setFinalSorted(
-        [...products].sort((a, b) => {
-          const nameA = (a.name || a.title || "").toLowerCase();
-          const nameB = (b.name || b.title || "").toLowerCase();
-          return nameB.localeCompare(nameA);
-        })
+        [...products].sort((a, b) =>
+          baseSort(a, b, (item1, item2) => {
+            const nameA = (item1.name || item1.title || "").toLowerCase();
+            const nameB = (item2.name || item2.title || "").toLowerCase();
+            return nameB.localeCompare(nameA);
+          })
+        )
       );
     } else if (selectedOptions.text == "En düşük fiyat") {
       setFinalSorted(
-        [...products].sort((a, b) => {
-          const priceA = a.discount_price || a.price || 0;
-          const priceB = b.discount_price || b.price || 0;
-          return priceA - priceB;
-        })
+        [...products].sort((a, b) =>
+          baseSort(a, b, (item1, item2) => {
+            const priceA = item1.discount_price || item1.price || 0;
+            const priceB = item2.discount_price || item2.price || 0;
+            return priceA - priceB;
+          })
+        )
       );
     } else if (selectedOptions.text == "En yüksek fiyat") {
       setFinalSorted(
-        [...products].sort((a, b) => {
-          const priceA = a.discount_price || a.price || 0;
-          const priceB = b.discount_price || b.price || 0;
-          return priceB - priceA;
-        })
+        [...products].sort((a, b) =>
+          baseSort(a, b, (item1, item2) => {
+            const priceA = item1.discount_price || item1.price || 0;
+            const priceB = item2.discount_price || item2.price || 0;
+            return priceB - priceA;
+          })
+        )
       );
     }
   }, [products, selectedOptions, setFinalSorted]);

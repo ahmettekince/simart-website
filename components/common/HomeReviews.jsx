@@ -82,10 +82,9 @@ export default function HomeReviews({ reviews = [] }) {
                                             <StarRating rating={review.rating} showNumber={false} showReviewCount={false} />
                                         </div>
                                         <div className="text" style={{
-                                            flex: 1,
+                                            height: '72px',
                                             marginBottom: '15px',
-                                            minHeight: '52px',
-                                            lineHeight: '1.3',
+                                            lineHeight: '24px',
                                             display: '-webkit-box',
                                             WebkitLineClamp: 3,
                                             WebkitBoxOrient: 'vertical',
@@ -94,7 +93,7 @@ export default function HomeReviews({ reviews = [] }) {
                                         }}>
                                             "{review.comment}"
                                         </div>
-                                        <div className="author" style={{ marginBottom: '15px' }}>
+                                        <div className="author" style={{ marginBottom: '10px' }}>
                                             <div className="name" style={{ fontWeight: '600' }}>
                                                 {maskedName}
                                             </div>

@@ -9,7 +9,7 @@ import { notFound } from "next/navigation";
  */
 export async function generateMetadata({ params }) {
   const { kategori, lang } = await params;
-  const { products, category } = await getCategoryWithProducts(kategori, lang);
+  const { category } = await getCategoryWithProducts(kategori, lang);
 
   if (!category) {
     return {
@@ -19,11 +19,15 @@ export async function generateMetadata({ params }) {
   }
 
   const categoryName = category.name;
-  const productCount = category.product_count ?? products.length;
+  const seoDescription =
+    category.seo_description ??
+    `${categoryName} kategorisindeki ürünlerimizi keşfedin.`;
+  const seoKeywords = category.seo_keywords ?? undefined;
 
   return {
     title: `${categoryName} - Şımart Teknoloji`,
-    description: `${categoryName} kategorisindeki ürünlerimizi keşfedin. ${productCount} ürün bulundu.`,
+    description: seoDescription,
+    ...(seoKeywords && { keywords: seoKeywords }),
   };
 }
 
