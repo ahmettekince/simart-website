@@ -286,18 +286,22 @@ export default function Detail({ product }) {
   const timeBasedDiscount = useMemo(() => {
     if (product.time_based_discounts && product.time_based_discounts.length > 0) {
       const activeDiscount = product.time_based_discounts.find(
-        (discount) => discount.remaining_minutes !== null && discount.remaining_minutes !== undefined
+        (discount) => (discount.remaining_minutes != null) || (discount.remaining_seconds != null)
       );
       return activeDiscount || null;
     }
     return null;
   }, [product.time_based_discounts]);
 
-  // Countdown için target date hesapla (remaining_minutes dakika sonrası)
   const countdownTargetDate = useMemo(() => {
-    if (timeBasedDiscount && timeBasedDiscount.remaining_minutes !== null) {
+    // API'den gelen değer sayı biçiminde saniye (duration)
+    const rawSeconds = timeBasedDiscount?.remaining_seconds ?? timeBasedDiscount?.remaining_minutes;
+    const seconds = Number(rawSeconds);
+
+    if (!isNaN(seconds) && seconds > 0) {
       const now = new Date();
-      const targetDate = new Date(now.getTime() + timeBasedDiscount.remaining_minutes * 60 * 1000);
+      // saniye * 1000 = milisaniye ekleyerek hedef tarihi buluyoruz
+      const targetDate = new Date(now.getTime() + (seconds * 1000));
       return targetDate.toISOString();
     }
     return null;

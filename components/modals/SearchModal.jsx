@@ -23,7 +23,9 @@ export default function SearchModal() {
       try {
         const response = await apiClient.get("/products/search");
         if (response.data?.status === "success" && response.data?.data?.items) {
-          setRecommendations(response.data.data.items);
+          setRecommendations(
+            response.data.data.items.filter((p) => p.is_in_stock !== false)
+          );
         }
       } catch (error) {
         console.error("Öneriler yüklenirken hata:", error);
@@ -220,19 +222,21 @@ export default function SearchModal() {
                               )}
                             </div>
                             <div className="tf-product-info-price" style={{ marginTop: "4px", display: "flex", alignItems: "center", gap: "8px" }}>
-                              {product.discount_price && product.discount_price < product.price ? (
-                                <>
-                                  <div className="price-on-sale fw-6" style={{ color: "#0bc15c", fontWeight: "700" }}>
-                                    {formatPrice(product.final_price || product.discount_price)}
+                              {product.is_in_stock !== false && (
+                                product.discount_price && product.discount_price < product.price ? (
+                                  <>
+                                    <div className="price-on-sale fw-6" style={{ color: "#0bc15c", fontWeight: "700" }}>
+                                      {formatPrice(product.final_price || product.discount_price)}
+                                    </div>
+                                    <div className="compare-at-price" style={{ textDecoration: "line-through", color: "#999", fontSize: "0.9em" }}>
+                                      {formatPrice(product.price)}
+                                    </div>
+                                  </>
+                                ) : (
+                                  <div className="price fw-6" style={{ color: "var(--primary)", fontWeight: "700" }}>
+                                    {formatPrice(product.final_price || product.price)}
                                   </div>
-                                  <div className="compare-at-price" style={{ textDecoration: "line-through", color: "#999", fontSize: "0.9em" }}>
-                                    {formatPrice(product.price)}
-                                  </div>
-                                </>
-                              ) : (
-                                <div className="price fw-6" style={{ color: "var(--primary)", fontWeight: "700" }}>
-                                  {formatPrice(product.final_price || product.price)}
-                                </div>
+                                )
                               )}
                             </div>
                           </div>

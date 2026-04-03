@@ -122,13 +122,13 @@ export default function StickyItem({
 
   const finalPrice = useMemo(() => {
     if (!product) return displayProduct?.price || 0;
-    const tbd = product.time_based_discounts?.find((d) => d.remaining_minutes != null);
+    const tbd = product.time_based_discounts?.find((d) => (d.remaining_minutes != null) || (d.remaining_seconds != null));
     if (tbd?.discounted_price != null) return tbd.discounted_price;
     return product.discount_price ?? product.price ?? 0;
   }, [product, displayProduct]);
   const originalPrice = useMemo(() => {
     if (!product) return null;
-    const tbd = product.time_based_discounts?.find((d) => d.remaining_minutes != null);
+    const tbd = product.time_based_discounts?.find((d) => (d.remaining_minutes != null) || (d.remaining_seconds != null));
     if (tbd?.discounted_price != null) return product.price || product.discount_price || null;
     if (product.discount_price) return product.price || null;
     return null;

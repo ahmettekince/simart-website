@@ -326,21 +326,24 @@ export async function getCartRecommendations() {
             return [];
         }
         if (response?.data?.status === "success" && Array.isArray(response.data.data)) {
-            // Sadece gerekli alanları normalize et
-            const recommendations = response.data.data.map(product => ({
-                id: product.id,
-                name: product.name,
-                slug: product.slug,
-                price: parseFloat(product.price || 0),
-                discount_price: product.discount_price ? parseFloat(product.discount_price) : null,
-                final_price: parseFloat(product.final_price || product.price || 0),
-                cover_image: {
-                    url: product.cover_image?.url || null,
-                    thumbnail_url: product.cover_image?.thumbnail_url || null,
-                },
-                categories: product.categories || [],
-                primary_category: product.primary_category || null,
-            }));
+            // Stokta olmayan ürünleri filtrele, ardından gerekli alanları normalize et
+            const recommendations = response.data.data
+                .filter(product => product.is_in_stock !== false)
+                .map(product => ({
+                    id: product.id,
+                    name: product.name,
+                    slug: product.slug,
+                    price: parseFloat(product.price || 0),
+                    discount_price: product.discount_price ? parseFloat(product.discount_price) : null,
+                    final_price: parseFloat(product.final_price || product.price || 0),
+                    is_in_stock: product.is_in_stock ?? true,
+                    cover_image: {
+                        url: product.cover_image?.url || null,
+                        thumbnail_url: product.cover_image?.thumbnail_url || null,
+                    },
+                    categories: product.categories || [],
+                    primary_category: product.primary_category || null,
+                }));
 
             log("[API cart.js] getCartRecommendations success:", recommendations.length, "ürün");
             return recommendations;

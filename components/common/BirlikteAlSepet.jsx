@@ -52,6 +52,9 @@ export default function BirlikteAlSepet({ title = "Sepetinize ekleyebilirsiniz",
         if (!id) return false;
         const numId = Number(id);
         if (seen.has(numId) || cartProductIds.has(numId)) return false;
+        // Stokta olmayan ürünleri önermeyiz
+        const inStock = p?.is_in_stock ?? p?.product?.is_in_stock ?? true;
+        if (!inStock) return false;
         seen.add(numId);
         return true;
       }).map((p) => {
@@ -96,6 +99,9 @@ export default function BirlikteAlSepet({ title = "Sepetinize ekleyebilirsiniz",
       const targetId = Number(t.id);
       if (seen.has(targetId)) return;
       if (cartProductIds.has(targetId)) return;
+      // Stokta olmayan ürünleri önermeyiz
+      const inStock = t.is_in_stock ?? true;
+      if (!inStock) return;
 
       const targetCategory = t.categories?.[0] || t.primary_category || t.item_category || {};
       const catNameFromSlug = (t.category_slug || t.categories?.[0]?.slug || "Akıllı Ürünler")
