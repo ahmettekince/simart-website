@@ -1,10 +1,11 @@
+import { API_REVALIDATE } from "@/config/apiConfig";
 import { serverFetch } from "@/utils/serverFetch";
 
 export async function GET() {
     try {
         const xml = await serverFetch("/sitemap-contents.xml", {
             raw: true,
-            next: { revalidate: 1 }
+            next: { revalidate: API_REVALIDATE.SITEMAPS }
         });
 
         if (!xml) {

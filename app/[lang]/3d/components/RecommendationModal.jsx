@@ -61,9 +61,7 @@ export default function RecommendationModal({ showModal, setShowModal, recommend
                     ✕
                 </button>
 
-                <p style={{ color: "#636e72", fontSize: "14px", marginBottom: "20px", lineHeight: "1.5", fontWeight: "500" }}>
-                    {recommendedRobot.description}
-                </p>
+
 
                 <div style={{
                     background: "#fff",

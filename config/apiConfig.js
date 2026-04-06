@@ -30,5 +30,6 @@ export const API_REVALIDATE = {
     LOCATIONS: 0,
     POPUP: 0,
     EVENTS: 0,
+    SITEMAPS: 0,
     DEFAULT: 0,
 };

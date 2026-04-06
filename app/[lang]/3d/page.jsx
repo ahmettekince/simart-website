@@ -306,6 +306,13 @@ function buildWaypoints(type) {
         });
         push([station], false);
         return all;
+    } else if (type === "1+0") {
+        push([station], false); currentPos = station;
+        const sPts = sweep(-4.9, 4.9, -4.9, 4.9, currentPos, 0.50);
+        push(sPts, true);
+        if (sPts.length > 0) currentPos = sPts[sPts.length - 1];
+        push([station], false);
+        return all;
     } else if (type === "2+1") {
         const suite = [];
         suite.push({ name: "Hol", bounds: [[-1.9, 1.9], [-4.9, 4.9]], isCenter: true });
@@ -428,6 +435,8 @@ function buildWaypoints(type) {
         push([[0, 0.25, 2.06]]);
         push([entrance]); push([station]);
         return all;
+    } else if (type === "4 ve üzeri") {
+        return buildWaypoints("3+2");
     }
 
     currentPos = station;
@@ -468,8 +477,8 @@ function buildWaypoints(type) {
 /* --- COMPONENTS --- */
 function House({ type, trail, posRef, rotRef, recommendedRobot, isCleaning }) {
     const h = 2.7, t = 0.18;
-    const is1plus1 = type === "1+1";
-    const is3plus2 = type === "3+2";
+    const is1plus1 = type === "1+1" || type === "1+0";
+    const is3plus2 = type === "3+2" || type === "4 ve üzeri";
     const fw = is3plus2 ? 18 : (is1plus1 ? 10 : 14);
     const fz = is3plus2 ? 12 : 10;
     const zOff = is3plus2 ? 1 : 0; // 3+2 planını geriye kaydır (arkadaki duvar sabit kalsın)
@@ -478,28 +487,27 @@ function House({ type, trail, posRef, rotRef, recommendedRobot, isCleaning }) {
         <mesh position={[0, 0.01, zOff]}><boxGeometry args={[fw, 0.01, fz]} />{floorMat}</mesh>
 
         {/* ODALARA ÖZEL RENKLİ ZEMİN KAPLAMALARI */}
-        {type === "1+1" && <>
-            {/* Salon-Mutfak L-Şekli Birleşik Renk */}
-            <Floor w={10} z={5} x={0} zPos={-2.5} color="#ee5253" opacity={0.35} /> {/* Üst parça */}
-            <Floor w={5} z={5} x={2.5} zPos={2.5} color="#ee5253" opacity={0.35} /> {/* Sağ alt parça */}
-            <Floor w={5} z={5} x={-2.5} zPos={2.5} color="#10ac84" opacity={0.35} /> {/* Oda */}
-
-            <Text position={[0, 0.1, -2.5]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.4} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
-                SALON-MUTFAK
-            </Text>
-            <group position={[-2.5, 0.1, 2.5]} rotation={[-Math.PI / 2, 0, 0]}>
-                <Text
-
-                    fontSize={0.5}
-                    color="white"
-                    letterSpacing={0.1}
-                    anchorX="center"
-                    anchorY="middle"
-                    fontWeight={700}
-                >
-                    ODA
-                </Text>
-            </group>
+        {(type === "1+1" || type === "1+0") && <>
+            {type === "1+1" ? (
+                <>
+                    <Floor w={10} z={5} x={0} zPos={-2.5} color="#ee5253" opacity={0.35} />
+                    <Floor w={5} z={5} x={2.5} zPos={2.5} color="#ee5253" opacity={0.35} />
+                    <Floor w={5} z={5} x={-2.5} zPos={2.5} color="#10ac84" opacity={0.35} />
+                    <Text position={[0, 0.1, -2.5]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.4} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+                        SALON-MUTFAK
+                    </Text>
+                    <Text position={[-2.5, 0.1, 2.5]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.5} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+                        ODA
+                    </Text>
+                </>
+            ) : (
+                <>
+                    <Floor w={10} z={10} x={0} zPos={0} color="#ee5253" opacity={0.35} />
+                    <Text position={[0, 0.1, 0]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.6} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+                        SALON
+                    </Text>
+                </>
+            )}
         </>}
 
         {type === "2+1" && <>
@@ -554,38 +562,37 @@ function House({ type, trail, posRef, rotRef, recommendedRobot, isCleaning }) {
             </Text>
         </>}
 
-        {
-            type === "3+2" && <>
-                <mesh position={[-1.5, 0.015, 1]}><boxGeometry args={[5, 0.01, 12]} /><meshStandardMaterial color="#b2bec3" opacity={0.25} transparent /></mesh>
-                <mesh position={[-6.5, 0.015, 5.12]}><boxGeometry args={[5, 0.01, 3.75]} /><meshStandardMaterial color="#5f27cd" opacity={0.35} transparent /></mesh>
-                <mesh position={[-6.5, 0.015, 1.62]}><boxGeometry args={[5, 0.01, 3.25]} /><meshStandardMaterial color="#10ac84" opacity={0.35} transparent /></mesh>
-                <mesh position={[-6.5, 0.015, -2.5]}><boxGeometry args={[5, 0.01, 5]} /><meshStandardMaterial color="#00d2d3" opacity={0.35} transparent /></mesh>
-                <mesh position={[5, 0.015, 2.1]}><boxGeometry args={[8, 0.01, 2.25]} /><meshStandardMaterial color="#ff9f43" opacity={0.35} transparent /></mesh>
-                <mesh position={[5, 0.015, -2]}><boxGeometry args={[8, 0.01, 6]} /><meshStandardMaterial color="#ee5253" opacity={0.35} transparent /></mesh>
-                <mesh position={[5, 0.015, 5.12]}><boxGeometry args={[8, 0.01, 3.75]} /><meshStandardMaterial color="#ee5253" opacity={0.25} transparent /></mesh>
+        {(type === "3+2" || type === "4 ve üzeri") && <>
+            <mesh position={[-1.5, 0.015, 1]}><boxGeometry args={[5, 0.01, 12]} /><meshStandardMaterial color="#b2bec3" opacity={0.25} transparent /></mesh>
+            <mesh position={[-6.5, 0.015, 5.12]}><boxGeometry args={[5, 0.01, 3.75]} /><meshStandardMaterial color="#5f27cd" opacity={0.35} transparent /></mesh>
+            <mesh position={[-6.5, 0.015, 1.62]}><boxGeometry args={[5, 0.01, 3.25]} /><meshStandardMaterial color="#10ac84" opacity={0.35} transparent /></mesh>
+            <mesh position={[-6.5, 0.015, -2.5]}><boxGeometry args={[5, 0.01, 5]} /><meshStandardMaterial color="#00d2d3" opacity={0.35} transparent /></mesh>
+            <mesh position={[5, 0.015, 2.1]}><boxGeometry args={[8, 0.01, 2.25]} /><meshStandardMaterial color="#ff9f43" opacity={0.35} transparent /></mesh>
+            <mesh position={[5, 0.015, -2]}><boxGeometry args={[8, 0.01, 6]} /><meshStandardMaterial color="#ee5253" opacity={0.35} transparent /></mesh>
+            <mesh position={[5, 0.015, 5.12]}><boxGeometry args={[8, 0.01, 3.75]} /><meshStandardMaterial color="#ee5253" opacity={0.25} transparent /></mesh>
 
-                <Text position={[5, 0.1, -2]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.5} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
-                    ANA SALON
-                </Text>
-                <Text position={[5, 0.1, 5.12]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.5} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
-                    MUTFAK
-                </Text>
-                <Text position={[-1.5, 0.1, 1]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.5} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
-                    HOL
-                </Text>
-                <Text position={[-6.5, 0.1, 5.12]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.4} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
-                    EBEVEYN ODASI
-                </Text>
-                <Text position={[-6.5, 0.1, 1.62]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.4} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
-                    MİSAFİR ODASI
-                </Text>
-                <Text position={[-6.5, 0.1, -2.5]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.4} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
-                    ÇOCUK ODASI
-                </Text>
-                <Text position={[5, 0.1, 2.1]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.4} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
-                    KORİDOR
-                </Text>
-            </>
+            <Text position={[5, 0.1, -2]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.5} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+                ANA SALON
+            </Text>
+            <Text position={[5, 0.1, 5.12]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.5} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+                MUTFAK
+            </Text>
+            <Text position={[-1.5, 0.1, 1]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.5} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+                HOL
+            </Text>
+            <Text position={[-6.5, 0.1, 5.12]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.4} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+                EBEVEYN ODASI
+            </Text>
+            <Text position={[-6.5, 0.1, 1.62]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.4} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+                MİSAFİR ODASI
+            </Text>
+            <Text position={[-6.5, 0.1, -2.5]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.4} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+                ÇOCUK ODASI
+            </Text>
+            <Text position={[5, 0.1, 2.1]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.4} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+                KORİDOR
+            </Text>
+        </>
         }
 
         <Station type={recommendedRobot?.features?.station} />
@@ -670,32 +677,31 @@ function House({ type, trail, posRef, rotRef, recommendedRobot, isCleaning }) {
         }
 
         {/* 3+2 ÖZEL MİMARİ (Grand Mansion) */}
-        {
-            type === "3+2" && <>
-                <Wall w={2} h={h} t={t} x={2} z={1} />
-                <Wall w={4} h={h} t={t} x={7} z={1} />
-                <Lintel x={4} z={1} w={2} t={t} h={h} /> {/* Lintel Salon */}
+        {(type === "3+2" || type === "4 ve üzeri") && <>
+            <Wall w={2} h={h} t={t} x={2} z={1} />
+            <Wall w={4} h={h} t={t} x={7} z={1} />
+            <Lintel x={4} z={1} w={2} t={t} h={h} /> {/* Lintel Salon */}
 
-                <Wall w={t} h={h} t={6} x={1} z={-2} />
-                <Wall w={t} h={h} t={3.75} x={1} z={5} />
-                <Lintel x={1} z={2.1} w={t} t={2.25} h={h} />
+            <Wall w={t} h={h} t={6} x={1} z={-2} />
+            <Wall w={t} h={h} t={3.75} x={1} z={5} />
+            <Lintel x={1} z={2.1} w={t} t={2.25} h={h} />
 
-                <Wall w={4} h={h} t={t} x={7} z={3.25} />
-                <Wall w={2} h={h} t={t} x={2} z={3.25} />
-                <Lintel x={4} z={3.25} w={2} t={t} h={h} /> {/* Lintel Mutfak */}
+            <Wall w={4} h={h} t={t} x={7} z={3.25} />
+            <Wall w={2} h={h} t={t} x={2} z={3.25} />
+            <Lintel x={4} z={3.25} w={2} t={t} h={h} /> {/* Lintel Mutfak */}
 
-                <Wall w={t} h={h} t={2} x={-4} z={6} />
-                <Wall w={t} h={h} t={1.5} x={-4} z={2.5} />
-                <Wall w={t} h={h} t={2} x={-4} z={-1} />
-                <Wall w={t} h={h} t={1.5} x={-4} z={-4.25} />
-                <Lintel x={-4} z={4.12} w={t} t={1.75} h={h} /> {/* Lintel Ebeveyn */}
-                <Lintel x={-4} z={0.88} w={t} t={1.75} h={h} /> {/* Lintel Misafir */}
-                <Lintel x={-4} z={-2.75} w={t} t={1.5} h={h} /> {/* Lintel Çocuk */}
+            <Wall w={t} h={h} t={2} x={-4} z={6} />
+            <Wall w={t} h={h} t={1.5} x={-4} z={2.5} />
+            <Wall w={t} h={h} t={2} x={-4} z={-1} />
+            <Wall w={t} h={h} t={1.5} x={-4} z={-4.25} />
+            <Lintel x={-4} z={4.12} w={t} t={1.75} h={h} /> {/* Lintel Ebeveyn */}
+            <Lintel x={-4} z={0.88} w={t} t={1.75} h={h} /> {/* Lintel Misafir */}
+            <Lintel x={-4} z={-2.75} w={t} t={1.5} h={h} /> {/* Lintel Çocuk */}
 
-                <Wall w={5} h={h} t={t} x={-6.5} z={3.25} />
-                <Wall w={5} h={h} t={t} x={-6.5} z={0} />
+            <Wall w={5} h={h} t={t} x={-6.5} z={3.25} />
+            <Wall w={5} h={h} t={t} x={-6.5} z={0} />
 
-            </>
+        </>
         }
 
         <Robot posRef={posRef} rotRef={rotRef} isCleaning={isCleaning} id={recommendedRobot?.id} />
@@ -703,7 +709,7 @@ function House({ type, trail, posRef, rotRef, recommendedRobot, isCleaning }) {
 }
 
 export default function Plan3D() {
-    const [type, setType] = useState("3+1");
+    const [type, setType] = useState(null);
     const [isAuto, setIsAuto] = useState(false);
     const [trail, setTrail] = useState([]);
     const [status, setStatus] = useState("Başlatmayı Bekliyor");
@@ -843,7 +849,7 @@ export default function Plan3D() {
     const running = useRef(false);
     const lastTrail = useRef(null);
 
-    const rooms = type ? parseInt(type.split("+")[0]) : 0;
+    const rooms = type === "4 ve üzeri" ? 5 : (type ? parseInt(type.split("+")[0]) : 0);
     const waypoints = useMemo(() => type ? buildWaypoints(type) : [], [type]);
 
     const startStop = () => {
@@ -889,7 +895,7 @@ export default function Plan3D() {
             if (!running.current) return;
             const idx = wpIdx.current;
             if (idx >= waypoints.length) {
-                running.current = false; 
+                running.current = false;
                 setStatus("Tamamlandı / Şarj Oluyor"); setPct(100); return;
             }
 
@@ -1120,9 +1126,9 @@ export default function Plan3D() {
                         {/* SORU 1: EV TİPİ */}
                         {currentStep === 1 && (
                             <div className="step-enter">
-                                <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: "15px", fontWeight: "700" }}>Eviniz kaç odalı?</p>
+                                <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: "15px", fontWeight: "700" }}>Eviniz Kaç Odalı?</p>
                                 <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
-                                    {["1+1", "2+1", "3+1", "3+2"].map(t => (
+                                    {["1+0", "1+1", "2+1", "3+1", "3+2", "4 ve üzeri"].map(t => (
                                         <button
                                             key={t}
                                             onClick={() => { setType(t); setCurrentStep(2); }}
@@ -1175,12 +1181,12 @@ export default function Plan3D() {
                         {/* SORU 3: HALI YOĞUNLUĞU */}
                         {currentStep === 3 && (
                             <div className="step-enter">
-                                <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: "15px", fontWeight: "700" }}>Evinizdeki Halı Yoğunluğu Ne Kadar?</p>
+                                <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: "15px", fontWeight: "700" }}>Evinizdeki Halı Yoğunluk Derecesi Nedir?</p>
                                 <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                                     {[
                                         { id: "Az", label: "Az", desc: "Çoğunlukla parke veya fayans." },
-                                        { id: "Orta", label: "Orta", desc: "Küçük ve ince halılarım var. Parke veya fayans alanım daha çok" },
-                                        { id: "Çok", label: "Yoğun", desc: "Parke veya fayans alanım az, halı alanım daha çok" }
+                                        { id: "Orta", label: "Orta", desc: "Küçük ve ince halılarım var. Parke veya fayans alanım daha çok." },
+                                        { id: "Çok", label: "Yoğun", desc: "Parke veya fayans alanım az, halı alanım daha çok." }
                                     ].map(c => (
                                         <button
                                             key={c.id}
@@ -1247,13 +1253,13 @@ export default function Plan3D() {
                         {/* SORU 5: İSTASYON (TOZ TOPLAMA ÜNİTESİ) */}
                         {currentStep === 5 && (
                             <div className="step-enter">
-                                <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: "5px", fontWeight: "700" }}>Toz Toplama Ünitesi İstiyor musunuz?</p>
-                                <p style={{ fontSize: "12px", color: "#95a5a6", marginBottom: "20px" }}>İstasyonlu modeller toz haznesini otomatik boşaltır. </p>
+                                <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: "5px", fontWeight: "700" }}>Bir Robot Süpürgeden Beklentiniz Nedir?</p>
+                                <p style={{ fontSize: "12px", color: "#95a5a6", marginBottom: "20px" }}>Tüm işi robot süpürge mi yapmalı yoksa iş paylaşımı mı olmalı?</p>
                                 <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                                     {[
-                                        { id: "hepsi", label: "Toz Boşaltsın + Su Yenilesin", desc: "Toz boşaltma ile birlikte otomatik su değişimi ve paspas yıkama servisi sunar." },
-                                        { id: "toz", label: "Otomatik Toz Boşaltsın", desc: "Toz haznesini otomatik boşaltır." },
-                                        { id: "hayir", label: "İstasyon Yok", desc: "Sadece şarj ünitesi içerir. Su tankı ve toz haznesini manuel olarak temizlemek gerekir." }
+                                        { id: "hepsi", label: "Her Şeyi Robot Süpürge Yapsın", desc: "Paspaslama dahil 60 güne kadar el değmeden temizlik yapın." },
+                                        { id: "toz", label: "Sadece Otomatik Toz Boşaltımı Yapsın", desc: "Rutin olarak robot süpürgenin toz toplama istasyonunu kontrol edin." },
+                                        { id: "hayir", label: "2-3 Gün Arayla Toz Haznesini Kontrol Ederim", desc: "Toz toplama ünitesi olmayan modellerde toz haznesinin düzenli aralıklarla boşaltılması gerekir." }
                                     ].map(s => (
                                         <button
                                             key={s.id}
@@ -1291,12 +1297,12 @@ export default function Plan3D() {
                         {/* SORU 6: PASPAS KONFORU */}
                         {currentStep === 6 && (
                             <div className="step-enter">
-                                <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: "5px", fontWeight: "700" }}>Paspas Konforu Sizin İçin Ne Kadar Önemli?</p>
-                                <p style={{ fontSize: "11px", color: "#95a5a6", marginBottom: "20px" }}>Bazı modeller halıyı tanır ve paspasını otomatik kaldırır.</p>
+                                <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: "5px", fontWeight: "700" }}>Paspaslama Sırasında Halı Yüzeylere Temas Edilebilir</p>
+                                <p style={{ fontSize: "11px", color: "#95a5a6", marginBottom: "20px" }}>Bazı modeller halı yüzeyleri tanıyarak paspaslarını otomatik yukarı kaldırır ve halıları ıslatmaz.</p>
                                 <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                                     {[
-                                        { id: "manual", label: "Manuel Yönetim", desc: "Halı gibi alanları uygulama üzerinden yasaklı alan veya sanal duvar oluşturarak yönetebilirim" },
-                                        { id: "auto", label: "Otomatik Paspas Kaldırma", desc: "Halı zeminlerde paspasını otomatik kaldırır. Halıda leke oluşması ihtimalinin tamamen önüne geçer." }
+                                        { id: "manual", label: "Sorun Değil Yönetebilirim", desc: "Halı yüzeyleri uygulama üzerinden yasaklı olan olarak tanımlayabilir ya da paspaslama bittikten hemen sonra paspas aparatını çıkarabilirsiniz." },
+                                        { id: "auto", label: "Zahmet Etmeyeyim Halılar Hep Kuru Kalsın", desc: "Bazı modeller halı tanıma sensörü kullanılarak paspas bezlerini otomatik yukarı kaldırır, halıları ıslatmaz." }
 
                                     ].map(m => (
                                         <button
