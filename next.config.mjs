@@ -55,7 +55,38 @@ const nextConfig = {
       },
     ];
   },
-
+  async rewrites() {
+    return [
+      {
+        source: "/en/shop",
+        destination: "/en/magaza",
+      },
+      {
+        source: "/en/shop/:path*",
+        destination: "/en/magaza/:path*",
+      },
+      {
+        source: "/en/contact",
+        destination: "/en/iletisim",
+      },
+      {
+        source: "/en/support",
+        destination: "/en/destek",
+      },
+      {
+        source: "/en/faq",
+        destination: "/en/sss",
+      },
+      {
+        source: "/en/corporate",
+        destination: "/en/kurumsal",
+      },
+      {
+        source: "/en/cart",
+        destination: "/en/sepetim",
+      },
+    ];
+  },
 };
 
 export default nextConfig;

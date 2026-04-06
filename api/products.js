@@ -8,13 +8,19 @@ import { ProductModel } from "@/models/Product";
  */
 export async function getProducts(params = "", lang = "tr") {
     const endpoint = `/products${params ? `?${params}` : ""}`;
-    const response = await serverFetch(endpoint, { lang, next: { revalidate: API_REVALIDATE.PRODUCTS } });
+    const response = await serverFetch(endpoint, { 
+        method: "POST",
+        lang, 
+        next: { revalidate: API_REVALIDATE.PRODUCTS } 
+    });
 
     if (response?.status === "success") {
         return response.data || [];
     }
 
-    log(response.data);
+    if (response) {
+        log(response.data);
+    }
     log("[API products.js] getProducts failed:", response);
     return [];
 }
@@ -31,7 +37,11 @@ export async function getProductsByCategory(categorySlug, lang = "tr") {
     }
 
     const endpoint = `/products/category/${categorySlug}`;
-    const response = await serverFetch(endpoint, { lang, next: { revalidate: API_REVALIDATE.PRODUCTS } });
+    const response = await serverFetch(endpoint, { 
+        method: "POST",
+        lang, 
+        next: { revalidate: API_REVALIDATE.PRODUCTS } 
+    });
 
     if (response?.status === "success") {
         return response.data || [];
@@ -53,7 +63,11 @@ export async function getCategoryWithProducts(categorySlug, lang = "tr") {
     }
 
     const endpoint = `/products/category/${categorySlug}`;
-    const response = await serverFetch(endpoint, { lang, next: { revalidate: API_REVALIDATE.PRODUCTS } });
+    const response = await serverFetch(endpoint, { 
+        method: "POST",
+        lang, 
+        next: { revalidate: API_REVALIDATE.PRODUCTS } 
+    });
 
     if (response?.status === "success") {
         return {
@@ -78,7 +92,11 @@ export async function getProductBySlug(productSlug, lang = "tr") {
     }
 
     const endpoint = `/products/${productSlug}`;
-    const response = await serverFetch(endpoint, { lang, next: { revalidate: API_REVALIDATE.PRODUCTS } });
+    const response = await serverFetch(endpoint, { 
+        method: "POST",
+        lang, 
+        next: { revalidate: API_REVALIDATE.PRODUCTS } 
+    });
 
     if (response?.status === "success" && response.data) {
         try {

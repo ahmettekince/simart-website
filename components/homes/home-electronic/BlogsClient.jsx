@@ -4,9 +4,23 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import Link from "next/link";
 import Image from "next/image";
 import NavDotsPill from "@/components/common/NavDotsPill";
+import { getLocalizedUrl } from "@/utils/i18n";
 
-export default function BlogsClient({ blogs = [] }) {
-    // API'den veri gelmezse hiçbir şey gösterme
+const translations = {
+    tr: {
+        title: "Blog Yazıları",
+        readMore: "Devamını Oku",
+        ariaLabel: "Blog slaytları"
+    },
+    en: {
+        title: "Latest from Blog",
+        readMore: "Read More",
+        ariaLabel: "Blog slides"
+    }
+};
+
+export default function BlogsClient({ blogs = [], lang = "tr" }) {
+    const t = translations[lang] || translations.tr;
     if (!blogs || blogs.length === 0) {
         return null;
     }
@@ -24,7 +38,7 @@ export default function BlogsClient({ blogs = [] }) {
                     data-wow-delay="0s"
                     suppressHydrationWarning
                 >
-                    <span className="title">Blog Yazıları</span>
+                    <span className="title">{t.title}</span>
                 </div>
                 <div className="hover-sw-nav view-default hover-sw-3 sw-pagination-wrapper blogs-pagination-wrapper">
                     <Swiper
@@ -44,6 +58,9 @@ export default function BlogsClient({ blogs = [] }) {
                         {displayBlogs.map((article, index) => {
                             const slug = article.slug || article.title?.toLowerCase().replace(/ /g, "-").replace(/[^\w-]+/g, "");
                             const imgSrc = article.image?.url || article.imgSrc || "/images/blog/blog-1.jpg";
+                            
+                            const blogLink = getLocalizedUrl(`/${slug}`, lang);
+                            const categoryLink = getLocalizedUrl(`/blog`, lang);
 
                             return (
                                 <SwiperSlide key={index}>
@@ -53,7 +70,7 @@ export default function BlogsClient({ blogs = [] }) {
                                         suppressHydrationWarning
                                     >
                                         <div className="article-thumb" style={{ position: 'relative', aspectRatio: '550/354', overflow: 'hidden' }}>
-                                            <Link href={`/${slug}`} style={{ display: 'block', position: 'relative', width: '100%', height: '100%' }}>
+                                            <Link href={blogLink} style={{ display: 'block', position: 'relative', width: '100%', height: '100%' }}>
                                                 <Image
                                                     className="lazyload"
                                                     alt={article.title || article.name}
@@ -65,7 +82,7 @@ export default function BlogsClient({ blogs = [] }) {
                                             </Link>
                                             <div className="article-label">
                                                 <Link
-                                                    href={`/blog`}
+                                                    href={categoryLink}
                                                     className="tf-btn btn-sm animate-hover-btn"
                                                 >
                                                     Blog
@@ -74,16 +91,16 @@ export default function BlogsClient({ blogs = [] }) {
                                         </div>
                                         <div className="article-content">
                                             <div className="article-title">
-                                                <Link href={`/${slug}`}>
+                                                <Link href={blogLink}>
                                                     {article.title || article.name}
                                                 </Link>
                                             </div>
                                             <div className="article-btn">
                                                 <Link
-                                                    href={`/${slug}`}
+                                                    href={blogLink}
                                                     className="tf-btn btn-line fw-6"
                                                 >
-                                                    Devamını Oku
+                                                    {t.readMore}
                                                     <i className="icon icon-arrow1-top-left" />
                                                 </Link>
                                             </div>
@@ -99,7 +116,7 @@ export default function BlogsClient({ blogs = [] }) {
                                 total={total}
                                 activeIndex={activeIndex}
                                 onDotClick={(i) => swiperRef.current?.slideToLoop?.(i)}
-                                ariaLabel="Blog slaytları"
+                                ariaLabel={t.ariaLabel}
                             />
                         </div>
                     )}

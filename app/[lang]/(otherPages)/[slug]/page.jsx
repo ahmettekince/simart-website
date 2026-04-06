@@ -16,7 +16,7 @@ const blockedSlugs = [
 
 // Dinamik metadata oluşturma
 export async function generateMetadata({ params }) {
-  const { slug } = await params;
+  const { lang, slug } = await params;
 
   // Engellenen istekler kontrolü
   const normalizedSlug = slug?.toLowerCase();
@@ -40,7 +40,7 @@ export async function generateMetadata({ params }) {
   }
 
   // Standart sayfa kontrolü
-  const page = await getPageBySlug(slug);
+  const page = await getPageBySlug(slug, lang);
 
   if (!page) {
     return {
@@ -89,7 +89,7 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function DynamicPage({ params }) {
-  const { slug } = await params;
+  const { lang, slug } = await params;
 
   // Engellenen istekler kontrolü
   const normalizedSlug = slug?.toLowerCase();
@@ -110,7 +110,7 @@ export default async function DynamicPage({ params }) {
   }
 
   // Standart Sayfa/Blog Kontrolü
-  const page = await getPageBySlug(slug);
+  const page = await getPageBySlug(slug, lang);
 
   if (!page) {
     return notFound();

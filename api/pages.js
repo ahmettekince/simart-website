@@ -8,6 +8,7 @@ import { API_REVALIDATE } from "@/config/apiConfig";
  */
 export async function getPages() {
     const response = await serverFetch("/pages", {
+        method: "POST",
         next: { revalidate: API_REVALIDATE.PAGES }
     });
 
@@ -22,12 +23,15 @@ export async function getPages() {
 /**
  * Slug'a göre tek bir sayfa getirir.
  * @param {string} slug - Sayfa slug'ı
+ * @param {string} lang - Dil kodu
  * @returns {Promise<Object|null>} Page objesi veya null
  */
-export async function getPageBySlug(slug) {
+export async function getPageBySlug(slug, lang = "tr") {
     if (!slug) return null;
 
     const response = await serverFetch(`/pages?slug=${slug}`, {
+        method: "POST",
+        lang,
         next: { revalidate: API_REVALIDATE.PAGES }
     });
 
@@ -35,7 +39,7 @@ export async function getPageBySlug(slug) {
         return Array.isArray(response.data) ? response.data[0] : response.data;
     }
 
-    log(`[API pages.js] getPageBySlug(${slug}) failed:`, response);
+    log(`[API pages.js] getPageBySlug(${slug}, ${lang}) failed:`, response);
     return null;
 }
 

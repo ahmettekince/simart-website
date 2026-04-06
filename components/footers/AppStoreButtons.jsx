@@ -2,7 +2,27 @@ import React from "react";
 import Link from "next/link";
 import { siteConfig } from "@/config/site";
 
-export default function AppStoreButtons() {
+export default function AppStoreButtons({ lang = "tr" }) {
+    const t = {
+        tr: {
+            appstore_sub: "App Store",
+            appstore_name: " 'dan indirin",
+            googleplay_sub: "Google Play",
+            googleplay_name: " 'den indirin"
+        },
+        en: {
+            appstore_sub: "Download on the",
+            appstore_name: "App Store",
+            googleplay_sub: "GET IT ON",
+            googleplay_name: "Google Play"
+        }
+    }[lang] || {
+        appstore_sub: "App Store",
+        appstore_name: " 'dan indirin",
+        googleplay_sub: "Google Play",
+        googleplay_name: " 'den indirin"
+    };
+
     return (
         <div className="footer-apps">
             {/* App Store Button */}
@@ -19,8 +39,8 @@ export default function AppStoreButtons() {
                         </svg>
                     </div>
                     <div className="app-text">
-                        <span className="app-sub">App Store</span>
-                        <span className="app-name">'dan indirin</span>
+                        <span className="app-sub">{t.appstore_sub}</span>
+                        <span className="app-name">{t.appstore_name}</span>
                     </div>
                 </a>
             )}
@@ -54,8 +74,8 @@ export default function AppStoreButtons() {
                         </svg>
                     </div>
                     <div className="app-text">
-                        <span className="app-sub">Google Play</span>
-                        <span className="app-name">'den indirin</span>
+                        <span className="app-sub">{t.googleplay_sub}</span>
+                        <span className="app-name">{t.googleplay_name}</span>
                     </div>
                 </a>
             )}

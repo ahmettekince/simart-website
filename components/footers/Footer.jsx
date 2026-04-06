@@ -10,13 +10,45 @@ import AppStoreButtons from "./AppStoreButtons";
 
 import { getLocalizedUrl } from "@/utils/i18n";
 
+const translations = {
+  tr: {
+    address: "Adres",
+    email: "E-posta",
+    phone: "Telefon",
+    viewOnMap: "Haritada İncele",
+    subscribeTitle: "Abone Olun",
+    subscribeDesc: "Yeni gelişmeler, indirimler, özel içeriğe, etkinliklere ve daha fazlasına erişim için abone olun!",
+    subscribePlaceholder: "E-posta adresinizi giriniz...",
+    subscribeButton: "Abone Ol",
+    subscribeSuccess: "Başarıyla abone oldunuz.",
+    subscribeError: "Bir hata oluştu.",
+    subscribeGeneralError: "Bir hata oluştu. Lütfen tekrar deneyin.",
+    copyright: "© 2020-2026 Şımart Teknoloji. Tüm Hakları Saklıdır."
+  },
+  en: {
+    address: "Address",
+    email: "E-mail",
+    phone: "Phone",
+    viewOnMap: "View on Map",
+    subscribeTitle: "Subscribe",
+    subscribeDesc: "Subscribe to get access to new developments, discounts, special content, events and more!",
+    subscribePlaceholder: "Enter your email address...",
+    subscribeButton: "Subscribe",
+    subscribeSuccess: "Successfully subscribed.",
+    subscribeError: "An error occurred.",
+    subscribeGeneralError: "An error occurred. Please try again.",
+    copyright: "© 2020-2026 Simart Technology. All Rights Reserved."
+  }
+};
+
 export default function Footer({ bgColor = "", footerMenus = null, lang = "tr" }) {
+  const t = translations[lang] || translations.tr;
+
   useEffect(() => {
     const headings = document.querySelectorAll(".footer-heading-moblie");
 
     const toggleOpen = (event) => {
       const parent = event.target.closest(".footer-col-block");
-
       parent.classList.toggle("open");
     };
 
@@ -24,13 +56,12 @@ export default function Footer({ bgColor = "", footerMenus = null, lang = "tr" }
       heading.addEventListener("click", toggleOpen);
     });
 
-    // Clean up event listeners when the component unmounts
     return () => {
       headings.forEach((heading) => {
         heading.removeEventListener("click", toggleOpen);
       });
     };
-  }, []); // Empty dependency array means this will run only once on mount
+  }, []);
 
   const formRef = useRef();
   const [success, setSuccess] = useState(true);
@@ -45,30 +76,30 @@ export default function Footer({ bgColor = "", footerMenus = null, lang = "tr" }
   };
 
   const sendEmail = async (e) => {
-    e.preventDefault(); // Prevent default form submission behavior
+    e.preventDefault();
     const email = e.target.email.value;
 
     try {
       const response = await apiClient.post("/newsletter/subscribe", null, {
-        params: { email },
+        params: { email, lang },
       });
 
       if (response.data && response.data.status === "success") {
-        e.target.reset(); // Reset the form
-        setSuccess(true); // Set success state
-        setApiMessage(response.data.message || "Başarıyla abone oldunuz.");
+        e.target.reset();
+        setSuccess(true);
+        setApiMessage(response.data.message || t.subscribeSuccess);
         handleShowMessage();
       } else {
-        setSuccess(false); // Handle unexpected responses
-        setApiMessage(response.data?.message || "Bir hata oluştu.");
+        setSuccess(false);
+        setApiMessage(response.data?.message || t.subscribeError);
         handleShowMessage();
       }
     } catch (error) {
       console.error("Error:", error.response?.data || "An error occurred");
-      setSuccess(false); // Set error state
-      setApiMessage(error.response?.data?.message || "Bir hata oluştu. Lütfen tekrar deneyin.");
+      setSuccess(false);
+      setApiMessage(error.response?.data?.message || t.subscribeGeneralError);
       handleShowMessage();
-      e.target.reset(); // Reset the form
+      e.target.reset();
     }
   };
 
@@ -83,7 +114,7 @@ export default function Footer({ bgColor = "", footerMenus = null, lang = "tr" }
                   <div className="footer-logo">
                     <Link href={getLocalizedUrl("/", lang)}>
                       <Image
-                        alt="image"
+                        alt="logo"
                         src="/images/logo/logo.svg"
                         width={136}
                         height={21}
@@ -97,28 +128,28 @@ export default function Footer({ bgColor = "", footerMenus = null, lang = "tr" }
                   <ul>
                     <li>
                       <p>
-                        Adres: Yeşilova Mah. 4023 Cad. <br /> Ser Tower Apt. Dış Kapı: 1 G Etimesgut/Ankara
+                        {t.address}: Yeşilova Mah. 4023 Cad. <br /> Ser Tower Apt. Dış Kapı: 1 G Etimesgut/Ankara
                       </p>
                     </li>
                     <li>
                       <p>
-                        E-posta: <a href="mailto:destek@simart.me">destek@simart.me</a>
+                        {t.email}: <a href="mailto:destek@simart.me">destek@simart.me</a>
                       </p>
                     </li>
                     <li>
                       <p>
-                        Telefon: <a href="tel:+908503466126">+90 850 346 6126</a>
+                        {t.phone}: <a href="tel:+908503466126">+90 850 346 6126</a>
                       </p>
                     </li>
                   </ul>
                   <Link href={getLocalizedUrl("/iletisim", lang)} className="tf-btn btn-line">
-                    Haritada İncele
+                    {t.viewOnMap}
                     <i className="icon icon-arrow1-top-left" />
                   </Link>
-                  <AppStoreButtons />
+                  <AppStoreButtons lang={lang} />
                 </div>
               </div>
-              {/* Footer menüleri */}
+
               {Array.isArray(footerMenus) &&
                 footerMenus.map(
                   (menu) =>
@@ -144,26 +175,20 @@ export default function Footer({ bgColor = "", footerMenus = null, lang = "tr" }
                     )
                 )}
 
-
               <div className="col-xl-3 col-md-6 col-12 ">
-
                 <div className="footer-newsletter footer-col-block">
                   <div className="footer-heading footer-heading-desktop">
-                    <h6>Abone Olun</h6>
+                    <h6>{t.subscribeTitle}</h6>
                   </div>
                   <div className="footer-heading footer-heading-moblie">
-                    <h6>Abone Olun</h6>
+                    <h6>{t.subscribeTitle}</h6>
                   </div>
                   <div className="tf-collapse-content">
                     <div className="footer-menu_item">
-                      Yeni gelişmeler, indirimler, özel içeriğe, etkinliklere ve daha fazlasına erişim için abone olun!
+                      {t.subscribeDesc}
                     </div>
                     <div className={`tfSubscribeMsg ${showMessage ? "active" : ""}`}>
-                      {success ? (
-                        <p style={{ color: "rgb(52, 168, 83)" }}>{apiMessage || "Başarıyla abone oldunuz."}</p>
-                      ) : (
-                        <p style={{ color: "red" }}>{apiMessage || "Bir hata oluştu"}</p>
-                      )}
+                      <p style={{ color: success ? "rgb(52, 168, 83)" : "red" }}>{apiMessage}</p>
                     </div>
                     <form
                       ref={formRef}
@@ -172,7 +197,6 @@ export default function Footer({ bgColor = "", footerMenus = null, lang = "tr" }
                       action="#"
                       method="post"
                       acceptCharset="utf-8"
-                      data-mailchimp="true"
                     >
                       <div className="subscribe-content">
                         <fieldset className="email">
@@ -181,7 +205,7 @@ export default function Footer({ bgColor = "", footerMenus = null, lang = "tr" }
                             type="email"
                             name="email"
                             className="subscribe-email"
-                            placeholder="E-posta adresinizi giriniz..."
+                            placeholder={t.subscribePlaceholder}
                             tabIndex={0}
                             aria-required="true"
                             autoComplete="abc@xyz.com"
@@ -194,12 +218,10 @@ export default function Footer({ bgColor = "", footerMenus = null, lang = "tr" }
                             variant="fill"
                             className="subscribe-button"
                           >
-                            Abone Ol
-
+                            {t.subscribeButton}
                           </SimartButton>
                         </div>
                       </div>
-                      <div className="subscribe-msg" />
                     </form>
                   </div>
                 </div>
@@ -213,7 +235,7 @@ export default function Footer({ bgColor = "", footerMenus = null, lang = "tr" }
               <div className="col-12">
                 <div className="footer-bottom-wrap d-flex gap-20 flex-wrap justify-content-between align-items-center">
                   <div className="d-flex align-items-center flex-wrap gap-20">
-                    <div className="footer-menu_item">© 2020-2026 Şımart Teknoloji. Tüm Hakları Saklıdır.</div>
+                    <div className="footer-menu_item">{t.copyright}</div>
                     <ul className="tf-social-icon d-flex gap-10">
                       {siteConfig.social.map((social) => {
                         if (!social.url) return null;

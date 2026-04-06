@@ -3,14 +3,14 @@ import React, { useEffect, useState } from "react";
 import apiClient from "@/utils/apiClient";
 import BlogsClient from "./BlogsClient";
 
-export default function Blogs() {
+export default function Blogs({ lang = "tr" }) {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchBlogs = async () => {
       try {
-        const response = await apiClient.get("/blogs?limit=6");
+        const response = await apiClient.get(`/blogs?limit=6&lang=${lang}`);
         if (response.data?.status === "success" && response.data.data?.length > 0) {
           setBlogs(response.data.data);
         }
@@ -21,11 +21,11 @@ export default function Blogs() {
       }
     };
     fetchBlogs();
-  }, []);
+  }, [lang]);
 
   if (loading || blogs.length === 0) {
     return null;
   }
 
-  return <BlogsClient blogs={blogs} />;
+  return <BlogsClient blogs={blogs} lang={lang} />;
 }

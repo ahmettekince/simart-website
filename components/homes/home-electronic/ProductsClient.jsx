@@ -4,7 +4,17 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
 import ProductCardSimart from "@/components/shopCards/ProductCardSimart";
 
-export default function ProductsClient({ products = [] }) {
+const translations = {
+    tr: {
+        title: "İlginizi çekebilecekler"
+    },
+    en: {
+        title: "You might be interested in"
+    }
+};
+
+export default function ProductsClient({ products = [], lang = "tr" }) {
+    const t = translations[lang] || translations.tr;
     const displayProducts = Array.isArray(products) ? products : [];
     if (displayProducts.length === 0) return null;
 
@@ -13,7 +23,7 @@ export default function ProductsClient({ products = [] }) {
             <div className="container">
                 <div className="flat-title px-0">
                     <span className="title wow fadeInUp" data-wow-delay="0s" suppressHydrationWarning={true}>
-                        İlginizi çekebilecekler
+                        {t.title}
                     </span>
                 </div>
                 <div className="sw-pagination-wrapper products-pagination-wrapper">

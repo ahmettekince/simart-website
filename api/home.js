@@ -9,6 +9,7 @@ export async function getCategories(lang = "tr") {
     log("[API home.js] getCategories: İstek gönderiliyor - URL: /categories");
 
     const response = await serverFetch("/categories", {
+        method: "POST",
         lang,
         next: { revalidate: API_REVALIDATE.HOME },
         cache: "no-store"
@@ -105,7 +106,7 @@ export async function getCollections(lang = "tr") {
 export async function getReviews(lang = "tr") {
     try {
         const response = await serverFetch("/reviews", {
-            method: "GET",
+            method: "POST",
             lang,
             next: { revalidate: API_REVALIDATE.REVIEWS }
         });

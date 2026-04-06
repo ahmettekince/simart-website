@@ -18,33 +18,55 @@ import { getMenus } from "@/api/menus";
 import { siteConfig } from "@/config/site";
 import { organizationSchema } from "@/lib/schema";
 
-export const metadata = {
-  title: "Şımart Teknoloji - Robot Süpürge ve Akıllı Ev Sistemleri",
-  description:
-    "Şımart Teknoloji, robot süpürgeler, akıllı ev sistemleri ve IoT çözümlerinde öncüdür. Ev otomasyonu ve yaşamı kolaylaştıran teknolojilerle hizmetinizdeyiz.",
-  base: siteConfig.site.url,
-  og: {
+const translations = {
+  tr: {
     title: "Şımart Teknoloji - Robot Süpürge ve Akıllı Ev Sistemleri",
     description: "Şımart Teknoloji, robot süpürgeler, akıllı ev sistemleri ve IoT çözümlerinde öncüdür. Ev otomasyonu ve yaşamı kolaylaştıran teknolojilerle hizmetinizdeyiz.",
-    image: "https://simart.me/og.jpg",
-    type: "website",
-    locale: "tr_TR",
-    url: "https://simart.me",
+    ogImage: "https://simart.me/og.jpg",
+    twitterImage: "https://simart.me/og.jpg",
+    itempropImage: "https://simart.me/uploads/systems/seo.jpg",
   },
-  twitter: {
-    card: "summary_large_image",
-    title: "Şımart Teknoloji - Robot Süpürge ve Akıllı Ev Sistemleri",
-    description: "Şımart Teknoloji, robot süpürgeler, akıllı ev sistemleri ve IoT çözümlerinde öncüdür. Ev otomasyonu ve yaşamı kolaylaştıran teknolojilerle hizmetinizdeyiz.",
-    image: "https://simart.me/og.jpg",
-    site: "@simartteknoloji",
-    creator: "@simartteknoloji",
-  },
-  other: {
-    "itemprop:name": "Şımart Teknoloji - Robot Süpürge ve Akıllı Ev Sistemleri",
-    "itemprop:description": "Şımart Teknoloji, robot süpürgeler, akıllı ev sistemleri ve IoT çözümlerinde öncüdür. Ev otomasyonu ve yaşamı kolaylaştıran teknolojilerle hizmetinizdeyiz.",
-    "itemprop:image": "https://simart.me/uploads/systems/seo.jpg",
+  en: {
+    title: "Simart Technology - Robot Vacuum and Smart Home Systems",
+    description: "Simart Technology is a pioneer in robot vacuums, smart home systems, and IoT solutions. We are at your service with home automation and life-enhancing technologies.",
+    ogImage: "https://simart.me/og_en.jpg",
+    twitterImage: "https://simart.me/og_en.jpg",
+    itempropImage: "https://simart.me/uploads/systems/seo_en.jpg",
   },
 };
+
+export async function generateMetadata({ params }) {
+  const { lang } = await params;
+  const t = translations[lang] || translations.tr;
+  const baseUrl = siteConfig.site.url;
+
+  return {
+    title: t.title,
+    description: t.description,
+    base: baseUrl,
+    openGraph: {
+      title: t.title,
+      description: t.description,
+      images: [{ url: t.ogImage }],
+      type: "website",
+      locale: lang === "tr" ? "tr_TR" : "en_US",
+      url: baseUrl,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: t.title,
+      description: t.description,
+      images: [t.twitterImage],
+      site: "@simartteknoloji",
+      creator: "@simartteknoloji",
+    },
+    other: {
+      "itemprop:name": t.title,
+      "itemprop:description": t.description,
+      "itemprop:image": t.itempropImage,
+    },
+  };
+}
 
 export const dynamic = "force-dynamic";
 
@@ -58,10 +80,11 @@ export default async function Home({ params }) {
     getCollections(lang),
     getReviews(lang),
   ]);
+  const t = translations[lang] || translations.tr;
 
   const organizationJsonLd = organizationSchema({
     url: siteConfig.site.url,
-    description: metadata.description,
+    description: t.description,
   });
 
   return (
@@ -74,13 +97,13 @@ export default async function Home({ params }) {
       />
       <div className="color-primary-15">
         <Hero banners={banners} />
-        <Categories />
-        <CollectionBanner banner={collectionBanner} />
-        <Collections collections={collections} />
-        <Products />
-        <HomeReviews reviews={reviews} />
-        <Blogs />
-        <Features />
+        <Categories lang={lang} />
+        <CollectionBanner banner={collectionBanner} lang={lang} />
+        <Collections collections={collections} lang={lang} />
+        <Products lang={lang} />
+        <HomeReviews reviews={reviews} lang={lang} />
+        <Blogs lang={lang} />
+        <Features lang={lang} />
       </div>
     </>
   );

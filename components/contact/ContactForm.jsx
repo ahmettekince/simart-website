@@ -7,7 +7,51 @@ import { siteConfig } from "@/config/site";
 import { formatPhoneValue, formatFullNameValue } from "@/utils/inputFormatters";
 import RecaptchaV3 from "@/components/common/RecaptchaV3";
 
-export default function ContactForm() {
+const translations = {
+  tr: {
+    title: "Bizimle iletişime geçin",
+    visitShop: "Mağazamızı Ziyaret Edin",
+    address: "Adres",
+    contactNumbers: "İletişim Numaraları",
+    emailLabel: "E-Posta",
+    customerService: "Müşteri Hizmetleri",
+    whatsappLine: "WhatsApp Hattı",
+    fullNamePlaceholder: "İsim Soyisim *",
+    emailPlaceholder: "E-Posta *",
+    phonePlaceholder: "+90 5XX XXX XX XX",
+    messagePlaceholder: "Mesajınız *",
+    sendButton: "Gönder",
+    sendingButton: "Gönderiliyor...",
+    recaptchaError: "Güvenlik doğrulaması yapılamadı.",
+    recaptchaIncomplete: "Lütfen güvenlik adımını tamamlayın.",
+    successMessage: "Mesajınız başarıyla gönderildi.",
+    errorMessage: "Bir hata oluştu.",
+    generalErrorMessage: "Bir hata oluştu. Lütfen tekrar deneyin."
+  },
+  en: {
+    title: "Contact Us",
+    visitShop: "Visit Our Shop",
+    address: "Address",
+    contactNumbers: "Contact Numbers",
+    emailLabel: "E-Mail",
+    customerService: "Customer Service",
+    whatsappLine: "WhatsApp Line",
+    fullNamePlaceholder: "Full Name *",
+    emailPlaceholder: "E-Mail *",
+    phonePlaceholder: "Phone Number *",
+    messagePlaceholder: "Your Message *",
+    sendButton: "Send",
+    sendingButton: "Sending...",
+    recaptchaError: "Security verification failed.",
+    recaptchaIncomplete: "Please complete the security step.",
+    successMessage: "Your message has been sent successfully.",
+    errorMessage: "An error occurred.",
+    generalErrorMessage: "An error occurred. Please try again."
+  }
+};
+
+export default function ContactForm({ lang = "tr" }) {
+  const t = translations[lang] || translations.tr;
   const formRef = useRef();
   const executeRecaptchaRef = useRef(null);
   const [success, setSuccess] = useState(true);
@@ -16,8 +60,8 @@ export default function ContactForm() {
   const [apiMessage, setApiMessage] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
   const [phoneValue, setPhoneValue] = useState("+90");
-  const [fullName, setFullName] = useState(""); // State for full name
-  const [message, setMessage] = useState(""); // State for message
+  const [fullName, setFullName] = useState("");
+  const [message, setMessage] = useState("");
 
   const handleShowMessage = () => {
     setShowMessage(true);
@@ -41,21 +85,21 @@ export default function ContactForm() {
     const formData = new FormData(e.target);
     const phone = formData.get("phone") || phoneValue;
     const data = {
-      full_name: fullName, // Use formatted state
+      full_name: fullName,
       email: formData.get("email"),
       phone: formatPhoneValue(phone) || phone,
       message: formData.get("message"),
+      lang: lang
     };
 
-    // V3: Token al
     let token = null;
     if (executeRecaptchaRef.current) {
       try {
         token = await executeRecaptchaRef.current();
       } catch (e) {
-        console.error("reCAPTCHA hatası:", e);
+        console.error("reCAPTCHA Error:", e);
         setSuccess(false);
-        setApiMessage("Güvenlik doğrulaması yapılamadı.");
+        setApiMessage(t.recaptchaError);
         handleShowMessage();
         setLoading(false);
         return;
@@ -64,13 +108,12 @@ export default function ContactForm() {
 
     if (!token) {
       setSuccess(false);
-      setApiMessage("Lütfen güvenlik adımını tamamlayın.");
+      setApiMessage(t.recaptchaIncomplete);
       handleShowMessage();
       setLoading(false);
       return;
     }
 
-    // Token ekle
     data["g-recaptcha-response"] = token;
 
     try {
@@ -78,20 +121,20 @@ export default function ContactForm() {
 
       if (response.data.status === "success") {
         setSuccess(true);
-        setApiMessage("Mesajınız başarıyla gönderildi.");
+        setApiMessage(t.successMessage);
         e.target.reset();
         setPhoneValue("+90");
-        setFullName(""); // Reset full name after successful submission
-        setMessage(""); // Reset message after successful submission
+        setFullName("");
+        setMessage("");
       } else {
         setSuccess(false);
-        setApiMessage(response.data.message || "Bir hata oluştu.");
+        setApiMessage(response.data.message || t.errorMessage);
         setErrorsFromResponse(response.data);
       }
     } catch (error) {
       setSuccess(false);
       const errData = error.response?.data;
-      setApiMessage(errData?.message || "Bir hata oluştu. Lütfen tekrar deneyin.");
+      setApiMessage(errData?.message || t.generalErrorMessage);
       setErrorsFromResponse(errData || {});
       if (error.response?.status !== 429) {
         console.error("Contact Form Error:", error);
@@ -107,7 +150,7 @@ export default function ContactForm() {
       <div className="container">
         <div className="tf-grid-layout gap30 lg-col-2">
           <div className="tf-content-right">
-            <h5 className="mb_20">Bizimle iletişime geçin</h5>
+            <h5 className="mb_20">{t.title}</h5>
             <div>
               <form ref={formRef} onSubmit={sendMail} className="form-contact" id="contactform" noValidate>
                 <div className="d-flex gap-15 mb_15">
@@ -117,7 +160,7 @@ export default function ContactForm() {
                       name="full_name"
                       id="name"
                       required
-                      placeholder="İsim Soyisim *"
+                      placeholder={t.fullNamePlaceholder}
                       value={fullName}
                       onChange={(e) => setFullName(formatFullNameValue(e.target.value))}
                     />
@@ -134,7 +177,7 @@ export default function ContactForm() {
                       name="email"
                       id="email"
                       required
-                      placeholder="E-Posta *"
+                      placeholder={t.emailPlaceholder}
                     />
                     {fieldErrors.email?.length > 0 && (
                       <div className="contact-field-error" style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
@@ -151,7 +194,7 @@ export default function ContactForm() {
                       autoComplete="tel"
                       id="phone"
                       required
-                      placeholder="+90 5XX XXX XX XX"
+                      placeholder={t.phonePlaceholder}
                       value={phoneValue}
                       onChange={(e) => setPhoneValue(formatPhoneValue(e.target.value) || "+90")}
                     />
@@ -165,7 +208,7 @@ export default function ContactForm() {
                 </div>
                 <div className="mb_15">
                   <textarea
-                    placeholder="Mesajınız *"
+                    placeholder={t.messagePlaceholder}
                     name="message"
                     id="message"
                     required
@@ -206,11 +249,10 @@ export default function ContactForm() {
                     disabled={loading}
                     className="tf-btn w-100 radius-3 btn-fill animate-hover-btn justify-content-center"
                   >
-                    {loading ? "Gönderiliyor..." : "Gönder"}
+                    {loading ? t.sendingButton : t.sendButton}
                   </button>
                 </div>
               </form>
-              {/* reCAPTCHA V3 */}
               <RecaptchaV3
                 onVerify={(executeFn) => {
                   executeRecaptchaRef.current = executeFn;
@@ -220,20 +262,20 @@ export default function ContactForm() {
             </div>
           </div>
           <div className="tf-content-left">
-            <h5 className="mb_20">Mağazamızı Ziyaret Edin</h5>
+            <h5 className="mb_20">{t.visitShop}</h5>
             <div className="mb_20">
               <p className="mb_15">
-                <strong>Adres</strong>
+                <strong>{t.address}</strong>
               </p>
               <p>
                 {siteConfig.contact.address.street}
                 <br></br> {siteConfig.contact.address.district} / {siteConfig.contact.address.city}{" "}
-                {siteConfig.contact.address.country} Posta Kodu: {siteConfig.contact.address.postalCode}
+                {siteConfig.contact.address.country} {lang === "tr" ? "Posta Kodu" : "Postal Code"}: {siteConfig.contact.address.postalCode}
               </p>
             </div>
             <div className="mb_20">
               <p className="mb_15">
-                <strong>İletişim Numaraları</strong>
+                <strong>{t.contactNumbers}</strong>
               </p>
               <div className="d-flex flex-column gap-10">
                 <div className="d-flex align-items-center gap-10">
@@ -251,7 +293,7 @@ export default function ContactForm() {
                     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l2.28-2.28a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
                   </svg>
                   <Link href="tel:+908503466126" className="text-black">
-                    +90 850 346 6126 (Müşteri Hizmetleri)
+                    +90 850 346 6126 ({t.customerService})
                   </Link>
                 </div>
                 <div className="d-flex align-items-center gap-10">
@@ -261,14 +303,14 @@ export default function ContactForm() {
                     target="_blank"
                     className="text-black"
                   >
-                    +90 552 642 8208 (WhatsApp Hattı)
+                    +90 552 642 8208 ({t.whatsappLine})
                   </Link>
                 </div>
               </div>
             </div>
             <div className="mb_20">
               <p className="mb_15">
-                <strong>E-Posta</strong>
+                <strong>{t.emailLabel}</strong>
               </p>
               <div className="d-flex align-items-center gap-10">
                 <i className="icon-mail fs-15" />
@@ -277,13 +319,7 @@ export default function ContactForm() {
                 </Link>
               </div>
             </div>
-            <div className="mb_36">
-              {/* <p className="mb_15">
-                <strong>Open Time</strong>
-              </p>
-              <p className="mb_15">Our store has re-opened for shopping,</p>
-              <p>exchange Every day 11am to 7pm</p> */}
-            </div>
+            <div className="mb_36"></div>
             <div>
               <ul className="tf-social-icon d-flex gap-20 style-default">
                 {socialLinksWithBorder.map((link, index) => (
@@ -293,7 +329,7 @@ export default function ContactForm() {
                     </a>
                   </li>
                 ))}
-              </ul>
+            </ul>
             </div>
           </div>
         </div>

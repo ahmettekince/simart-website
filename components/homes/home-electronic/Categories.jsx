@@ -2,8 +2,8 @@ import React from "react";
 import CategoriesClient from "./CategoriesClient";
 import { getCategories } from "@/api/home";
 
-export default async function Categories() {
-  const categories = await getCategories();
+export default async function Categories({ lang = "tr" }) {
+  const categories = await getCategories(lang);
 
   if (!categories || categories.length === 0) return null;
 
@@ -15,7 +15,7 @@ export default async function Categories() {
             <span className="title">
             </span>
           </div>
-          <CategoriesClient categories={categories} />
+          <CategoriesClient categories={categories} lang={lang} />
         </div>
       </div>
     </section>

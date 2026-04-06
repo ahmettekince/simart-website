@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { i18n } from "./config/i18n";
+import { i18n, localizedRoutes } from "./config/i18n";
 
 export async function middleware(request) {
   const url = request.nextUrl.clone();
@@ -33,6 +33,42 @@ export async function middleware(request) {
     );
 
   let response;
+  let finalPathname = pathname;
+
+  // 2.1 Localized Route mapping
+  if (!pathnameIsMissingLocale && pathname.startsWith("/en/")) {
+    const enRoutes = localizedRoutes.en;
+    if (enRoutes) {
+      // 1. Rewrite: /en/shop -> /en/magaza (Internal)
+      Object.entries(enRoutes).forEach(([trSlug, enSlug]) => {
+        if (pathname === `/en/${enSlug}`) {
+          finalPathname = `/en/${trSlug}`;
+        } else if (pathname.startsWith(`/en/${enSlug}/`)) {
+          finalPathname = pathname.replace(`/en/${enSlug}/`, `/en/${trSlug}/`);
+        }
+      });
+
+      // 2. Redirect: /en/magaza -> /en/shop (External)
+      // Sadece finalPathname değişmediyse (yani hali hazırda shop gibi bir enSlug değilse) kontrol et
+      if (finalPathname === pathname) {
+        let shouldRedirect = false;
+        let redirectPathname = pathname;
+        Object.entries(enRoutes).forEach(([trSlug, enSlug]) => {
+          if (pathname === `/en/${trSlug}`) {
+            redirectPathname = `/en/${enSlug}`;
+            shouldRedirect = true;
+          } else if (pathname.startsWith(`/en/${trSlug}/`)) {
+            redirectPathname = pathname.replace(`/en/${trSlug}/`, `/en/${enSlug}/`);
+            shouldRedirect = true;
+          }
+        });
+
+        if (shouldRedirect) {
+          return NextResponse.redirect(new URL(redirectPathname, request.url), 301);
+        }
+      }
+    }
+  }
 
   if (pathnameIsMissingLocale) {
     if (
@@ -43,12 +79,18 @@ export async function middleware(request) {
         pathname.replace(`/${i18n.defaultLocale}`, "") || "/";
       response = NextResponse.redirect(new URL(newPathname, request.url));
     } else {
+      // Varsayılan dil ekle ve varsa eşlemesini yap
+      let translatedPathname = `/${i18n.defaultLocale}${pathname}`;
       response = NextResponse.rewrite(
-        new URL(`/${i18n.defaultLocale}${pathname}`, request.url)
+        new URL(translatedPathname, request.url)
       );
     }
   } else {
-    response = NextResponse.next();
+    if (finalPathname !== pathname) {
+      response = NextResponse.rewrite(new URL(finalPathname, request.url));
+    } else {
+      response = NextResponse.next();
+    }
   }
 
   // 3. Affiliate

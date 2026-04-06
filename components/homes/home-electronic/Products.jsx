@@ -2,19 +2,16 @@ import React from "react";
 import { getProducts } from "@/api/products";
 import ProductsClient from "./ProductsClient";
 
-export default async function Products() {
+export default async function Products({ lang = "tr" }) {
   try {
-    // Tüm ürünleri getir (limit yok)
-    const products = await getProducts();
-    
-    // Debug: API'den gelen ürün sayısını kontrol et
+    const products = await getProducts(lang);
     
     if (!Array.isArray(products)) {
       console.error("Products is not an array:", products);
-      return <ProductsClient products={[]} />;
+      return <ProductsClient products={[]} lang={lang} />;
     }
 
-    return <ProductsClient products={products} />;
+    return <ProductsClient products={products} lang={lang} />;
   } catch (error) {
     console.error("Products SSR fetch error:", error);
     return <ProductsClient products={[]} />;

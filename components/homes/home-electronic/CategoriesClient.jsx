@@ -5,18 +5,20 @@ import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay } from "swiper/modules";
 import NavDotsPill from "@/components/common/NavDotsPill";
+import { getLocalizedUrl } from "@/utils/i18n";
 
-const CATEGORY_PLACEHOLDER = "/images/item/pr1.jpg"; // Mevcut bir görselle değiştirildi
+const CATEGORY_PLACEHOLDER = "/images/item/pr1.jpg";
 
 function getCategoryImageSrc(url) {
   if (!url || typeof url !== "string" || url.trim() === "") return CATEGORY_PLACEHOLDER;
   return url;
 }
 
-export default function CategoriesClient({ categories }) {
+export default function CategoriesClient({ categories, lang = "tr" }) {
   const swiperRef = useRef(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const total = categories.length;
+  const ariaLabel = lang === "tr" ? "Kategori slaytları" : "Category slides";
 
   return (
     <div className="sw-pagination-wrapper categories-pagination-wrapper">
@@ -46,7 +48,7 @@ export default function CategoriesClient({ categories }) {
         {categories.map((item, index) => (
           <SwiperSlide key={index} style={{ border: "1px solid #f0f0f0", borderRadius: "12px", background: "#fff", height: '240px' }}>
             <div className="collection-item-v2 type-small hover-img" style={{ height: '100%' }}>
-              <Link href={`/magaza/${item.slug || "collection-sub"}`} className="collection-inner" style={{ display: 'flex', flexDirection: 'column' }}>
+              <Link href={getLocalizedUrl(`/magaza/${item.slug || "collection-sub"}`, lang)} className="collection-inner" style={{ display: 'flex', flexDirection: 'column' }}>
                 <div className="collection-image img-style" style={{ padding: '30px', flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Image
                     alt={item.name}
@@ -78,7 +80,7 @@ export default function CategoriesClient({ categories }) {
             total={total}
             activeIndex={activeIndex}
             onDotClick={(i) => swiperRef.current?.slideToLoop?.(i)}
-            ariaLabel="Kategori slaytları"
+            ariaLabel={ariaLabel}
           />
         </div>
       )}

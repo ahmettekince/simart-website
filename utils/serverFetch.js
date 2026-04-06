@@ -33,17 +33,26 @@ export async function serverFetch(endpoint, options = {}) {
     const securityKey = process.env.SECURITY_KEY || "";
     const timestamp = Math.floor(Date.now() / 1000);
 
-    // Body content for signing
+    const lang = options.lang || "tr";
+    const method = options.method || "GET";
+
+    // Body content for signing and sending
+    let finalBody = options.body;
+    // GET ve HEAD istekleri body içeremez, bu yüzden sadece diğer metodlarda body'ye lang ekliyoruz.
+    if (method !== "GET" && method !== "HEAD") {
+        if (typeof options.body === "object" && options.body !== null && !(options.body instanceof FormData)) {
+            finalBody = { ...options.body, lang };
+        } else if (!options.body) {
+            finalBody = { lang };
+        }
+    }
+
     let bodyStr = "{}";
-    if (options.body) {
-        if (typeof options.body === "string") {
-            bodyStr = options.body;
-        } else if (typeof options.body === "object" && options.body !== null) {
-            if (Object.keys(options.body).length === 0) {
-                bodyStr = "{}";
-            } else {
-                bodyStr = JSON.stringify(options.body);
-            }
+    if (finalBody) {
+        if (typeof finalBody === "string") {
+            bodyStr = finalBody;
+        } else if (typeof finalBody === "object" && finalBody !== null) {
+            bodyStr = JSON.stringify(finalBody);
         }
     }
 
@@ -57,7 +66,6 @@ export async function serverFetch(endpoint, options = {}) {
     const headers = {
         "Content-Type": "application/json",
         "Accept": "application/json",
-        "Accept-Language": options.lang || "tr",
         "X-API-Key": process.env.API_KEY || "",
         //"X-Signature": signature,
         //"X-Timestamp": timestamp.toString(),
@@ -66,9 +74,14 @@ export async function serverFetch(endpoint, options = {}) {
         ...options.headers,
     };
 
-    const url = `${BACKEND_URL}${endpoint}`;
+    // 2. Query param ekle (Tüm istekler için hem body hem paramda olsun istendi)
+    const separator = endpoint.includes("?") ? "&" : "?";
+    const endpointWithLang = endpoint.includes("lang=")
+        ? endpoint
+        : `${endpoint}${separator}lang=${lang}`;
+    let url = `${BACKEND_URL}${endpointWithLang}`;
+
     const startTime = Date.now();
-    const method = options.method || "GET";
 
 
 
@@ -79,8 +92,8 @@ export async function serverFetch(endpoint, options = {}) {
             headers,
         };
 
-        // POST/PUT/PATCH/DELETE için body gönder
-        if (method !== "GET" && method !== "HEAD") {
+        // POST/PUT/PATCH/DELETE için body gönder, GET/HEAD için gönderme
+        if (method !== "GET" && method !== "HEAD" && bodyStr !== "{}") {
             fetchOptions.body = bodyStr;
         }
 

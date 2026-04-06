@@ -23,33 +23,62 @@ function useSlidesPerView() {
   return slidesPerView;
 }
 
-const DEFAULT_FEATURES = [
-  {
-    image: "/images/home/ucretsiz_kargo.png",
-    title: "Ücretsiz Kargo",
-    description: "Türkiye'nin her yerine ücretsiz kargo ile, alışverişinizi zahmetsizce tamamlayın.",
-    color: "#3c81b5",
-  },
-  {
-    image: "/images/home/48_saat_garanti.png",
-    title: "Çözüm Garantili",
-    description: "48 saatte çözüm garantili teknik destek sunuyoruz.",
-    color: "#2563eb",
-  },
-  {
-    icon: "payment",
-    title: "Güvenli Ödeme",
-    description: "Tüm siparişlerinizde sorunsuz, güvenli ödemeyle kusursuz alışveriş sunuyoruz.",
-    color: "#3c81b5",
-  },
-  {
-    image: "/images/home/yerli_uretim.svg",
-    title: "Yerli Üretim",
-    description: "Kaliteli ve yerli üretim ürünlerimizle Türkiye'nin geleceğine katkı sağlıyoruz.",
-    color: "#7c3aed",
-    imgStyle: { height: "40px" } // İkonun boyutunu diğerlerine uyumlu hale getirdik
-  },
-];
+const FEATURES_DATA = {
+  tr: [
+    {
+      image: "/images/home/ucretsiz_kargo.png",
+      title: "Ücretsiz Kargo",
+      description: "Türkiye'nin her yerine ücretsiz kargo ile, alışverişinizi zahmetsizce tamamlayın.",
+      color: "#3c81b5",
+    },
+    {
+      image: "/images/home/48_saat_garanti.png",
+      title: "Çözüm Garantili",
+      description: "48 saatte çözüm garantili teknik destek sunuyoruz.",
+      color: "#2563eb",
+    },
+    {
+      icon: "payment",
+      title: "Güvenli Ödeme",
+      description: "Tüm siparişlerinizde sorunsuz, güvenli ödemeyle kusursuz alışveriş sunuyoruz.",
+      color: "#3c81b5",
+    },
+    {
+      image: "/images/home/yerli_uretim.svg",
+      title: "Yerli Üretim",
+      description: "Kaliteli ve yerli üretim ürünlerimizle Türkiye'nin geleceğine katkı sağlıyoruz.",
+      color: "#7c3aed",
+      imgStyle: { height: "40px" }
+    },
+  ],
+  en: [
+    {
+      image: "/images/home/ucretsiz_kargo.png",
+      title: "Free Shipping",
+      description: "Complete your shopping effortlessly with free shipping across all of Turkey.",
+      color: "#3c81b5",
+    },
+    {
+      image: "/images/home/48_saat_garanti.png",
+      title: "Solution Guaranteed",
+      description: "We offer technical support with a 48-hour solution guarantee.",
+      color: "#2563eb",
+    },
+    {
+      icon: "payment",
+      title: "Secure Payment",
+      description: "We offer a seamless and secure payment experience for all your orders.",
+      color: "#3c81b5",
+    },
+    {
+      image: "/images/home/yerli_uretim.svg",
+      title: "Local Production",
+      description: "We contribute to Turkey's future with our high-quality and locally produced products.",
+      color: "#7c3aed",
+      imgStyle: { height: "40px" }
+    },
+  ]
+};
 
 const ICONS = {
   shipping: (
@@ -85,10 +114,12 @@ const ICONS = {
   ),
 };
 
-export default function Features({ items = DEFAULT_FEATURES }) {
+export default function Features({ lang = "tr", items: propItems }) {
   const swiperRef = useRef(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const slidesPerView = useSlidesPerView();
+  
+  const items = propItems || FEATURES_DATA[lang] || FEATURES_DATA.tr;
   const showNavDots = items.length > slidesPerView;
 
   if (!items || items.length === 0) return null;
@@ -114,13 +145,13 @@ export default function Features({ items = DEFAULT_FEATURES }) {
                     <Image
                       src={item.image}
                       alt={item.title}
-                      width={120} // Maksimum genişlik
-                      height={60}  // Sabit yükseklik
+                      width={120}
+                      height={60}
                       style={{ 
                         width: "auto", 
                         height: "100%", 
                         objectFit: "contain",
-                        objectPosition: "left center", // Resmi sola hizala
+                        objectPosition: "left center",
                         ...item.imgStyle
                       }}
                     />
@@ -140,7 +171,7 @@ export default function Features({ items = DEFAULT_FEATURES }) {
               total={items.length}
               activeIndex={activeIndex}
               onDotClick={(i) => swiperRef.current?.slideTo?.(i)}
-              ariaLabel="Özellikler"
+              ariaLabel={lang === "tr" ? "Özellikler" : "Features"}
             />
           </div>
         )}

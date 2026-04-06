@@ -16,6 +16,65 @@ import ErrorToast from "@/components/common/ErrorToast";
 import { useLangStore } from "@/stores/langStore";
 import { getLocalizedUrl } from "@/utils/i18n";
 
+const translations = {
+  tr: {
+    myCart: "Sepetim",
+    interestedTitle: "İlginizi çekebilecekler",
+    loading: "Yükleniyor...",
+    remove: "Kaldır",
+    removing: "Kaldırılıyor...",
+    specialGift: "Sepet Tutarına Özel Hediye",
+    failedApply: "Uygulanamadı",
+    errorUpdate: "Miktar güncellenirken bir hata oluştu.",
+    systemError: "Sistemsel bir hata oluştu.",
+    couponError: "Kupon kaldırılırken bir hata oluştu.",
+    viewCart: "Sepeti Görüntüle",
+    checkout: "Sipariş Ver",
+    emptyCart: "Sepetinizde ürün bulunmamaktadır.",
+    startShopping: "Alışverişe Başla",
+    subtotal: "Ara Toplam",
+    customDiscount: "Size Özel İndirim",
+    specialDiscount: "Sepet Tutarına özel indirim",
+    campaignDiscount: "Kampanya İndirimi",
+    couponDiscount: "Kupon İndirimi",
+    total: "Toplam",
+    couponCodePlaceholder: "Kupon Kodu",
+    apply: "Uygula",
+    couponSuccess: "Kupon kodu başarıyla uygulandı!",
+    productTipPrefix: "ürününden",
+    currency: "TL",
+    locale: "tr-TR"
+  },
+  en: {
+    myCart: "My Cart",
+    interestedTitle: "You might be interested in",
+    loading: "Loading...",
+    remove: "Remove",
+    removing: "Removing...",
+    specialGift: "Special Gift for Cart Total",
+    failedApply: "Failed to apply",
+    errorUpdate: "Error updating quantity.",
+    systemError: "A system error occurred.",
+    couponError: "Error removing coupon.",
+    viewCart: "View Cart",
+    checkout: "Checkout",
+    emptyCart: "Your cart is empty.",
+    startShopping: "Start Shopping",
+    subtotal: "Subtotal",
+    customDiscount: "Special Discount",
+    specialDiscount: "Special discount for cart total",
+    campaignDiscount: "Campaign Discount",
+    couponDiscount: "Coupon Discount",
+    total: "Total",
+    couponCodePlaceholder: "Coupon Code",
+    apply: "Apply",
+    couponSuccess: "Coupon code applied successfully!",
+    productTipPrefix: "from product",
+    currency: "TL",
+    locale: "en-US"
+  }
+};
+
 export default function ShopCart() {
   const { items, updateQuantity, removeItem, applyCoupon, removeCoupon } = useCartStore();
   const [couponCode, setCouponCode] = useState("");
@@ -24,6 +83,7 @@ export default function ShopCart() {
   const [couponError, setCouponError] = useState("");
   const [couponSuccess, setCouponSuccess] = useState(false);
   const lang = useLangStore((state) => state.lang);
+  const t = translations[lang] || translations.tr;
 
   // API'den gelen totals değerlerini ayrı selector'la al (infinite loop'u önlemek için)
   const totals = useCartStore((state) => state.totals);
@@ -113,12 +173,12 @@ export default function ShopCart() {
     try {
       const result = await updateQuantity(id, quantity);
       if (result && result.error) {
-        setErrorToastMessage(result.message || "Miktar güncellenirken bir hata oluştu.");
+        setErrorToastMessage(result.message || t.errorUpdate);
         setShowErrorToast(true);
       }
     } catch (error) {
       console.error("Miktar güncelleme hatası:", error);
-      setErrorToastMessage(error?.message || "Sistemsel bir hata oluştu.");
+      setErrorToastMessage(error?.message || t.systemError);
       setShowErrorToast(true);
     } finally {
       setLoadingActions((prev) => {
@@ -160,15 +220,15 @@ export default function ShopCart() {
         setCouponCode("");
         setTimeout(() => setCouponSuccess(false), 3000);
       } else {
-        setCouponError((result && result.message) || "Uygulanamadı");
+        setCouponError((result && result.message) || t.failedApply);
         setTimeout(() => setCouponError(""), 4000);
       }
     } catch (error) {
       if (error.response) {
         const msg = error.response?.data?.message;
-        setCouponError(msg && String(msg).trim() ? msg : "Uygulanamadı");
+        setCouponError(msg && String(msg).trim() ? msg : t.failedApply);
       } else {
-        setCouponError("Uygulanamadı");
+        setCouponError(t.failedApply);
       }
       setTimeout(() => setCouponError(""), 4000);
       log("Kupon uygulama hatası:", error);
@@ -186,11 +246,11 @@ export default function ShopCart() {
     try {
       const success = await removeCoupon(coupon.code);
       if (!success) {
-        setCouponError("Kupon kaldırılırken bir hata oluştu.");
+        setCouponError(t.couponError);
         setTimeout(() => setCouponError(""), 4000);
       }
     } catch (error) {
-      setCouponError("Kupon kaldırılırken bir hata oluştu.");
+      setCouponError(t.couponError);
       setTimeout(() => setCouponError(""), 4000);
       log("Kupon kaldırma hatası:", error);
     } finally {
@@ -207,7 +267,7 @@ export default function ShopCart() {
           <div className="modal-content">
             <div className="header">
               <div className="title fw-5">
-                Sepetim
+                {t.myCart}
                 <ClearCartButton variant="inline" />
               </div>
               <span className="icon-close icon-close-popup" data-bs-dismiss="modal" />
@@ -216,7 +276,7 @@ export default function ShopCart() {
               {/* Sepette ürün yoksa API'den önerileri göster */}
               {items.length === 0 && recommendations.length > 0 && (
                 <div className="tf-mini-cart-item">
-                  <BirlikteAlSepet title="İlginizi çekebilecekler" products={recommendations} />
+                  <BirlikteAlSepet title={t.interestedTitle} products={recommendations} />
                 </div>
               )}
               <div className="tf-mini-cart-wrap">
@@ -456,7 +516,7 @@ export default function ShopCart() {
                                                 <span
                                                   style={{ color: "#0bc15c", fontWeight: "600", marginRight: "8px" }}
                                                 >
-                                                  {displayDiscountPrice.toLocaleString("tr-TR")} TL
+                                                  {displayDiscountPrice.toLocaleString(t.locale)} {t.currency}
                                                 </span>
                                                 <span
                                                   style={{
@@ -465,12 +525,12 @@ export default function ShopCart() {
                                                     fontSize: "14px",
                                                   }}
                                                 >
-                                                  {displayRegularPrice.toLocaleString("tr-TR")} TL
+                                                  {displayRegularPrice.toLocaleString(t.locale)} {t.currency}
                                                 </span>
                                               </>
                                             ) : (
                                               <span style={{ color: "var(--primary, #3c81b5)" }}>
-                                                {(displayRegularPrice ?? 0).toLocaleString("tr-TR")} TL
+                                                {(displayRegularPrice ?? 0).toLocaleString(t.locale)} {t.currency}
                                               </span>
                                             )}
                                           </div>
@@ -526,7 +586,7 @@ export default function ShopCart() {
                                                     borderRightColor: "transparent",
                                                   }}
                                                 >
-                                                  <span className="visually-hidden">Yükleniyor...</span>
+                                                  <span className="visually-hidden">{t.loading}</span>
                                                 </div>
                                               ) : (
                                                 <svg
@@ -655,9 +715,9 @@ export default function ShopCart() {
                                               style={{ fontSize: "11px", color: "#0bc15c", marginTop: "4px" }}
                                             >
                                               {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString(
-                                                "tr-TR",
+                                                t.locale,
                                               )}{" "}
-                                              Sepet Tutarına Özel Hediye
+                                              {t.specialGift}
                                             </div>
                                           ) : null}
                                         </div>
@@ -678,7 +738,7 @@ export default function ShopCart() {
                                 giftItem.product?.item_category?.slug ||
                                 "urunler";
                               const productSlug = giftItem.product?.slug || giftItem.slug || giftItem.id;
-                              const productUrl = `/magaza/${categorySlug}/${productSlug}`;
+                              const productUrl = getLocalizedUrl(`/magaza/${categorySlug}/${productSlug}`, lang);
                               const imageUrl =
                                 giftItem.image ||
                                 giftItem.product?.cover_image?.url ||
@@ -744,8 +804,8 @@ export default function ShopCart() {
                                         className="tf-cart-campaign-badge"
                                         style={{ fontSize: "11px", color: "#0bc15c", marginTop: "4px" }}
                                       >
-                                        {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString("tr-TR")}{" "}
-                                        Sepet Tutarına özel indirim
+                                        {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString(t.locale)}{" "}
+                                        {t.specialDiscount}
                                       </div>
                                     ) : null}
                                   </div>
@@ -760,7 +820,7 @@ export default function ShopCart() {
                                 giftItem.product?.item_category?.slug ||
                                 "urunler";
                               const productSlug = giftItem.product?.slug || giftItem.slug || giftItem.id;
-                              const productUrl = `/magaza/${categorySlug}/${productSlug}`;
+                              const productUrl = getLocalizedUrl(`/magaza/${categorySlug}/${productSlug}`, lang);
                               const imageUrl =
                                 giftItem.image ||
                                 giftItem.product?.cover_image?.url ||
@@ -827,8 +887,8 @@ export default function ShopCart() {
                                         className="tf-cart-campaign-badge"
                                         style={{ fontSize: "11px", color: "#0bc15c", marginTop: "4px" }}
                                       >
-                                        {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString("tr-TR")}{" "}
-                                        Sepet Tutarına Özel Hediye
+                                        {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString(t.locale)}{" "}
+                                        {t.specialGift}
                                       </div>
                                     ) : null}
                                   </div>
@@ -843,14 +903,14 @@ export default function ShopCart() {
                       {!items.length && (
                         <div className="container">
                           <div className="row align-items-center mt-5 mb-4">
-                            <div className="col-12 fs-18 text-center mb-3">Sepetinizde ürün bulunmamaktadır.</div>
+                            <div className="col-12 fs-18 text-center mb-3">{t.emptyCart}</div>
                             <div className="col-12 text-center">
                               <SimartButton
                                 href={getLocalizedUrl("/magaza", lang)}
                                 variant="fill"
                                 style={{ width: "fit-content" }}
                               >
-                                Alışverişe Başla
+                                {t.startShopping}
                               </SimartButton>
                             </div>
                           </div>
@@ -871,10 +931,10 @@ export default function ShopCart() {
                         {cartTotals.subtotal > 0 && cartTotals.hasAnyDiscount && (
                           <div className="tf-cart-totals-item" style={{ borderTop: "none", borderBottom: "none" }}>
                             <div className="tf-cart-total-label fw-6" style={{ fontSize: "14px" }}>
-                              Ara Toplam
+                              {t.subtotal}
                             </div>
                             <div className="tf-cart-total-value fw-6" style={{ fontSize: "14px" }}>
-                              {cartTotals.subtotal.toLocaleString("tr-TR")} TL
+                              {cartTotals.subtotal.toLocaleString(t.locale)} {t.currency}
                             </div>
                           </div>
                         )}
@@ -887,13 +947,13 @@ export default function ShopCart() {
                               {cartTotals.customDiscountAmount > 0 && (
                                 <div className="tf-cart-totals-item" style={{ borderTop: "none", borderBottom: "none" }}>
                                   <div className="tf-cart-total-label fw-6" style={{ fontSize: "14px" }}>
-                                    Size Özel İndirim
+                                    {t.customDiscount}
                                   </div>
                                   <div
                                     className="tf-cart-total-value fw-6"
                                     style={{ fontSize: "14px", color: "#0bc15c" }}
                                   >
-                                    - {cartTotals.customDiscountAmount.toLocaleString("tr-TR")} TL
+                                    - {cartTotals.customDiscountAmount.toLocaleString(t.locale)} {t.currency}
                                   </div>
                                 </div>
                               )}
@@ -901,13 +961,13 @@ export default function ShopCart() {
                               {cartTotals.campaignDiscountAmount > 0 && (
                                 <div className="tf-cart-totals-item" style={{ borderTop: "none", borderBottom: "none" }}>
                                   <div className="tf-cart-total-label fw-6" style={{ fontSize: "14px" }}>
-                                    Kampanya İndirimi
+                                    {t.campaignDiscount}
                                   </div>
                                   <div
                                     className="tf-cart-total-value fw-6"
                                     style={{ fontSize: "14px", color: "#0bc15c" }}
                                   >
-                                    - {cartTotals.campaignDiscountAmount.toLocaleString("tr-TR")} TL
+                                    - {cartTotals.campaignDiscountAmount.toLocaleString(t.locale)} {t.currency}
                                   </div>
                                 </div>
                               )}
@@ -918,7 +978,7 @@ export default function ShopCart() {
                                     className="tf-cart-total-label fw-6"
                                     style={{ fontSize: "14px", display: "flex", alignItems: "center", gap: "8px" }}
                                   >
-                                    <span>Kupon İndirimi:</span>
+                                    <span>{t.couponDiscount}:</span>
                                     {coupon.code && (
                                       <span style={{ fontWeight: "600", color: "#333" }}>{coupon.code}</span>
                                     )}
@@ -938,14 +998,14 @@ export default function ShopCart() {
                                         fontWeight: "600",
                                       }}
                                     >
-                                      {isRemovingCoupon ? "Kaldırılıyor..." : "Kaldır"}
+                                      {isRemovingCoupon ? t.removing : t.remove}
                                     </button>
                                   </div>
                                   <div
                                     className="tf-cart-total-value fw-6"
                                     style={{ fontSize: "14px", color: "#0bc15c" }}
                                   >
-                                    - {cartTotals.couponDiscountAmount.toLocaleString("tr-TR")} TL
+                                    - {cartTotals.couponDiscountAmount.toLocaleString(t.locale)} {t.currency}
                                   </div>
                                 </div>
                               )}
@@ -954,10 +1014,10 @@ export default function ShopCart() {
 
                         <div className="tf-cart-totals-item tf-cart-totals-item-total">
                           <div className="tf-cart-total-label fw-6" style={{ fontSize: "18px" }}>
-                            Toplam
+                            {t.total}
                           </div>
                           <div className="tf-cart-total-value fw-6" style={{ fontSize: "18px" }}>
-                            {cartTotals.total.toLocaleString("tr-TR")} TL
+                            {cartTotals.total.toLocaleString(t.locale)} {t.currency}
                           </div>
                         </div>
                         {/* Sepet bazlı kampanya mesajları - Sadece ürünle eşleşmeyenler için (fallback) */}
@@ -1042,7 +1102,7 @@ export default function ShopCart() {
                           <form onSubmit={handleApplyCoupon} style={{ position: "relative", display: "block" }}>
                             <input
                               type="text"
-                              placeholder="Kupon Kodu"
+                              placeholder={t.couponCodePlaceholder}
                               value={couponCode}
                               onChange={(e) => {
                                 // Boşlukları temizle ve tek kelime olarak al
@@ -1084,7 +1144,7 @@ export default function ShopCart() {
                                 border: "none",
                               }}
                             >
-                              {isApplyingCoupon ? "..." : "Uygula"}
+                              {isApplyingCoupon ? "..." : t.apply}
                             </button>
                           </form>
                           {couponError && (
@@ -1092,7 +1152,7 @@ export default function ShopCart() {
                           )}
                           {couponSuccess && (
                             <div style={{ marginTop: "8px", fontSize: "12px", color: "#0bc15c" }}>
-                              Kupon kodu başarıyla !
+                              {t.couponSuccess}
                             </div>
                           )}
                         </div>
@@ -1115,7 +1175,7 @@ export default function ShopCart() {
                                   <span style={{ fontWeight: "700" }}>
                                     {tip.product_name}
                                   </span>{" "}
-                                  ürününden {tip.message_short || tip.message}
+                                  {t.productTipPrefix} {tip.message_short || tip.message}
                                 </>
                               ) : (
                                 tip.message_short || tip.message
@@ -1153,7 +1213,7 @@ export default function ShopCart() {
                             alignItems: "center",
                           }}
                         >
-                          Sepeti Görüntüle
+                          {t.viewCart}
                         </SimartButton>
                         <SimartButton
                           href={getLocalizedUrl("/odeme", lang)}
@@ -1183,7 +1243,7 @@ export default function ShopCart() {
                             alignItems: "center",
                           }}
                         >
-                          Sipariş ver
+                          {t.checkout}
                         </SimartButton>
                       </div>
                     </div>

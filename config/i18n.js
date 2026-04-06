@@ -3,6 +3,17 @@ export const i18n = {
     locales: ["tr", "en"],
 };
 
+export const localizedRoutes = {
+    en: {
+        "magaza": "shop",
+        "iletisim": "contact",
+        "destek": "support",
+        "sss": "faq",
+        "kurumsal": "corporate",
+        "sepetim": "cart"
+    }
+};
+
 export const getLocaleDisplayName = (locale) => {
     const names = {
         tr: "Türkçe",

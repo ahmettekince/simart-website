@@ -5,8 +5,25 @@ import { Navigation, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 import NavDotsPill from "@/components/common/NavDotsPill";
 import StarRating from "@/components/common/StarRating";
+import { getLocalizedUrl } from "@/utils/i18n";
 
-export default function HomeReviews({ reviews = [] }) {
+const translations = {
+    tr: {
+        title: "Kullanıcı Yorumları",
+        subtitle: "Sizden gelen değerlendirmeler",
+        guestUser: "Misafir Kullanıcı",
+        ariaLabel: "Kullanıcı yorumları"
+    },
+    en: {
+        title: "User Reviews",
+        subtitle: "What our customers say",
+        guestUser: "Guest User",
+        ariaLabel: "User reviews"
+    }
+};
+
+export default function HomeReviews({ reviews = [], lang = "tr" }) {
+    const t = translations[lang] || translations.tr;
     const swiperRef = useRef(null);
     const [activeIndex, setActiveIndex] = useState(0);
 
@@ -16,8 +33,8 @@ export default function HomeReviews({ reviews = [] }) {
         <section className="flat-spacing-5 pt_0 flat-testimonial" style={{ maxWidth: "100vw", overflow: "hidden" }}>
             <div className="container">
                 <div className="flat-title wow fadeInUp" data-wow-delay="0s" suppressHydrationWarning>
-                    <span className="title">Kullanıcı Yorumları</span>
-                    <p className="sub-title">Sizden gelen değerlendirmeler</p>
+                    <span className="title">{t.title}</span>
+                    <p className="sub-title">{t.subtitle}</p>
                 </div>
                 <div className="wrap-carousel">
                     <Swiper
@@ -61,14 +78,15 @@ export default function HomeReviews({ reviews = [] }) {
                             };
 
                             const fullName = review.customer?.full_name ||
-                                (review.customer?.first_name ? `${review.customer.first_name} ${review.customer.last_name || ''}` : "Misafir Kullanıcı");
+                                (review.customer?.first_name ? `${review.customer.first_name} ${review.customer.last_name || ''}` : t.guestUser);
 
                             const maskedName = maskName(fullName);
 
                             // Construct product link
                             const categorySlug = review.product?.categories?.[0]?.slug || "urunler";
                             const productSlug = review.product?.slug;
-                            const productLink = productSlug ? `/magaza/${categorySlug}/${productSlug}` : "#";
+                            const productBaseLink = productSlug ? `/magaza/${categorySlug}/${productSlug}` : "#";
+                            const productLink = getLocalizedUrl(productBaseLink, lang);
 
                             return (
                                 <SwiperSlide className="swiper-slide" key={review.id || index}>
@@ -139,7 +157,7 @@ export default function HomeReviews({ reviews = [] }) {
                                     total={reviews.length}
                                     activeIndex={activeIndex}
                                     onDotClick={(i) => swiperRef.current?.slideToLoop?.(i) ?? swiperRef.current?.slideTo?.(i)}
-                                    ariaLabel="Kullanıcı yorumları"
+                                    ariaLabel={t.ariaLabel}
                                 />
                             </div>
                         </>

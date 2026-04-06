@@ -3,8 +3,19 @@ import Image from "next/image";
 import Link from "next/link";
 import Button from "@/components/common/Button";
 import { parseVariationTexts, getPositionStyle, getButtonPositionWhenTextsExist, parseCssToStyle, normalizeLineBreaks, ROW_TOP_LEFT, ROW_TOP_CENTER, ROW_TOP_RIGHT, ROW_MID_LEFT, ROW_MID_CENTER, ROW_MID_RIGHT, ROW_BOT_LEFT, ROW_BOT_CENTER, ROW_BOT_RIGHT } from "@/utils/bannerVariations";
+import { getLocalizedUrl } from "@/utils/i18n";
 
-export default function Collections({ collections = [] }) {
+const translations = {
+  tr: {
+    goToCollection: "Koleksiyona Git"
+  },
+  en: {
+    goToCollection: "Go to Collection"
+  }
+};
+
+export default function Collections({ collections = [], lang = "tr" }) {
+  const t = translations[lang] || translations.tr;
   if (!collections || collections.length === 0) {
     return null;
   }
@@ -137,11 +148,11 @@ export default function Collections({ collections = [] }) {
                             }}
                           >
                             <Link
-                              href={btn.link || link || "#"}
+                              href={getLocalizedUrl(btn.link || link || "#", lang)}
                               className={`tf-btn btn-primary-main style-3 fw-6 btn-light-icon animate-hover-btn ${btn.class || ""}`.trim()}
                               style={{ borderRadius: 12 }}
                             >
-                              <span>{btn.text || "Koleksiyona Git"}</span>
+                              <span>{btn.text || t.goToCollection}</span>
                             </Link>
                           </div>
                         )}

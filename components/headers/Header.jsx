@@ -7,6 +7,7 @@ import MobileMenu from "@/components/modals/MobileMenu";
 import AccountIcon from "@/components/headers/AccountIcon";
 import { getMenus } from "@/api/menus";
 import SimartLogo from "@/components/common/SimartLogo";
+import LanguageSelect from "@/components/common/LanguageSelect";
 
 import { getLocalizedUrl } from "@/utils/i18n";
 
@@ -118,6 +119,9 @@ export default async function Header({
             </div>
             <div className="col-xl-3 col-md-4 col-3">
               <ul className="nav-icon d-flex justify-content-end align-items-center gap-20">
+                <li className="nav-language">
+                  <LanguageSelect />
+                </li>
                 <li className="nav-search">
                   <a
                     href="#canvasSearch"
