@@ -1,48 +1,42 @@
-
 import Register from "@/components/othersPages/Register";
 import React from "react";
 import { checkAuthServer } from "@/utils/authServer";
 import { redirect } from "next/navigation";
 
-export const metadata = {
-  title: "Kayıt Ol - Şımart Teknoloji",
-  description: "Şımart Teknoloji'ye kayıt olun. Akıllı ev sistemlerimizle hayatınızı kolaylaştırın ve üyelik ayrıcalıklarından yararlanın.",
-  keywords: "Şımart Teknoloji Kayıt, Akıllı Ev Sistemleri Üyelik, Şımart Hesap Oluşturma, Şımart Üyelik Avantajları, Şımart Üye Ol, Şımart Teknoloji Üyelik Girişi, Şımart Akıllı Cihaz Üyeliği, Şımart Üyelik Kaydı, Şımart Teknoloji Kayıt Ol",
-  authors: [{ name: "Şımart Teknoloji" }],
-  robots: {
-    index: true,
-    follow: true,
-  },
-  openGraph: {
-    title: "Kayıt Ol - Şımart Teknoloji",
-    description: "Şımart Teknoloji'ye kayıt olun. Akıllı ev sistemlerimizle hayatınızı kolaylaştırın ve üyelik ayrıcalıklarından yararlanın.",
-    url: "https://simart.me/kayit-ol",
-    siteName: "Şımart Teknoloji",
-    images: [
-      {
-        url: "https://simart.me/uploads/systems/og.jpg",
-        width: 1200,
-        height: 630,
-        alt: "Şımart Teknoloji",
+export async function generateMetadata({ params }) {
+  const { lang } = params;
+  
+  if (lang === "en") {
+    return {
+      title: "Register - Şımart Teknoloji",
+      description: "Sign up for Şımart Teknoloji. Simplify your life with our smart home systems and benefit from membership privileges.",
+      keywords: "Şımart Teknoloji Register, Smart Home Systems Membership, Şımart Account Creation, Şımart Membership Benefits, Şımart Sign Up, Şımart Teknoloji Membership Login, Şımart Smart Device Membership, Şımart Membership Registration",
+      authors: [{ name: "Şımart Teknoloji" }],
+      openGraph: {
+        title: "Register - Şımart Teknoloji",
+        description: "Sign up for Şımart Teknoloji. Simplify your life with our smart home systems and benefit from membership privileges.",
+        url: "https://simart.me/en/register",
+        locale: "en_US",
+        type: "website",
       },
-    ],
-    locale: "tr_TR",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
+    };
+  }
+
+  return {
     title: "Kayıt Ol - Şımart Teknoloji",
     description: "Şımart Teknoloji'ye kayıt olun. Akıllı ev sistemlerimizle hayatınızı kolaylaştırın ve üyelik ayrıcalıklarından yararlanın.",
-    images: ["https://simart.me/uploads/systems/twitter.jpg"],
-    creator: "@simartteknoloji",
-    site: "@simartteknoloji",
-  },
-  other: {
-    "itemprop:name": "Kayıt Ol - Şımart Teknoloji",
-    "itemprop:description": "Şımart Teknoloji'ye kayıt olun. Akıllı ev sistemlerimizle hayatınızı kolaylaştırın ve üyelik ayrıcalıklarından yararlanın.",
-    "itemprop:image": "https://simart.me/uploads/systems/seo.jpg",
-  },
-};
+    keywords: "Şımart Teknoloji Kayıt, Akıllı Ev Sistemleri Üyelik, Şımart Hesap Oluşturma, Şımart Üyelik Avantajları, Şımart Üye Ol, Şımart Teknoloji Üyelik Girişi, Şımart Akıllı Cihaz Üyeliği, Şımart Üyelik Kaydı, Şımart Teknoloji Kayıt Ol",
+    authors: [{ name: "Şımart Teknoloji" }],
+    openGraph: {
+      title: "Kayıt Ol - Şımart Teknoloji",
+      description: "Şımart Teknoloji'ye kayıt olun. Akıllı ev sistemlerimizle hayatınızı kolaylaştırın ve üyelik ayrıcalıklarından yararlanın.",
+      url: "https://simart.me/kayit-ol",
+      locale: "tr_TR",
+      type: "website",
+    },
+  };
+}
+
 export default async function page() {
   const isAuthenticated = await checkAuthServer();
 

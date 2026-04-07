@@ -2,8 +2,47 @@
 import React from "react";
 import Link from "next/link";
 import { siteConfig } from "@/config/site";
+import { useLangStore } from "@/stores/langStore";
+import { getLocalizedUrl } from "@/utils/i18n";
 
 export default function QrCodeClient() {
+    const { lang } = useLangStore();
+
+    const t = {
+        tr: {
+            title1: "Evinizi Cebinizden",
+            title2: "Yönetmeye Başlayın",
+            description: "Şımart Teknoloji'nin hayatınızı kolaylaştıran yerli teknoloji akıllı ürünleri artık parmağınızın ucunda. Uygulama sayesinde Şımart akıllı cihazlarınızı uzaktan kontrol edebilir, birbirine bağlayarak farklı senaryolar oluşturabilir ve konforun keyfini çıkartabilirsiniz.",
+            appStoreBtn: "App Store'dan",
+            googlePlayBtn: "Google Play'den",
+            download: "İndirin",
+            socialLabel: "Bizi Sosyal Medyada Takip Edin",
+            websiteLink: "Web Sitemizi Ziyaret Edin"
+        },
+        en: {
+            title1: "Start Managing",
+            title2: "Your Home from Your Pocket",
+            description: "Şımart Technology's life-simplifying local technology smart products are now at your fingertips. With the app, you can remotely control your Şımart smart devices, connect them to each other to create different scenarios and enjoy comfort.",
+            appStoreBtn: "Download on",
+            googlePlayBtn: "GET IT ON",
+            download: "App Store",
+            downloadGoogle: "Google Play",
+            socialLabel: "Follow Us on Social Media",
+            websiteLink: "Visit Our Website"
+        }
+    }[lang] || {
+        tr: {
+            title1: "Evinizi Cebinizden",
+            title2: "Yönetmeye Başlayın",
+            description: "Şımart Teknoloji'nin hayatınızı kolaylaştıran yerli teknoloji akıllı ürünleri artık parmağınızın ucunda. Uygulama sayesinde Şımart akıllı cihazlarınızı uzaktan kontrol edebilir, birbirine bağlayarak farklı senaryolar oluşturabilir ve konforun keyfini çıkartabilirsiniz.",
+            appStoreBtn: "App Store'dan",
+            googlePlayBtn: "Google Play'den",
+            download: "İndirin",
+            socialLabel: "Bizi Sosyal Medyada Takip Edin",
+            websiteLink: "Web Sitemizi Ziyaret Edin"
+        }
+    }.tr;
+
     return (
         <div className="app-landing-page">
             <main className="content-wrapper min-vh-100 d-flex align-items-center justify-content-center">
@@ -11,13 +50,12 @@ export default function QrCodeClient() {
                     <div className="row justify-content-center py-5">
                         <div className="col-lg-8 text-center">
                             <h1 className="main-title animate-up">
-                                Evinizi Cebinizden <br />
-                                <span className="text-primary-gradient">Yönetmeye Başlayın</span>
+                                {t.title1} <br />
+                                <span className="text-primary-gradient">{t.title2}</span>
                             </h1>
 
                             <p className="sub-description animate-up delay-1 mx-auto">
-                                Şımart Teknoloji'nin hayatınızı kolaylaştıran yerli teknoloji akıllı ürünleri artık parmağınızın ucunda.
-                                Uygulama sayesinde Şımart akıllı cihazlarınızı uzaktan kontrol edebilir, birbirine bağlayarak farklı senaryolar oluşturabilir ve konforun keyfini çıkartabilirsiniz.
+                                {t.description}
                             </p>
 
                             <div className="download-buttons animate-up delay-2 justify-content-center">
@@ -33,8 +71,8 @@ export default function QrCodeClient() {
                                         </svg>
                                     </div>
                                     <div className="text">
-                                        <span className="small">App Store'dan</span>
-                                        <span className="big">İndirin</span>
+                                        <span className="small">{t.appStoreBtn}</span>
+                                        <span className="big">{t.download}</span>
                                     </div>
                                 </a>
 
@@ -53,14 +91,14 @@ export default function QrCodeClient() {
                                         </svg>
                                     </div>
                                     <div className="text">
-                                        <span className="small">Google Play'den</span>
-                                        <span className="big">İndirin</span>
+                                        <span className="small">{t.googlePlayBtn}</span>
+                                        <span className="big">{lang === 'en' ? t.downloadGoogle : t.download}</span>
                                     </div>
                                 </a>
                             </div>
 
                             <div className="social-section animate-up delay-3">
-                                <p className="social-label">Bizi Sosyal Medyada Takip Edin</p>
+                                <p className="social-label">{t.socialLabel}</p>
                                 <div className="social-icons justify-content-center mb-4">
                                     {siteConfig.social.filter(s => s.url).map((s) => (
                                         <Link key={s.name} href={s.url || "#"} target="_blank" className={`social-icon-btn ${s.className}`}>
@@ -69,8 +107,8 @@ export default function QrCodeClient() {
                                     ))}
                                 </div>
                                 <div className="website-link">
-                                    <Link href={siteConfig.site.url} className="site-link-text">
-                                        Web Sitemizi Ziyaret Edin
+                                    <Link href={getLocalizedUrl("/", lang)} className="site-link-text">
+                                        {t.websiteLink}
                                     </Link>
                                 </div>
                             </div>

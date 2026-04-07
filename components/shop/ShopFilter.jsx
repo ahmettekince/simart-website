@@ -3,9 +3,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
+import { getLocalizedUrl } from "@/utils/i18n";
+import { useLangStore } from "@/stores/langStore";
 
 export default function ShopFilter({ categories = [] }) {
   const pathname = usePathname();
+  const lang = useLangStore((s) => s.lang);
 
   // Route değiştiğinde offcanvas'ı tamamen temizle
   useEffect(() => {
@@ -26,6 +29,21 @@ export default function ShopFilter({ categories = [] }) {
     (c) => c && c.slug && c.name && c.is_active !== false
   ) || [];
 
+  const translations = {
+    tr: {
+      categories: "Kategoriler",
+      allProducts: "Tüm Ürünler",
+      noCategory: "Kategori bulunamadı"
+    },
+    en: {
+      categories: "Categories",
+      allProducts: "All Products",
+      noCategory: "No categories found"
+    }
+  };
+
+  const t = translations[lang] || translations.tr;
+
   return (
     <div className="offcanvas offcanvas-start canvas-filter" id="filterShop">
       <div className="canvas-wrapper">
@@ -43,7 +61,7 @@ export default function ShopFilter({ categories = [] }) {
             >
               <span className="d-flex align-items-center gap-2">
                 <span className="icon icon-filter" style={{ flexShrink: 0 }} />
-                <b>Kategoriler</b>
+                <b>{t.categories}</b>
               </span>
               <span className="icon icon-arrow-up" />
             </div>
@@ -51,15 +69,15 @@ export default function ShopFilter({ categories = [] }) {
               <ul className="list-categoris current-scrollbar mb_36 shop-filter-categories">
                 {/* Tüm Ürünler */}
                 <li className="cate-item cate-item-all">
-                  <Link href="/magaza" className="cate-link-with-img">
+                  <Link href={getLocalizedUrl("/magaza", lang)} className="cate-link-with-img">
                     <span className="cate-img-wrap cate-img-placeholder">
                       <span className="icon icon-grid" />
                     </span>
-                    <span className="cate-name">Tüm Ürünler</span>
+                    <span className="cate-name">{t.allProducts}</span>
                   </Link>
                 </li>
                 {filteredCategories.map((category) => {
-                  const categoryUrl = `/magaza/${category.slug}`;
+                  const categoryUrl = getLocalizedUrl(`/magaza/${category.slug}`, lang);
                   const thumbUrl = category.image?.thumbnail_url || category.image?.url;
                   return (
                     <li key={category.slug} className="cate-item">
@@ -86,7 +104,7 @@ export default function ShopFilter({ categories = [] }) {
                 })}
                 {filteredCategories.length === 0 && (
                   <li className="cate-item">
-                    <span>Kategori bulunamadı</span>
+                    <span>{t.noCategory}</span>
                   </li>
                 )}
               </ul>

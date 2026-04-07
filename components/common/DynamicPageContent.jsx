@@ -1,8 +1,25 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
+import { useLangStore } from "@/stores/langStore";
 
-export default function DynamicPageContent({ htmlContent, title, image }) {
+export default function DynamicPageContent({ htmlContent, title, image, slugs }) {
+    const { setAlternatePaths } = useLangStore();
+
+    useEffect(() => {
+        if (slugs && typeof slugs === 'object') {
+            const paths = {};
+            Object.keys(slugs).forEach(key => {
+                const prefix = key === 'tr' ? '' : `/${key}`;
+                paths[key] = `${prefix}/${slugs[key]}`;
+            });
+            setAlternatePaths(paths);
+        }
+        
+        // Temizleme: Sayfadan çıkınca alternate paths'i sıfırlayabiliriz (isteğe bağlı)
+        // return () => setAlternatePaths({});
+    }, [slugs, setAlternatePaths]);
+
     return (
         <div className="dynamic-page-wrapper">
             <div className="container py-5">

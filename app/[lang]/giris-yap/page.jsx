@@ -1,48 +1,42 @@
-
 import Login from "@/components/othersPages/Login";
 import React from "react";
 import { checkAuthServer } from "@/utils/authServer";
 import { redirect } from "next/navigation";
 
-export const metadata = {
-  title: "Oturum Aç - Şımart Teknoloji",
-  description: "Şımart Teknoloji giriş sayfası. Hesabınıza hızlıca erişin, akıllı ev ürünlerinizi yönetin ve kullanıcı deneyiminizi kişiselleştirin.",
-  keywords: "Şımart Teknoloji Giriş, Şımart Üyelik Girişi, Akıllı Ev Sistemi Giriş, Şımart Hesap Erişimi, Şımart Kullanıcı Paneli, Şımart Teknoloji Oturum Açma, Akıllı Ürün Yönetimi, Şımart Online Giriş, Şımart Teknoloji Hesap, Şımart Login Sayfası",
-  authors: [{ name: "Şımart Teknoloji" }],
-  robots: {
-    index: true,
-    follow: true,
-  },
-  openGraph: {
-    title: "Oturum Aç - Şımart Teknoloji",
-    description: "Şımart Teknoloji giriş sayfası. Hesabınıza hızlıca erişin, akıllı ev ürünlerinizi yönetin ve kullanıcı deneyiminizi kişiselleştirin.",
-    url: "https://simart.me/giris-yap",
-    siteName: "Şımart Teknoloji",
-    images: [
-      {
-        url: "https://simart.me/uploads/systems/og.jpg",
-        width: 1200,
-        height: 630,
-        alt: "Şımart Teknoloji",
+export async function generateMetadata({ params }) {
+  const { lang } = params;
+  
+  if (lang === "en") {
+    return {
+      title: "Login - Şımart Teknoloji",
+      description: "Şımart Teknoloji login page. Quickly access your account, manage your smart home products and personalize your user experience.",
+      keywords: "Şımart Teknoloji Login, Şımart Membership Login, Smart Home System Login, Şımart Account Access, Şımart User Panel, Şımart Teknoloji Sign In, Smart Product Management, Şımart Online Login, Şımart Teknoloji Account, Şımart Login Page",
+      authors: [{ name: "Şımart Teknoloji" }],
+      openGraph: {
+        title: "Login - Şımart Teknoloji",
+        description: "Şımart Teknoloji login page. Quickly access your account, manage your smart home products and personalize your user experience.",
+        url: "https://simart.me/en/login",
+        locale: "en_US",
+        type: "website",
       },
-    ],
-    locale: "tr_TR",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
+    };
+  }
+
+  return {
     title: "Oturum Aç - Şımart Teknoloji",
     description: "Şımart Teknoloji giriş sayfası. Hesabınıza hızlıca erişin, akıllı ev ürünlerinizi yönetin ve kullanıcı deneyiminizi kişiselleştirin.",
-    images: ["https://simart.me/uploads/systems/twitter.jpg"],
-    creator: "@simartteknoloji",
-    site: "@simartteknoloji",
-  },
-  other: {
-    "itemprop:name": "Oturum Aç - Şımart Teknoloji",
-    "itemprop:description": "Şımart Teknoloji giriş sayfası. Hesabınıza hızlıca erişin, akıllı ev ürünlerinizi yönetin ve kullanıcı deneyiminizi kişiselleştirin.",
-    "itemprop:image": "https://simart.me/uploads/systems/seo.jpg",
-  },
-};
+    keywords: "Şımart Teknoloji Giriş, Şımart Üyelik Girişi, Akıllı Ev Sistemi Giriş, Şımart Hesap Erişimi, Şımart Kullanıcı Paneli, Şımart Teknoloji Oturum Açma, Akıllı Ürün Yönetimi, Şımart Online Giriş, Şımart Teknoloji Hesap, Şımart Login Sayfası",
+    authors: [{ name: "Şımart Teknoloji" }],
+    openGraph: {
+      title: "Oturum Aç - Şımart Teknoloji",
+      description: "Şımart Teknoloji giriş sayfası. Hesabınıza hızlıca erişin, akıllı ev ürünlerinizi yönetin ve kullanıcı deneyiminizi kişiselleştirin.",
+      url: "https://simart.me/giris-yap",
+      locale: "tr_TR",
+      type: "website",
+    },
+  };
+}
+
 export default async function page() {
   const isAuthenticated = await checkAuthServer();
 

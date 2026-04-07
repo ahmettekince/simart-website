@@ -9,17 +9,12 @@ import { useCustomerStore } from "@/stores/customerStore";
 import AccountProfileSection from "@/components/othersPages/dashboard/AccountProfileSection";
 import ReviewDashboardModal from "@/components/modals/ReviewDashboardModal";
 
-const accountLinks = [
-  { href: "/hesabim", label: "Hesabım" },
-  { href: "/siparislerim", label: "Siparişlerim" },
-  { href: "/degerlendirmelerim", label: "Değerlendirmelerim", showCount: true },
-  { href: "/adreslerim", label: "Adreslerim" },
-  { href: "/kupon-kodlarim", label: "Kupon Kodlarım" },
-  { href: "/paylas-simart", label: "Paylaş Şımart" },
-];
+import { getLocalizedUrl } from "@/utils/i18n";
+import { useLangStore } from "@/stores/langStore";
 
 export default function DashboardNav({ profileSection: profileSectionProp }) {
   const pathname = usePathname();
+  const lang = useLangStore((s) => s.lang);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const logout = useAuthStore((state) => state.logout);
@@ -27,6 +22,48 @@ export default function DashboardNav({ profileSection: profileSectionProp }) {
   const reviewableProducts = useReviewStore((s) => s.reviewableProducts);
   const setReviewableProducts = useReviewStore((s) => s.setReviewableProducts);
   const fetchCustomer = useCustomerStore((s) => s.fetchCustomer);
+
+  const translations = {
+    tr: {
+      account: "Hesabım",
+      orders: "Siparişlerim",
+      reviews: "Değerlendirmelerim",
+      addresses: "Adreslerim",
+      coupons: "Kupon Kodlarım",
+      share: "Paylaş Şımart",
+      logout: "Çıkış Yap",
+      loggingOut: "Çıkış yapılıyor...",
+      logoutConfirm: "Çıkış yapmak istiyor musunuz?",
+      yesLogout: "Evet, Çıkış Yap",
+      cancel: "Vazgeç",
+      reviewNotification: (count) => `Yorum yapabileceğiniz ${count} adet ürün var. Yorum yapın, kupon fırsatı yakalayın!`
+    },
+    en: {
+      account: "My Account",
+      orders: "My Orders",
+      reviews: "My Reviews",
+      addresses: "My Addresses",
+      coupons: "My Coupons",
+      share: "Share Şımart",
+      logout: "Logout",
+      loggingOut: "Logging out...",
+      logoutConfirm: "Are you sure you want to log out?",
+      yesLogout: "Yes, Log Out",
+      cancel: "Cancel",
+      reviewNotification: (count) => `You have ${count} products to review. Review now to get coupons!`
+    }
+  };
+
+  const t = translations[lang] || translations.tr;
+
+  const accountLinks = [
+    { href: "/hesabim", label: t.account },
+    { href: "/siparislerim", label: t.orders },
+    { href: "/degerlendirmelerim", label: t.reviews, showCount: true },
+    { href: "/adreslerim", label: t.addresses },
+    { href: "/kupon-kodlarim", label: t.coupons },
+    { href: "/paylas-simart", label: t.share },
+  ];
 
   // Hesap sayfasına girildiğinde 1 kerelik customer verisi çek, saatte 1 güncelle
   useEffect(() => {
@@ -64,12 +101,12 @@ export default function DashboardNav({ profileSection: profileSectionProp }) {
         logout();
         document.cookie = "_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
         document.cookie = "_token=; path=/; domain=" + window.location.hostname + "; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-        window.location.href = "/giris-yap";
+        window.location.href = getLocalizedUrl("/giris-yap", lang);
         return;
       }
     } catch (error) {
       console.error("Logout error:", error);
-      window.location.href = "/giris-yap";
+      window.location.href = getLocalizedUrl("/giris-yap", lang);
       return;
     }
     setIsLoggingOut(false);
@@ -106,7 +143,7 @@ export default function DashboardNav({ profileSection: profileSectionProp }) {
                   </svg>
                 </span>
                 <span style={{ flex: 1, lineHeight: 1.3, color: "#0bc15c" }}>
-                  Yorum yapabileceğiniz {reviewableProducts.length} adet ürün var. Yorum yapın, kupon fırsatı yakalayın!
+                  {t.reviewNotification(reviewableProducts.length)}
                 </span>
               </button>
             </li>
@@ -116,19 +153,24 @@ export default function DashboardNav({ profileSection: profileSectionProp }) {
               {profileSection}
             </li>
           )}
-          {accountLinks.map((link, index) => (
-            <li key={index}>
-              <Link
-                href={link.href}
-                className={`my-account-nav-item ${pathname == link.href ? "active" : ""}`}
-              >
-                {link.label}
-                {link.showCount && reviewableProducts.length > 0 && (
-                  <span style={{ marginLeft: "4px" }}>({reviewableProducts.length})</span>
-                )}
-              </Link>
-            </li>
-          ))}
+          {accountLinks.map((link, index) => {
+            const localizedHref = getLocalizedUrl(link.href, lang);
+            const isActive = pathname === localizedHref || (lang === "tr" && pathname === link.href);
+
+            return (
+              <li key={index}>
+                <Link
+                  href={localizedHref}
+                  className={`my-account-nav-item ${isActive ? "active" : ""}`}
+                >
+                  {link.label}
+                  {link.showCount && reviewableProducts.length > 0 && (
+                    <span style={{ marginLeft: "4px" }}>({reviewableProducts.length})</span>
+                  )}
+                </Link>
+              </li>
+            );
+          })}
           <li>
             <a
               href="#"
@@ -136,7 +178,7 @@ export default function DashboardNav({ profileSection: profileSectionProp }) {
               className="my-account-nav-item"
               style={{ cursor: isLoggingOut ? "wait" : "pointer" }}
             >
-              {isLoggingOut ? "Çıkış yapılıyor..." : "Çıkış Yap"}
+              {isLoggingOut ? t.loggingOut : t.logout}
             </a>
           </li>
         </ul>
@@ -180,7 +222,7 @@ export default function DashboardNav({ profileSection: profileSectionProp }) {
             }}
           >
             <div style={{ fontSize: "18px", marginBottom: "10px", color: "#333", fontWeight: "700" }}>
-              {isLoggingOut ? "Çıkış yapılıyor..." : "Çıkış yapmak istiyor musunuz?"}
+              {isLoggingOut ? t.loggingOut : t.logoutConfirm}
             </div>
             <div style={{ display: "flex", gap: "12px", marginTop: "25px" }}>
               <button
@@ -198,7 +240,7 @@ export default function DashboardNav({ profileSection: profileSectionProp }) {
                   cursor: isLoggingOut ? "wait" : "pointer",
                 }}
               >
-                Evet, Çıkış Yap
+                {t.yesLogout}
               </button>
               <button
                 onClick={() => !isLoggingOut && setShowLogoutConfirm(false)}
@@ -215,7 +257,7 @@ export default function DashboardNav({ profileSection: profileSectionProp }) {
                   cursor: isLoggingOut ? "not-allowed" : "pointer",
                 }}
               >
-                Vazgeç
+                {t.cancel}
               </button>
             </div>
           </div>

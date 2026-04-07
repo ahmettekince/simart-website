@@ -38,14 +38,6 @@ export async function serverFetch(endpoint, options = {}) {
 
     // Body content for signing and sending
     let finalBody = options.body;
-    // GET ve HEAD istekleri body içeremez, bu yüzden sadece diğer metodlarda body'ye lang ekliyoruz.
-    if (method !== "GET" && method !== "HEAD") {
-        if (typeof options.body === "object" && options.body !== null && !(options.body instanceof FormData)) {
-            finalBody = { ...options.body, lang };
-        } else if (!options.body) {
-            finalBody = { lang };
-        }
-    }
 
     let bodyStr = "{}";
     if (finalBody) {
@@ -71,15 +63,11 @@ export async function serverFetch(endpoint, options = {}) {
         //"X-Timestamp": timestamp.toString(),
         "User-Agent": clientUserAgent,
         "X-Forwarded-For": clientIp,
+        "X-Api-Lang": lang,
         ...options.headers,
     };
 
-    // 2. Query param ekle (Tüm istekler için hem body hem paramda olsun istendi)
-    const separator = endpoint.includes("?") ? "&" : "?";
-    const endpointWithLang = endpoint.includes("lang=")
-        ? endpoint
-        : `${endpoint}${separator}lang=${lang}`;
-    let url = `${BACKEND_URL}${endpointWithLang}`;
+    let url = `${BACKEND_URL}${endpoint}`;
 
     const startTime = Date.now();
 

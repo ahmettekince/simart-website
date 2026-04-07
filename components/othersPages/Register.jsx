@@ -5,8 +5,11 @@ import { useRouter } from "next/navigation";
 import apiClient from "@/utils/apiClient";
 import { filterNameValue, formatFirstNameValue, formatLastNameValue } from "@/utils/inputFormatters";
 import RecaptchaV3 from "@/components/common/RecaptchaV3";
+import { useLangStore } from "@/stores/langStore";
+import { getLocalizedUrl } from "@/utils/i18n";
 
 export default function Register() {
+  const { lang } = useLangStore();
   const router = useRouter();
   const executeRecaptchaRef = useRef(null);
   const [formData, setFormData] = useState({
@@ -16,72 +19,128 @@ export default function Register() {
     password: "",
   });
   const [agreements, setAgreements] = useState({
-    termsAccepted: true, // Şartlar ve Koşullar (varsayılan true)
-    newsletterSubscription: true, // Kampanya bildirimleri (varsayılan true)
+    termsAccepted: true,
+    newsletterSubscription: true,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState({});
-  const [recaptchaVerified, setRecaptchaVerified] = useState(false);
   const [recaptchaError, setRecaptchaError] = useState("");
+
+  const t = {
+    tr: {
+      title: "Kayıt Ol",
+      subtitle: "Giriş yap veya hesap oluştur, fırsatları kaçırma!",
+      firstName: "Adınız *",
+      lastName: "Soyadınız *",
+      email: "E-posta *",
+      password: "Şifre *",
+      terms: "Şartlar ve Koşullar",
+      termsSuffix: "'ı okudum, kabul ediyorum.",
+      newsletter: "Kampanya ve fırsatlardan e-posta/SMS ile haberdar olmak istiyorum.",
+      registerButton: "Kayıt Ol",
+      registering: "Kayıt yapılıyor...",
+      alreadyHaveAccount: "Zaten Hesabınız Var Mı? Giriş Yapın",
+      successMsg: "Kayıt başarılı. Otomatik giriş yapıldı.",
+      errorMsg: "Kayıt işlemi başarısız oldu.",
+      generalError: "Kayıt işlemi sırasında bir hata oluştu.",
+      recaptchaError: "Güvenlik doğrulaması yapılamadı.",
+      recaptchaRequired: "Lütfen güvenlik adımını tamamlayın.",
+      termsLink: "/sartlar-kosullar"
+    },
+    en: {
+      title: "Register",
+      subtitle: "Login or create an account, don't miss the opportunities!",
+      firstName: "First Name *",
+      lastName: "Last Name *",
+      email: "Email *",
+      password: "Password *",
+      terms: "Terms and Conditions",
+      termsSuffix: "I have read and agree to the ",
+      newsletter: "I want to be informed about campaigns and opportunities via email/SMS.",
+      registerButton: "Register",
+      registering: "Registering...",
+      alreadyHaveAccount: "Already Have an Account? Login",
+      successMsg: "Registration successful. Automatic login performed.",
+      errorMsg: "Registration failed.",
+      generalError: "An error occurred during registration.",
+      recaptchaError: "Security verification failed.",
+      recaptchaRequired: "Please complete the security step.",
+      termsLink: "/terms-conditions"
+    }
+  }[lang] || {
+    tr: {
+      title: "Kayıt Ol",
+      subtitle: "Giriş yap veya hesap oluştur, fırsatları kaçırma!",
+      firstName: "Adınız *",
+      lastName: "Soyadınız *",
+      email: "E-posta *",
+      password: "Şifre *",
+      terms: "Şartlar ve Koşullar",
+      termsSuffix: "'ı okudum, kabul ediyorum.",
+      newsletter: "Kampanya ve fırsatlardan e-posta/SMS ile haberdar olmak istiyorum.",
+      registerButton: "Kayıt Ol",
+      registering: "Kayıt yapılıyor...",
+      alreadyHaveAccount: "Zaten Hesabınız Var Mı? Giriş Yapın",
+      successMsg: "Kayıt başarılı. Otomatik giriş yapıldı.",
+      errorMsg: "Kayıt işlemi başarısız oldu.",
+      generalError: "Kayıt işlemi sırasında bir hata oluştu.",
+      recaptchaError: "Güvenlik doğrulaması yapılamadı.",
+      recaptchaRequired: "Lütfen güvenlik adımını tamamlayın.",
+      termsLink: "/sartlar-kosullar"
+    }
+  }.tr;
+
+  // Hata mesajı çeviri haritası
+  const errorMap = {
+    tr: {},
+    en: {
+        "Ad gereklidir.": "First name is required.",
+        "Soyad gereklidir.": "Last name is required.",
+        "E-posta gereklidir.": "Email is required.",
+        "Şifre gereklidir.": "Password is required.",
+        "Geçersiz e-posta adresi.": "Invalid email address.",
+        "Şifre en az 6 karakter olmalıdır.": "Password must be at least 6 characters.",
+        "Bu e-posta adresi zaten kullanımda.": "This email address is already in use.",
+        "Lütfen şartları kabul edin.": "Please accept the terms."
+    }
+  };
+
+  const translateError = (msg) => {
+    if (lang === "tr") return msg;
+    return errorMap.en[msg] || msg;
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     let filtered = value;
-    if (name === "first_name") {
-      filtered = formatFirstNameValue(filterNameValue(value));
-    } else if (name === "last_name") {
-      filtered = formatLastNameValue(filterNameValue(value));
-    } else if (name === "email") {
-      filtered = value
-        .replace(/Ç/g, "c")
-        .replace(/ç/g, "c")
-        .replace(/Ğ/g, "g")
-        .replace(/ğ/g, "g")
-        .replace(/I/g, "i")
-        .replace(/ı/g, "i")
-        .replace(/İ/g, "i")
-        .replace(/Ö/g, "o")
-        .replace(/ö/g, "o")
-        .replace(/Ş/g, "s")
-        .replace(/ş/g, "s")
-        .replace(/Ü/g, "u")
-        .replace(/ü/g, "u")
-        .toLowerCase()
-        .replace(/[^a-z0-9@._+-]/g, "");
+    if (name === "first_name") filtered = formatFirstNameValue(filterNameValue(value));
+    else if (name === "last_name") filtered = formatLastNameValue(filterNameValue(value));
+    else if (name === "email") {
+      filtered = value.replace(/Ç/g, "c").replace(/ç/g, "c").replace(/Ğ/g, "g").replace(/ğ/g, "g").replace(/I/g, "i").replace(/ı/g, "i").replace(/İ/g, "i").replace(/Ö/g, "o").replace(/ö/g, "o").replace(/Ş/g, "s").replace(/ş/g, "s").replace(/Ü/g, "u").replace(/ü/g, "u").toLowerCase().replace(/[^a-z0-9@._+-]/g, "");
     }
-    setFormData((prev) => ({
-      ...prev,
-      [name]: filtered,
-    }));
-    // Field error'ı temizle
+    setFormData(prev => ({ ...prev, [name]: filtered }));
     if (fieldErrors[name]) {
-      setFieldErrors((prev) => {
+      setFieldErrors(prev => {
         const newErrors = { ...prev };
         delete newErrors[name];
         return newErrors;
       });
     }
-    // Mesajları temizle
     setMessage("");
     setError("");
   };
 
   const handleAgreementChange = (name) => {
-    setAgreements((prev) => ({
-      ...prev,
-      [name]: !prev[name],
-    }));
-    // Field error'ı temizle
+    setAgreements(prev => ({ ...prev, [name]: !prev[name] }));
     if (name === "termsAccepted" && fieldErrors.terms_accepted) {
-      setFieldErrors((prev) => {
+      setFieldErrors(prev => {
         const newErrors = { ...prev };
         delete newErrors.terms_accepted;
         return newErrors;
       });
     }
-    // Mesajları temizle
     setMessage("");
     setError("");
   };
@@ -93,28 +152,25 @@ export default function Register() {
     setError("");
     setFieldErrors({});
 
-    // V3: Token al
     let token = null;
     if (executeRecaptchaRef.current) {
       try {
         token = await executeRecaptchaRef.current();
       } catch (e) {
-        console.error("reCAPTCHA hatası:", e);
-        setRecaptchaError("Güvenlik doğrulaması yapılamadı.");
+        setRecaptchaError(t.recaptchaError);
         setIsLoading(false);
         return;
       }
     }
 
     if (!token) {
-      setRecaptchaError("Lütfen güvenlik adımını tamamlayın.");
+      setRecaptchaError(t.recaptchaRequired);
       setIsLoading(false);
       return;
     }
     setRecaptchaError("");
 
     try {
-      // Query parametreleri ile POST isteği gönder
       const response = await apiClient.post("/customer/register", null, {
         params: {
           first_name: formData.first_name,
@@ -123,62 +179,31 @@ export default function Register() {
           password: formData.password,
           terms_accepted: agreements.termsAccepted,
           newsletter_subscription: agreements.newsletterSubscription,
-          "g-recaptcha-response": token, // V3 token'ını gönder
+          "g-recaptcha-response": token,
         },
       });
 
       if (response.data?.status === "success") {
-        // Başarı mesajını göster
-        setMessage(response.data?.message || "Kayıt başarılı. Otomatik giriş yapıldı.");
-
-        // device_id_token'ı cookie'ye kaydet
+        setMessage(translateError(response.data?.message) || t.successMsg);
         if (response.data?.data?.device_id_token) {
           document.cookie = `DEVICE_ID=${response.data.data.device_id_token}; path=/; max-age=31536000; SameSite=Lax`;
         }
-
-        // recaptchaRef.current?.reset?.(); // V3'te reset gerekmez
-        // setRecaptchaVerified(false);
-
-        // 2 saniye sonra yönlendir veya sayfayı yenile
         setTimeout(() => {
-          window.location.href = "/";
+          window.location.href = getLocalizedUrl("/", lang);
         }, 2000);
       } else {
-        setError(response.data?.message || "Kayıt işlemi başarısız oldu.");
+        setError(translateError(response.data?.message) || t.errorMsg);
       }
     } catch (err) {
-      // API'den gelen hataları parse et
       if (err.response?.data?.errors) {
         const errors = err.response.data.errors;
         const parsedErrors = {};
-
-        // Her field için ilk hatayı al
-        Object.keys(errors).forEach((key) => {
-          if (Array.isArray(errors[key]) && errors[key].length > 0) {
-            parsedErrors[key] = errors[key][0];
-          }
+        Object.keys(errors).forEach(key => {
+          if (Array.isArray(errors[key]) && errors[key].length > 0) parsedErrors[key] = translateError(errors[key][0]);
         });
-
         setFieldErrors(parsedErrors);
-
-        // Eğer errors dizisi boşsa (yani field-specific hata yoksa) genel mesajı göster
-        const hasFieldErrors = Object.keys(parsedErrors).length > 0;
-        if (!hasFieldErrors && err.response?.data?.message) {
-          setError(err.response.data.message);
-        } else {
-          setError(""); // Field hataları varsa genel mesajı gösterme
-        }
       } else {
-        // Genel hata mesajı (errors dizisi yoksa veya boşsa)
-        if (err.response?.data?.message) {
-          setError(err.response.data.message);
-        } else {
-          const errorMessage =
-            err.response?.data?.error ||
-            err.message ||
-            "Kayıt işlemi sırasında bir hata oluştu.";
-          setError(errorMessage);
-        }
+        setError(translateError(err.response?.data?.message) || t.generalError);
       }
     } finally {
       setIsLoading(false);
@@ -189,235 +214,66 @@ export default function Register() {
     <section className="flat-spacing-10">
       <div className="container">
         <div className="form-register-wrap">
-          <div className="flat-title align-items-start gap-0  px-0">
-            <h5 className="mb_18">Kayıt Ol</h5>
-            <p className="text_black-2">
-              Giriş yap veya hesap oluştur, fırsatları kaçırma!
-            </p>
+          <div className="flat-title align-items-start gap-0 px-0">
+            <h5 className="mb_18">{t.title}</h5>
+            <p className="text_black-2">{t.subtitle}</p>
           </div>
           <div>
-            <form onSubmit={handleSubmit} className="" id="register-form" noValidate>
-              {/* Başarı Mesajı */}
-              {message && (
-                <div
-                  className="mb_20"
-                  style={{
-                    padding: "12px 16px",
-                    backgroundColor: "#d4edda",
-                    border: "1px solid #c3e6cb",
-                    borderRadius: "4px",
-                    color: "#155724",
-                  }}
-                >
-                  {message}
-                </div>
-              )}
-
-              {/* Hata Mesajı */}
-              {error && (
-                <div
-                  className="mb_20"
-                  style={{
-                    padding: "12px 16px",
-                    backgroundColor: "#f8d7da",
-                    border: "1px solid #f5c6cb",
-                    borderRadius: "4px",
-                    color: "#721c24",
-                  }}
-                >
-                  {error}
-                </div>
-              )}
-
+            <form onSubmit={handleSubmit} noValidate>
+              {message && <div className="mb_20" style={{ padding: "12px 16px", backgroundColor: "#d4edda", border: "1px solid #c3e6cb", borderRadius: "4px", color: "#155724" }}>{message}</div>}
+              {error && <div className="mb_20" style={{ padding: "12px 16px", backgroundColor: "#f8d7da", border: "1px solid #f5c6cb", borderRadius: "4px", color: "#721c24" }}>{error}</div>}
+              
               <div className="tf-grid-layout md-col-2 mb_15">
                 <div className="tf-field style-1">
-                  <input
-                    className={`tf-field-input tf-input ${fieldErrors.first_name ? "error" : ""}`}
-                    placeholder=" "
-                    type="text"
-                    id="first_name"
-                    name="first_name"
-                    value={formData.first_name}
-                    onChange={handleChange}
-                    style={fieldErrors.first_name ? { borderColor: "#dc3545" } : {}}
-                  />
-                  <label
-                    className="tf-field-label fw-6 text_black-2"
-                    htmlFor="first_name"
-                  >
-                    Adınız *
-                  </label>
-                  {fieldErrors.first_name && (
-                    <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
-                      {fieldErrors.first_name}
-                    </div>
-                  )}
+                  <input className="tf-field-input tf-input" placeholder=" " type="text" id="first_name" name="first_name" value={formData.first_name} onChange={handleChange} />
+                  <label className="tf-field-label fw-6 text_black-2" htmlFor="first_name">{t.firstName}</label>
+                  {fieldErrors.first_name && <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>{fieldErrors.first_name}</div>}
                 </div>
                 <div className="tf-field style-1">
-                  <input
-                    className={`tf-field-input tf-input ${fieldErrors.last_name ? "error" : ""}`}
-                    placeholder=" "
-                    type="text"
-                    id="last_name"
-                    name="last_name"
-                    value={formData.last_name}
-                    onChange={handleChange}
-                    style={fieldErrors.last_name ? { borderColor: "#dc3545" } : {}}
-                  />
-                  <label
-                    className="tf-field-label fw-6 text_black-2"
-                    htmlFor="last_name"
-                  >
-                    Soyadınız *
-                  </label>
-                  {fieldErrors.last_name && (
-                    <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
-                      {fieldErrors.last_name}
-                    </div>
-                  )}
+                  <input className="tf-field-input tf-input" placeholder=" " type="text" id="last_name" name="last_name" value={formData.last_name} onChange={handleChange} />
+                  <label className="tf-field-label fw-6 text_black-2" htmlFor="last_name">{t.lastName}</label>
+                  {fieldErrors.last_name && <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>{fieldErrors.last_name}</div>}
                 </div>
               </div>
+
               <div className="tf-field style-1 mb_15">
-                <input
-                  className={`tf-field-input tf-input ${fieldErrors.email ? "error" : ""}`}
-                  placeholder=" "
-                  type="email"
-                  autoComplete="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  style={fieldErrors.email ? { borderColor: "#dc3545" } : {}}
-                />
-                <label
-                  className="tf-field-label fw-6 text_black-2"
-                  htmlFor="email"
-                >
-                  E-posta *
-                </label>
-                {fieldErrors.email && (
-                  <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
-                    {fieldErrors.email}
-                  </div>
-                )}
+                <input className="tf-field-input tf-input" placeholder=" " type="email" id="email" name="email" value={formData.email} onChange={handleChange} />
+                <label className="tf-field-label fw-6 text_black-2" htmlFor="email">{t.email}</label>
+                {fieldErrors.email && <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>{fieldErrors.email}</div>}
               </div>
+
               <div className="tf-field style-1 mb_30">
-                <input
-                  className={`tf-field-input tf-input ${fieldErrors.password ? "error" : ""}`}
-                  placeholder=" "
-                  type="password"
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  autoComplete="new-password"
-                  style={fieldErrors.password ? { borderColor: "#dc3545" } : {}}
-                />
-                <label
-                  className="tf-field-label fw-6 text_black-2"
-                  htmlFor="password"
-                >
-                  Şifre *
-                </label>
-                {fieldErrors.password && (
-                  <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>
-                    {fieldErrors.password}
-                  </div>
-                )}
+                <input className="tf-field-input tf-input" placeholder=" " type="password" id="password" name="password" value={formData.password} onChange={handleChange} autoComplete="new-password" />
+                <label className="tf-field-label fw-6 text_black-2" htmlFor="password">{t.password}</label>
+                {fieldErrors.password && <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>{fieldErrors.password}</div>}
               </div>
-
-              {/* Şartlar ve Koşullar */}
-              <div className="mb_20" style={{ marginTop: "20px" }}>
-                <div
-                  className="box-checkbox fieldset-radio"
-                  style={{
-                    display: "flex",
-                    alignItems: "flex-start",
-                    gap: "8px",
-                    marginBottom: fieldErrors.terms_accepted ? "4px" : "15px",
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    id="termsAccepted"
-                    className="tf-check"
-                    checked={agreements.termsAccepted}
-                    onChange={() => handleAgreementChange("termsAccepted")}
-                    style={{ marginTop: "4px", flexShrink: 0 }}
-                  />
-                  <label
-                    htmlFor="termsAccepted"
-                    className="text_black-2 fw-4"
-                    style={{ fontSize: "14px", lineHeight: "1.5", cursor: "pointer" }}
-                  >
-                    <Link
-                      href="/sartlar-kosullar"
-                      target="_blank"
-                      style={{ color: "#007bff", textDecoration: "underline" }}
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      Şartlar ve Koşullar
-                    </Link>
-                    'ı okudum, kabul ediyorum.
-                  </label>
-                </div>
-                {fieldErrors.terms_accepted && (
-                  <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "0px", marginBottom: "10px", marginLeft: "28px" }}>
-                    {fieldErrors.terms_accepted}
-                  </div>
-                )}
-
-                <div
-                  className="box-checkbox fieldset-radio"
-                  style={{
-                    display: "flex",
-                    alignItems: "flex-start",
-                    gap: "8px",
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    id="newsletterSubscription"
-                    className="tf-check"
-                    checked={agreements.newsletterSubscription}
-                    onChange={() => handleAgreementChange("newsletterSubscription")}
-                    style={{ marginTop: "4px", flexShrink: 0 }}
-                  />
-                  <label
-                    htmlFor="newsletterSubscription"
-                    className="text_black-2 fw-4"
-                    style={{ fontSize: "14px", lineHeight: "1.5", cursor: "pointer" }}
-                  >
-                    Kampanya ve fırsatlardan e-posta/SMS ile haberdar olmak istiyorum.
-                  </label>
-                </div>
-              </div>
-
-              {/* reCAPTCHA V3 (Gizli) */}
-              <RecaptchaV3
-                onVerify={(executeFn) => {
-                  executeRecaptchaRef.current = executeFn;
-                }}
-                action="register"
-              />
-              {recaptchaError && (
-                <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px", marginBottom: "15px" }}>
-                  {recaptchaError}
-                </div>
-              )}
 
               <div className="mb_20">
-                <button
-                  type="submit"
-                  className="tf-btn w-100 radius-3 btn-fill animate-hover-btn justify-content-center"
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Kayıt yapılıyor..." : "Kayıt Ol"}
+                <div className="box-checkbox fieldset-radio" style={{ display: "flex", alignItems: "flex-start", gap: "8px", marginBottom: "10px" }}>
+                  <input type="checkbox" id="termsAccepted" className="tf-check" checked={agreements.termsAccepted} onChange={() => handleAgreementChange("termsAccepted")} />
+                  <label htmlFor="termsAccepted" className="text_black-2 fw-4" style={{ fontSize: "14px", lineHeight: "1.5", cursor: "pointer" }}>
+                    {lang === 'en' ? t.termsSuffix : ''}
+                    <Link href={getLocalizedUrl(t.termsLink, lang)} target="_blank" style={{ color: "#007bff", textDecoration: "underline" }} onClick={(e) => e.stopPropagation()}>{t.terms}</Link>
+                    {lang === 'tr' ? t.termsSuffix : ' I agree.'}
+                  </label>
+                </div>
+                <div className="box-checkbox fieldset-radio" style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
+                  <input type="checkbox" id="newsletterSubscription" className="tf-check" checked={agreements.newsletterSubscription} onChange={() => handleAgreementChange("newsletterSubscription")} />
+                  <label htmlFor="newsletterSubscription" className="text_black-2 fw-4" style={{ fontSize: "14px", lineHeight: "1.5", cursor: "pointer" }}>{t.newsletter}</label>
+                </div>
+              </div>
+
+              <RecaptchaV3 onVerify={(executeFn) => { executeRecaptchaRef.current = executeFn; }} action="register" />
+              {recaptchaError && <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px", marginBottom: "15px" }}>{recaptchaError}</div>}
+
+              <div className="mb_20">
+                <button type="submit" className="tf-btn w-100 radius-3 btn-fill animate-hover-btn justify-content-center" disabled={isLoading}>
+                  {isLoading ? t.registering : t.registerButton}
                 </button>
               </div>
               <div className="text-center">
-                <Link href={`/giris-yap`} className="tf-btn btn-line">
-                  Zaten Hesabınız Var Mı? Giriş Yapın
+                <Link href={getLocalizedUrl("/giris-yap", lang)} className="tf-btn btn-line">
+                  {t.alreadyHaveAccount}
                   <i className="icon icon-arrow1-top-left" />
                 </Link>
               </div>

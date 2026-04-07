@@ -89,9 +89,10 @@ async function handleRequest(request, params, method) {
         // İstemci bilgilerini yakala ve forward et
         const userAgent = request.headers.get('user-agent') || "Şımart Teknoloji Browser";
         const clientIp = request.headers.get('x-forwarded-for') || "";
+        const apiLang = request.headers.get('x-api-lang') || "tr";
 
         // Doğrulama için terminale log basalım
-        log(`\n[Proxy Request] IP: ${clientIp} | UA: ${userAgent.substring(0, 50)}...`);
+        log(`\n[Proxy Request] IP: ${clientIp} | Lang: ${apiLang} | UA: ${userAgent.substring(0, 50)}...`);
 
         // İçerik tipini belirle (multipart veya json)
         const reqContentType = request.headers.get("content-type") || "";
@@ -103,8 +104,7 @@ async function handleRequest(request, params, method) {
             headers: {
                 "X-API-Key": apiKey,
                 "Content-Type": isMultipartReq ? reqContentType : "application/json",
-                //"X-Signature": signature,
-                //"X-Timestamp": timestamp.toString(),
+                "X-Api-Lang": apiLang,
                 "User-Agent": userAgent,
                 "X-Forwarded-For": clientIp,
                 ...(cookieHeader && { "Cookie": cookieHeader }),

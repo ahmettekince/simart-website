@@ -2,6 +2,30 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { getInstallmentOptions } from "@/api/installment";
+import { useLangStore } from "@/stores/langStore";
+
+const translations = {
+  tr: {
+    loading: "Yükleniyor...",
+    errorLoad: "Taksit seçenekleri yüklenemedi",
+    errorGeneral: "Bir hata oluştu",
+    installment: "Taksit",
+    installmentAmount: "Taksit Tutarı",
+    totalAmount: "Toplam Tutar",
+    currency: "TL",
+    locale: "tr-TR"
+  },
+  en: {
+    loading: "Loading...",
+    errorLoad: "Failed to load installment options",
+    errorGeneral: "An error occurred",
+    installment: "Installment",
+    installmentAmount: "Installment Amount",
+    totalAmount: "Total Amount",
+    currency: "TL",
+    locale: "en-US"
+  }
+};
 
 /**
  * Taksit seçenekleri component'i
@@ -9,6 +33,8 @@ import { getInstallmentOptions } from "@/api/installment";
  * Filtreleme: Rate 0 olanları gösterir, ama installment_count: 1 ve rate > 0 olanları göstermez
  */
 export default function InstallmentOptions({ productSlug, active }) {
+  const lang = useLangStore((s) => s.lang);
+  const t = translations[lang] || translations.tr;
   const [loading, setLoading] = useState(false);
   const [installmentData, setInstallmentData] = useState(null);
   const [error, setError] = useState(null);
@@ -54,10 +80,10 @@ export default function InstallmentOptions({ productSlug, active }) {
           };
           setInstallmentData(filteredData);
         } else {
-          setError("Taksit seçenekleri yüklenemedi");
+          setError(t.errorLoad);
         }
       } catch (err) {
-        setError("Bir hata oluştu");
+        setError(t.errorGeneral);
         console.error("[InstallmentOptions] Error:", err);
       } finally {
         setLoading(false);
@@ -72,7 +98,7 @@ export default function InstallmentOptions({ productSlug, active }) {
   const formatPrice = (price) => {
     const num = parseFloat(price);
     if (isNaN(num)) return price;
-    return new Intl.NumberFormat("tr-TR", {
+    return new Intl.NumberFormat(t.locale, {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     }).format(num);
@@ -83,7 +109,7 @@ export default function InstallmentOptions({ productSlug, active }) {
       <div className="tf-installment-content">
         {loading && (
           <div className="tf-installment-loading">
-            <p>Yükleniyor...</p>
+            <p>{t.loading}</p>
           </div>
         )}
 
@@ -118,9 +144,9 @@ export default function InstallmentOptions({ productSlug, active }) {
                   <table className="tf-installment-table">
                     <thead>
                       <tr>
-                        <th>Taksit</th>
-                        <th>Taksit Tutarı</th>
-                        <th>Toplam Tutar</th>
+                        <th>{t.installment}</th>
+                        <th>{t.installmentAmount}</th>
+                        <th>{t.totalAmount}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -136,12 +162,12 @@ export default function InstallmentOptions({ productSlug, active }) {
                             <td>{option.installment_count}</td>
                             <td>
                               {formatPrice(option.monthly_payment)}
-                              <span style={{ marginLeft: "4px" }}>TL</span>
+                              <span style={{ marginLeft: "4px" }}>{t.currency}</span>
                             </td>
                             <td>
                               <span className="total-amount">
                                 {formatPrice(option.total_payment)}
-                                <span style={{ marginLeft: "4px" }}>TL</span>
+                                <span style={{ marginLeft: "4px" }}>{t.currency}</span>
                               </span>
                             </td>
                           </tr>

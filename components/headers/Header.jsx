@@ -119,7 +119,7 @@ export default async function Header({
             </div>
             <div className="col-xl-3 col-md-4 col-3">
               <ul className="nav-icon d-flex justify-content-end align-items-center gap-20">
-                <li className="nav-language">
+                <li className="nav-language d-none d-xl-block">
                   <LanguageSelect />
                 </li>
                 <li className="nav-search">
@@ -154,6 +154,13 @@ export default async function Header({
         </div>
       </header>
       <MobileMenu menuItems={resolvedMenuItems} lang={lang} />
+      <style>{`
+        @media (max-width: 1199px) {
+          .nav-language {
+            display: none !important;
+          }
+        }
+      `}</style>
     </>
   );
 }

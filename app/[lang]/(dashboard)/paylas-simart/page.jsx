@@ -4,15 +4,23 @@ import { redirect } from "next/navigation";
 
 import AffiliateSection from "@/components/othersPages/dashboard/AffiliateSection";
 
-export const metadata = {
-  title: "Paylaş Şımart - Şımart Teknoloji",
-  description: "Paylaş Şımart sayfası. Şımart'ı paylaşın ve kazanın.",
-};
-export default async function PaylasSimartPage() {
+import { getLocalizedUrl } from "@/utils/i18n";
+
+export async function generateMetadata({ params }) {
+  const { lang } = await params;
+  const isEn = lang === "en";
+  return {
+    title: isEn ? "Share Şımart - Şımart Technology" : "Paylaş Şımart - Şımart Teknoloji",
+    description: isEn ? "Share Şımart and win." : "Paylaş Şımart sayfası. Şımart'ı paylaşın ve kazanın.",
+  };
+}
+
+export default async function PaylasSimartPage({ params }) {
+  const { lang } = await params;
   const isAuthenticated = await checkAuthServer();
 
   if (!isAuthenticated) {
-    redirect("/giris-yap");
+    redirect(getLocalizedUrl("/giris-yap", lang));
   }
 
   return (

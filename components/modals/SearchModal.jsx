@@ -137,6 +137,35 @@ export default function SearchModal() {
     return "/images/product/default.jpg";
   };
 
+  const translations = {
+    tr: {
+      title: "Site içinde ara",
+      placeholder: "Ara...",
+      searching: "Aranıyor...",
+      results: "Arama Sonuçları",
+      recommendations: "Öneriler",
+      noResults: "Sonuç bulunamadı.",
+      quickLinks: "Hızlı Bağlantılar",
+      allProducts: "Tüm Ürünler",
+      categories: "Kategoriler",
+      minChars: "Arama yapmak için en az 3 karakter girin."
+    },
+    en: {
+      title: "Search our site",
+      placeholder: "Search...",
+      searching: "Searching...",
+      results: "Search Results",
+      recommendations: "Recommendations",
+      noResults: "No results found.",
+      quickLinks: "Quick Links",
+      allProducts: "All Products",
+      categories: "Categories",
+      minChars: "Enter at least 3 characters to search."
+    }
+  };
+
+  const t = translations[lang] || translations.tr;
+
   const displayItems = showResults && searchTerm.length >= 3 ? searchResults : recommendations;
   const hasItems = displayItems && displayItems.length > 0;
 
@@ -145,7 +174,7 @@ export default function SearchModal() {
       <div className="canvas-wrapper">
         <header className="tf-search-head">
           <div className="title fw-5">
-            Site içinde ara
+            {t.title}
             <div className="close">
               <span
                 className="icon-close icon-close-popup"
@@ -162,7 +191,7 @@ export default function SearchModal() {
               <fieldset className="text">
                 <input
                   type="text"
-                  placeholder="Ara..."
+                  placeholder={t.placeholder}
                   className=""
                   name="text"
                   tabIndex={0}
@@ -182,7 +211,7 @@ export default function SearchModal() {
           <div className="tf-search-content">
             {loading && (
               <div className="text-center p-4">
-                <span>Aranıyor...</span>
+                <span>{t.searching}</span>
               </div>
             )}
             {!loading && (
@@ -191,8 +220,8 @@ export default function SearchModal() {
                   <div className="tf-col-content">
                     <div className="tf-search-content-title fw-5">
                       {showResults && searchTerm.length >= 3
-                        ? "Arama Sonuçları"
-                        : "Öneriler"}
+                        ? t.results
+                        : t.recommendations}
                     </div>
                     <div className="tf-search-hidden-inner">
                       {displayItems.map((product) => (
@@ -248,21 +277,21 @@ export default function SearchModal() {
                   <>
                     {showResults && searchTerm.length >= 3 ? (
                       <div className="text-center p-4">
-                        <p>Sonuç bulunamadı.</p>
+                        <p>{t.noResults}</p>
                       </div>
                     ) : (
                       <>
                         <div className="tf-col-quicklink">
-                          <div className="tf-search-content-title fw-5">Hızlı Bağlantılar</div>
+                          <div className="tf-search-content-title fw-5">{t.quickLinks}</div>
                           <ul className="tf-quicklink-list">
                             <li className="tf-quicklink-item">
                               <Link href={getLocalizedUrl("/magaza", lang)} className="">
-                                Tüm Ürünler
+                                {t.allProducts}
                               </Link>
                             </li>
                             <li className="tf-quicklink-item">
                               <Link href={getLocalizedUrl("/magaza", lang)} className="">
-                                Kategoriler
+                                {t.categories}
                               </Link>
                             </li>
                           </ul>
@@ -272,7 +301,7 @@ export default function SearchModal() {
 
                           </div>
                           <div className="text-center p-4">
-                            <p>Arama yapmak için en az 3 karakter girin.</p>
+                            <p>{t.minChars}</p>
                           </div>
                         </div>
                       </>

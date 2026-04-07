@@ -5,18 +5,60 @@ import Image from "next/image";
 import Link from "next/link";
 import VideoModal from "@/components/common/VideoModal";
 import Accordion from "@/components/common/Accordion";
+import { useLangStore } from "@/stores/langStore";
 
 /**
  * Ürün detayında görsel + YouTube linki + Kullanım kılavuzu kartları.
  * Veriler /api/proxy/products/[slug] üzerinden çekilir.
  */
 export default function ProductMediaSection({ product }) {
+  const { lang } = useLangStore();
   const [mediaData, setMediaData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showDocument, setShowDocument] = useState(false);
   const [showVideo, setShowVideo] = useState(false);
 
-  const productName = product?.name ?? product?.title ?? "Ürün";
+  const t = {
+    tr: {
+      defaultProductName: "Ürün",
+      noImage: "Görsel bulunamadı",
+      viewProduct: "Ürünü İncele",
+      promoVideo: "Tanıtım Videosu",
+      watchVideo: "Videoyu izle",
+      defaultManualTitle: "Kılavuzunu görüntüleyin",
+      hideManual: "Kılavuzu Gizle",
+      showManual: "Kılavuzu Görüntüle",
+      faqTitle: "Hakkında Merak Edilenler",
+      manualIframeTitle: "Kullanım Kılavuzu"
+    },
+    en: {
+      defaultProductName: "Product",
+      noImage: "No image found",
+      viewProduct: "View Product",
+      promoVideo: "Promo Video",
+      watchVideo: "Watch Video",
+      defaultManualTitle: "View manual",
+      hideManual: "Hide Manual",
+      showManual: "View Manual",
+      faqTitle: "Frequently Asked Questions About",
+      manualIframeTitle: "User Manual"
+    }
+  }[lang] || {
+    tr: {
+        defaultProductName: "Ürün",
+        noImage: "Görsel bulunamadı",
+        viewProduct: "Ürünü İncele",
+        promoVideo: "Tanıtım Videosu",
+        watchVideo: "Videoyu izle",
+        defaultManualTitle: "Kılavuzunu görüntüleyin",
+        hideManual: "Kılavuzu Gizle",
+        showManual: "Kılavuzu Görüntüle",
+        faqTitle: "Hakkında Merak Edilenler",
+        manualIframeTitle: "Kullanım Kılavuzu"
+      }
+  }.tr;
+
+  const productName = product?.name ?? product?.title ?? t.defaultProductName;
 
   // Ürün görseli (cover_image, gallery_images veya images dizisinden)
   const rawImage =
@@ -34,7 +76,11 @@ export default function ProductMediaSection({ product }) {
   useEffect(() => {
     if (product?.slug) {
       setLoading(true);
-      fetch(`/api/proxy/products/${product.slug}`)
+      fetch(`/api/proxy/products/${product.slug}`, {
+          headers: {
+              'X-Api-Lang': lang
+          }
+      })
         .then((res) => res.json())
         .then((res) => {
           if (res?.status === "success" && res?.data) {
@@ -44,12 +90,12 @@ export default function ProductMediaSection({ product }) {
         .catch((err) => console.error("Media fetch error:", err))
         .finally(() => setLoading(false));
     }
-  }, [product?.slug]);
+  }, [product?.slug, lang]);
 
-  const youtubeUrl = mediaData?.video_url || product?.youtube_url || "";
+  const youtubeUrl = mediaData?.video_url || product?.video_url || product?.youtube_url || "";
   const manualUrl = mediaData?.document_link || product?.document_link || "";
   const manualTitle =
-    product?.manual_title ?? `${productName} Kılavuzunu görüntüleyin`;
+    product?.manual_title ?? (lang === 'tr' ? `${productName} ${t.defaultManualTitle}` : `${t.defaultManualTitle} of ${productName}`);
 
   // Kategori slug'ını belirle (Önce ana kategori, yoksa ilk kategori, o da yoksa varsayılan)
   const categorySlug = product?.category?.slug || product?.categories?.[0]?.slug || "urunler";
@@ -79,15 +125,15 @@ export default function ProductMediaSection({ product }) {
                     style={{ objectFit: "contain", maxWidth: "100%", height: "auto" }}
                   />
                 ) : (
-                  <div className="text-muted small">Görsel bulunamadı</div>
+                  <div className="text-muted small">{t.noImage}</div>
                 )}
               </div>
               <div className="card-content-bottom mt-auto">
                 <Link
-                  href={`/magaza/${categorySlug}/${product?.slug}`}
+                  href={lang === 'en' ? `/en/shop/${categorySlug}/${product?.slug}` : `/magaza/${categorySlug}/${product?.slug}`}
                   className="simart-btn simart-btn--outline"
                 >
-                  Ürünü İncele
+                  {t.viewProduct}
                 </Link>
               </div>
             </div>
@@ -115,14 +161,14 @@ export default function ProductMediaSection({ product }) {
                       <path d="M26 31V13l21 9-21 9z" fill="#fff" />
                     </svg>
                   </span>
-                  <span className="label text-center">{productName} Tanıtım Videosu</span>
+                  <span className="label text-center">{productName} {t.promoVideo}</span>
                 </div>
                 <div className="card-content-bottom">
                   <button
                     onClick={() => setShowVideo(true)}
                     className="simart-btn simart-btn--outline"
                   >
-                    Videoyu izle
+                    {t.watchVideo}
                   </button>
                 </div>
               </div>
@@ -166,7 +212,7 @@ export default function ProductMediaSection({ product }) {
                     onClick={handleManualClick}
                     className="simart-btn simart-btn--outline"
                   >
-                    {showDocument ? "Kılavuzu Gizle" : "Kılavuzu Görüntüle"}
+                    {showDocument ? t.hideManual : t.showManual}
                   </button>
                 </div>
               </div>
@@ -182,7 +228,7 @@ export default function ProductMediaSection({ product }) {
             <div className="ratio ratio-16x9 border rounded shadow-sm" style={{ minHeight: "600px" }}>
               <iframe
                 src={manualUrl}
-                title="Kullanım Kılavuzu"
+                title={t.manualIframeTitle}
                 allowFullScreen
               ></iframe>
             </div>
@@ -194,7 +240,7 @@ export default function ProductMediaSection({ product }) {
       {mediaData?.faq_data && mediaData.faq_data.length > 0 && (
         <div className="row mt-5">
           <div className="col-12">
-            <h5 className="mb-4">{productName} Hakkında Merak Edilenler</h5>
+            <h5 className="mb-4">{lang === 'tr' ? `${productName} ${t.faqTitle}` : `${t.faqTitle} ${productName}`}</h5>
             <div className="accordion-section">
               <Accordion
                 faqs={mediaData.faq_data.map(item => ({

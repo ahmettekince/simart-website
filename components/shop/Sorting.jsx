@@ -1,20 +1,38 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { useLangStore } from "@/stores/langStore";
 
-const sortingOptions = [
-  { text: "Önerilen Sıralama" },
-  { text: "Alfabetik, A-Z" },
-  { text: "Alfabetik, Z-A" },
-  { text: "En düşük fiyat" },
-  { text: "En yüksek fiyat" },
-];
+const sortingOptions = {
+  tr: [
+    { text: "Önerilen Sıralama", value: "default" },
+    { text: "Alfabetik, A-Z", value: "a-z" },
+    { text: "Alfabetik, Z-A", value: "z-a" },
+    { text: "En düşük fiyat", value: "price-low" },
+    { text: "En yüksek fiyat", value: "price-high" },
+  ],
+  en: [
+    { text: "Sort by Recommended", value: "default" },
+    { text: "Alphabetically, A-Z", value: "a-z" },
+    { text: "Alphabetically, Z-A", value: "z-a" },
+    { text: "Price, low to high", value: "price-low" },
+    { text: "Price, high to low", value: "price-high" },
+  ]
+};
 
 export default function Sorting({ products = [], setFinalSorted }) {
-  const [selectedOptions, setSelectedOptions] = useState(sortingOptions[0]);
+  const lang = useLangStore((s) => s.lang);
+  const options = sortingOptions[lang] || sortingOptions.tr;
+  const [selectedOptions, setSelectedOptions] = useState(options[0]);
+
+  // Dil değiştiğinde seçili opsiyonu güncelle
+  useEffect(() => {
+    const currentVal = selectedOptions.value;
+    const newOption = options.find(o => o.value === currentVal) || options[0];
+    setSelectedOptions(newOption);
+  }, [lang, options]);
 
   useEffect(() => {
-    const currentLabel = (selectedOptions?.text || "").trim().toLowerCase();
-    const defaultLabel = (sortingOptions?.[0]?.text || "").trim().toLowerCase();
+    const currentValue = selectedOptions.value;
 
     // Yardımcı: Stokta mı? (Stokta var veya Ön Sipariş)
     const isAvailable = (p) => p.is_in_stock || p.is_pre_order;
@@ -29,15 +47,10 @@ export default function Sorting({ products = [], setFinalSorted }) {
       return compareFn(a, b);
     };
 
-    if (
-      currentLabel === defaultLabel ||
-      currentLabel === "varsayılan" ||
-      currentLabel === "önerilen sıralama" ||
-      currentLabel === "onerilen siralama"
-    ) {
+    if (currentValue === "default") {
       // Önerilen sıralamada sadece stok durumuna bakarak başla
       setFinalSorted([...products].sort((a, b) => baseSort(a, b, () => 0)));
-    } else if (selectedOptions.text == "Alfabetik, A-Z") {
+    } else if (currentValue === "a-z") {
       setFinalSorted(
         [...products].sort((a, b) =>
           baseSort(a, b, (item1, item2) => {
@@ -47,7 +60,7 @@ export default function Sorting({ products = [], setFinalSorted }) {
           })
         )
       );
-    } else if (selectedOptions.text == "Alfabetik, Z-A") {
+    } else if (currentValue === "z-a") {
       setFinalSorted(
         [...products].sort((a, b) =>
           baseSort(a, b, (item1, item2) => {
@@ -57,7 +70,7 @@ export default function Sorting({ products = [], setFinalSorted }) {
           })
         )
       );
-    } else if (selectedOptions.text == "En düşük fiyat") {
+    } else if (currentValue === "price-low") {
       setFinalSorted(
         [...products].sort((a, b) =>
           baseSort(a, b, (item1, item2) => {
@@ -67,7 +80,7 @@ export default function Sorting({ products = [], setFinalSorted }) {
           })
         )
       );
-    } else if (selectedOptions.text == "En yüksek fiyat") {
+    } else if (currentValue === "price-high") {
       setFinalSorted(
         [...products].sort((a, b) =>
           baseSort(a, b, (item1, item2) => {
@@ -88,11 +101,11 @@ export default function Sorting({ products = [], setFinalSorted }) {
         <span className="icon icon-arrow-down" />
       </div>
       <div className="dropdown-menu">
-        {sortingOptions.map((item, index) => (
+        {options.map((item, index) => (
           <div
             key={index}
             onClick={() => setSelectedOptions(item)}
-            className={`select-item ${item == selectedOptions ? "active" : ""}`}
+            className={`select-item ${item.value == selectedOptions.value ? "active" : ""}`}
           >
             <span className="text-value-item">{item.text}</span>
           </div>

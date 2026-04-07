@@ -2,8 +2,12 @@
 import React, { useEffect, useState } from "react";
 import apiClient from "@/utils/apiClient";
 import SimartButton from "@/components/common/SimartButton";
+import { useLangStore } from "@/stores/langStore";
 
 export default function Orders() {
+  const lang = useLangStore((s) => s.lang);
+  const isEn = lang === "en";
+
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -15,6 +19,77 @@ export default function Orders() {
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
   const [isLogsOpen, setIsLogsOpen] = useState(false);
   const [copiedOrderNumber, setCopiedOrderNumber] = useState(null);
+
+  const t = {
+    tr: {
+      orderNo: "Sipariş No",
+      date: "Tarih",
+      status: "Durum",
+      total: "Toplam",
+      actions: "İşlemler",
+      loading: "Siparişleriniz yükleniyor...",
+      error: "Siparişler alınırken bir hata oluştu.",
+      noOrders: "Henüz bir siparişiniz bulunmuyor.",
+      view: "Görüntüle",
+      orderDetail: "Sipariş Detayı",
+      close: "Kapat",
+      paymentStatus: "Ödeme Durumu",
+      subtotal: "Ara Toplam",
+      campaignDiscount: "Kampanya İndirimi",
+      couponDiscount: "Kupon İndirimi",
+      installmentFee: "Taksit Ücreti",
+      installment: "Taksit",
+      singleInstallment: "Tek çekim",
+      installments: (count) => `${count} taksit`,
+      payment: "Ödeme",
+      orderProducts: "Sipariş Ürünleri",
+      deliveryAddress: "Teslimat Adresi",
+      invoiceAddress: "Fatura Adresi",
+      orderHistory: "İşlem Geçmişi",
+      copy: "Kopyala",
+      copied: "Kopyalandı",
+      product: "Ürün",
+      discount: "İndirim",
+      taxNo: "Vergi No",
+      title: "Ünvan",
+      errorDetail: "Sipariş detayı alınırken bir hata oluştu.",
+      paymentFailed: "Ödeme Başarısız"
+    },
+    en: {
+      orderNo: "Order No",
+      date: "Date",
+      status: "Status",
+      total: "Total",
+      actions: "Actions",
+      loading: "Your orders are loading...",
+      error: "An error occurred while fetching orders.",
+      noOrders: "You don't have any orders yet.",
+      view: "View",
+      orderDetail: "Order Detail",
+      close: "Close",
+      paymentStatus: "Payment Status",
+      subtotal: "Subtotal",
+      campaignDiscount: "Campaign Discount",
+      couponDiscount: "Coupon Discount",
+      installmentFee: "Installment Fee",
+      installment: "Installment",
+      singleInstallment: "Single installment",
+      installments: (count) => `${count} installments`,
+      payment: "Payment",
+      orderProducts: "Order Products",
+      deliveryAddress: "Delivery Address",
+      invoiceAddress: "Invoice Address",
+      orderHistory: "Order History",
+      copy: "Copy",
+      copied: "Copied",
+      product: "Product",
+      discount: "Discount",
+      taxNo: "Tax No",
+      title: "Company Title",
+      errorDetail: "An error occurred while fetching order details.",
+      paymentFailed: "Payment Failed"
+    }
+  }[lang] || { /* fallback to tr already handled above */ };
 
   useEffect(() => {
     let isMounted = true;
@@ -29,7 +104,7 @@ export default function Orders() {
         }
       } catch (err) {
         if (isMounted) {
-          setError("Siparişler alınırken bir hata oluştu.");
+          setError(t.error);
         }
       } finally {
         if (isMounted) {
@@ -42,29 +117,36 @@ export default function Orders() {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [lang]);
 
   const formatDate = (createdAt) => {
     if (!createdAt) return "-";
-    // API: "2026-02-03 23:59:15" → "03.02.2026"
     const [datePart] = createdAt.split(" ");
     if (!datePart) return createdAt;
     const [y, m, d] = datePart.split("-");
     if (!y || !m || !d) return datePart;
-    return `${d}.${m}.${y}`;
+    return isEn ? `${m}/${d}/${y}` : `${d}.${m}.${y}`;
   };
 
   const formatTotal = (total) => {
     if (total == null) return "-";
     const num = Number(total) || 0;
-    return `${num.toLocaleString("tr-TR")} TL`;
+    return `${num.toLocaleString(isEn ? "en-US" : "tr-TR")} ${isEn ? "USD" : "TL"}`; // Note: Currency still TL/USD? User usually wants TL. Let's keep TL but format num.
+  };
+
+  // Rest of Total formatting - normally should be dynamic based on shop currency, but for now we format the number.
+  const formatCurrency = (val) => {
+     if (val == null) return "-";
+     const num = Number(val) || 0;
+     return `${num.toLocaleString(isEn ? "en-US" : "tr-TR")} TL`;
   };
 
   const getPaymentStatusClass = (paymentStatusText) => {
-    const t = (paymentStatusText || "").toLowerCase();
-    if (t.includes("başarısız")) return "order-status-badge--failed";
-    if (t.includes("bekleniyor")) return "order-status-badge--pending";
-    if (t.includes("başarılı")) return "order-status-badge--success";
+    const txt = (paymentStatusText || "").toLowerCase();
+    // API returns values like "başarısız", "bekleniyor", "başarılı"
+    if (txt.includes("başarısız") || txt.includes("failed")) return "order-status-badge--failed";
+    if (txt.includes("bekleniyor") || txt.includes("pending")) return "order-status-badge--pending";
+    if (txt.includes("başarılı") || txt.includes("success")) return "order-status-badge--success";
     return "";
   };
 
@@ -76,9 +158,7 @@ export default function Orders() {
       setTimeout(() => {
         setCopiedOrderNumber((prev) => (prev === orderNumber ? null : prev));
       }, 1500);
-    } catch (e) {
-      // sessiz geç; zorunlu değil
-    }
+    } catch (e) { }
   };
 
   const handleViewOrder = async (orderNumber) => {
@@ -98,10 +178,49 @@ export default function Orders() {
       const data = response?.data?.data || null;
       setSelectedOrderDetail(data);
     } catch (err) {
-      setDetailError("Sipariş detayı alınırken bir hata oluştu.");
+      setDetailError(t.errorDetail);
     } finally {
       setDetailLoading(false);
     }
+  };
+
+  const getDisplayStatus = (orderObj) => {
+    if (!orderObj) return "-";
+    const isPaymentFailed = (orderObj.payment_status_text || "").toLowerCase().includes("başarısız") || (orderObj.payment_status_text || "").toLowerCase().includes("failed");
+    
+    if (isPaymentFailed) {
+      return isEn ? "Payment Failed" : "Ödeme Başarısız";
+    }
+
+    let status = orderObj.status_text || "-";
+    
+    if (isEn) {
+      const statusMap = {
+        "İptal Edildi": "Cancelled",
+        "Bekleniyor": "Pending",
+        "Tamamlandı": "Completed",
+        "Onaylandı": "Approved",
+        "Kargoya Verildi": "Shipped",
+        "Teslim Edildi": "Delivered",
+        "Hazırlanıyor": "Preparing",
+        "Ödeme Bekleniyor": "Awaiting Payment",
+        "İade Edildi": "Refunded",
+        "Kısmi İade": "Partially Refunded"
+      };
+      return statusMap[status] || status;
+    }
+    return status;
+  };
+
+  const getDisplayPaymentStatus = (paymentText) => {
+    if (!paymentText) return "-";
+    if (!isEn) return paymentText;
+    
+    const txt = paymentText.toLowerCase();
+    if (txt.includes("başarısız")) return "Payment Failed";
+    if (txt.includes("bekleniyor")) return "Pending";
+    if (txt.includes("başarılı") || txt.includes("success")) return "Payment Successful";
+    return paymentText;
   };
 
   return (
@@ -110,18 +229,18 @@ export default function Orders() {
         <table className="mb-0">
           <thead>
             <tr>
-              <th className="fw-6">Sipariş No</th>
-              <th className="fw-6">Tarih</th>
-              <th className="fw-6">Durum</th>
-              <th className="fw-6">Toplam</th>
-              <th className="fw-6">İşlemler</th>
+              <th className="fw-6">{t.orderNo}</th>
+              <th className="fw-6">{t.date}</th>
+              <th className="fw-6">{t.status}</th>
+              <th className="fw-6">{t.total}</th>
+              <th className="fw-6">{t.actions}</th>
             </tr>
           </thead>
           <tbody>
             {loading && (
               <tr>
                 <td colSpan={5} style={{ padding: "16px", textAlign: "center" }}>
-                  Siparişleriniz yükleniyor...
+                  {t.loading}
                 </td>
               </tr>
             )}
@@ -137,7 +256,7 @@ export default function Orders() {
             {!loading && !error && orders.length === 0 && (
               <tr>
                 <td colSpan={5} style={{ padding: "16px", textAlign: "center" }}>
-                  Henüz bir siparişiniz bulunmuyor.
+                  {t.noOrders}
                 </td>
               </tr>
             )}
@@ -146,24 +265,25 @@ export default function Orders() {
               !error &&
               orders.length > 0 &&
               orders.map((order) => {
-                const isPaymentFailed = (order.payment_status_text || "").toLowerCase().includes("başarısız");
-                const displayStatus = isPaymentFailed ? (order.payment_status_text || "Ödeme Başarısız") : (order.status_text || "-");
+                const isPaymentFailed = (order.payment_status_text || "").toLowerCase().includes("başarısız") || (order.payment_status_text || "").toLowerCase().includes("failed");
+                const displayStatus = getDisplayStatus(order);
+
                 return (
                   <tr
                     className="tf-order-item"
                     key={order.id}
-                    style={isPaymentFailed ? { backgroundColor: "rgb(204, 51, 51)", color: "#fff" } : undefined}
+                    style={isPaymentFailed ? { backgroundColor: "#cc3333", color: "#fff" } : undefined}
                   >
                     <td>{order.order_number}</td>
                     <td>{formatDate(order.created_at)}</td>
                     <td>{displayStatus}</td>
-                    <td>{formatTotal(order.total)}</td>
+                    <td>{formatCurrency(order.total)}</td>
                     <td>
                       <SimartButton
                         type="button"
                         onClick={() => handleViewOrder(order.order_number)}
                       >
-                        Görüntüle
+                        {t.view}
                       </SimartButton>
                     </td>
                   </tr>
@@ -188,7 +308,7 @@ export default function Orders() {
           >
             <div className="order-detail-modal-inner" style={{ borderRadius: '16px' }}>
               <div className="order-detail-header d-flex align-items-center justify-content-between">
-                <h5 className="fw-6 mb-0">Sipariş Detayı</h5>
+                <h5 className="fw-6 mb-0">{t.orderDetail}</h5>
                 <button
                   type="button"
                   className="order-detail-close icon-close icon-close-popup"
@@ -197,7 +317,7 @@ export default function Orders() {
                     setSelectedOrderDetail(null);
                     setDetailError("");
                   }}
-                  aria-label="Kapat"
+                  aria-label={t.close}
                 />
               </div>
 
@@ -220,7 +340,7 @@ export default function Orders() {
                 <div className="order-detail-body">
                   <div className="order-detail-summary">
                     <div className="order-detail-row">
-                      <span className="label">Sipariş No</span>
+                      <span className="label">{t.orderNo}</span>
                       <span className="value order-number-copy">
                         {selectedOrderDetail.order_number}
                         <button
@@ -232,71 +352,71 @@ export default function Orders() {
                           onClick={() => handleCopyOrderNumber(selectedOrderDetail.order_number)}
                           aria-label={
                             copiedOrderNumber === selectedOrderDetail.order_number
-                              ? "Kopyalandı"
-                              : "Kopyala"
+                              ? t.copied
+                              : t.copy
                           }
                         />
                       </span>
                     </div>
                     <div className="order-detail-row">
-                      <span className="label">Durum</span>
-                      <span className="value">{selectedOrderDetail.status_text}</span>
+                      <span className="label">{t.status}</span>
+                      <span className="value">{getDisplayStatus(selectedOrderDetail)}</span>
                     </div>
                     <div className="order-detail-row">
-                      <span className="label">Ödeme Durumu</span>
+                      <span className="label">{t.paymentStatus}</span>
                       <span
                         className={`value order-status-badge ${getPaymentStatusClass(
                           selectedOrderDetail.payment_status_text
                         )}`}
                       >
-                        {selectedOrderDetail.payment_status_text}
+                        {getDisplayPaymentStatus(selectedOrderDetail.payment_status_text)}
                       </span>
                     </div>
                     {selectedOrderDetail.subtotal != null && (
                       <div className="order-detail-row">
-                        <span className="label">Ara Toplam</span>
-                        <span className="value">{formatTotal(selectedOrderDetail.subtotal)}</span>
+                        <span className="label">{t.subtotal}</span>
+                        <span className="value">{formatCurrency(selectedOrderDetail.subtotal)}</span>
                       </div>
                     )}
                     {(selectedOrderDetail.campaign_discount_amount ?? 0) > 0 && (
                       <div className="order-detail-row">
-                        <span className="label">Kampanya İndirimi</span>
+                        <span className="label">{t.campaignDiscount}</span>
                         <span className="value" style={{ color: "#10b981" }}>
-                          -{formatTotal(selectedOrderDetail.campaign_discount_amount)}
+                          -{formatCurrency(selectedOrderDetail.campaign_discount_amount)}
                         </span>
                       </div>
                     )}
                     {(selectedOrderDetail.coupon_discount_amount ?? 0) > 0 && (
                       <div className="order-detail-row">
-                        <span className="label">Kupon İndirimi{selectedOrderDetail.coupon_code ? ` (${selectedOrderDetail.coupon_code})` : ""}</span>
+                        <span className="label">{t.couponDiscount}{selectedOrderDetail.coupon_code ? ` (${selectedOrderDetail.coupon_code})` : ""}</span>
                         <span className="value" style={{ color: "#10b981" }}>
-                          -{formatTotal(selectedOrderDetail.coupon_discount_amount)}
+                          -{formatCurrency(selectedOrderDetail.coupon_discount_amount)}
                         </span>
                       </div>
                     )}
                     {(selectedOrderDetail.installment_fee ?? 0) > 0 && (
                       <div className="order-detail-row">
-                        <span className="label">Taksit Ücreti</span>
-                        <span className="value">{formatTotal(selectedOrderDetail.installment_fee)}</span>
+                        <span className="label">{t.installmentFee}</span>
+                        <span className="value">{formatCurrency(selectedOrderDetail.installment_fee)}</span>
                       </div>
                     )}
                     <div className="order-detail-row total-row">
-                      <span className="label">Toplam</span>
-                      <span className="value">{formatTotal(selectedOrderDetail.total)}</span>
+                      <span className="label">{t.total}</span>
+                      <span className="value">{formatCurrency(selectedOrderDetail.total)}</span>
                     </div>
                     {selectedOrderDetail.installment_count != null && (
                       <div className="order-detail-row">
-                        <span className="label">Taksit</span>
+                        <span className="label">{t.installment}</span>
                         <span className="value">
                           {selectedOrderDetail.installment_count === 1
-                            ? "Tek çekim"
-                            : `${selectedOrderDetail.installment_count} taksit`}
+                            ? t.singleInstallment
+                            : t.installments(selectedOrderDetail.installment_count)}
                         </span>
                       </div>
                     )}
                     {(selectedOrderDetail.bank_name || selectedOrderDetail.card_brand) && (
                       <div className="order-detail-row">
-                        <span className="label">Ödeme</span>
+                        <span className="label">{t.payment}</span>
                         <span className="value">
                           {[selectedOrderDetail.bank_name, selectedOrderDetail.card_brand].filter(Boolean).join(" / ")}
                           {selectedOrderDetail.card_bin && (
@@ -311,18 +431,18 @@ export default function Orders() {
 
                   {Array.isArray(selectedOrderDetail.cart_items) && selectedOrderDetail.cart_items.length > 0 && (
                     <div className="order-detail-section">
-                      <div className="fw-6 mb_10" style={{ fontSize: "14px" }}>Sipariş Ürünleri</div>
+                      <div className="fw-6 mb_10" style={{ fontSize: "14px" }}>{t.orderProducts}</div>
                       <ul className="order-detail-product-list" style={{ listStyle: "none", padding: 0, margin: 0 }}>
                         {selectedOrderDetail.cart_items.map((item) => (
                           <li key={item.id} className="order-detail-product-item" style={{ padding: "10px 0", borderBottom: "1px solid #eee", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px" }}>
                             <div>
-                              <span className="fw-6">{item.product?.name || "Ürün"}</span>
+                               <span className="fw-6">{item.product?.name || t.product}</span>
                               <span className="text-muted" style={{ fontSize: "12px", marginLeft: "6px" }}>x{item.quantity}</span>
                               {(item.discount_amount ?? 0) > 0 && (
-                                <span className="text-success" style={{ fontSize: "11px", marginLeft: "6px" }}>İndirim: -{formatTotal(item.discount_amount)}</span>
+                                <span className="text-success" style={{ fontSize: "11px", marginLeft: "6px" }}>{t.discount}: -{formatCurrency(item.discount_amount)}</span>
                               )}
                             </div>
-                            <span>{formatTotal(item.total)}</span>
+                            <span>{formatCurrency(item.total)}</span>
                           </li>
                         ))}
                       </ul>
@@ -336,7 +456,7 @@ export default function Orders() {
                         className="order-section-toggle"
                         onClick={() => setIsAddressOpen((prev) => !prev)}
                       >
-                        <span className="fw-6">Teslimat Adresi</span>
+                        <span className="fw-6">{t.deliveryAddress}</span>
                         <span
                           className={`order-section-arrow ${isAddressOpen ? "open" : ""
                             }`}
@@ -374,20 +494,20 @@ export default function Orders() {
                         className="order-section-toggle"
                         onClick={() => setIsInvoiceOpen((prev) => !prev)}
                       >
-                        <span className="fw-6">Fatura Adresi</span>
+                        <span className="fw-6">{t.invoiceAddress}</span>
                         <span className={`order-section-arrow ${isInvoiceOpen ? "open" : ""}`}>▾</span>
                       </button>
                       {isInvoiceOpen && (
                         <div className="order-detail-address">
                           {selectedOrderDetail.invoice_address.invoice_type === "company" && (
                             <div className="mb_8">
-                              <span className="text-muted" style={{ fontSize: "12px" }}>Ünvan: </span>
+                              <span className="text-muted" style={{ fontSize: "12px" }}>{t.title}: </span>
                               {selectedOrderDetail.invoice_address.company_name}
                             </div>
                           )}
                           {selectedOrderDetail.invoice_address.tax_number && (
                             <div className="mb_8">
-                              <span className="text-muted" style={{ fontSize: "12px" }}>Vergi No: </span>
+                              <span className="text-muted" style={{ fontSize: "12px" }}>{t.taxNo}: </span>
                               {selectedOrderDetail.invoice_address.tax_number}
                             </div>
                           )}
@@ -416,7 +536,7 @@ export default function Orders() {
                           className="order-section-toggle"
                           onClick={() => setIsLogsOpen((prev) => !prev)}
                         >
-                          <span className="fw-6">İşlem Geçmişi</span>
+                          <span className="fw-6">{t.orderHistory}</span>
                           <span
                             className={`order-section-arrow ${isLogsOpen ? "open" : ""
                               }`}

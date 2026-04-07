@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { i18n } from "@/config/i18n";
 
-const HIDE_HEADER_PATHS = ["/odeme", "/qr-", "/qr", "/3d"];
+const HIDE_HEADER_PATHS = ["/odeme", "/qr", "/3d", "/checkout", "/en/checkout", "/en/qr", "/en/3d"];
 
 export default function ConditionalHeader({ children }) {
     const pathname = usePathname();
@@ -12,7 +12,7 @@ export default function ConditionalHeader({ children }) {
         const cleanPath = i18n.locales.includes(pathname.split("/").filter(Boolean)[0])
             ? pathname.replace(/^\/[^\/]+/, "") || "/"
             : pathname;
-        return cleanPath.startsWith(path);
+        return pathname.startsWith(path) || cleanPath.startsWith(path);
     });
 
     if (hideByPath) return null;

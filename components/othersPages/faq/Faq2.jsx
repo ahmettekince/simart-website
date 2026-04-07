@@ -5,12 +5,30 @@ import ProductMediaSection from "./ProductMediaSection";
 import DefaultFaqSection from "./DefaultFaqSection";
 import { faqs1 } from "@/data/faqs";
 import React from "react";
+import { useLangStore } from "@/stores/langStore";
 
 export default function Faq2({ faqs, loading = false, selectedProduct, selectedCategory }) {
+  const { lang } = useLangStore();
   const isSssMode = selectedProduct !== undefined || selectedCategory !== undefined;
   const productName = selectedProduct?.name ?? selectedProduct?.title ?? selectedProduct?.slug ?? "";
   const categoryName = selectedCategory?.name ?? selectedCategory?.title ?? selectedCategory?.slug ?? "";
   const title = productName || categoryName;
+
+  const t = {
+    tr: {
+      loading: "Yükleniyor...",
+      paymentInformation: "Ödeme Bilgileri"
+    },
+    en: {
+      loading: "Loading...",
+      paymentInformation: "Payment Information"
+    }
+  }[lang] || {
+    tr: {
+      loading: "Yükleniyor...",
+      paymentInformation: "Ödeme Bilgileri"
+    }
+  }.tr;
 
   if (isSssMode && !selectedProduct && !selectedCategory) {
     return <DefaultFaqSection />;
@@ -22,7 +40,7 @@ export default function Faq2({ faqs, loading = false, selectedProduct, selectedC
         <h5 className="mb_24" id="faq-content">
           {title}
         </h5>
-        <p className="text-muted mb_60">Yükleniyor...</p>
+        <p className="text-muted mb_60">{t.loading}</p>
       </>
     );
   }
@@ -59,7 +77,7 @@ export default function Faq2({ faqs, loading = false, selectedProduct, selectedC
   return (
     <>
       <h5 className="mb_24" id="payment-information">
-        Payment Information
+        {t.paymentInformation}
       </h5>
       <div className="flat-accordion style-default has-btns-arrow mb_60">
         <Accordion faqs={faqs1} />

@@ -5,16 +5,23 @@ import React from "react";
 import { checkAuthServer } from "@/utils/authServer";
 import { redirect } from "next/navigation";
 
-export const metadata = {
-  title: "Değerlendirmelerim - Robot Süpürge ve Akıllı Ev Sistemleri",
-  description: "Ürün ve sipariş değerlendirmelerinizi görüntüleyin.",
-};
+import { getLocalizedUrl } from "@/utils/i18n";
 
-export default async function page() {
+export async function generateMetadata({ params }) {
+  const { lang } = await params;
+  const isEn = lang === "en";
+  return {
+    title: isEn ? "My Reviews - Şımart Technology" : "Değerlendirmelerim - Robot Süpürge ve Akıllı Ev Sistemleri",
+    description: isEn ? "View your product and order reviews." : "Ürün ve sipariş değerlendirmelerinizi görüntüleyin.",
+  };
+}
+
+export default async function page({ params }) {
+  const { lang } = await params;
   const isAuthenticated = await checkAuthServer();
 
   if (!isAuthenticated) {
-    redirect("/giris-yap");
+    redirect(getLocalizedUrl("/giris-yap", lang));
   }
 
   return (

@@ -8,7 +8,7 @@ import { API_REVALIDATE } from "@/config/apiConfig";
  */
 export async function getPages() {
     const response = await serverFetch("/pages", {
-        method: "POST",
+        method: "GET",
         next: { revalidate: API_REVALIDATE.PAGES }
     });
 
@@ -30,7 +30,7 @@ export async function getPageBySlug(slug, lang = "tr") {
     if (!slug) return null;
 
     const response = await serverFetch(`/pages?slug=${slug}`, {
-        method: "POST",
+        method: "GET",
         lang,
         next: { revalidate: API_REVALIDATE.PAGES }
     });

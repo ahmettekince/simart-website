@@ -1,13 +1,44 @@
+"use client";
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Phone, Mail, Globe, MapPin, Instagram, Facebook, Linkedin, Youtube } from "lucide-react";
-import Header from "@/components/headers/Header";
+import { useLangStore } from "@/stores/langStore";
 
 export default function QRContent({ qrData, menuItems }) {
+    const { lang } = useLangStore();
+
+    const t = {
+        tr: {
+            title: "Şımart Teknoloji",
+            phone: "Telefon",
+            email: "E-Posta",
+            website: "Web Sitesi",
+            address: "Adres",
+            showOnMap: "Haritada Göster"
+        },
+        en: {
+            title: "Şımart Technology",
+            phone: "Phone",
+            email: "Email",
+            website: "Website",
+            address: "Address",
+            showOnMap: "Show on Map"
+        }
+    }[lang] || {
+        tr: {
+            title: "Şımart Teknoloji",
+            phone: "Telefon",
+            email: "E-Posta",
+            website: "Web Sitesi",
+            address: "Adres",
+            showOnMap: "Haritada Göster"
+        }
+    }.tr;
+
     const userData = {
         name: qrData.full_name || `${qrData.first_name} ${qrData.last_name}`,
-        title: "Şımart Teknoloji",
+        title: t.title,
         image: qrData.image_url,
         phone: qrData.phone,
         email: qrData.email,
@@ -24,7 +55,6 @@ export default function QRContent({ qrData, menuItems }) {
 
     return (
         <>
-            <Header textClass={"text-black"} menuItems={menuItems} />
             <main className="qr-page-wrapper" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", fontFamily: 'Gilroy, sans-serif' }}>
                 <div className="qr-header-full" style={{ backgroundColor: "#3c81b5", width: "100%", padding: "60px 0" }}>
                     <div className="container" style={{ maxWidth: "800px", margin: "0 auto", padding: "0 20px" }}>
@@ -63,6 +93,7 @@ export default function QRContent({ qrData, menuItems }) {
                             </div>
 
                             <h1 style={{ fontSize: "26px", fontWeight: "700", marginBottom: "8px", letterSpacing: "-0.5px", color: "#fff" }}>{userData.name}</h1>
+                            <p style={{ color: "rgba(255,255,255,0.8)", fontSize: "16px", marginBottom: "20px" }}>{userData.title}</p>
 
                             <div className="social-links" style={{ display: "flex", gap: "20px" }}>
                                 {userData.socials.map((social, idx) => (
@@ -113,7 +144,7 @@ export default function QRContent({ qrData, menuItems }) {
                                         <Link href={`tel:${userData.phone}`} style={{ display: "block", fontSize: "18px", fontWeight: "600", color: "#333", letterSpacing: "-0.3px" }}>
                                             {userData.phone}
                                         </Link>
-                                        <span style={{ fontSize: "13px", color: "#888", display: "block", marginTop: "2px" }}>Telefon</span>
+                                        <span style={{ fontSize: "13px", color: "#888", display: "block", marginTop: "2px" }}>{t.phone}</span>
                                     </div>
                                 </div>
 
@@ -132,7 +163,7 @@ export default function QRContent({ qrData, menuItems }) {
                                             <Link href={`mailto:${userData.email}`} style={{ display: "block", fontSize: "18px", fontWeight: "600", color: "#333", letterSpacing: "-0.3px" }}>
                                                 {userData.email}
                                             </Link>
-                                            <span style={{ fontSize: "13px", color: "#888", display: "block", marginTop: "2px" }}>E-Posta</span>
+                                            <span style={{ fontSize: "13px", color: "#888", display: "block", marginTop: "2px" }}>{t.email}</span>
                                         </div>
                                     </div>
                                 )}
@@ -153,7 +184,7 @@ export default function QRContent({ qrData, menuItems }) {
                                     <Link href={`https://${userData.website}`} target="_blank" style={{ display: "block", fontSize: "18px", fontWeight: "600", color: "#333", letterSpacing: "-0.3px" }}>
                                         {userData.website}
                                     </Link>
-                                    <span style={{ fontSize: "13px", color: "#888", display: "block", marginTop: "2px" }}>Web Sitesi</span>
+                                    <span style={{ fontSize: "13px", color: "#888", display: "block", marginTop: "2px" }}>{t.website}</span>
                                 </div>
                             </div>
                         </div>
@@ -181,7 +212,7 @@ export default function QRContent({ qrData, menuItems }) {
                                     {userData.address}
                                 </span>
                                 <Link href={userData.mapLink} target="_blank" style={{ fontSize: "14px", color: "#3c81b5", fontWeight: "600", textDecoration: "none", borderBottom: "1px solid #3c81b5" }}>
-                                    Haritada Göster
+                                    {t.showOnMap}
                                 </Link>
                             </div>
                         </div>

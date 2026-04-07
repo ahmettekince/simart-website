@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -8,18 +7,25 @@ import { useReviewStore } from "@/stores/reviewStore";
 import ReviewDashboardModal from "@/components/modals/ReviewDashboardModal";
 import AccountTabs from "@/components/common/AccountTabs";
 import SimartButton from "@/components/common/SimartButton";
+import { useLangStore } from "@/stores/langStore";
+import { getLocalizedUrl } from "@/utils/i18n";
 
-function formatReviewDate(iso) {
+function formatReviewDate(iso, lang = "tr") {
   if (!iso) return "-";
   try {
     const d = new Date(iso);
-    return d.toLocaleDateString("tr-TR", { day: "2-digit", month: "2-digit", year: "numeric" });
+    return d.toLocaleDateString(lang === "en" ? "en-US" : "tr-TR", { 
+      day: "2-digit", 
+      month: "2-digit", 
+      year: "numeric" 
+    });
   } catch {
     return iso;
   }
 }
 
 export default function MyReviews() {
+  const lang = useLangStore((s) => s.lang);
   const [activeFilter, setActiveFilter] = useState("degerlendir");
   const [modalOpen, setModalOpen] = useState(false);
   const [modalProduct, setModalProduct] = useState(null);
@@ -28,6 +34,41 @@ export default function MyReviews() {
 
   const reviewableProducts = useReviewStore((s) => s.reviewableProducts);
   const lastFetchedAt = useReviewStore((s) => s.lastFetchedAt);
+
+  const t = {
+    tr: {
+      tabEvaluate: "Değerlendir",
+      tabApproved: "Onaylanan",
+      tabPending: "Bekleyen",
+      loading: "Yükleniyor...",
+      loadingReviews: "Yorumlarınız yükleniyor...",
+      order: "Sipariş",
+      evaluateProduct: "Ürünü Değerlendir",
+      product: "Ürün",
+      inReview: "İncelemede",
+      emptyNoEvaluation: "Ürün Değerlendirmeniz Bulunmamaktadır.",
+      emptyNoPending: "Bekleyen yorumunuz bulunmamaktadır.",
+      emptyNoApproved: "Onaylanan yorumunuz bulunmamaktadır.",
+      emptyNoResult: "Bu filtrede değerlendirme bulunamadı.",
+      continueShopping: "Alışverişe Devam Et"
+    },
+    en: {
+      tabEvaluate: "To Review",
+      tabApproved: "Approved",
+      tabPending: "Pending",
+      loading: "Loading...",
+      loadingReviews: "Loading your reviews...",
+      order: "Order",
+      evaluateProduct: "Evaluate Product",
+      product: "Product",
+      inReview: "In Review",
+      emptyNoEvaluation: "You have no products to review.",
+      emptyNoPending: "You have no pending reviews.",
+      emptyNoApproved: "You have no approved reviews.",
+      emptyNoResult: "No evaluations found for this filter.",
+      continueShopping: "Continue Shopping"
+    }
+  }[lang] || {};
 
   const fetchMyReviews = useCallback(async () => {
     setReviewsLoading(true);
@@ -72,11 +113,11 @@ export default function MyReviews() {
 
   const reviewTabs = useMemo(
     () => [
-      { id: "degerlendir", label: "Değerlendir", count: reviewableProducts.length },
-      { id: "onaylanan", label: "Onaylanan", count: onaylananReviews.length },
-      { id: "bekleyen", label: "Bekleyen", count: bekleyenReviews.length },
+      { id: "degerlendir", label: t.tabEvaluate, count: reviewableProducts.length },
+      { id: "onaylanan", label: t.tabApproved, count: onaylananReviews.length },
+      { id: "bekleyen", label: t.tabPending, count: bekleyenReviews.length },
     ],
-    [reviewableProducts.length, onaylananReviews.length, bekleyenReviews.length]
+    [reviewableProducts.length, onaylananReviews.length, bekleyenReviews.length, t.tabEvaluate, t.tabApproved, t.tabPending]
   );
 
   return (
@@ -87,11 +128,11 @@ export default function MyReviews() {
         {/* Content */}
         {loading ? (
           <div style={{ textAlign: "center", padding: "60px 20px" }}>
-            <p style={{ color: "#666" }}>Yükleniyor...</p>
+            <p style={{ color: "#666" }}>{t.loading}</p>
           </div>
         ) : reviewsLoading && (activeFilter === "bekleyen" || activeFilter === "onaylanan") ? (
           <div style={{ textAlign: "center", padding: "60px 20px" }}>
-            <p style={{ color: "#666" }}>Yorumlarınız yükleniyor...</p>
+            <p style={{ color: "#666" }}>{t.loadingReviews}</p>
           </div>
         ) : activeFilter === "degerlendir" && hasProducts ? (
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "20px" }}>
@@ -120,7 +161,7 @@ export default function MyReviews() {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 600, fontSize: "14px", lineHeight: 1.3, marginBottom: "6px" }}>{p.name}</div>
                     {p.order_number && (
-                      <div style={{ fontSize: "12px", color: "#666" }}>Sipariş: {p.order_number}</div>
+                      <div style={{ fontSize: "12px", color: "#666" }}>{t.order}: {p.order_number}</div>
                     )}
                   </div>
                 </div>
@@ -130,7 +171,7 @@ export default function MyReviews() {
                     onClick={() => handleReviewClick(p)}
                     fullWidth
                   >
-                    Ürünü Değerlendir
+                    {t.evaluateProduct}
                   </SimartButton>
                 </div>
               </div>
@@ -152,10 +193,10 @@ export default function MyReviews() {
                 <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
                   <div style={{ flex: "1 1 200px", minWidth: 0 }}>
                     <Link
-                      href={`/magaza/${review.product?.category_slug || "urunler"}/${review.product?.slug || review.product?.id}`}
+                      href={getLocalizedUrl(`/magaza/${review.product?.category_slug || "urunler"}/${review.product?.slug || review.product?.id}`, lang)}
                       style={{ fontWeight: 600, fontSize: "15px", color: "#111", textDecoration: "none" }}
                     >
-                      {review.product?.name || "Ürün"}
+                      {review.product?.name || t.product}
                     </Link>
                     <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "8px" }}>
                       <span style={{ display: "flex", gap: 2 }}>
@@ -163,10 +204,10 @@ export default function MyReviews() {
                           <span key={star} style={{ color: star <= (review.rating || 0) ? "#FFC107" : "#ddd", fontSize: "14px" }}>★</span>
                         ))}
                       </span>
-                      <span style={{ fontSize: "12px", color: "#888" }}>{formatReviewDate(review.created_at)}</span>
+                      <span style={{ fontSize: "12px", color: "#888" }}>{formatReviewDate(review.created_at, lang)}</span>
                       {activeFilter === "bekleyen" && (
                         <span style={{ fontSize: "11px", color: "#f59e0b", backgroundColor: "#fef3c7", padding: "2px 8px", borderRadius: "4px" }}>
-                          İncelemede
+                          {t.inReview}
                         </span>
                       )}
                     </div>
@@ -217,19 +258,19 @@ export default function MyReviews() {
             </div>
             <p style={{ fontSize: "18px", fontWeight: 600, color: "var(--primary, #3c81b5)", marginBottom: "24px" }}>
               {activeFilter === "degerlendir"
-                ? "Ürün Değerlendirmeniz Bulunmamaktadır."
+                ? t.emptyNoEvaluation
                 : activeFilter === "bekleyen"
-                  ? "Bekleyen yorumunuz bulunmamaktadır."
+                  ? t.emptyNoPending
                   : activeFilter === "onaylanan"
-                    ? "Onaylanan yorumunuz bulunmamaktadır."
-                    : "Bu filtrede değerlendirme bulunamadı."}
+                    ? t.emptyNoApproved
+                    : t.emptyNoResult}
             </p>
             {activeFilter === "degerlendir" && (
               <SimartButton
-                href="/magaza"
+                href={getLocalizedUrl("/magaza", lang)}
                 style={{ width: "auto", minWidth: "200px" }}
               >
-                Alışverişe Devam Et
+                {t.continueShopping}
               </SimartButton>
             )}
           </div>

@@ -4,6 +4,8 @@ import { useParams } from "next/navigation";
 import apiClient from "@/utils/apiClient";
 import CircularLoading from "@/components/common/CircularLoading";
 import Link from "next/link";
+import { useLangStore } from "@/stores/langStore";
+import { getLocalizedUrl } from "@/utils/i18n";
 
 const PackageIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.89 1.45l8 4A2 2 0 0 1 22 7.24v9.53a2 2 0 0 1-1.11 1.79l-8 4a2 2 0 0 1-1.79 0l-8-4a2 2 0 0 1-1.1-1.8V7.24a2 2 0 0 1 1.11-1.79l8-4a2 2 0 0 1 1.78 0z"></path><polyline points="2.32 6.16 12 11 21.68 6.16"></polyline><line x1="12" y1="22.76" x2="12" y2="11"></line></svg>
@@ -39,12 +41,68 @@ const getEventIcon = (status, description) => {
 };
 
 export default function OrderTrackingContent() {
+    const { lang } = useLangStore();
     const params = useParams();
     const orderNumber = params?.orderNumber;
 
     const [loading, setLoading] = useState(true);
     const [trackingData, setTrackingData] = useState(null);
     const [error, setError] = useState(null);
+
+    const t = {
+        tr: {
+            title: "Kargo Takip",
+            orderNumber: "Sipariş Numarası",
+            fallbackError: "Kargo bilgisi bulunamadı.",
+            queryError: "Kargo bilgisi sorgulanırken bir hata oluştu.",
+            differentOrder: "Farklı Bir Sipariş Sorgula",
+            shippingStatus: "Kargo Durumu",
+            processing: "İşleniyor",
+            trackAtProvider: "Kargo Firmasında Takip Et",
+            provider: "Kargo Firması",
+            trackingNo: "Takip No",
+            receiver: "Alıcı",
+            deliveryDate: "Teslim Tarihi",
+            movements: "Gönderi Hareketleri",
+            backToShop: "Alışverişe Dön",
+            noInfoFound: "Herhangi bir kargo bilgisi bulunamadı."
+        },
+        en: {
+            title: "Order Tracking",
+            orderNumber: "Order Number",
+            fallbackError: "Shipping information not found.",
+            queryError: "An error occurred while querying shipping information.",
+            differentOrder: "Query Different Order",
+            shippingStatus: "Shipping Status",
+            processing: "Processing",
+            trackAtProvider: "Track at Carrier Website",
+            provider: "Carrier",
+            trackingNo: "Tracking No",
+            receiver: "Receiver",
+            deliveryDate: "Delivery Date",
+            movements: "Shipment Movements",
+            backToShop: "Back to Shop",
+            noInfoFound: "No shipping information found."
+        }
+    }[lang] || {
+        tr: {
+            title: "Kargo Takip",
+            orderNumber: "Sipariş Numarası",
+            fallbackError: "Kargo bilgisi bulunamadı.",
+            queryError: "Kargo bilgisi sorgulanırken bir hata oluştu.",
+            differentOrder: "Farklı Bir Sipariş Sorgula",
+            shippingStatus: "Kargo Durumu",
+            processing: "İşleniyor",
+            trackAtProvider: "Kargo Firmasında Takip Et",
+            provider: "Kargo Firması",
+            trackingNo: "Takip No",
+            receiver: "Alıcı",
+            deliveryDate: "Teslim Tarihi",
+            movements: "Gönderi Hareketleri",
+            backToShop: "Alışverişe Dön",
+            noInfoFound: "Herhangi bir kargo bilgisi bulunamadı."
+        }
+    }.tr;
 
     useEffect(() => {
         if (orderNumber) {
@@ -63,17 +121,16 @@ export default function OrderTrackingContent() {
             if (response.data && response.data.status === 'success') {
                 setTrackingData(response.data.data);
             } else {
-                setError(response.data?.message || "Kargo bilgisi bulunamadı.");
+                setError(response.data?.message || t.fallbackError);
             }
         } catch (err) {
             console.error("Kargo takip hatası:", err);
-            setError(err.response?.data?.message || "Kargo bilgisi sorgulanırken bir hata oluştu.");
+            setError(err.response?.data?.message || t.queryError);
         } finally {
             setLoading(false);
         }
     };
 
-    // Events'i ters çevir (En yeni en üstte)
     const sortedEvents = trackingData?.events ? [...trackingData.events].reverse() : [];
 
     return (
@@ -82,8 +139,8 @@ export default function OrderTrackingContent() {
                 <div className="row justify-content-center">
                     <div className="col-lg-8">
                         <div className="text-center mb_40">
-                            <h3 className="fw-5">Kargo Takip</h3>
-                            <p className="text_black-2 mt_10">Sipariş Numarası: <strong>{orderNumber}</strong></p>
+                            <h3 className="fw-5">{t.title}</h3>
+                            <p className="text_black-2 mt_10">{t.orderNumber}: <strong>{orderNumber}</strong></p>
                         </div>
 
                         {loading ? (
@@ -93,19 +150,18 @@ export default function OrderTrackingContent() {
                         ) : error ? (
                             <div className="alert alert-danger text-center">
                                 <p>{error}</p>
-                                <Link href="/kargo-takip" className="tf-btn btn-outline animate-hover-btn mt_20">
-                                    Farklı Bir Sipariş Sorgula
+                                <Link href={getLocalizedUrl("/kargo-takip", lang)} className="tf-btn btn-outline animate-hover-btn mt_20">
+                                    {t.differentOrder}
                                 </Link>
                             </div>
                         ) : trackingData ? (
                             <div className="tf-page-cart-item">
                                 <div className="bg_white p-4 radius-10 border-line shadow-sm">
-                                    {/* Üst Bilgi Başlığı */}
                                     <div className="d-flex justify-content-between align-items-center mb_30 flex-wrap gap-20 border-bottom pb-4">
                                         <div>
-                                            <span className="text_black-2 d-block mb-1" style={{ fontSize: '13px' }}>Kargo Durumu</span>
+                                            <span className="text_black-2 d-block mb-1" style={{ fontSize: '13px' }}>{t.shippingStatus}</span>
                                             <h4 className={`fw-7 ${trackingData.shipping_status === 'delivered' ? 'text-success' : 'text-primary'}`}>
-                                                {trackingData.shipping_status_text || trackingData.shipping_status || "İşleniyor"}
+                                                {trackingData.shipping_status_text || trackingData.shipping_status || t.processing}
                                             </h4>
                                         </div>
                                         {trackingData.tracking_url && (
@@ -115,46 +171,45 @@ export default function OrderTrackingContent() {
                                                 rel="noopener noreferrer"
                                                 className="tf-btn btn-fill animate-hover-btn radius-3 btn-sm"
                                             >
-                                                Kargo Firmasında Takip Et
+                                                {t.trackAtProvider}
                                             </a>
                                         )}
                                     </div>
 
-                                    {/* Detay Bilgileri Grid */}
                                     <div className="row mb_40">
                                         <div className="col-6 col-md-3 mb_20">
                                             <div className="tracking-info-box">
-                                                <span className="label">Kargo Firması</span>
+                                                <span className="label">{t.provider}</span>
                                                 <div className="value">{trackingData.shipping_provider?.toUpperCase() || "-"}</div>
                                             </div>
                                         </div>
                                         <div className="col-6 col-md-3 mb_20">
                                             <div className="tracking-info-box">
-                                                <span className="label">Takip No</span>
+                                                <span className="label">{t.trackingNo}</span>
                                                 <div className="value">{trackingData.shipping_cargo_code || trackingData.tracking_number || "-"}</div>
                                             </div>
                                         </div>
                                         <div className="col-6 col-md-3 mb_20">
                                             <div className="tracking-info-box">
-                                                <span className="label">Alıcı</span>
+                                                <span className="label">{t.receiver}</span>
                                                 <div className="value">{trackingData.delivery_to || "-"}</div>
                                             </div>
                                         </div>
                                         <div className="col-6 col-md-3 mb_20">
                                             <div className="tracking-info-box">
-                                                <span className="label">Teslim Tarihi</span>
+                                                <span className="label">{t.deliveryDate}</span>
                                                 <div className="value">{trackingData.delivery_date_time || "-"}</div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    {/* Timeline */}
                                     {sortedEvents.length > 0 && (
                                         <div className="tracking-timeline-wrapper">
-                                            <h6 className="mb_20 fw-6">Gönderi Hareketleri</h6>
+                                            <h6 className="mb_20 fw-6">{t.movements}</h6>
                                             <div className="timeline">
                                                 {sortedEvents.map((event, index) => {
-                                                    const isDelivered = event.eventStatus?.toLowerCase().includes("teslim edildi");
+                                                    const statusText = (event.eventStatus || "").toLowerCase();
+                                                    const isDelivered = statusText.includes("teslim edildi") || statusText.includes("delivered");
                                                     return (
                                                         <div key={index} className={`timeline-item ${index === 0 ? 'current' : ''} ${isDelivered ? 'delivered' : ''}`}>
                                                             <div className="timeline-marker">
@@ -182,14 +237,14 @@ export default function OrderTrackingContent() {
                                 </div>
 
                                 <div className="text-center mt_30">
-                                    <Link href="/" className="tf-btn btn-link animate-hover-btn">
-                                        Alışverişe Dön
+                                    <Link href={getLocalizedUrl("/", lang)} className="tf-btn btn-link animate-hover-btn">
+                                        {t.backToShop}
                                     </Link>
                                 </div>
                             </div>
                         ) : (
                             <div className="text-center">
-                                <p>Herhangi bir kargo bilgisi bulunamadı.</p>
+                                <p>{t.noInfoFound}</p>
                             </div>
                         )}
                     </div>
@@ -218,19 +273,17 @@ export default function OrderTrackingContent() {
                     font-size: 14px;
                 }
                 
-                /* Timeline Styles */
                 .timeline {
                     position: relative;
                     padding-left: 40px;
                     margin-top: 10px;
                 }
-                /* Eski global çizgi yerine item bazlı çizgi */
                 .timeline-item::before {
                     content: '';
                     position: absolute;
                     top: 36px;
                     bottom: -24px; 
-                    left: -21px; /* Marker ortası: -40px (padding) + 19px(center)?  Padding-left 40. Marker left -40. Marker width 38. Center -21. */
+                    left: -21px; 
                     width: 2px;
                     background: #e5e7eb;
                     z-index: 0;

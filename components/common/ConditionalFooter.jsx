@@ -2,10 +2,9 @@
 
 import { usePathname } from "next/navigation";
 import Footer from "@/components/footers/Footer";
-
-const HIDE_FOOTER_PATHS = ["/sepetim", "/odeme", "/qr-", "/qr", "/kqr", "/3d"];
-
 import { i18n } from "@/config/i18n";
+
+const HIDE_FOOTER_PATHS = ["/sepetim", "/odeme", "/qr-", "/qr", "/kqr", "/3d", "/checkout", "/en/checkout", "/en/qr-", "/en/qr", "/en/3d"];
 
 export default function ConditionalFooter({ footerMenus, lang = "tr" }) {
     const pathname = usePathname();
@@ -14,7 +13,7 @@ export default function ConditionalFooter({ footerMenus, lang = "tr" }) {
         const cleanPath = i18n.locales.includes(pathname.split("/").filter(Boolean)[0])
             ? pathname.replace(/^\/[^\/]+/, "") || "/"
             : pathname;
-        return cleanPath.startsWith(path);
+        return pathname.startsWith(path) || cleanPath.startsWith(path);
     });
 
     if (hideFooter) return null;

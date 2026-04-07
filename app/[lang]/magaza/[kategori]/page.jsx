@@ -65,13 +65,16 @@ export default async function KategoriPage({ params }) {
         <div className="container-full">
           <div className="heading text-center">{categoryName}</div>
           <p className="text-center text-2 text_black-2 mt_5">
-            {productCount > 0 ? `${productCount} ürün bulundu` : "Bu kategoride henüz ürün bulunmamaktadır"}
+            {productCount > 0 
+              ? (lang === "tr" ? `${productCount} ürün bulundu` : `${productCount} products found`)
+              : (lang === "tr" ? "Bu kategoride henüz ürün bulunmamaktadır" : "There are no products in this category yet")
+            }
           </p>
         </div>
       </div>
 
       {/* Ürün Listesi (Client Component) */}
-      <MagazaDisplay products={products} categories={categories} />
+      <MagazaDisplay products={products} categories={categories} initialCategory={category} />
     </main>
   );
 }

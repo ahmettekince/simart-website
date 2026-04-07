@@ -8,7 +8,7 @@ const translations = {
         description: "Şımart Teknoloji ile iletişime geçin. Akıllı ev sistemlerimizle ilgili tüm sorularınız için destek alın. Müşteri hizmetlerimiz size yardımcı olmaktan memnuniyet duyar.",
     },
     en: {
-        title: "Contact - Simart Technology",
+        title: "Contact - Şımart Technology",
         description: "Contact Şımart Technology. Get help for all your questions about our smart home systems. Our customer service is happy to assist you.",
     }
 };

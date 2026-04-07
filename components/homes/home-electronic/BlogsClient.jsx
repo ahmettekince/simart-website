@@ -56,10 +56,10 @@ export default function BlogsClient({ blogs = [], lang = "tr" }) {
                         onSlideChange={(swiper) => setActiveIndex(swiper.realIndex)}
                     >
                         {displayBlogs.map((article, index) => {
-                            const slug = article.slug || article.title?.toLowerCase().replace(/ /g, "-").replace(/[^\w-]+/g, "");
+                            const activeSlug = article.slugs?.[lang] || article.slug || article.title?.toLowerCase().replace(/ /g, "-").replace(/[^\w-]+/g, "");
                             const imgSrc = article.image?.url || article.imgSrc || "/images/blog/blog-1.jpg";
                             
-                            const blogLink = getLocalizedUrl(`/${slug}`, lang);
+                            const blogLink = getLocalizedUrl(`/${activeSlug}`, lang);
                             const categoryLink = getLocalizedUrl(`/blog`, lang);
 
                             return (

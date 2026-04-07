@@ -3,12 +3,47 @@ import React, { useState, useEffect } from "react";
 import ProductCardSimart from "@/components/shopCards/ProductCardSimart";
 import Sorting from "./Sorting";
 import ShopFilter from "./ShopFilter";
+import { useLangStore } from "@/stores/langStore";
 
 /**
  * MagazaDisplay - Client Component
  * Bu bileşen artık filtreleme ve sıralama özelliklerini de içeriyor.
  */
-export default function MagazaDisplay({ products: initialProducts = [], categories = [] }) {
+export default function MagazaDisplay({ products: initialProducts = [], categories = [], initialCategory = null }) {
+    const lang = useLangStore((s) => s.lang);
+    const setAlternatePaths = useLangStore((s) => s.setAlternatePaths);
+
+    // Kategori için alternatif dillerdeki URL'leri store'a kaydet
+    useEffect(() => {
+        let catSlugs = initialCategory?.slugs;
+
+        // Eğer kategori objesinde slugs yoksa, ilk ürünün içindeki kategori bilgisini dene
+        if (!catSlugs && initialProducts && initialProducts.length > 0) {
+            const firstProduct = initialProducts[0];
+            // Kategori listesinden eşleşen veya birincil kategoriyi bul
+            const categoryData = firstProduct.primary_category || (firstProduct.categories && firstProduct.categories[0]);
+            if (categoryData && categoryData.slugs) {
+                catSlugs = categoryData.slugs;
+            }
+        }
+
+        if (catSlugs) {
+            const paths = {};
+            ["tr", "en"].forEach(currLang => {
+                const cSlug = catSlugs[currLang] || initialCategory?.slug;
+                if (!cSlug) return;
+                // TR: /magaza/[slug], EN: /en/shop/[slug]
+                const prefix = currLang === "en" ? "/en/shop" : "/magaza";
+                paths[currLang] = `${prefix}/${cSlug}`;
+            });
+            
+            if (Object.keys(paths).length > 0) {
+                setAlternatePaths(paths);
+            }
+        }
+        return () => setAlternatePaths({});
+    }, [initialCategory, initialProducts, setAlternatePaths]);
+
     const sortByDefault = (list) => {
         const isAvailable = (p) => p.is_in_stock || p.is_pre_order;
         return [...list].sort((a, b) => {
@@ -53,7 +88,9 @@ export default function MagazaDisplay({ products: initialProducts = [], categori
                         <div className="control-left">
                             <a href="#filterShop" data-bs-toggle="offcanvas" aria-controls="offcanvasLeft" className="tf-btn-filter">
                                 <span className="icon icon-filter" />
-                                <span className="text">Kategoriler</span>
+                                <span className="text">
+                                    {lang === "en" ? "Categories" : "Kategoriler"}
+                                </span>
                             </a>
                         </div>
 

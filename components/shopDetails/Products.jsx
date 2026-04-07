@@ -4,8 +4,20 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation } from "swiper/modules";
 import React from "react";
 import ProductCardSimart from "@/components/shopCards/ProductCardSimart";
+import { useLangStore } from "@/stores/langStore";
+
+const translations = {
+    tr: {
+        otherProducts: "Diğer Ürünler"
+    },
+    en: {
+        otherProducts: "Other Products"
+    }
+};
 
 export default function Products({ products = [] }) {
+  const lang = useLangStore((s) => s.lang);
+  const t = translations[lang] || translations.tr;
   const displayProducts = Array.isArray(products) ? products : [];
 
   // Ürünler yoksa render etme
@@ -18,7 +30,7 @@ export default function Products({ products = [] }) {
       <div className="container">
         <div className="flat-title flex-row justify-content-between px-0">
           <span className="title wow fadeInUp" data-wow-delay="0s" suppressHydrationWarning>
-            Diğer Ürünler
+            {t.otherProducts}
           </span>
           <div className="box-sw-navigation">
             <div className="nav-sw square nav-next-slider nav-next-sell-1 snbp161">

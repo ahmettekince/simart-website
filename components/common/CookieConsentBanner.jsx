@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Cookies from "js-cookie";
+import { useLangStore } from "@/stores/langStore";
 
 // cookie_consent: "accepted" | "declined"
 // cookie_consent_analytics: "true" | "false" (sadece accepted iken anlamlı)
@@ -12,10 +13,66 @@ const COOKIE_ANALYTICS = "cookie_consent_analytics";
 const COOKIE_EXPIRY = 365;
 
 export default function CookieConsentBanner() {
+    const { lang } = useLangStore();
     const [visible, setVisible] = useState(false);
     const [settingsOpen, setSettingsOpen] = useState(false);
     const [analyticsEnabled, setAnalyticsEnabled] = useState(true);
     const [expandedSection, setExpandedSection] = useState(null);
+
+    const t = {
+        tr: {
+            title: "Sana Özel Bir Deneyim Sunuyoruz",
+            description: "Sitenin temel görevlerinin çalışması, kampanya ve duyurulardan haberdar olmanız için çerezler kullanıyoruz. Tümünü reddet'i seçerseniz bazı özelliklerden yararlanamayabilirsiniz.",
+            privacyPolicy: "Gizlilik Politikası",
+            privacyPolicyLink: "/gizlilik-politikasi",
+            settings: "Ayarlar",
+            declineAll: "Tümünü Reddet",
+            acceptAll: "Tümünü Kabul Et",
+            settingsTitle: "Çerez Ayarları",
+            essentialTitle: "Zorunlu Tanımlama Bilgileri",
+            essentialAlwaysActive: "Her Zaman Etkin",
+            essentialDesc: "Web sitemizin düzgün şekilde çalışabilmesi için bazı çerezler zorunlu olarak kullanılmaktadır ve bu çerezler sistemlerimiz üzerinden devre dışı bırakılamaz. Bu çerezler genellikle sizin talep ettiğiniz hizmetlerin sağlanması amacıyla ayarlanır. Örneğin; gizlilik ayarlarınızı kaydetmek, hesabınıza giriş yapabilmenizi sağlamak veya formlar üzerinden gönderdiğiniz bilgileri işleyebilmek için kullanılabilir. Tarayıcı ayarlarınızı değiştirerek bu çerezleri engelleyebilir veya çerez kullanımı hakkında bildirim almayı tercih edebilirsiniz. Ancak bu durumda web sitemizin bazı özellikleri beklenen şekilde çalışmayabilir.",
+            analyticsTitle: "Analitik Tanımlama Bilgileri",
+            analyticsDesc: "Bu çerezler analiz amaçları için kullanılır. Ziyaretçi davranışını ve site kullanımını anlamamıza yardımcı olur.",
+            viewVendorDetails: "Satıcı Ayrıntılarını Görüntüle",
+            confirmChoices: "Seçimleri Onayla"
+        },
+        en: {
+            title: "We Offer You a Special Experience",
+            description: "We use cookies for the basic functions of the site to work and to keep you informed about campaigns and announcements. If you choose 'Decline All', you may not be able to benefit from some features.",
+            privacyPolicy: "Privacy Policy",
+            privacyPolicyLink: "/en/privacy-policy",
+            settings: "Settings",
+            declineAll: "Decline All",
+            acceptAll: "Accept All",
+            settingsTitle: "Cookie Settings",
+            essentialTitle: "Essential Cookies",
+            essentialAlwaysActive: "Always Active",
+            essentialDesc: "Some cookies are mandatory for our website to function properly and cannot be disabled via our systems. These cookies are usually set to provide the services you request. For example; they can be used to save your privacy settings, enable you to log in to your account, or process information you submit via forms. You can block these cookies or choose to be notified about cookie use by changing your browser settings. However, in this case, some features of our website may not work as expected.",
+            analyticsTitle: "Analytical Cookies",
+            analyticsDesc: "These cookies are used for analytical purposes. They help us understand visitor behavior and site usage.",
+            viewVendorDetails: "View Vendor Details",
+            confirmChoices: "Confirm Choices"
+        }
+    }[lang] || {
+        tr: {
+            title: "Sana Özel Bir Deneyim Sunuyoruz",
+            description: "Sitenin temel görevlerinin çalışması, kampanya ve duyurulardan haberdar olmanız için çerezler kullanıyoruz. Tümünü reddet'i seçerseniz bazı özelliklerden yararlanamayabilirsiniz.",
+            privacyPolicy: "Gizlilik Politikası",
+            privacyPolicyLink: "/gizlilik-politikasi",
+            settings: "Ayarlar",
+            declineAll: "Tümünü Reddet",
+            acceptAll: "Tümünü Kabul Et",
+            settingsTitle: "Çerez Ayarları",
+            essentialTitle: "Zorunlu Tanımlama Bilgileri",
+            essentialAlwaysActive: "Her Zaman Etkin",
+            essentialDesc: "Web sitemizin düzgün şekilde çalışabilmesi için bazı çerezler zorunlu olarak kullanılmaktadır ve bu çerezler sistemlerimiz üzerinden devre dışı bırakılamaz. Bu çerezler genellikle sizin talep ettiğiniz hizmetlerin sağlanması amacıyla ayarlanır. Örneğin; gizlilik ayarlarınızı kaydetmek, hesabınıza giriş yapabilmenizi sağlamak veya formlar üzerinden gönderdiğiniz bilgileri işleyebilmek için kullanılabilir. Tarayıcı ayarlarınızı değiştirerek bu çerezleri engelleyebilir veya çerez kullanımı hakkında bildirim almayı tercih edebilirsiniz. Ancak bu durumda web sitemizin bazı özellikleri beklenen şekilde çalışmayabilir.",
+            analyticsTitle: "Analitik Tanımlama Bilgileri",
+            analyticsDesc: "Bu çerezler analiz amaçları için kullanılır. Ziyaretçi davranışını ve site kullanımını anlamamıza yardımcı olur.",
+            viewVendorDetails: "Satıcı Ayrıntılarını Görüntüle",
+            confirmChoices: "Seçimleri Onayla"
+        }
+    }.tr;
 
     const toggleSection = (key) => {
         setExpandedSection((prev) => (prev === key ? null : key));
@@ -95,25 +152,24 @@ export default function CookieConsentBanner() {
             <div className="cookie-banner-simart">
                 <div className="cookie-banner-inner">
                     <div className="cookie-banner-content">
-                        <h3 className="cookie-banner-title">Sana Özel Bir Deneyim Sunuyoruz</h3>
+                        <h3 className="cookie-banner-title">{t.title}</h3>
                         <p className="cookie-banner-text">
-                            Sitenin temel görevlerinin çalışması, kampanya ve duyurulardan haberdar olmanız için çerezler kullanıyoruz.
-                            Tümünü reddet&apos;i seçerseniz bazı özelliklerden yararlanamayabilirsiniz.
+                            {t.description}
                             {" "}
-                            <Link href="/gizlilik-politikasi" className="cookie-banner-link">
-                                Gizlilik Politikası
+                            <Link href={t.privacyPolicyLink} className="cookie-banner-link">
+                                {t.privacyPolicy}
                             </Link>
                         </p>
                     </div>
                     <div className="cookie-banner-buttons">
                         <button type="button" onClick={openSettings} className="cookie-btn cookie-btn-ayarlar">
-                            Ayarlar
+                            {t.settings}
                         </button>
                         <button type="button" onClick={decline} className="cookie-btn cookie-btn-decline">
-                            Tümünü Reddet
+                            {t.declineAll}
                         </button>
                         <button type="button" onClick={accept} className="cookie-btn cookie-btn-accept">
-                            Tümünü Kabul Et
+                            {t.acceptAll}
                         </button>
                     </div>
                 </div>
@@ -129,7 +185,7 @@ export default function CookieConsentBanner() {
                     >
                         <div className="cookie-settings-header">
                             <h2 id="cookie-settings-title" className="cookie-settings-title">
-                                Çerez Ayarları
+                                {t.settingsTitle}
                             </h2>
                             <button
                                 type="button"
@@ -153,18 +209,16 @@ export default function CookieConsentBanner() {
                                     aria-expanded={expandedSection === "essential"}
                                 >
                                     <span className="cookie-category-icon">{expandedSection === "essential" ? "−" : "+"}</span>
-                                    <h3 className="cookie-category-title">Zorunlu Tanımlama Bilgileri</h3>
-                                    <span className="cookie-category-badge cookie-category-always">Her Zaman Etkin</span>
+                                    <h3 className="cookie-category-title">{t.essentialTitle}</h3>
+                                    <span className="cookie-category-badge cookie-category-always">{t.essentialAlwaysActive}</span>
                                 </div>
                                 {expandedSection === "essential" && (
                                     <div className="cookie-category-content">
                                         <p className="cookie-category-desc">
-                                            Web sitemizin düzgün şekilde çalışabilmesi için bazı çerezler zorunlu olarak kullanılmaktadır ve bu çerezler sistemlerimiz üzerinden devre dışı bırakılamaz. Bu çerezler genellikle sizin talep ettiğiniz hizmetlerin sağlanması amacıyla ayarlanır. Örneğin; gizlilik ayarlarınızı kaydetmek, hesabınıza giriş yapabilmenizi sağlamak veya formlar üzerinden gönderdiğiniz bilgileri işleyebilmek için kullanılabilir.
-                                            {" "}
-                                            Tarayıcı ayarlarınızı değiştirerek bu çerezleri engelleyebilir veya çerez kullanımı hakkında bildirim almayı tercih edebilirsiniz. Ancak bu durumda web sitemizin bazı özellikleri beklenen şekilde çalışmayabilir.
+                                            {t.essentialDesc}
                                         </p>
-                                        <Link href="/gizlilik-politikasi" className="cookie-vendor-link">
-                                            Satıcı Ayrıntılarını Görüntüle
+                                        <Link href={t.privacyPolicyLink} className="cookie-vendor-link">
+                                            {t.viewVendorDetails}
                                         </Link>
                                     </div>
                                 )}
@@ -181,7 +235,7 @@ export default function CookieConsentBanner() {
                                     aria-expanded={expandedSection === "analytics"}
                                 >
                                     <span className="cookie-category-icon">{expandedSection === "analytics" ? "−" : "+"}</span>
-                                    <h3 className="cookie-category-title">Analitik Tanımlama Bilgileri</h3>
+                                    <h3 className="cookie-category-title">{t.analyticsTitle}</h3>
                                     <label className="cookie-toggle-wrap" onClick={(e) => e.stopPropagation()}>
                                         <input
                                             type="checkbox"
@@ -195,10 +249,10 @@ export default function CookieConsentBanner() {
                                 {expandedSection === "analytics" && (
                                     <div className="cookie-category-content">
                                         <p className="cookie-category-desc">
-                                            Bu çerezler analiz amaçları için kullanılır. Ziyaretçi davranışını ve site kullanımını anlamamıza yardımcı olur.
+                                            {t.analyticsDesc}
                                         </p>
-                                        <Link href="/gizlilik-politikasi" className="cookie-vendor-link">
-                                            Satıcı Ayrıntılarını Görüntüle
+                                        <Link href={t.privacyPolicyLink} className="cookie-vendor-link">
+                                            {t.viewVendorDetails}
                                         </Link>
                                     </div>
                                 )}
@@ -207,7 +261,7 @@ export default function CookieConsentBanner() {
 
                         <div className="cookie-settings-footer">
                             <button type="button" onClick={handleSaveSettings} className="cookie-btn cookie-btn-accept cookie-btn-single">
-                                Seçimleri Onayla
+                                {t.confirmChoices}
                             </button>
                         </div>
                     </div>

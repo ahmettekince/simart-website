@@ -8,8 +8,10 @@ import SearchableSelect from "@/components/common/SearchableSelect";
 import PhoneInput from "@/components/common/PhoneInput";
 import RecaptchaV3 from "@/components/common/RecaptchaV3";
 import { formatFullNameValue } from "@/utils/inputFormatters";
+import { useLangStore } from "@/stores/langStore";
 
 export default function SupportForm() {
+  const { lang } = useLangStore();
   const formRef = useRef();
   const executeRecaptchaRef = useRef(null);
   const [success, setSuccess] = useState(true);
@@ -24,28 +26,84 @@ export default function SupportForm() {
   const [phone, setPhone] = useState("");
   const [fullName, setFullName] = useState("");
 
+  const t = {
+    tr: {
+      contactTitle: "Bizimle iletişime geçin",
+      fullName: "İsim Soyisim *",
+      phonePlaceholder: "+90 5XX XXX XX XX",
+      selectProduct: "Ürün Seçiniz *",
+      loading: "Yükleniyor...",
+      searchProduct: "Ürün ara...",
+      message: "Mesajınız *",
+      sending: "Gönderiliyor...",
+      send: "Gönder",
+      successMsg: "Mesajınız başarıyla gönderildi.",
+      errorDefault: "Bir hata oluştu.",
+      errorTryAgain: "Bir hata oluştu. Lütfen tekrar deneyin.",
+      recaptchaError: "Güvenlik doğrulaması yapılamadı.",
+      recaptchaRequired: "Lütfen güvenlik adımını tamamlayın.",
+    },
+    en: {
+      contactTitle: "Contact us",
+      fullName: "Full Name *",
+      phonePlaceholder: "+90 5XX XXX XX XX",
+      selectProduct: "Select Product *",
+      loading: "Loading...",
+      searchProduct: "Search product...",
+      message: "Your Message *",
+      sending: "Sending...",
+      send: "Send",
+      successMsg: "Your message has been sent successfully.",
+      errorDefault: "An error occurred.",
+      errorTryAgain: "An error occurred. Please try again.",
+      recaptchaError: "Security verification failed.",
+      recaptchaRequired: "Please complete the security step.",
+    }
+  }[lang] || {
+    tr: {
+      contactTitle: "Bizimle iletişime geçin",
+      fullName: "İsim Soyisim *",
+      phonePlaceholder: "+90 5XX XXX XX XX",
+      selectProduct: "Ürün Seçiniz *",
+      loading: "Yükleniyor...",
+      searchProduct: "Ürün ara...",
+      message: "Mesajınız *",
+      sending: "Gönderiliyor...",
+      send: "Gönder",
+      successMsg: "Mesajınız başarıyla gönderildi.",
+      errorDefault: "Bir hata oluştu.",
+      errorTryAgain: "Bir hata oluştu. Lütfen tekrar deneyin.",
+      recaptchaError: "Güvenlik doğrulaması yapılamadı.",
+      recaptchaRequired: "Lütfen güvenlik adımını tamamlayın.",
+    }
+  }.tr;
+
   // Ürünleri API'den çek
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setProductsLoading(true);
-        const response = await apiClient.get("/products");
+        const response = await apiClient.get("/products", {
+            headers: {
+                'X-Api-Lang': lang
+            }
+        });
         if (response.data?.status === "success" && response.data?.data) {
           const items = Array.isArray(response.data.data) ? response.data.data : response.data.data?.items || [];
           const options = items.map((p) => ({
             id: p.id,
-            name: p.name || p.title || `Ürün #${p.id}`,
+            name: p.name || p.title || (lang === 'tr' ? `Ürün #${p.id}` : `Product #${p.id}`),
           }));
           setProducts(options);
         }
       } catch (error) {
-        console.error("Ürünler yüklenirken hata:", error);
+        console.error("Error loading products:", error);
       } finally {
         setProductsLoading(false);
       }
     };
     fetchProducts();
-  }, []);
+  }, [lang]);
 
   // Hash kontrolü ve otomatik kaydırma
   useEffect(() => {
@@ -86,7 +144,7 @@ export default function SupportForm() {
     e.preventDefault();
     setLoading(true);
     setFieldErrors({});
-    // formData.get("message") yerine state'ten alacağız
+    
     const data = {
       full_name: fullName,
       phone: phone,
@@ -102,7 +160,7 @@ export default function SupportForm() {
       } catch (e) {
         console.error("reCAPTCHA hatası:", e);
         setSuccess(false);
-        setApiMessage("Güvenlik doğrulaması yapılamadı.");
+        setApiMessage(t.recaptchaError);
         handleShowMessage();
         setLoading(false);
         return;
@@ -111,7 +169,7 @@ export default function SupportForm() {
 
     if (!token) {
       setSuccess(false);
-      setApiMessage("Lütfen güvenlik adımını tamamlayın.");
+      setApiMessage(t.recaptchaRequired);
       handleShowMessage();
       setLoading(false);
       return;
@@ -125,23 +183,21 @@ export default function SupportForm() {
 
       if (response.data.status === "success") {
         setSuccess(true);
-        setApiMessage("Mesajınız başarıyla gönderildi.");
+        setApiMessage(response.data.message || t.successMsg);
         setSelectedProductId("");
         setPhone("");
         setFullName("");
-        setMessage(""); // Reset message
+        setMessage("");
         setFieldErrors({});
-        e.target.reset(); // Bu artık message'ı temizlemez çünkü controlled component, ama diğerlerini (eğer varsa) temizler
+        e.target.reset();
       } else {
-        // API status: "error" but HTTP 200 - validasyon hatası
         setSuccess(false);
-        setApiMessage(response.data.message || "Bir hata oluştu.");
+        setApiMessage(response.data.message || t.errorDefault);
         setFieldErrors(response.data.errors || {});
       }
     } catch (error) {
-      // Axios non-200 responses (422 validasyon vb.)
       setSuccess(false);
-      const errorMessage = error.response?.data?.message || "Bir hata oluştu. Lütfen tekrar deneyin.";
+      const errorMessage = error.response?.data?.message || t.errorTryAgain;
       setApiMessage(errorMessage);
       setFieldErrors(error.response?.data?.errors || {});
 
@@ -160,7 +216,7 @@ export default function SupportForm() {
         <div className="row justify-content-center">
           <div className="col-12 col-md-6">
             <div className="support-form-inner">
-              <h5 className="mb_20">Bizimle iletişime geçin</h5>
+              <h5 className="mb_20">{t.contactTitle}</h5>
               <div>
                 <form ref={formRef} onSubmit={sendMail} className="form-contact" id="contactform" noValidate>
                   <div className="d-flex gap-15 mb_15">
@@ -170,9 +226,9 @@ export default function SupportForm() {
                         name="full_name"
                         id="name"
                         required
-                        placeholder="İsim Soyisim *"
-                        value={fullName} // Controlled input
-                        onChange={(e) => setFullName(formatFullNameValue(e.target.value))} // Update state with formatted value
+                        placeholder={t.fullName}
+                        value={fullName}
+                        onChange={(e) => setFullName(formatFullNameValue(e.target.value))}
                       />
                       {fieldErrors.full_name && (
                         <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>{fieldErrors.full_name[0]}</div>
@@ -188,7 +244,7 @@ export default function SupportForm() {
                         value={phone}
                         onChange={setPhone}
                         required
-                        placeholder="+90 5XX XXX XX XX"
+                        placeholder={t.phonePlaceholder}
                       />
                       {fieldErrors.phone && (
                         <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>{fieldErrors.phone[0]}</div>
@@ -203,9 +259,9 @@ export default function SupportForm() {
                         options={products}
                         value={selectedProductId}
                         onChange={(value) => setSelectedProductId(value || "")}
-                        placeholder={productsLoading ? "Yükleniyor..." : "Ürün Seçiniz *"}
+                        placeholder={productsLoading ? t.loading : t.selectProduct}
                         required
-                        searchPlaceholder="Ürün ara..."
+                        searchPlaceholder={t.searchProduct}
                       />
                       {fieldErrors.product_name && (
                         <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>{fieldErrors.product_name[0]}</div>
@@ -215,7 +271,7 @@ export default function SupportForm() {
                   <div className="mb_15">
                     <fieldset className="w-100">
                       <textarea
-                        placeholder="Mesajınız *"
+                        placeholder={t.message}
                         name="message"
                         id="message"
                         required
@@ -244,7 +300,7 @@ export default function SupportForm() {
                       disabled={loading}
                       className="tf-btn w-100 radius-3 btn-fill animate-hover-btn justify-content-center"
                     >
-                      {loading ? "Gönderiliyor..." : "Gönder"}
+                      {loading ? t.sending : t.send}
                     </button>
                   </div>
                 </form>

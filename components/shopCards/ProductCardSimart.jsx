@@ -27,29 +27,32 @@ export default function ProductCardSimart({ product, isPriority = false }) {
 
   // -- Veriler --
   const title = product.name || product.title;
-  const productSlug = product.slug || product.id;
   const isMuseumItem = title === "katya Robot Süpürge";
 
-  // Kategori slug'ını al (ilk kategoriden)
+  // Kategori slug'ını al (aktif dile göre)
   const getCategorySlug = () => {
-    // 1. Direkt prop veya store'dan gelen category_slug
+    const activeLang = lang || "tr";
+    
+    // 1. Ürünün birincil kategorisinin o dildeki slug'ı var mı?
+    const primaryCat = product.primary_category || product.categories?.[0];
+    if (primaryCat?.slugs?.[activeLang]) return primaryCat.slugs[activeLang];
+    
+    // 2. product.category_slug (genelde TR gelir)
     if (product.category_slug) return product.category_slug;
 
-    // 2. categories array
-    if (product.categories && product.categories.length > 0) {
-      const category = product.categories[0];
-      if (category.slug) return category.slug;
-    }
+    // 3. Normal slug
+    if (primaryCat?.slug) return primaryCat.slug;
 
-    // 3. primary_category
-    const primaryCat = product.primary_category || product.primaryCategory || product.item_category;
-    if (primaryCat && primaryCat.slug) return primaryCat.slug;
-
-    // 4. Default
     return "urunler";
   };
+
+  const activeLang = lang || "tr";
   const categorySlug = getCategorySlug();
-  const detailUrl = getLocalizedUrl(`/magaza/${categorySlug}/${productSlug}`, lang);
+  const productSlug = product.slugs?.[activeLang] || product.slug || product.id;
+  
+  // Prefix dille uyumlu olsun (Explicit SEO Control)
+  const prefix = activeLang === "en" ? "/en/shop" : "/magaza";
+  const detailUrl = `${prefix}/${categorySlug}/${productSlug}`;
 
   // Navigasyon Yükleniyor Kontrolü
   const handleNavigate = (e) => {
@@ -80,7 +83,29 @@ export default function ProductCardSimart({ product, isPriority = false }) {
   const reviewCount = product.reviews_count || product.review_count || 0;
 
   // -- Buton Metin Mantığı --
-  const { buttonText, buttonDisabled } = getProductButtonState(product);
+  const { buttonText, buttonDisabled } = getProductButtonState(product, lang);
+
+  const translations = {
+    tr: {
+      added: "Sepete Eklendi",
+      adding: "Ekleniyor...",
+      errorAdd: "Sepete eklenirken bir hata oluştu.",
+      systemError: "Sistemsel bir hata oluştu. Lütfen tekrar deneyin.",
+      outOfStock: "Stokta Yok",
+      locale: "tr-TR"
+    },
+    en: {
+      added: "Added to Cart",
+      adding: "Adding...",
+      errorAdd: "An error occurred while adding to cart.",
+      systemError: "A system error occurred. Please try again.",
+      outOfStock: "Out of Stock",
+      locale: "en-US"
+    }
+  };
+
+  const t = translations[lang] || translations.tr;
+
   // Sepetteki mevcut ürünü bul - tüm olası ID alanlarını kontrol et
   const existingCartItem = useMemo(() => {
     if (!cartItems || !Array.isArray(cartItems) || !product?.id) return null;
@@ -156,6 +181,8 @@ export default function ProductCardSimart({ product, isPriority = false }) {
           campaignTags={product.campaign_tags || []}
           categorySlug={categorySlug}
           isPriority={isPriority}
+          detailUrl={detailUrl}
+          onLinkClick={handleNavigate}
         />
       </div>
 
@@ -171,12 +198,12 @@ export default function ProductCardSimart({ product, isPriority = false }) {
         </div>
 
         <div className="price-slot">
-          {!isMuseumItem && buttonText !== "Stokta Yok" && (
+          {!isMuseumItem && buttonText !== t.outOfStock && (
             <>
               <span className={`price-new fw-bold ${oldPrice ? "price-discount" : "price-normal"}`}>
-                {finalPrice.toLocaleString("tr-TR")} TL
+                {finalPrice.toLocaleString(t.locale)} TL
               </span>
-              {oldPrice && <span className="price-old">{oldPrice.toLocaleString("tr-TR")} TL</span>}
+              {oldPrice && <span className="price-old">{oldPrice.toLocaleString(t.locale)} TL</span>}
             </>
           )}
         </div>
@@ -231,25 +258,25 @@ export default function ProductCardSimart({ product, isPriority = false }) {
                     }
                   } else {
                     // Diğer hata durumlarını sağ üstte göster
-                    setErrorToastMessage(result?.message || "Sepete eklenirken bir hata oluştu.");
+                    setErrorToastMessage(result?.message || t.errorAdd);
                     setShowErrorToast(true);
                   }
                 } catch (error) {
                   console.error("Sepete ekleme hatası:", error);
-                  setErrorToastMessage(error?.message || "Sistemsel bir hata oluştu. Lütfen tekrar deneyin.");
+                  setErrorToastMessage(error?.message || t.systemError);
                   setShowErrorToast(true);
                 } finally {
                   setIsAdding(false);
                 }
               }}
               disabled={buttonDisabled || isAdding || showSuccess}
-              className={`main-cart-btn ${showSuccess ? "success-animation" : ""} ${buttonText === "Stokta Yok" ? "out-of-stock" : ""}`}
+              className={`main-cart-btn ${showSuccess ? "success-animation" : ""} ${buttonText === t.outOfStock ? "out-of-stock" : ""}`}
               style={{ opacity: 1 }}
             >
               <span className="button-text-main">
-                {showSuccess ? "Sepete Eklendi" : isAdding ? "Ekleniyor..." : buttonText}
+                {showSuccess ? t.added : isAdding ? t.adding : buttonText}
               </span>
-              {showSuccess && <span className="button-text-slide">Sepete Eklendi</span>}
+              {showSuccess && <span className="button-text-slide">{t.added}</span>}
             </button>
           </div>
 

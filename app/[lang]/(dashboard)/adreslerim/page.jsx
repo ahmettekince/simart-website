@@ -5,15 +5,23 @@ import React from "react";
 import { checkAuthServer } from "@/utils/authServer";
 import { redirect } from "next/navigation";
 
-export const metadata = {
-  title: "Adreslerim - Şımart Teknoloji",
-  description: "Şımart Teknoloji ",
-};
-export default async function page() {
+import { getLocalizedUrl } from "@/utils/i18n";
+
+export async function generateMetadata({ params }) {
+  const { lang } = await params;
+  const isEn = lang === "en";
+  return {
+    title: isEn ? "My Addresses - Şımart Technology" : "Adreslerim - Şımart Teknoloji",
+    description: isEn ? "Şımart Technology My Addresses" : "Şımart Teknoloji Adreslerim",
+  };
+}
+
+export default async function page({ params }) {
+  const { lang } = await params;
   const isAuthenticated = await checkAuthServer();
 
   if (!isAuthenticated) {
-    redirect("/giris-yap");
+    redirect(getLocalizedUrl("/giris-yap", lang));
   }
 
   return (

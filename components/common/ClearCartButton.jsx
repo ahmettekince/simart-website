@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useCartStore } from "@/stores/cartStore";
+import { useLangStore } from "@/stores/langStore";
 
 /**
  * Sepeti Temizle butonu - onay modalı ile birlikte
@@ -10,6 +11,28 @@ import { useCartStore } from "@/stores/cartStore";
 export default function ClearCartButton({ variant = "button" }) {
   const items = useCartStore((state) => state.items);
   const clearCart = useCartStore((state) => state.clearCart);
+  const lang = useLangStore((state) => state.lang);
+
+  const translations = {
+    tr: {
+      title: "Sepeti Temizle?",
+      desc: "Sepetinizdeki tüm ürünleri temizlemek istediğinize emin misiniz?",
+      confirm: "Evet, Temizle",
+      cancel: "Vazgeç",
+      clearing: "Temizleniyor...",
+      trigger: "Sepeti Temizle"
+    },
+    en: {
+      title: "Clear Cart?",
+      desc: "Are you sure you want to clear all products in your cart?",
+      confirm: "Yes, Clear",
+      cancel: "Cancel",
+      clearing: "Clearing...",
+      trigger: "Clear Cart"
+    }
+  };
+
+  const dict = translations[lang] || translations.tr;
 
   const [isClearingCart, setIsClearingCart] = useState(false);
   const [showClearConfirm, setShowClearConfirm] = useState(false);
@@ -74,10 +97,10 @@ export default function ClearCartButton({ variant = "button" }) {
           >
             <style>{`@keyframes fadeInScale { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }`}</style>
             <div style={{ fontSize: "18px", marginBottom: "10px", color: "#333", fontWeight: "700" }}>
-              Sepeti Temizle?
+              {dict.title}
             </div>
             <div style={{ fontSize: "14px", marginBottom: "25px", color: "#666", lineHeight: "1.5" }}>
-              Sepetinizdeki tüm ürünleri temizlemek istediğinize emin misiniz?
+              {dict.desc}
             </div>
             <div style={{ display: "flex", gap: "12px" }}>
               <button
@@ -98,7 +121,7 @@ export default function ClearCartButton({ variant = "button" }) {
                 onMouseEnter={(e) => { e.target.style.filter = "brightness(0.9)"; }}
                 onMouseLeave={(e) => { e.target.style.filter = "none"; }}
               >
-                Evet, Temizle
+                {dict.confirm}
               </button>
               <button
                 onClick={() => setShowClearConfirm(false)}
@@ -114,7 +137,7 @@ export default function ClearCartButton({ variant = "button" }) {
                   cursor: "pointer",
                 }}
               >
-                Vazgeç
+                {dict.cancel}
               </button>
             </div>
           </div>
@@ -128,7 +151,7 @@ export default function ClearCartButton({ variant = "button" }) {
           className="text_primary fw-6 bg-transparent border-0 underline"
           style={{ ...triggerProps.style, fontSize: "14px", color: "var(--primary)" }}
         >
-          {isClearingCart ? "Temizleniyor..." : "Sepeti Temizle"}
+          {isClearingCart ? dict.clearing : dict.trigger}
         </button>
       ) : (
         <span
@@ -142,7 +165,7 @@ export default function ClearCartButton({ variant = "button" }) {
             ...triggerProps.style,
           }}
         >
-          {isClearingCart ? "Temizleniyor..." : "Sepeti Temizle"}
+          {isClearingCart ? dict.clearing : dict.trigger}
         </span>
       )}
     </>

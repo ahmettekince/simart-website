@@ -2,19 +2,32 @@
 
 import { useState } from "react";
 import Accordion from "@/components/common/Accordion";
-import { defaultFaqTabs } from "@/data/faqs";
+import { defaultFaqTabs, defaultFaqTabsEn } from "@/data/faqs";
+import { useLangStore } from "@/stores/langStore";
 
 export default function DefaultFaqSection() {
+  const { lang } = useLangStore();
   const [activeTab, setActiveTab] = useState(0);
-  const tab = defaultFaqTabs[activeTab];
+  
+  const currentTabs = lang === "en" ? defaultFaqTabsEn : defaultFaqTabs;
+  const tab = currentTabs[activeTab];
+
+  const t = {
+    tr: {
+      title: "Sıkça Sorulan Sorular"
+    },
+    en: {
+      title: "Frequently Asked Questions"
+    }
+  }[lang] || { tr: { title: "Sıkça Sorulan Sorular" } }.tr;
 
   return (
     <div className="sss-default-faq">
-      <h5 className="mb_30">Sıkça Sorulan Sorular</h5>
+      <h5 className="mb_30">{t.title}</h5>
 
       {/* Tab navigation */}
       <ul className="nav sss-faq-tabs mb_30" role="tablist">
-        {defaultFaqTabs.map((t, idx) => (
+        {currentTabs.map((t, idx) => (
           <li key={t.id} className="nav-item">
             <button
               type="button"

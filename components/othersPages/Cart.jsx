@@ -12,7 +12,51 @@ import { useRouter } from "next/navigation";
 import MaxQuantityToast from "@/components/common/MaxQuantityToast";
 import ErrorToast from "@/components/common/ErrorToast";
 
-export default function Cart() {
+import { getLocalizedUrl } from "@/utils/i18n";
+
+const translations = {
+  tr: {
+    loading: "Sepet yükleniyor...",
+    cartProducts: "Sepetteki Ürünler",
+    product: "Ürün",
+    price: "Fiyat",
+    quantity: "Miktar",
+    total: "Toplam",
+    remove: "Ürünü kaldır",
+    gift: "Hediye",
+    giftProduct: "Hediye Ürün",
+    campaignGift: "Kampanya Hediyesi",
+    specialGift: "Sepet Tutarına Özel Hediye",
+    emptyCart: "Sepetiniz boş",
+    startShopping: "Alışverişe Başla",
+    orderSummary: "Sepet Özeti",
+    completeOrder: "Siparişi Tamamla",
+    updateError: "Miktar güncellenirken bir hata oluştu.",
+    systemError: "Sistemsel bir hata oluştu."
+  },
+  en: {
+    loading: "Cart loading...",
+    cartProducts: "Products in Cart",
+    product: "Product",
+    price: "Price",
+    quantity: "Quantity",
+    total: "Total",
+    remove: "Remove product",
+    gift: "Gift",
+    giftProduct: "Gift Product",
+    campaignGift: "Campaign Gift",
+    specialGift: "Special Gift for Cart Total",
+    emptyCart: "Your cart is empty",
+    startShopping: "Start Shopping",
+    orderSummary: "Order Summary",
+    completeOrder: "Complete Order",
+    updateError: "An error occurred while updating the quantity.",
+    systemError: "A system error occurred."
+  }
+};
+
+export default function Cart({ lang = "tr" }) {
+  const t = translations[lang] || translations.tr;
   const router = useRouter();
   const items = useCartStore((state) => state.items);
   const isSynced = useCartStore((state) => state.isSynced);
@@ -37,7 +81,7 @@ export default function Cart() {
   }, [totals, items]);
 
   const handleCheckoutRedirect = () => {
-    router.push("/odeme");
+    router.push(getLocalizedUrl("/odeme", lang));
   };
 
   const setItemQuantity = async (id, quantity) => {
@@ -75,10 +119,10 @@ export default function Cart() {
           <div className="tf-page-cart-wrap">
             <div className="tf-page-cart-item">
               <div className="d-flex justify-content-between align-items-center mb_20">
-                <h5 className="fw-5">Sepetteki Ürünler</h5>
+                <h5 className="fw-5">{t.cartProducts}</h5>
               </div>
               <div className="text-center py-5">
-                <p className="text-muted mb-0">Sepet yükleniyor...</p>
+                <p className="text-muted mb-0">{t.loading}</p>
               </div>
             </div>
           </div>
@@ -86,6 +130,8 @@ export default function Cart() {
       </section>
     );
   }
+
+  const localeStr = lang === "tr" ? "tr-TR" : "en-US";
 
   return (
     <section className="flat-spacing-11 page-cart-sepetim">
@@ -101,7 +147,7 @@ export default function Cart() {
               </div>
             )}
             <div className="d-flex justify-content-between align-items-center mb_20">
-              <h5 className="fw-5">Sepetteki Ürünler</h5>
+              <h5 className="fw-5">{t.cartProducts}</h5>
               <ClearCartButton variant="button" />
             </div>
 
@@ -109,11 +155,11 @@ export default function Cart() {
               <table className="tf-table-page-cart">
                 <thead>
                   <tr>
-                    <th>Ürün</th>
-                    <th>Fiyat</th>
-                    <th>Miktar</th>
-                    <th>Toplam</th>
-                    <th style={{ width: "48px" }} aria-label="Kaldır" />
+                    <th>{t.product}</th>
+                    <th>{t.price}</th>
+                    <th>{t.quantity}</th>
+                    <th>{t.total}</th>
+                    <th style={{ width: "48px" }} aria-label={t.remove} />
                   </tr>
                 </thead>
                 <tbody>
@@ -266,6 +312,7 @@ export default function Cart() {
                                 item.product?.item_category?.slug ||
                                 "urunler";
                               const productSlug = item.product?.slug || item.slug || item.id;
+                              const productPageUrl = getLocalizedUrl(`/magaza/${categorySlug}/${productSlug}`, lang);
                               const minQty =
                                 Number(item.min_purchase_quantity ?? item.product?.min_purchase_quantity ?? 1) || 1;
                               const purchaseLimit =
@@ -297,7 +344,7 @@ export default function Cart() {
                                   style={hasGifts ? { borderBottom: "none" } : {}}
                                 >
                                   <td className="tf-cart-item_product" style={hasGifts ? { borderBottom: "none" } : {}}>
-                                    <Link href={`/magaza/${categorySlug}/${productSlug}`} className="img-box">
+                                    <Link href={productPageUrl} className="img-box">
                                       <Image
                                         alt={item.name}
                                         src={item.image || "/images/default-product.jpg"}
@@ -307,7 +354,7 @@ export default function Cart() {
                                     </Link>
                                     <div className="cart-info">
                                       <Link
-                                        href={`/magaza/${categorySlug}/${productSlug}`}
+                                        href={productPageUrl}
                                         className="cart-title link"
                                         style={{ fontWeight: "bold" }}
                                       >
@@ -341,7 +388,7 @@ export default function Cart() {
                                   </td>
                                   <td
                                     className="tf-cart-item_price"
-                                    cart-data-title="Fiyat"
+                                    cart-data-title={t.price}
                                     style={hasGifts ? { borderBottom: "none" } : {}}
                                   >
                                     <div className="cart-price">
@@ -356,20 +403,20 @@ export default function Cart() {
                                               marginRight: "8px",
                                             }}
                                           >
-                                            {displayRegularPrice.toLocaleString("tr-TR")} TL
+                                            {displayRegularPrice.toLocaleString(localeStr)} TL
                                           </span>
                                           <span style={{ color: "#0bc15c", fontWeight: "600" }}>
-                                            {displayDiscountPrice.toLocaleString("tr-TR")} TL
+                                            {displayDiscountPrice.toLocaleString(localeStr)} TL
                                           </span>
                                         </>
                                       ) : (
-                                        <span>{(displayRegularPrice ?? 0).toLocaleString("tr-TR")} TL</span>
+                                        <span>{(displayRegularPrice ?? 0).toLocaleString(localeStr)} TL</span>
                                       )}
                                     </div>
                                   </td>
                                   <td
                                     className="tf-cart-item_quantity"
-                                    cart-data-title="Miktar"
+                                    cart-data-title={t.quantity}
                                     style={hasGifts ? { borderBottom: "none" } : {}}
                                   >
                                     <div className="cart-quantity">
@@ -384,6 +431,7 @@ export default function Cart() {
                                           setIsStockLimitForToast(isStockLimiting);
                                           setShowMaxReachedToast(true);
                                         }}
+                                        lang={lang}
                                       />
                                       {item.applied_campaign_ids?.length > 0 && applied_campaigns && (
                                         <div style={{ marginTop: "8px" }}>
@@ -418,11 +466,11 @@ export default function Cart() {
                                   </td>
                                   <td
                                     className="tf-cart-item_total"
-                                    cart-data-title="Toplam"
+                                    cart-data-title={t.total}
                                     style={hasGifts ? { borderBottom: "none" } : {}}
                                   >
                                     <div className="cart-total" style={{ minWidth: "60px" }}>
-                                      {itemTotal.toLocaleString("tr-TR")} TL
+                                      {itemTotal.toLocaleString(localeStr)} TL
                                     </div>
                                   </td>
                                   <td
@@ -435,8 +483,8 @@ export default function Cart() {
                                       onClick={() => handleRemoveItem(item.id)}
                                       className="remove-cart btn p-0 border-0 bg-transparent"
                                       style={{ color: "#dc3545", cursor: "pointer" }}
-                                      title="Ürünü kaldır"
-                                      aria-label="Ürünü kaldır"
+                                      title={t.remove}
+                                      aria-label={t.remove}
                                     >
                                       <svg
                                         width="20"
@@ -520,11 +568,11 @@ export default function Cart() {
                                         </div>
                                       ) : giftCampaign?.applied_tier?.min_cart_amount ? (
                                         <div style={{ fontSize: "12px", color: "#10b981" }}>
-                                          {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString("tr-TR")}{" "}
-                                          Sepet Tutarına Özel Hediye
+                                          {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString(localeStr)}{" "}
+                                          {t.specialGift}
                                         </div>
                                       ) : (
-                                        <div style={{ fontSize: "12px", color: "#10b981" }}>Hediye Ürün</div>
+                                        <div style={{ fontSize: "12px", color: "#10b981" }}>{t.giftProduct}</div>
                                       )}
                                     </div>
                                   </td>
@@ -535,18 +583,18 @@ export default function Cart() {
                                   ></td>
                                   <td
                                     className="tf-cart-item_quantity"
-                                    cart-data-title="Miktar"
+                                    cart-data-title={t.quantity}
                                     style={{ borderTop: "none", paddingTop: "10px", paddingBottom: "10px" }}
                                   >
                                     <div className="cart-quantity">x{giftItem.quantity}</div>
                                   </td>
                                   <td
                                     className="tf-cart-item_total"
-                                    cart-data-title="Toplam"
+                                    cart-data-title={t.total}
                                     style={{ borderTop: "none", paddingTop: "10px", paddingBottom: "10px" }}
                                   >
                                     <div className="cart-total" style={{ color: "#10b981" }}>
-                                      Hediye
+                                      {t.gift}
                                     </div>
                                   </td>
                                   <td
@@ -625,11 +673,10 @@ export default function Cart() {
                                     </div>
                                   ) : giftCampaign?.applied_tier?.min_cart_amount ? (
                                     <div style={{ fontSize: "12px", color: "#10b981" }}>
-                                      {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString("tr-TR")} Sepet
-                                      Tutarına Özel İndirim
+                                      {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString(localeStr)} {t.specialGift}
                                     </div>
                                   ) : (
-                                    <div style={{ fontSize: "12px", color: "#10b981" }}>Kampanya Hediyesi</div>
+                                    <div style={{ fontSize: "12px", color: "#10b981" }}>{t.campaignGift}</div>
                                   )}
                                 </div>
                               </td>
@@ -728,8 +775,7 @@ export default function Cart() {
                                     </div>
                                   ) : giftCampaign?.applied_tier?.min_cart_amount ? (
                                     <div style={{ fontSize: "12px", color: "#10b981" }}>
-                                      {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString("tr-TR")} Sepet
-                                      Tutarına Özel Hediye
+                                      {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString(localeStr)} {t.specialGift}
                                     </div>
                                   ) : null}
                                 </div>
@@ -776,9 +822,9 @@ export default function Cart() {
 
               {!items.length && (
                 <div className="text-center py-5">
-                  <h5 className="mb_24">Sepetiniz boş</h5>
-                  <Link href="/magaza" className="tf-btn btn-fill animate-hover-btn radius-4">
-                    Alışverişe Başla
+                  <h5 className="mb_24">{t.emptyCart}</h5>
+                  <Link href={getLocalizedUrl("/magaza", lang)} className="tf-btn btn-fill animate-hover-btn radius-4">
+                    {t.startShopping}
                   </Link>
                 </div>
               )}
@@ -790,11 +836,12 @@ export default function Cart() {
               items={items}
               cartTotals={cartTotals}
               onSubmitOrder={handleCheckoutRedirect}
-              buttonText="Siparişi Tamamla"
+              buttonText={t.completeOrder}
               showNotes={false}
               showAgreements={false}
               showProductList={false}
-              title="Sepet Özeti"
+              title={t.orderSummary}
+              lang={lang}
             />
           )}
         </div>

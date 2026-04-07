@@ -5,9 +5,10 @@ import { API_REVALIDATE } from "@/config/apiConfig";
 /**
  * Sertifikalar (Certificates) verilerini getirir.
  */
-export async function getCertificates() {
+export async function getCertificates(lang = "tr") {
     try {
         const response = await serverFetch("/certificates", {
+            lang,
             next: { revalidate: API_REVALIDATE.CERTIFICATES },
         });
 

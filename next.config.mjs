@@ -78,12 +78,56 @@ const nextConfig = {
         destination: "/en/sss",
       },
       {
-        source: "/en/corporate",
-        destination: "/en/kurumsal",
+        source: "/en/corporate/:path*",
+        destination: "/en/kurumsal/:path*",
       },
       {
         source: "/en/cart",
         destination: "/en/sepetim",
+      },
+      {
+        source: "/en/register",
+        destination: "/en/kayit-ol",
+      },
+      {
+        source: "/en/login",
+        destination: "/en/giris-yap",
+      },
+      {
+        source: "/en/checkout",
+        destination: "/en/odeme",
+      },
+      {
+        source: "/en/track-order",
+        destination: "/en/kargo-takip",
+      },
+      {
+        source: "/en/forgot-password",
+        destination: "/en/sifremi-unuttum",
+      },
+      {
+        source: "/en/my-account",
+        destination: "/en/hesabim",
+      },
+      {
+        source: "/en/my-orders",
+        destination: "/en/siparislerim",
+      },
+      {
+        source: "/en/my-addresses",
+        destination: "/en/adreslerim",
+      },
+      {
+        source: "/en/my-reviews",
+        destination: "/en/degerlendirmelerim",
+      },
+      {
+        source: "/en/my-coupons",
+        destination: "/en/kupon-kodlarim",
+      },
+      {
+        source: "/en/share-simart",
+        destination: "/en/paylas-simart",
       },
     ];
   },

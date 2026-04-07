@@ -8,6 +8,7 @@ import CircularLoading from "@/components/common/CircularLoading";
 import PhoneInput from "@/components/common/PhoneInput";
 import SimartButton from "@/components/common/SimartButton";
 import { useCustomerStore } from "@/stores/customerStore";
+import { useLangStore } from "@/stores/langStore";
 
 const getApiErrorMessage = (data) => {
   if (!data) return null;
@@ -21,6 +22,7 @@ const getApiErrorMessage = (data) => {
 };
 
 export default function AccountProfileSection() {
+  const lang = useLangStore((s) => s.lang);
   const customer = useCustomerStore((s) => s.customer);
   const isLoading = useCustomerStore((s) => s.isLoading);
   const storeError = useCustomerStore((s) => s.error);
@@ -49,6 +51,59 @@ export default function AccountProfileSection() {
   const fileInputRef = React.useRef(null);
   const photoMenuRef = React.useRef(null);
 
+  const translations = {
+    tr: {
+      firstName: "İsim",
+      lastName: "Soyisim",
+      email: "E-posta",
+      phone: "Telefon",
+      verified: "Doğrulandı",
+      verify: "Doğrula",
+      confirm: "Onayla",
+      code: "Kod",
+      sent: "Gönderildi",
+      loading: "Hesap bilgileri yükleniyor...",
+      loadError: "Müşteri bilgileri yüklenirken bir hata oluştu.",
+      updateSuccess: "Bilgileriniz başarıyla güncellendi.",
+      updateError: "Bilgiler güncellenirken bir hata oluştu.",
+      photoUpdated: "Profil fotoğrafınız güncellendi.",
+      photoDeleted: "Profil fotoğrafınız silindi.",
+      photoDeleteConfirm: "Profil fotoğrafınızı silmek istediğinize emin misiniz?",
+      photoUpload: "Fotoğraf Yükle",
+      photoChange: "Fotoğrafı Değiştir",
+      photoRemove: "Fotoğrafı Kaldır",
+      invalidPhone: "Geçerli bir telefon numarası girin (+90 ile başlamalı, 10 hane).",
+      enterCode: "Doğrulama kodunu girin.",
+      verifyFailed: "Doğrulama başarısız."
+    },
+    en: {
+      firstName: "First Name",
+      lastName: "Last Name",
+      email: "Email",
+      phone: "Phone",
+      verified: "Verified",
+      verify: "Verify",
+      confirm: "Confirm",
+      code: "Code",
+      sent: "Sent",
+      loading: "Loading profile info...",
+      loadError: "Error loading customer info.",
+      updateSuccess: "Information updated successfully.",
+      updateError: "Error updating information.",
+      photoUpdated: "Profile photo updated.",
+      photoDeleted: "Profile photo deleted.",
+      photoDeleteConfirm: "Are you sure you want to delete your profile photo?",
+      photoUpload: "Upload Photo",
+      photoChange: "Change Photo",
+      photoRemove: "Remove Photo",
+      invalidPhone: "Enter a valid phone number (+90 starting, 10 digits).",
+      enterCode: "Enter verification code.",
+      verifyFailed: "Verification failed."
+    }
+  };
+
+  const t = translations[lang] || translations.tr;
+
   useEffect(() => {
     if (customer) {
       setCustomerData({
@@ -65,8 +120,8 @@ export default function AccountProfileSection() {
   }, [customer]);
 
   useEffect(() => {
-    if (storeError) setProfileError("Müşteri bilgileri yüklenirken bir hata oluştu.");
-  }, [storeError]);
+    if (storeError) setProfileError(t.loadError);
+  }, [storeError, t.loadError]);
 
   // Fotoğraf menüsünü dışarı tıklandığında kapat
   useEffect(() => {
@@ -98,7 +153,7 @@ export default function AccountProfileSection() {
   const handleSendVerificationCode = async () => {
     const phone = formatPhoneValue(phoneForVerify).replace(/\s/g, "");
     if (!phone || phone.length < 13) {
-      setPhoneError("Geçerli bir telefon numarası girin (+90 ile başlamalı, 10 hane).");
+      setPhoneError(t.invalidPhone);
       return;
     }
     setPhoneError("");
@@ -112,10 +167,10 @@ export default function AccountProfileSection() {
           setCodeSent(true);
         }, 1500);
       } else {
-        setPhoneError(getApiErrorMessage(response.data) || "Kod gönderilemedi.");
+        setPhoneError(getApiErrorMessage(response.data) || (lang === "tr" ? "Kod gönderilemedi." : "Unable to send code."));
       }
     } catch (err) {
-      setPhoneError(getApiErrorMessage(err.response?.data) || err.message || "Kod gönderilirken bir hata oluştu.");
+      setPhoneError(getApiErrorMessage(err.response?.data) || err.message || (lang === "tr" ? "Hata oluştu." : "Error occurred."));
     } finally {
       setSendCodeLoading(false);
     }
@@ -124,11 +179,11 @@ export default function AccountProfileSection() {
   const handleVerifyCode = async () => {
     const phone = formatPhoneValue(phoneForVerify).replace(/\s/g, "");
     if (!phone || phone.length < 13) {
-      setPhoneError("Geçerli bir telefon numarası girin.");
+      setPhoneError(t.invalidPhone);
       return;
     }
     if (!verificationCode.trim()) {
-      setPhoneError("Doğrulama kodunu girin.");
+      setPhoneError(t.enterCode);
       return;
     }
     setPhoneError("");
@@ -151,10 +206,10 @@ export default function AccountProfileSection() {
           if (updated?.phone_verified_at) setPhoneVerifiedAt(updated.phone_verified_at);
         }, 2000);
       } else {
-        setPhoneError(getApiErrorMessage(response.data) || "Doğrulama başarısız.");
+        setPhoneError(getApiErrorMessage(response.data) || t.verifyFailed);
       }
     } catch (err) {
-      setPhoneError(getApiErrorMessage(err.response?.data) || err.message || "Doğrulama sırasında bir hata oluştu.");
+      setPhoneError(getApiErrorMessage(err.response?.data) || err.message || (lang === "tr" ? "Hata oluştu." : "Error occurred."));
     } finally {
       setVerifyLoading(false);
     }
@@ -164,9 +219,8 @@ export default function AccountProfileSection() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Dosya tipi ve boyut kontrolü (opsiyonel ama iyi olur)
     if (!file.type.startsWith("image/")) {
-      setProfileError("Lütfen geçerli bir resim dosyası seçin.");
+      setProfileError(lang === "tr" ? "Lütfen geçerli bir resim dosyası seçin." : "Please select a valid image file.");
       return;
     }
 
@@ -184,25 +238,24 @@ export default function AccountProfileSection() {
         },
       });
       if (response.data?.status === "success") {
-        setProfileMessage("Profil fotoğrafınız güncellendi.");
+        setProfileMessage(t.photoUpdated);
         await useCustomerStore.getState().fetchCustomer(true);
       } else {
-        setProfileError(getApiErrorMessage(response.data) || "Fotoğraf yüklenemedi.");
+        setProfileError(getApiErrorMessage(response.data) || (lang === "tr" ? "Fotoğraf yüklenemedi." : "Photo could not be uploaded."));
       }
     } catch (err) {
-      setProfileError(getApiErrorMessage(err.response?.data) || err.message || "Fotoğraf yüklenirken bir hata oluştu.");
+      setProfileError(getApiErrorMessage(err.response?.data) || err.message || (lang === "tr" ? "Hata oluştu." : "Error occurred."));
     } finally {
       setIsPhotoLoading(false);
       setShowPhotoMenu(false);
-      // Inputu temizle ki aynı dosya tekrar seçilebilsin
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
   const handlePhotoDelete = async (e) => {
-    e.stopPropagation(); // Image tıklandığında file input tetiklenmesin
+    e.stopPropagation();
     if (!customer?.profile_photo_url) return;
-    if (!confirm("Profil fotoğrafınızı silmek istediğinize emin misiniz?")) return;
+    if (!confirm(t.photoDeleteConfirm)) return;
 
     setIsPhotoLoading(true);
     setProfileError("");
@@ -211,13 +264,13 @@ export default function AccountProfileSection() {
     try {
       const response = await apiClient.delete("/customer/profile-photo");
       if (response.data?.status === "success") {
-        setProfileMessage("Profil fotoğrafınız silindi.");
+        setProfileMessage(t.photoDeleted);
         await useCustomerStore.getState().fetchCustomer(true);
       } else {
-        setProfileError(getApiErrorMessage(response.data) || "Fotoğraf silinemedi.");
+        setProfileError(getApiErrorMessage(response.data) || (lang === "tr" ? "Fotoğraf silinemedi." : "Photo could not be deleted."));
       }
     } catch (err) {
-      setProfileError(getApiErrorMessage(err.response?.data) || err.message || "Fotoğraf silinirken bir hata oluştu.");
+      setProfileError(getApiErrorMessage(err.response?.data) || err.message || (lang === "tr" ? "Hata oluştu." : "Error occurred."));
     } finally {
       setIsPhotoLoading(false);
       setShowPhotoMenu(false);
@@ -231,9 +284,9 @@ export default function AccountProfileSection() {
     setProfileError("");
     try {
       // TODO: API endpoint - profile update
-      setProfileMessage("Bilgileriniz başarıyla güncellendi.");
+      setProfileMessage(t.updateSuccess);
     } catch (err) {
-      setProfileError(getApiErrorMessage(err.response?.data) || err.message || "Bilgiler güncellenirken bir hata oluştu.");
+      setProfileError(getApiErrorMessage(err.response?.data) || err.message || t.updateError);
     } finally {
       setIsSaving(false);
     }
@@ -243,7 +296,7 @@ export default function AccountProfileSection() {
   if (showLoading) {
     return (
       <div className="account-profile-section" style={{ padding: "40px 0", textAlign: "center" }}>
-        <CircularLoading text="Hesap bilgileri yükleniyor..." />
+        <CircularLoading text={t.loading} />
       </div>
     );
   }
@@ -295,13 +348,12 @@ export default function AccountProfileSection() {
 
               <Image
                 src={customer?.profile_photo_url || "/images/logo/favicon.png"}
-                alt="Profil Fotoğrafı"
+                alt="Profile Photo"
                 fill
                 style={{ objectFit: customer?.profile_photo_url ? "cover" : "contain", padding: customer?.profile_photo_url ? "0" : "15px" }}
               />
             </div>
 
-            {/* Kalem İkonu (Sağ Alt - Daha Dışarıda) */}
             <div
               onClick={(e) => {
                 e.preventDefault();
@@ -329,7 +381,6 @@ export default function AccountProfileSection() {
             >
               <i className="icon-edit" style={{ fontSize: '13px' }}></i>
 
-              {/* Fotoğraf Yönetim Menüsü (Popup) */}
               {showPhotoMenu && (
                 <div
                   ref={photoMenuRef}
@@ -362,7 +413,7 @@ export default function AccountProfileSection() {
                     className="photo-menu-item"
                   >
                     <i className="icon-camera" style={{ fontSize: '14px' }} />
-                    {customer?.profile_photo_url ? "Fotoğrafı Değiştir" : "Fotoğraf Yükle"}
+                    {customer?.profile_photo_url ? t.photoChange : t.photoUpload}
                   </div>
 
                   {customer?.profile_photo_url && (
@@ -380,7 +431,7 @@ export default function AccountProfileSection() {
                       className="photo-menu-item"
                     >
                       <i className="icon-trash" style={{ fontSize: '14px' }} />
-                      Fotoğrafı Kaldır
+                      {t.photoRemove}
                     </div>
                   )}
                 </div>
@@ -410,11 +461,10 @@ export default function AccountProfileSection() {
           }
         `}</style>
 
-        {/* İsim | Soyisim - yan yana */}
         <div className="account-profile-row account-profile-row-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px", marginBottom: "12px" }}>
           <input
             className="tf-field-input tf-input fw-6 account-profile-input"
-            placeholder="İsim"
+            placeholder={t.firstName}
             type="text"
             name="first_name"
             value={customerData.first_name}
@@ -422,7 +472,7 @@ export default function AccountProfileSection() {
           />
           <input
             className="tf-field-input tf-input fw-6 account-profile-input"
-            placeholder="Soyisim"
+            placeholder={t.lastName}
             type="text"
             name="last_name"
             value={customerData.last_name}
@@ -430,10 +480,9 @@ export default function AccountProfileSection() {
           />
         </div>
 
-        {/* E-posta */}
         <input
           className="tf-field-input tf-input fw-6 account-profile-input"
-          placeholder="E-posta"
+          placeholder={t.email}
           type="email"
           name="email"
           value={customerData.email}
@@ -441,7 +490,6 @@ export default function AccountProfileSection() {
           style={{ marginBottom: "12px", display: "block", width: "100%" }}
         />
 
-        {/* Telefon + Doğrula / Tik */}
         {phoneError && (
           <div className="mb_15" style={{ padding: "12px 16px", backgroundColor: "#f8d7da", border: "1px solid #f5c6cb", borderRadius: "4px", color: "#721c24" }}>
             {phoneError}
@@ -453,7 +501,7 @@ export default function AccountProfileSection() {
               id="phone-verify"
               value={phoneVerifiedAt ? customerPhone : phoneForVerify}
               onChange={setPhoneForVerify}
-              placeholder="Telefon"
+              placeholder={t.phone}
               className="tf-field-input tf-input fw-6 account-profile-input account-profile-phone-input"
               disabled={!!phoneVerifiedAt}
             />
@@ -464,7 +512,7 @@ export default function AccountProfileSection() {
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                 <polyline points="22 4 12 14.01 9 11.01" />
               </svg>
-              Doğrulandı
+              {t.verified}
             </span>
           ) : !codeSent ? (
             <SimartButton
@@ -474,13 +522,13 @@ export default function AccountProfileSection() {
               disabled={sendCodeLoading}
               success={sendCodeSuccess}
             >
-              {sendCodeLoading ? "..." : sendCodeSuccess ? "Gönderildi" : "Doğrula"}
+              {sendCodeLoading ? "..." : sendCodeSuccess ? t.sent : t.verify}
             </SimartButton>
           ) : (
             <>
               <input
                 className="tf-field-input tf-input fw-6 account-profile-input account-profile-phone-input"
-                placeholder="Kod"
+                placeholder={t.code}
                 type="text"
                 inputMode="numeric"
                 maxLength={6}
@@ -498,7 +546,7 @@ export default function AccountProfileSection() {
                 disabled={verifyLoading}
                 success={verifySuccess}
               >
-                {verifyLoading ? "..." : verifySuccess ? "Doğrulandı" : "Onayla"}
+                {verifyLoading ? "..." : verifySuccess ? t.verified : t.confirm}
               </SimartButton>
             </>
           )}

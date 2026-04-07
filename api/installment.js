@@ -14,6 +14,9 @@ export async function getInstallmentOptions(slug) {
 
     try {
         const response = await apiClient.get(`/installment/options?slug=${encodeURIComponent(slug.trim())}`, {
+            headers: {
+                "X-Api-Lang": "tr",
+            },
             validateStatus: (status) => status === 200 || status === 404,
         });
 

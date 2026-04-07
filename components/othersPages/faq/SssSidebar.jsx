@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useLangStore } from "@/stores/langStore";
 
 export default function SssSidebar({
   categories = [],
@@ -8,6 +9,33 @@ export default function SssSidebar({
   selectedProduct,
   onSelectProduct,
 }) {
+  const { lang } = useLangStore();
+  
+  const t = {
+    tr: {
+      searchPlaceholder: "Ürün ara...",
+      noCategory: "Kategori bulunamadı.",
+      defaultCategoryName: "Kategori",
+      noProduct: "Ürün bulunamadı",
+      defaultProductName: "Ürün"
+    },
+    en: {
+      searchPlaceholder: "Search product...",
+      noCategory: "No category found.",
+      defaultCategoryName: "Category",
+      noProduct: "No product found",
+      defaultProductName: "Product"
+    }
+  }[lang] || {
+    tr: {
+      searchPlaceholder: "Ürün ara...",
+      noCategory: "Kategori bulunamadı.",
+      defaultCategoryName: "Kategori",
+      noProduct: "Ürün bulunamadı",
+      defaultProductName: "Ürün"
+    }
+  }.tr;
+
   const filteredCategories = useMemo(
     () =>
       categories?.filter((c) => c && c.slug && c.name && c.is_active !== false) || [],
@@ -26,12 +54,12 @@ export default function SssSidebar({
         list.push({
           product: p,
           categorySlug: slug,
-          categoryName: cat.name ?? cat.title ?? cat.slug ?? "Kategori",
+          categoryName: cat.name ?? cat.title ?? cat.slug ?? t.defaultCategoryName,
         });
       });
     });
     return list;
-  }, [filteredCategories, productsByCategory]);
+  }, [filteredCategories, productsByCategory, t.defaultCategoryName]);
 
   const searchResults = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
@@ -95,7 +123,7 @@ export default function SssSidebar({
         <input
           type="text"
           className="form-control"
-          placeholder="Ürün ara..."
+          placeholder={t.searchPlaceholder}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
@@ -106,7 +134,7 @@ export default function SssSidebar({
                 item.product.name ||
                 item.product.title ||
                 item.product.slug ||
-                "Ürün";
+                t.defaultProductName;
               return (
                 <li key={`${item.categorySlug}-${item.product.id || name}`}>
                   <button
@@ -126,10 +154,10 @@ export default function SssSidebar({
 
       <div className="flat-accordion style-default has-btns-arrow">
         {filteredCategories.length === 0 ? (
-          <div className="p-3 text-muted">Kategori bulunamadı.</div>
+          <div className="p-3 text-muted">{t.noCategory}</div>
         ) : (
           filteredCategories.map((cat, idx) => {
-            const name = cat.name ?? cat.title ?? cat.slug ?? "Kategori";
+            const name = cat.name ?? cat.title ?? cat.slug ?? t.defaultCategoryName;
             const slug = cat.slug;
             const products = slug ? productsByCategory[slug] || [] : [];
             const isExpanded = expandedIndex === idx;
@@ -157,12 +185,12 @@ export default function SssSidebar({
                 {isExpanded && (
                   <div className="toggle-content" style={{ display: "block" }}>
                     {products.length === 0 ? (
-                      <div className="text-muted small">Ürün bulunamadı</div>
+                      <div className="text-muted small">{t.noProduct}</div>
                     ) : (
                       <ul className="sss-product-list list-unstyled mb-0">
                         {products.map((product) => {
                           const productName =
-                            product.name ?? product.title ?? product.slug ?? "Ürün";
+                            product.name ?? product.title ?? product.slug ?? t.defaultProductName;
                           const active = isProductSelected(product);
                           return (
                             <li key={product.id ?? product.slug ?? product.name}>

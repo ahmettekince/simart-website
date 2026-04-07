@@ -16,14 +16,23 @@ export function getLocalizedUrl(url, lang) {
 
     // İngilizce için slugları eşle
     if (lang === "en" && localizedRoutes.en) {
-        Object.entries(localizedRoutes.en).forEach(([trSlug, enSlug]) => {
-            // Tam eşleşme veya başlangıç eşleşmesi (/magaza veya /magaza/...)
-            if (cleanUrl === `/${trSlug}`) {
-                cleanUrl = `/${enSlug}`;
-            } else if (cleanUrl.startsWith(`/${trSlug}/`)) {
-                cleanUrl = cleanUrl.replace(`/${trSlug}/`, `/${enSlug}/`);
+        // En spesifik olanı (en uzun olanı) önce eşleştirmek için sırala
+        const sortedRoutes = Object.entries(localizedRoutes.en).sort(
+            (a, b) => b[0].length - a[0].length
+        );
+
+        for (const [trSlug, enSlug] of sortedRoutes) {
+            const trPath = trSlug.startsWith('/') ? trSlug : `/${trSlug}`;
+            const enPath = enSlug.startsWith('/') ? enSlug : `/${enSlug}`;
+
+            if (cleanUrl === trPath) {
+                cleanUrl = enPath;
+                break; // Tam eşleşme bulunduğunda dur
+            } else if (cleanUrl.startsWith(`${trPath}/`)) {
+                cleanUrl = cleanUrl.replace(new RegExp(`^${trPath}(\\/|$)`), `${enPath}$1`);
+                break; // Başlangıç eşleşmesi bulunduğunda dur
             }
-        });
+        }
     }
 
     // Varsayılan dil (tr) ise prefix ekleme
@@ -44,12 +53,6 @@ export function getLocalizedUrl(url, lang) {
     return `/${lang}${cleanUrl}`;
 }
 
-/**
- * Mevcut bir path'i başka bir dile çevirir (slug eşleşmeleri dahil).
- * @param {string} pathname - Mevcut pathname (örn: /en/shop/kategori)
- * @param {string} targetLocale - Hedef dil (örn: tr)
- * @returns {string} Çevrilmiş pathname
- */
 export function translatePath(pathname, targetLocale) {
     if (!pathname || pathname === "/") return `/${targetLocale === i18n.defaultLocale ? "" : targetLocale}`;
 
@@ -61,28 +64,56 @@ export function translatePath(pathname, targetLocale) {
         currentLocale = segments.shift();
     }
 
-    // Slugları orijinal (tr) haline geri getir
-    let originalSegments = segments.map(segment => {
-        if (currentLocale !== i18n.defaultLocale && localizedRoutes[currentLocale]) {
-            const trSlug = Object.keys(localizedRoutes[currentLocale]).find(
-                key => localizedRoutes[currentLocale][key] === segment
-            );
-            return trSlug || segment;
-        }
-        return segment;
-    });
+    let innerPath = segments.join("/");
 
-    // Şimdi orijinal segmentleri hedef dile çevir
-    let translatedSegments = originalSegments.map(segment => {
-        if (targetLocale !== i18n.defaultLocale && localizedRoutes[targetLocale]) {
-            return localizedRoutes[targetLocale][segment] || segment;
+    // 1. TAM PATH EŞLEŞMESİ KONTROLÜ (Daha spesifik: kurumsal/hikayemiz gibi)
+    // Eğer EN -> TR ise (reverse lookup)
+    if (currentLocale !== i18n.defaultLocale && targetLocale === i18n.defaultLocale) {
+        const trPath = Object.keys(localizedRoutes[currentLocale]).find(
+            key => localizedRoutes[currentLocale][key] === innerPath
+        );
+        if (trPath) innerPath = trPath;
+    } 
+    // Eğer TR -> EN ise
+    else if (currentLocale === i18n.defaultLocale && targetLocale !== i18n.defaultLocale) {
+        if (localizedRoutes[targetLocale][innerPath]) {
+            innerPath = localizedRoutes[targetLocale][innerPath];
         }
-        return segment;
-    });
+    }
+    // Eğer EN -> FR gibi bir şeyse (bu projede yok ama genel mantık)
+    else if (currentLocale !== i18n.defaultLocale && targetLocale !== i18n.defaultLocale) {
+        // Önce TR'ye çevir sonra hedefe
+        const trPath = Object.keys(localizedRoutes[currentLocale]).find(
+            key => localizedRoutes[currentLocale][key] === innerPath
+        ) || innerPath;
+        innerPath = localizedRoutes[targetLocale][trPath] || trPath;
+    }
+
+    // 2. SEGMENT TABANLI FALLBACK (Eğer tam eşleşme bulunamadıysa)
+    if (innerPath === segments.join("/")) {
+        let originalSegments = segments.map(segment => {
+            if (currentLocale !== i18n.defaultLocale && localizedRoutes[currentLocale]) {
+                const trSlug = Object.keys(localizedRoutes[currentLocale]).find(
+                    key => localizedRoutes[currentLocale][key] === segment
+                );
+                return trSlug || segment;
+            }
+            return segment;
+        });
+
+        let translatedSegments = originalSegments.map(segment => {
+            if (targetLocale !== i18n.defaultLocale && localizedRoutes[targetLocale]) {
+                return localizedRoutes[targetLocale][segment] || segment;
+            }
+            return segment;
+        });
+        
+        innerPath = translatedSegments.join("/");
+    }
 
     // Yeni URL'yi oluştur
     const prefix = targetLocale === i18n.defaultLocale ? "" : `/${targetLocale}`;
-    const path = translatedSegments.length > 0 ? `/${translatedSegments.join("/")}` : "";
+    const result = `${prefix}/${innerPath}`.replace(/\/+$/, "");
 
-    return `${prefix}${path}` || "/";
+    return result || "/";
 }

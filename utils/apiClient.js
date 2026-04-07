@@ -14,26 +14,15 @@ apiClient.interceptors.request.use((config) => {
     // Add language from state
     const lang = useLangStore.getState().lang || "tr";
 
-    // 1. Her durumda Query Params olarak ekle
-    config.params = {
-        lang,
-        ...config.params,
+    // X-Api-Lang header'ını ekle
+    config.headers = {
+        ...config.headers,
+        "X-Api-Lang": lang
     };
 
     const method = config.method?.toLowerCase();
 
-    // 2. Body olan isteklerde (POST, PUT vb.) Body'ye de ekle
-    if (method !== "get" && method !== "head") {
-        if (config.data instanceof FormData) {
-            config.data.append("lang", lang);
-        } else {
-            const currentData = typeof config.data === "string" ? JSON.parse(config.data || "{}") : (config.data || {});
-            config.data = {
-                ...currentData,
-                lang
-            };
-        }
-    }
+    // Body olan isteklerde (POST, PUT vb.) Body'ye eklemiyoruz artık, sadece header üzerinden.
 
     // Remove Content-Type if it's FormData (Browser sets it automatically with boundary)
     if (config.data instanceof FormData) {

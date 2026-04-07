@@ -7,6 +7,77 @@ import { log } from "@/utils/logger";
 
 const GIFT_NOTE_KEY = "cart_gift_note";
 
+import { getLocalizedUrl } from "@/utils/i18n";
+
+const translations = {
+  tr: {
+    orderInfo: "Sipariş Bilgileri",
+    couponCode: "Kupon Kodu",
+    apply: "Uygula",
+    applying: "Uygulanıyor...",
+    applied: "Kupon kodu başarıyla uygulandı!",
+    remove: "Kaldır",
+    removing: "Kaldırılıyor...",
+    subtotal: "Ara Toplam",
+    customDiscount: "Size Özel İndirim",
+    campaignDiscount: "Kampanya İndirimi",
+    couponDiscount: "Kupon İndirimi",
+    total: "Toplam",
+    gift: "Hediye",
+    giftProduct: "Hediye Ürün",
+    specialGift: "Sepet Tutarına Özel Hediye",
+    emptyCart: "Sepetiniz boş",
+    exploreProducts: "Ürünleri Keşfet",
+    orderNote: "Sipariş notu eklemek istiyorum (isteğe bağlı)",
+    orderNotePlaceholder: "Siparişinizle ilgili özel bir notunuz varsa buraya yazabilirsiniz...",
+    giftNote: "Hediye notu eklemek istiyorum (isteğe bağlı)",
+    giftNotePlaceholder: "Hediye paketi için notunuzu buraya yazabilirsiniz...",
+    laterDelivery: "İleri tarihli teslimat istiyorum",
+    deliveryDate: "Teslimat Tarihi",
+    couponApplyError: "Kupon uygulanamadı",
+    couponRemoveError: "Kupon kaldırılırken bir hata oluştu.",
+    unit: "adet",
+    specialGiftForCart: "Sepet Tutarına Özel Hediye",
+    specialDiscountForCart: "Sepet Tutarına Özel İndirim",
+    placeOrder: "Sipariş Ver",
+    submitting: "Gönderiliyor...",
+    laterDeliveryNotice: "Resmi tatillere ve pazar günlerine denk gelen siparişlerde süre değişiklik gösterebilir."
+  },
+  en: {
+    orderInfo: "Order Information",
+    couponCode: "Coupon Code",
+    apply: "Apply",
+    applying: "Applying...",
+    applied: "Coupon code applied successfully!",
+    remove: "Remove",
+    removing: "Removing...",
+    subtotal: "Subtotal",
+    customDiscount: "Special Discount",
+    campaignDiscount: "Campaign Discount",
+    couponDiscount: "Coupon Discount",
+    total: "Total",
+    gift: "Gift",
+    giftProduct: "Gift Product",
+    specialGift: "Special Gift for Cart Total",
+    emptyCart: "Your cart is empty",
+    exploreProducts: "Explore Products",
+    orderNote: "I want to add an order note (optional)",
+    orderNotePlaceholder: "If you have a special note about your order, you can write it here...",
+    giftNote: "I want to add a gift note (optional)",
+    giftNotePlaceholder: "You can write your note for the gift wrap here...",
+    laterDelivery: "I want scheduled delivery",
+    deliveryDate: "Delivery Date",
+    couponApplyError: "Coupon could not be applied",
+    couponRemoveError: "An error occurred while removing the coupon.",
+    unit: "unit(s)",
+    specialGiftForCart: "Special Gift for Cart Total",
+    specialDiscountForCart: "Special Discount for Cart Total",
+    placeOrder: "Place Order",
+    submitting: "Submitting...",
+    laterDeliveryNotice: "Duration may vary for orders coinciding with public holidays and Sundays."
+  }
+};
+
 export default function OrderSummary({
   items,
   cartTotals,
@@ -26,12 +97,17 @@ export default function OrderSummary({
   preferredDeliveryDate = "",
   onPreferLaterDeliveryChange,
   onPreferredDeliveryDateChange,
-  buttonText = "Sipariş Ver",
+  buttonText,
   showNotes = true,
   showAgreements = true,
   showProductList = true,
-  title = "Sipariş Bilgileri"
+  title,
+  lang = "tr"
 }) {
+  const t = translations[lang] || translations.tr;
+  const displayButtonText = buttonText || t.placeOrder;
+  const displayTitle = title || t.orderInfo;
+  const localeStr = lang === "tr" ? "tr-TR" : "en-US";
   const [couponCode, setCouponCode] = useState("");
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false);
   const [isRemovingCoupon, setIsRemovingCoupon] = useState(false);
@@ -245,11 +321,11 @@ export default function OrderSummary({
         setCouponCode("");
         setTimeout(() => setCouponSuccess(false), 3000);
       } else {
-        setCouponError((result && result.message) || "Uygulanamadı");
+        setCouponError((result && result.message) || t.couponApplyError);
         setTimeout(() => setCouponError(""), 4000);
       }
     } catch (error) {
-      setCouponError("Uygulanamadı");
+      setCouponError(t.couponApplyError);
       setTimeout(() => setCouponError(""), 4000);
       console.error("Kupon uygulama hatası:", error);
     } finally {
@@ -266,11 +342,11 @@ export default function OrderSummary({
     try {
       const success = await removeCoupon(coupon.code);
       if (!success) {
-        setCouponError("Kupon kaldırılırken bir hata oluştu.");
+        setCouponError(t.couponRemoveError);
         setTimeout(() => setCouponError(""), 4000);
       }
     } catch (error) {
-      setCouponError("Kupon kaldırılırken bir hata oluştu.");
+      setCouponError(t.couponRemoveError);
       setTimeout(() => setCouponError(""), 4000);
       console.error("Kupon kaldırma hatası:", error);
     } finally {
@@ -310,7 +386,7 @@ export default function OrderSummary({
   return (
     <div className="tf-page-cart-footer">
       <div className="tf-cart-footer-inner">
-        <h5 className="fw-5 mb_20">{title}</h5>
+        <h5 className="fw-5 mb_20">{displayTitle}</h5>
         <form onSubmit={(e) => e.preventDefault()} className="tf-page-cart-checkout widget-wrap-checkout">
           {showProductList && (
             <ul className="wrap-checkout-product">
@@ -327,7 +403,7 @@ export default function OrderSummary({
                         item.product?.item_category?.slug ||
                         "urunler";
                       const productSlug = item.product?.slug || item.slug || item.id;
-                      const productUrl = `/magaza/${categorySlug}/${productSlug}`;
+                      const productUrl = getLocalizedUrl(`/magaza/${categorySlug}/${productSlug}`, lang);
                       const imageUrl =
                         item.image ||
                         item.product?.cover_image?.url ||
@@ -383,15 +459,15 @@ export default function OrderSummary({
                               {displayDiscountPrice != null && displayRegularPrice != null && displayDiscountPrice < displayRegularPrice ? (
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
                                   <span style={{ color: '#0bc15c', fontWeight: '600', whiteSpace: 'nowrap' }}>
-                                    {(displayDiscountPrice * item.quantity).toLocaleString("tr-TR")} TL
+                                    {(displayDiscountPrice * item.quantity).toLocaleString(localeStr)} TL
                                   </span>
                                   <span style={{ textDecoration: 'line-through', color: '#999', fontSize: '12px', whiteSpace: 'nowrap' }}>
-                                    {(displayRegularPrice * item.quantity).toLocaleString("tr-TR")} TL
+                                    {(displayRegularPrice * item.quantity).toLocaleString(localeStr)} TL
                                   </span>
                                 </div>
                               ) : (
                                 <span style={{ color: '#3c81b5', fontWeight: '600', whiteSpace: 'nowrap' }}>
-                                  {(displayRegularPrice * item.quantity).toLocaleString("tr-TR")} TL
+                                  {(displayRegularPrice * item.quantity).toLocaleString(localeStr)} TL
                                 </span>
                               )}
                             </span>
@@ -441,7 +517,7 @@ export default function OrderSummary({
                                 </div>
                               ) : giftCampaign?.applied_tier?.min_cart_amount ? (
                                 <div style={{ fontSize: '11px', color: '#0bc15c' }}>
-                                  {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString("tr-TR")} Sepet Tutarına Özel Hediye
+                                  {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString(localeStr)} {t.specialDiscountForCart}
                                 </div>
                               ) : null}
                             </div>
@@ -494,7 +570,7 @@ export default function OrderSummary({
                           </div>
                         ) : giftCampaign?.applied_tier?.min_cart_amount ? (
                           <div style={{ fontSize: '11px', color: '#0bc15c' }}>
-                            {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString("tr-TR")} Sepet Tutarına özel indirim
+                            {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString(localeStr)} {t.specialGiftForCart}
                           </div>
                         ) : null}
                       </div>
@@ -545,7 +621,7 @@ export default function OrderSummary({
                           </div>
                         ) : giftCampaign?.applied_tier?.min_cart_amount ? (
                           <div style={{ fontSize: '11px', color: '#0bc15c' }}>
-                            {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString("tr-TR")} Sepet Tutarına Özel Hediye
+                            {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString(localeStr)} {t.specialGiftForCart}
                           </div>
                         ) : null}
                       </div>
@@ -558,14 +634,14 @@ export default function OrderSummary({
           {!items.length && showProductList && (
             <div className="container">
               <div className="row align-items-center mt-5 mb-5">
-                <div className="col-12 fs-18">Sepetiniz boş</div>
+                <div className="col-12 fs-18">{t.cartEmpty}</div>
                 <div className="col-12 mt-3">
                   <Link
-                    href={`/magaza`}
+                    href={getLocalizedUrl(`/magaza`, lang)}
                     className="tf-btn btn-fill animate-hover-btn radius-3 w-100 justify-content-center"
                     style={{ width: "fit-content" }}
                   >
-                    Ürünleri Keşfet
+                    {t.exploreProducts}
                   </Link>
                 </div>
               </div>
@@ -577,7 +653,7 @@ export default function OrderSummary({
               <div style={{ display: "flex", gap: "8px", width: "100%" }}>
                 <input
                   type="text"
-                  placeholder="Kupon Kodu"
+                  placeholder={t.couponCode}
                   value={couponCode}
                   onChange={(e) => {
                     // Boşlukları temizle ve tek kelime olarak al
@@ -617,7 +693,7 @@ export default function OrderSummary({
                     borderRadius: "12px",
                   }}
                 >
-                  {isApplyingCoupon ? "Uygulanıyor..." : "Uygula"}
+                  {isApplyingCoupon ? t.applying : t.apply}
                 </button>
               </div>
               {couponError && (
@@ -627,7 +703,7 @@ export default function OrderSummary({
               )}
               {couponSuccess && (
                 <div style={{ marginTop: "8px", fontSize: "12px", color: "#0bc15c" }}>
-                  Kupon kodu başarıyla !
+                  {t.applied}
                 </div>
               )}
             </div>
@@ -638,10 +714,10 @@ export default function OrderSummary({
             {cartTotals.subtotal > 0 && cartTotals.hasAnyDiscount && (
               <div className="d-flex justify-content-between">
                 <h6 className="fw-5" style={{ fontSize: "14px" }}>
-                  Ara Toplam
+                  {t.subtotal}
                 </h6>
                 <h6 className="fw-5" style={{ fontSize: "14px" }}>
-                  {cartTotals.subtotal.toLocaleString("tr-TR")} TL
+                  {cartTotals.subtotal.toLocaleString(localeStr)} TL
                 </h6>
               </div>
             )}
@@ -650,27 +726,27 @@ export default function OrderSummary({
             {cartTotals.customDiscountAmount > 0 && (
               <div className="d-flex justify-content-between">
                 <h6 className="fw-5" style={{ fontSize: "14px" }}>
-                  Size Özel İndirim
+                  {t.customDiscount}
                 </h6>
                 <h6 className="fw-5" style={{ fontSize: "14px", color: "#0bc15c" }}>
-                  -{cartTotals.customDiscountAmount.toLocaleString("tr-TR")} TL
+                  -{cartTotals.customDiscountAmount.toLocaleString(localeStr)} TL
                 </h6>
               </div>
             )}
             {cartTotals.campaignDiscountAmount > 0 && (
               <div className="d-flex justify-content-between">
                 <h6 className="fw-5" style={{ fontSize: "14px" }}>
-                  Kampanya İndirimi
+                  {t.campaignDiscount}
                 </h6>
                 <h6 className="fw-5" style={{ fontSize: "14px", color: "#0bc15c" }}>
-                  -{cartTotals.campaignDiscountAmount.toLocaleString("tr-TR")} TL
+                  -{cartTotals.campaignDiscountAmount.toLocaleString(localeStr)} TL
                 </h6>
               </div>
             )}
             {cartTotals.couponDiscountAmount > 0 && coupon && coupon.code && (
               <div className="d-flex justify-content-between">
                 <h6 className="fw-5" style={{ fontSize: "14px", display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span>Kupon İndirimi:</span>
+                  <span>{t.couponDiscount}:</span>
                   {coupon.code && (
                     <span style={{ fontWeight: "600", color: "#333" }}>{coupon.code}</span>
                   )}
@@ -690,11 +766,11 @@ export default function OrderSummary({
                       fontWeight: "600",
                     }}
                   >
-                    {isRemovingCoupon ? "Kaldırılıyor..." : "Kaldır"}
+                    {isRemovingCoupon ? t.removing : t.remove}
                   </button>
                 </h6>
                 <h6 className="fw-5" style={{ fontSize: "14px", color: "#0bc15c" }}>
-                  -{cartTotals.couponDiscountAmount.toLocaleString("tr-TR")} TL
+                  -{cartTotals.couponDiscountAmount.toLocaleString(localeStr)} TL
                 </h6>
               </div>
             )}
@@ -738,8 +814,8 @@ export default function OrderSummary({
           </div>
 
           <div className="d-flex justify-content-between" style={{ borderTop: "1px solid #e5e5e5", paddingTop: "10px", marginTop: "10px" }}>
-            <h6 className="fw-5" style={{ fontSize: "18px" }}>Toplam</h6>
-            <h6 className="total fw-5" style={{ fontSize: "18px" }}>{cartTotals.total.toLocaleString("tr-TR")} TL</h6>
+            <h6 className="fw-5" style={{ fontSize: "18px" }}>{t.total}</h6>
+            <h6 className="total fw-5" style={{ fontSize: "18px" }}>{cartTotals.total.toLocaleString(localeStr)} TL</h6>
           </div>
 
           {/* Sepet İpuçları (Cart Tips) */}
@@ -760,7 +836,7 @@ export default function OrderSummary({
                       <span style={{ fontWeight: "700" }}>
                         {tip.product_name}
                       </span>{" "}
-                      ürününden {tip.message_short || tip.message}
+                      {lang === 'tr' ? 'ürününden' : 'from product'} {tip.message_short || tip.message}
                     </>
                   ) : (
                     tip.message_short || tip.message
@@ -783,7 +859,7 @@ export default function OrderSummary({
                   style={{ flexShrink: 0 }}
                 />
                 <label htmlFor="show-order-note" className="text_black-2" >
-                  Sipariş notu eklemek istiyorum (isteğe bağlı)
+                  {t.orderNote}
                 </label>
               </div>
               {showOrderNote && (
@@ -792,7 +868,7 @@ export default function OrderSummary({
                     id="order-note"
                     value={orderNote}
                     onChange={(e) => handleOrderNoteChange(e.target.value)}
-                    placeholder="Siparişinizle ilgili özel bir notunuz varsa buraya yazabilirsiniz..."
+                    placeholder={t.orderNotePlaceholder}
                     style={{
                       width: "100%",
                       minHeight: "80px",
@@ -819,7 +895,7 @@ export default function OrderSummary({
                   style={{ flexShrink: 0 }}
                 />
                 <label htmlFor="show-gift-note" className="text_black-2" style={{ margin: 0, padding: 0 }}>
-                  Hediye notu eklemek istiyorum (isteğe bağlı)
+                  {t.giftNote}
                 </label>
               </div>
               {showGiftNote && (
@@ -828,7 +904,7 @@ export default function OrderSummary({
                     id="gift-note"
                     value={giftNote}
                     onChange={(e) => handleGiftNoteChange(e.target.value)}
-                    placeholder="Hediye paketi için özel bir notunuz varsa buraya yazabilirsiniz..."
+                    placeholder={t.giftNotePlaceholder}
                     style={{
                       width: "100%",
                       minHeight: "40px",
@@ -864,7 +940,7 @@ export default function OrderSummary({
                   className="text_black-2"
                   style={{ margin: 0, padding: 0 }}
                 >
-                  Siparişimin ileri bir tarihte kargoya verilmesini istiyorum (isteğe bağlı)
+                  {t.laterDelivery}
                 </label>
               </div>
               {preferLaterDelivery && (
@@ -882,7 +958,7 @@ export default function OrderSummary({
                     style={{ maxWidth: "220px" }}
                   />
                   <p className="text-muted mb_0" style={{ fontSize: "12px" }}>
-                    Resmi tatillere ve pazar günlerine denk gelen siparişlerde süre değişiklik gösterebilir.
+                    {t.laterDeliveryNotice}
                   </p>
                 </div>
               )}
@@ -905,9 +981,17 @@ export default function OrderSummary({
                         style={{ marginTop: "3px", flexShrink: 0 }}
                       />
                       <label htmlFor="check-agreements" className="text_black-2" style={{ margin: 0, lineHeight: "1.5" }}>
-                        <Link href="/gizlilik-politikasi" target="_blank" style={{ textDecoration: "underline" }}>Gizlilik Politikasını</Link>,{" "}
-                        <Link href="/sartlar-kosullar" target="_blank" style={{ textDecoration: "underline" }}>Şartlar ve Koşulları</Link> ve{" "}
-                        <Link href="/iade-ve-geri-odeme-politikasi" target="_blank" style={{ textDecoration: "underline" }}>İade ve Geri Ödeme Politikasını</Link> okudum, kabul ediyorum.
+                        {lang === 'tr' ? (
+                          <>
+                            <Link href="/gizlilik-politikasi" target="_blank" style={{ textDecoration: "underline" }}>Gizlilik Politikasını</Link>,{" "}
+                            <Link href="/sartlar-kosullar" target="_blank" style={{ textDecoration: "underline" }}>Şartlar ve Koşulları</Link> ve{" "}
+                            <Link href="/iade-ve-geri-odeme-politikasi" target="_blank" style={{ textDecoration: "underline" }}>İade ve Geri Ödeme Politikasını</Link> okudum, kabul ediyorum.
+                          </>
+                        ) : (
+                          <>
+                            I have read and agree to the <Link href="/en/privacy-policy" target="_blank" style={{ textDecoration: "underline" }}>Privacy Policy</Link>, <Link href="/en/terms-and-conditions" target="_blank" style={{ textDecoration: "underline" }}>Terms and Conditions</Link>, and <Link href="/en/refund-and-returns-policy" target="_blank" style={{ textDecoration: "underline" }}>Return and Refund Policy</Link>.
+                          </>
+                        )}
                       </label>
                     </div>
                   </div>
@@ -942,7 +1026,7 @@ export default function OrderSummary({
               cursor: isSubmitting ? "not-allowed" : "pointer",
             }}
           >
-            {isSubmitting ? "Gönderiliyor..." : buttonText}
+            {isSubmitting ? t.submitting : displayButtonText}
           </button>
         </form>
       </div >

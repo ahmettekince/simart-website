@@ -2,6 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { getLocalizedUrl } from "@/utils/i18n"
 
 // Icon component'leri - Client component içinde tanımlı
 const AboutIcons = {
@@ -53,7 +54,7 @@ const AboutIcons = {
     ),
 }
 
-export function SidebarNav({ items, activeSection }) {
+export function SidebarNav({ items, activeSection, lang = "tr" }) {
     const pathname = usePathname()
     const menuItems = items && items.length > 0 ? items : []
 
@@ -67,7 +68,7 @@ export function SidebarNav({ items, activeSection }) {
                     {menuItems.map((item) => {
                         const Icon = item.iconId ? AboutIcons[item.iconId] : null
                         const isActive = currentSection === item.id
-                        const href = `/kurumsal/${item.id}`
+                        const href = getLocalizedUrl(`/kurumsal/${item.id}`, lang)
 
                         return (
                             <li key={item.id} className={isActive ? "active" : ""}>

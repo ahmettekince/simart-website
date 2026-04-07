@@ -5,17 +5,23 @@ import React from "react";
 import { checkAuthServer } from "@/utils/authServer";
 import { redirect } from "next/navigation";
 
-export const metadata = {
-  title: "Kupon Kodlarım - Robot Süpürge ve Akıllı Ev Sistemleri",
-  description:
-    "Hesabınıza tanımlı indirim kuponlarını görüntüleyin, durumlarını kontrol edin ve uygun sepet tutarlarında kullanın.",
-};
+import { getLocalizedUrl } from "@/utils/i18n";
 
-export default async function page() {
+export async function generateMetadata({ params }) {
+  const { lang } = await params;
+  const isEn = lang === "en";
+  return {
+    title: isEn ? "My Coupons - Şımart Technology" : "Kupon Kodlarım - Robot Süpürge ve Akıllı Ev Sistemleri",
+    description: isEn ? "View your discount coupons and check their status." : "Hesabınıza tanımlı indirim kuponlarını görüntüleyin.",
+  };
+}
+
+export default async function page({ params }) {
+  const { lang } = await params;
   const isAuthenticated = await checkAuthServer();
 
   if (!isAuthenticated) {
-    redirect("/giris-yap");
+    redirect(getLocalizedUrl("/giris-yap", lang));
   }
 
   return (

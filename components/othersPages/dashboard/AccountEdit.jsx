@@ -2,8 +2,10 @@
 import React, { useState, useEffect } from "react";
 import apiClient from "@/utils/apiClient";
 import SimartButton from "@/components/common/SimartButton";
+import { useLangStore } from "@/stores/langStore";
 
 export default function AccountEdit() {
+  const lang = useLangStore((s) => s.lang);
   const [passwordData, setPasswordData] = useState({
     current_password: "",
     new_password: "",
@@ -30,13 +32,43 @@ export default function AccountEdit() {
     return null;
   };
 
+  const translations = {
+    tr: {
+      title: "Şifre Değiştirme",
+      currentPassword: "Mevcut Şifreniz",
+      newPassword: "Yeni Şifreniz",
+      confirmNewPassword: "Yeni Şifreniz Tekrar",
+      saving: "Kaydediliyor",
+      saved: "Kaydedildi",
+      saveChanges: "Değişiklikleri Kaydet",
+      errorFillAll: "Şifre değiştirmek için tüm şifre alanlarını doldurun.",
+      errorMatch: "Yeni şifreler eşleşmiyor.",
+      errorGeneral: "Bilgiler güncellenirken bir hata oluştu.",
+      errorPasswordChange: "Şifre değiştirilirken bir hata oluştu."
+    },
+    en: {
+      title: "Change Password",
+      currentPassword: "Current Password",
+      newPassword: "New Password",
+      confirmNewPassword: "Confirm New Password",
+      saving: "Saving...",
+      saved: "Saved",
+      saveChanges: "Save Changes",
+      errorFillAll: "Fill all password fields to change password.",
+      errorMatch: "New passwords do not match.",
+      errorGeneral: "Error updating information.",
+      errorPasswordChange: "Error changing password."
+    }
+  };
+
+  const t = translations[lang] || translations.tr;
+
   const handlePasswordChange = (e) => {
     const { name, value } = e.target;
     setPasswordData((prev) => ({
       ...prev,
       [name]: value,
     }));
-    setMessage("");
     setError("");
     setIsSaved(false);
   };
@@ -44,29 +76,24 @@ export default function AccountEdit() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSaving(true);
-    setMessage("");
     setError("");
 
     try {
-      // Şifre değiştirme kontrolü
       const isPasswordChange = passwordData.current_password || passwordData.new_password || passwordData.new_password_confirm;
 
       if (isPasswordChange) {
-        // Şifre alanlarından biri doldurulmuşsa hepsi dolu olmalı
         if (!passwordData.current_password || !passwordData.new_password || !passwordData.new_password_confirm) {
-          setError("Şifre değiştirmek için tüm şifre alanlarını doldurun.");
+          setError(t.errorFillAll);
           setIsSaving(false);
           return;
         }
 
-        // Yeni şifreler eşleşmeli
         if (passwordData.new_password !== passwordData.new_password_confirm) {
-          setError("Yeni şifreler eşleşmiyor.");
+          setError(t.errorMatch);
           setIsSaving(false);
           return;
         }
 
-        // Şifre değiştirme API endpoint'i
         const passwordResponse = await apiClient.post("/customer/change-password", null, {
           params: {
             current_password: passwordData.current_password,
@@ -83,24 +110,17 @@ export default function AccountEdit() {
             new_password_confirm: "",
           });
         } else {
-          setError(getApiErrorMessage(passwordResponse.data) || "Şifre değiştirilirken bir hata oluştu.");
+          setError(getApiErrorMessage(passwordResponse.data) || t.errorPasswordChange);
           setIsSaving(false);
           return;
         }
-      }
-      if (isPasswordChange) {
-        setPasswordData({
-          current_password: "",
-          new_password: "",
-          new_password_confirm: "",
-        });
       }
     } catch (err) {
       const errorMessage =
         getApiErrorMessage(err.response?.data) ||
         err.response?.data?.error ||
         err.message ||
-        "Bilgiler güncellenirken bir hata oluştu.";
+        t.errorGeneral;
       setError(errorMessage);
     } finally {
       setIsSaving(false);
@@ -116,7 +136,6 @@ export default function AccountEdit() {
           id="form-password-change"
           action="#"
         >
-          {/* Hata Mesajı */}
           {error && (
             <div
               className="mb_20"
@@ -131,11 +150,11 @@ export default function AccountEdit() {
               {error}
             </div>
           )}
-          <h6 className="mb_20">Şifre Değiştirme</h6>
+          <h6 className="mb_20">{t.title}</h6>
           <div className="account-edit-password-row">
             <input
               className="tf-field-input tf-input fw-6 account-edit-password-input"
-              placeholder="Mevcut Şifreniz"
+              placeholder={t.currentPassword}
               type="password"
               autoComplete="current-password"
               name="current_password"
@@ -144,7 +163,7 @@ export default function AccountEdit() {
             />
             <input
               className="tf-field-input tf-input fw-6 account-edit-password-input"
-              placeholder="Yeni Şifreniz"
+              placeholder={t.newPassword}
               type="password"
               autoComplete="new-password"
               name="new_password"
@@ -153,7 +172,7 @@ export default function AccountEdit() {
             />
             <input
               className="tf-field-input tf-input fw-6 account-edit-password-input"
-              placeholder="Yeni Şifreniz Tekrar"
+              placeholder={t.confirmNewPassword}
               type="password"
               autoComplete="new-password"
               name="new_password_confirm"
@@ -165,7 +184,7 @@ export default function AccountEdit() {
               disabled={isSaving}
               success={isSaved}
             >
-              {isSaving ? "Kaydediliyor" : isSaved ? "Kaydedildi" : "Değişiklikleri Kaydet"}
+              {isSaving ? t.saving : isSaved ? t.saved : t.saveChanges}
             </SimartButton>
           </div>
         </form>

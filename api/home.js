@@ -9,7 +9,7 @@ export async function getCategories(lang = "tr") {
     log("[API home.js] getCategories: İstek gönderiliyor - URL: /categories");
 
     const response = await serverFetch("/categories", {
-        method: "POST",
+        method: "GET",
         lang,
         next: { revalidate: API_REVALIDATE.HOME },
         cache: "no-store"
@@ -37,14 +37,18 @@ export async function getBanners(lang = "tr") {
             retries: 2,
         });
 
-        if (!response) {
-            log("[API home.js] getBanners: API response is null");
-            return [];
-        }
-
-        if (response?.status === "success") {
-            const banners = response.data || [];
-            return banners;
+        if (response?.status === "success" && response.data) {
+            // Veri yapısı kontrolü: Array olması şart
+            if (Array.isArray(response.data)) {
+                return response.data;
+            }
+            // Eğer objeyse içindeki banner dizisini bulmayı dene
+            if (response.data.banners && Array.isArray(response.data.banners)) {
+                return response.data.banners;
+            }
+            if (response.data.items && Array.isArray(response.data.items)) {
+                return response.data.items;
+            }
         }
         return [];
     } catch (error) {
@@ -89,10 +93,9 @@ export async function getCollections(lang = "tr") {
             next: { revalidate: API_REVALIDATE.HOME }
         });
 
-        if (!response) return [];
-
-        if (response?.status === "success") {
-            return Array.isArray(response.data) ? response.data : (response.data ? [response.data] : []);
+        if (response?.status === "success" && response.data) {
+            const data = response.data;
+            return Array.isArray(data) ? data : (data.items && Array.isArray(data.items) ? data.items : [data]);
         }
         return [];
     } catch (error) {
@@ -106,7 +109,7 @@ export async function getCollections(lang = "tr") {
 export async function getReviews(lang = "tr") {
     try {
         const response = await serverFetch("/reviews", {
-            method: "POST",
+            method: "GET",
             lang,
             next: { revalidate: API_REVALIDATE.REVIEWS }
         });
@@ -128,6 +131,7 @@ export async function getReviews(lang = "tr") {
 export async function getTopbar(lang = "tr") {
     const response = await serverFetch("/topbars", {
         method: "POST",
+        body: { type: "info" },
         lang,
         next: { revalidate: API_REVALIDATE.TOPBAR }
     });
@@ -135,7 +139,7 @@ export async function getTopbar(lang = "tr") {
     if (response?.status === "success") {
         return {
             data: response.data || [],
-            isActive: !!response.is_active
+            isActive: !!response.is_active || response.data?.length > 0
         };
     }
 

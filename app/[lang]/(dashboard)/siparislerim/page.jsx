@@ -7,10 +7,14 @@ import { redirect } from "next/navigation";
 
 import { getLocalizedUrl } from "@/utils/i18n";
 
-export const metadata = {
-  title: "Siparişlerim - Şımart Teknoloji",
-  description: "Şımart Teknoloji",
-};
+export async function generateMetadata({ params }) {
+  const { lang } = await params;
+  const isEn = lang === "en";
+  return {
+    title: isEn ? "My Orders - Şımart Technology" : "Siparişlerim - Şımart Teknoloji",
+    description: isEn ? "Şımart Technology My Orders" : "Şımart Teknoloji Siparişlerim",
+  };
+}
 
 export default async function page({ params }) {
   const { lang } = await params;

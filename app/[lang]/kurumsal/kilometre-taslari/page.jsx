@@ -5,11 +5,15 @@ import { getTimeline } from "@/api/timeline";
 import { AboutLayout } from "@/components/about/about-layout";
 import { VideoSection } from "@/components/about/video-section";
 
-export const metadata = {
-  title: "Kilometre Taşları",
-  description: "Şımart'ın kilometre taşları ve önemli tarihleri",
-};
 
+export async function generateMetadata({ params }) {
+  const { lang } = await params;
+  const isEn = lang === "en";
+  return {
+    title: isEn ? "Milestones - Şımart Technology" : "Kilometre Taşları - Şımart Teknoloji",
+    description: isEn ? "Şımart's milestones and important dates" : "Şımart'ın kilometre taşları ve önemli tarihleri",
+  };
+}
 /** Tarih string'inden yıl çıkarır (örn: "1999-01-25" → "1999") */
 function formatTimelineDate(dateStr) {
   if (!dateStr || typeof dateStr !== "string") return "";
@@ -17,12 +21,14 @@ function formatTimelineDate(dateStr) {
   return year || dateStr;
 }
 
-export default async function KilometreTaslariPage() {
-  const items = await getTimeline();
+export default async function KilometreTaslariPage({ params }) {
+  const { lang } = await params;
+  const isEn = lang === "en";
+  const items = await getTimeline(lang);
 
   return (
     <>
-      <AboutLayout currentSectionId="kilometre-taslari">
+      <AboutLayout currentSectionId="kilometre-taslari" lang={lang}>
         {/* Section Title */}
         <div className="mb-4">
           <h1
@@ -38,7 +44,7 @@ export default async function KilometreTaslariPage() {
               marginBottom: "24px",
             }}
           >
-            KİLOMETRE TAŞLARI
+            {isEn ? "MILESTONES" : "KİLOMETRE TAŞLARI"}
           </h1>
         </div>
 
@@ -46,15 +52,10 @@ export default async function KilometreTaslariPage() {
           <div className="tf-timeline-line" />
           {items.length === 0 ? (
             <div className="text-center py-5 text-muted">
-              Henüz kilometre taşı eklenmemiş.
+              {isEn ? "No milestones added yet." : "Henüz kilometre taşı eklenmemiş."}
             </div>
           ) : (
             items.map((item, idx) => {
-              const media = item?.media;
-              const imageUrl =
-                media?.url ||
-                media?.thumbnail_url ||
-                "/images/shop/file/timeline1.jpg";
               const isContentEnd = idx % 2 === 0;
               const dateLabel = formatTimelineDate(item.date);
 
@@ -77,17 +78,7 @@ export default async function KilometreTaslariPage() {
                         dangerouslySetInnerHTML={{ __html: item.description }}
                       />
                     </div>
-                    <div className="tf-timeline-image-silindi">
-                      {/* <Image
-                        className="lazyload"
-                        alt={item.title || "Kilometre taşı"}
-                        src={imageUrl}
-                        width={800}
-                        height={593}
-                      /> */}
-                    </div>
                   </div>
-
                 </div>
               );
             })
@@ -98,9 +89,9 @@ export default async function KilometreTaslariPage() {
           <div className="row justify-content-end">
             <div className="col-12">
               <div className="text-center mb-3">
-                <h4 className="fw-bold">Şımart Tanıtım Filmi</h4>
+                <h4 className="fw-bold">{isEn ? "Şımart Introduction Video" : "Şımart Tanıtım Filmi"}</h4>
               </div>
-              <VideoSection />
+              <VideoSection lang={lang} />
             </div>
           </div>
         </div>

@@ -6,9 +6,10 @@ import { API_REVALIDATE } from "@/config/apiConfig";
  * Kilometre taşları (timeline) verilerini getirir.
  * /timeline endpoint'inden dönen listeyi kullanır.
  */
-export async function getTimeline() {
+export async function getTimeline(lang = "tr") {
   try {
     const response = await serverFetch("/timeline", {
+      lang,
       next: { revalidate: API_REVALIDATE.TIMELINE },
     });
 

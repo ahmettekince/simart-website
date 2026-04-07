@@ -1,4 +1,3 @@
-"use client";
 import Image from "next/image";
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import { useCartStore } from "@/stores/cartStore";
@@ -6,6 +5,7 @@ import { getProductButtonState } from "@/utils/productStock";
 import MaxQuantityToast from "@/components/common/MaxQuantityToast";
 import ErrorToast from "@/components/common/ErrorToast";
 import Quantity from "./Quantity";
+import { useLangStore } from "@/stores/langStore";
 
 export default function StickyItem({
   product = null,
@@ -16,6 +16,7 @@ export default function StickyItem({
   isStockLimit = false,
   soldOut = false
 }) {
+  const lang = useLangStore((s) => s.lang);
   const { addItem } = useCartStore();
   const cartItems = useCartStore((s) => s.items);
   const [isAdding, setIsAdding] = useState(false);
@@ -27,6 +28,29 @@ export default function StickyItem({
   const [isMobile, setIsMobile] = useState(false);
   const stickyRef = useRef(null);
   const observerRef = useRef(null);
+
+  const translations = {
+    tr: {
+      added: "Sepete Eklendi",
+      adding: "Ekleniyor...",
+      errorAdd: "Sepete eklenirken bir hata oluştu.",
+      systemError: "Sistemsel bir hata oluştu. Lütfen tekrar deneyin.",
+      outOfStock: "Stokta Yok",
+      productLabel: "Ürün",
+      locale: "tr-TR"
+    },
+    en: {
+      added: "Added to Cart",
+      adding: "Adding...",
+      errorAdd: "An error occurred while adding to cart.",
+      systemError: "A system error occurred. Please try again.",
+      outOfStock: "Out of Stock",
+      productLabel: "Product",
+      locale: "en-US"
+    }
+  };
+
+  const t = translations[lang] || translations.tr;
 
   // Mobil kontrolü (767px)
   useEffect(() => {
@@ -95,8 +119,8 @@ export default function StickyItem({
   }, [isMobile]);
 
   // Ürün bilgileri
-  const displayProduct = product || products4[2];
-  const productName = product?.name || product?.title || displayProduct.title;
+  const displayProduct = product;
+  const productName = product?.name || product?.title;
 
   // Görsel URL'ini al
   const getImageUrl = () => {
@@ -115,17 +139,18 @@ export default function StickyItem({
         if (first?.thumbnail_url) return first.thumbnail_url;
       }
     }
-    return displayProduct.imgSrc;
+    return "";
   };
   const productImage = getImageUrl();
-  const buttonState = product ? getProductButtonState(product) : { buttonText: "Sepete Ekle", buttonDisabled: false };
+  const buttonState = product ? getProductButtonState(product, lang) : { buttonText: "Add to Cart", buttonDisabled: false };
 
   const finalPrice = useMemo(() => {
-    if (!product) return displayProduct?.price || 0;
+    if (!product) return 0;
     const tbd = product.time_based_discounts?.find((d) => (d.remaining_minutes != null) || (d.remaining_seconds != null));
     if (tbd?.discounted_price != null) return tbd.discounted_price;
     return product.discount_price ?? product.price ?? 0;
-  }, [product, displayProduct]);
+  }, [product]);
+  
   const originalPrice = useMemo(() => {
     if (!product) return null;
     const tbd = product.time_based_discounts?.find((d) => (d.remaining_minutes != null) || (d.remaining_seconds != null));
@@ -133,6 +158,7 @@ export default function StickyItem({
     if (product.discount_price) return product.price || null;
     return null;
   }, [product]);
+
   const totalPrice = finalPrice;
   const totalOriginalPrice = originalPrice;
 
@@ -156,24 +182,20 @@ export default function StickyItem({
           setShowSuccess(true);
           setTimeout(() => setShowSuccess(false), 2000);
         } else if (result?.isGiftSelection) {
-          // Hediye seçimi için modal açılacak, hata gösterme
           return;
         } else if (result?.errorType === 'MAX_REACHED') {
-          // Max quantity hatası için özel toast göster
           setShowMaxReachedToast(true);
         } else if (result?.message) {
-          // Sadece mesaj varsa hata göster
           setErrorToastMessage(result.message);
           setShowErrorToast(true);
+        } else {
+          setErrorToastMessage(t.errorAdd);
+          setShowErrorToast(true);
         }
-      } else {
-        addProductToCart(displayProduct.id);
-        setShowSuccess(true);
-        setTimeout(() => setShowSuccess(false), 2000);
       }
     } catch (error) {
       console.error("Sepete ekleme hatası:", error);
-      setErrorToastMessage(error?.message || "Sistemsel bir hata oluştu. Lütfen tekrar deneyin.");
+      setErrorToastMessage(error?.message || t.systemError);
       setShowErrorToast(true);
     } finally {
       setIsAdding(false);
@@ -190,7 +212,7 @@ export default function StickyItem({
             {productImage && (
               <Image
                 src={productImage}
-                alt={productName || "Ürün"}
+                alt={productName || t.productLabel}
                 width={70}
                 height={70}
                 className="rounded"
@@ -201,12 +223,12 @@ export default function StickyItem({
           </div>
           <div className="tf-sticky-atc-mid">
             <p className="tf-sticky-atc-title-line d-none d-lg-block" title={productName || ""}>
-              {productName || "Ürün"}
+              {productName || t.productLabel}
             </p>
             <div className={`tf-sticky-atc-price-wrap ${totalOriginalPrice != null && totalOriginalPrice > totalPrice ? "has-discount" : ""}`}>
-              <span className="price-on-sale">{Number(totalPrice).toLocaleString("tr-TR")} TL</span>
+              <span className="price-on-sale">{Number(totalPrice).toLocaleString(t.locale)} TL</span>
               {totalOriginalPrice != null && totalOriginalPrice > totalPrice && (
-                <span className="compare-at-price">{Number(totalOriginalPrice).toLocaleString("tr-TR")} TL</span>
+                <span className="compare-at-price">{Number(totalOriginalPrice).toLocaleString(t.locale)} TL</span>
               )}
             </div>
           </div>
@@ -226,7 +248,7 @@ export default function StickyItem({
                   <button
                     type="button"
                     disabled
-                    className={`sticky-atc-btn ${buttonState.buttonText === "Stokta Yok" ? "sticky-atc-btn--out-of-stock" : ""}`}
+                    className={`sticky-atc-btn ${buttonState.buttonText === t.outOfStock ? "sticky-atc-btn--out-of-stock" : ""}`}
                   >
                     <span className="sticky-atc-btn__text">{buttonState.buttonText}</span>
                   </button>
@@ -238,9 +260,9 @@ export default function StickyItem({
                     className={`sticky-atc-btn ${showSuccess ? "sticky-atc-btn--success" : ""}`}
                   >
                     <span className="sticky-atc-btn__text">
-                      {showSuccess ? "Sepete Eklendi" : isAdding ? "Ekleniyor..." : buttonState.buttonText}
+                      {showSuccess ? t.added : isAdding ? t.adding : buttonState.buttonText}
                     </span>
-                    {showSuccess && <span className="sticky-atc-btn__slide">Sepete Eklendi</span>}
+                    {showSuccess && <span className="sticky-atc-btn__slide">{t.added}</span>}
                   </button>
                 )}
               </div>

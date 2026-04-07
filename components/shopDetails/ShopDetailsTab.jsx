@@ -3,6 +3,59 @@
 import { useState, useMemo, useEffect } from "react";
 import InstallmentOptions from "@/components/shopDetails/InstallmentOptions";
 import Accordion from "@/components/common/Accordion";
+import { useLangStore } from "@/stores/langStore";
+import Image from "next/image";
+
+const translations = {
+  tr: {
+    reviews: "Değerlendirmeler",
+    techSpecs: "Teknik Özellikler",
+    faq: "SSS",
+    installmentOptions: "Taksit Seçenekleri",
+    all: "Tümü",
+    noReviews: "Henüz yorum yapılmamış.",
+    commentRef: "Bu yorum {name} ürününe aittir.",
+    specification: "Özellikler",
+    noReviewsForStar: "{star} yıldıza ait yorum bulunamadı.",
+    ratingLabels: {
+      5: "Çok İyi",
+      4: "İyi",
+      3: "Orta",
+      2: "Kötü",
+      1: "Çok Kötü"
+    },
+    sortOptions: [
+      { value: "default", label: "Varsayılan" },
+      { value: "newest", label: "En yeni değerlendirme" },
+      { value: "rating_desc", label: "Puana göre azalan" },
+      { value: "rating_asc", label: "Puana göre artan" },
+    ]
+  },
+  en: {
+    reviews: "Reviews",
+    techSpecs: "Technical Specifications",
+    faq: "FAQ",
+    installmentOptions: "Installment Options",
+    all: "All",
+    noReviews: "No reviews yet.",
+    commentRef: "This review belongs to the product {name}.",
+    specification: "Specifications",
+    noReviewsForStar: "No reviews found for {star} stars.",
+    ratingLabels: {
+      5: "Excellent",
+      4: "Very Good",
+      3: "Average",
+      2: "Poor",
+      1: "Very Poor"
+    },
+    sortOptions: [
+      { value: "default", label: "Default" },
+      { value: "newest", label: "Newest reviews" },
+      { value: "rating_desc", label: "Rating: High to Low" },
+      { value: "rating_asc", label: "Rating: Low to High" },
+    ]
+  }
+};
 
 const SORT_OPTIONS = [
   { value: "default", label: "Varsayılan" },
@@ -12,6 +65,8 @@ const SORT_OPTIONS = [
 ];
 
 export default function ShopDetailsTab({ product }) {
+  const lang = useLangStore((s) => s.lang);
+  const t = translations[lang] || translations.tr;
   const [currentTab, setCurrentTab] = useState(1);
   const [filterRating, setFilterRating] = useState(null);
   const [sortOrder, setSortOrder] = useState("default");
@@ -77,7 +132,7 @@ export default function ShopDetailsTab({ product }) {
     return list;
   }, [filteredReviews, sortOrder]);
 
-  const ratingLabels = { 5: "Çok İyi", 4: "İyi", 3: "Orta", 2: "Kötü", 1: "Çok Kötü" };
+  const ratingLabels = t.ratingLabels;
 
   // API: faq_data[] -> { question, answer } -> Accordion: { title, content }
   const faqList = useMemo(() => {
@@ -105,10 +160,10 @@ export default function ShopDetailsTab({ product }) {
     ...(!isKatya ? ["installment"] : []),
   ];
   const tabs = [
-    ...(reviewCount > 0 ? [{ title: `Değerlendirmeler (${reviewCount})`, active: false }] : []),
-    ...(hasTechSpecs ? [{ title: "Teknik Özellikler", active: false }] : []),
-    ...(hasFaq ? [{ title: "SSS", active: false }] : []),
-    ...(!isKatya ? [{ title: "Taksit Seçenekleri", active: false }] : []),
+    ...(reviewCount > 0 ? [{ title: `${t.reviews} (${reviewCount})`, active: false }] : []),
+    ...(hasTechSpecs ? [{ title: t.techSpecs, active: false }] : []),
+    ...(hasFaq ? [{ title: t.faq, active: false }] : []),
+    ...(!isKatya ? [{ title: t.installmentOptions, active: false }] : []),
   ];
 
   const indexOf = (id) => { const i = tabIds.indexOf(id); return i >= 0 ? i + 1 : null; };
@@ -188,7 +243,7 @@ export default function ShopDetailsTab({ product }) {
                                   flexShrink: 0,
                                 }}
                               >
-                                <span>Tümü</span>
+                                <span>{t.all}</span>
                                 <span>({reviewCount})</span>
                                 {filterRating === null && <i className="icon-check" style={{ color: "var(--primary, #3c81b5)", fontSize: "10px" }} />}
                               </button>
@@ -250,17 +305,17 @@ export default function ShopDetailsTab({ product }) {
                                   maxWidth: "100px",
                                 }}
                               >
-                                {SORT_OPTIONS.map((opt) => (
-                                  <option key={opt.value} value={opt.value}>
-                                    {opt.label}
-                                  </option>
-                                ))}
+                                  {t.sortOptions.map((opt) => (
+                                    <option key={opt.value} value={opt.value}>
+                                      {opt.label}
+                                    </option>
+                                  ))}
                               </select>
                             </div>
                           </div>
                           {sortedReviews.length === 0 ? (
                             <div className="text-center py-4 text-muted fs-14">
-                              {filterRating ? `${filterRating} yıldıza ait yorum bulunamadı.` : "Yorum bulunamadı."}
+                              {filterRating ? t.noReviewsForStar.replace("{star}", filterRating) : t.noReviews}
                             </div>
                           ) : (
                             sortedReviews.map((review) => (
@@ -301,7 +356,7 @@ export default function ShopDetailsTab({ product }) {
                                   <span className="text_black-2" style={{ fontWeight: 600 }}>{review.user_name}</span>
                                   <span style={{ color: "#888", fontSize: "12px" }}>·</span>
                                   <span style={{ fontSize: "13px", color: "#666" }}>
-                                    {new Date(review.created_at).toLocaleDateString("tr-TR")}
+                                    {new Date(review.created_at).toLocaleDateString(lang === "en" ? "en-US" : "tr-TR")}
                                   </span>
                                 </div>
                                 <div className="review-comment mb_10">
@@ -311,7 +366,7 @@ export default function ShopDetailsTab({ product }) {
                                 </div>
                                 {product?.bundle_items?.length > 0 && (review.product_name || review.product_title) && (
                                   <div className="review-product-ref fs-12 text-muted mb_15" style={{ fontStyle: "italic" }}>
-                                    (Bu yorum <strong>{review.product_name || review.product_title}</strong> ürününe aittir.)
+                                    ({t.commentRef.replace("{name}", review.product_name || review.product_title)})
                                   </div>
                                 )}
                                 {review.images?.length > 0 && (
@@ -363,7 +418,7 @@ export default function ShopDetailsTab({ product }) {
                       ) : (
                         <div className="text-center py-5">
                           <i className="icon-star mb_15 d-block opacity-20" style={{ fontSize: "40px", color: "var(--primary, #3c81b5)" }} />
-                          <p className="text-muted">Bu ürün için henüz yorum yapılmamış.</p>
+                          <p className="text-muted">{t.noReviews}</p>
                         </div>
                       )}
                     </div>
@@ -390,7 +445,7 @@ export default function ShopDetailsTab({ product }) {
                                 background: specCategoryIndex === i ? "rgba(60, 129, 181, 0.08)" : "transparent",
                               }}
                             >
-                              {group.title || `Özellikler ${i + 1}`}
+                              {group.title || `${t.specification} ${i + 1}`}
                             </button>
                           ))}
                         </div>
@@ -430,7 +485,7 @@ export default function ShopDetailsTab({ product }) {
                     <div
                       className={`widget-content-inner ${currentTab === installmentTabIndex ? "active" : ""}`}
                     >
-                      <InstallmentOptions productSlug={product?.slug} active={currentTab === installmentTabIndex} />
+                      <InstallmentOptions productSlug={product.slugs?.tr || product?.slug} active={currentTab === installmentTabIndex} />
                     </div>
                   )}
                 </div>

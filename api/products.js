@@ -7,10 +7,19 @@ import { ProductModel } from "@/models/Product";
  * Tüm ürünleri veya belirli filtredeki ürünleri getirir.
  */
 export async function getProducts(params = "", lang = "tr") {
-    const endpoint = `/products${params ? `?${params}` : ""}`;
+    // Eğer ilk parametre bir dil koduysa (tr/en), yanlış çağırma (getProducts(lang)) yapılmış demektir.
+    let searchParams = params;
+    let activeLang = lang;
+
+    if (params === "tr" || params === "en") {
+        searchParams = "";
+        activeLang = params;
+    }
+
+    const endpoint = `/products${searchParams ? `?${searchParams}` : ""}`;
     const response = await serverFetch(endpoint, { 
-        method: "POST",
-        lang, 
+        method: "GET",
+        lang: activeLang, 
         next: { revalidate: API_REVALIDATE.PRODUCTS } 
     });
 
@@ -38,7 +47,7 @@ export async function getProductsByCategory(categorySlug, lang = "tr") {
 
     const endpoint = `/products/category/${categorySlug}`;
     const response = await serverFetch(endpoint, { 
-        method: "POST",
+        method: "GET",
         lang, 
         next: { revalidate: API_REVALIDATE.PRODUCTS } 
     });
@@ -64,7 +73,7 @@ export async function getCategoryWithProducts(categorySlug, lang = "tr") {
 
     const endpoint = `/products/category/${categorySlug}`;
     const response = await serverFetch(endpoint, { 
-        method: "POST",
+        method: "GET",
         lang, 
         next: { revalidate: API_REVALIDATE.PRODUCTS } 
     });
@@ -93,7 +102,7 @@ export async function getProductBySlug(productSlug, lang = "tr") {
 
     const endpoint = `/products/${productSlug}`;
     const response = await serverFetch(endpoint, { 
-        method: "POST",
+        method: "GET",
         lang, 
         next: { revalidate: API_REVALIDATE.PRODUCTS } 
     });

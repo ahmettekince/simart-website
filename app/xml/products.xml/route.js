@@ -10,7 +10,7 @@ export async function GET() {
       targetUrl = `${backendUrl.replace('/api', '')}/xml/products.xml`;
     }
 
-    const authHeader = `Basic ${Buffer.from('simart:Simart!!2020').toString('base64')}`;
+    const authHeader = `Basic ${Buffer.from('simart:Şımart!!2020').toString('base64')}`;
     const response = await fetch(targetUrl, {
       method: 'GET',
       headers: {

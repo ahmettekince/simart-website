@@ -71,7 +71,14 @@ const translations = {
     couponSuccess: "Coupon code applied successfully!",
     productTipPrefix: "from product",
     currency: "TL",
-    locale: "en-US"
+    locale: "en-US",
+    invalidCoupon: "Invalid coupon code.",
+    expiredCoupon: "Coupon has expired.",
+    limitReachedCoupon: "Coupon usage limit has been reached.",
+    minAmountNotMet: "Minimum cart amount for this coupon has not been met.",
+    restrictedProductCoupon: "This coupon can only be applied to specific products. These products are not in your cart.",
+    alreadyUsedCoupon: "This coupon code has already been used.",
+    combineCampaignError: "This coupon cannot be combined with other campaigns or discounts."
   }
 };
 
@@ -164,6 +171,35 @@ export default function ShopCart() {
       setRecommendations([]);
     }
   }, [items.length, fetchRecommendations]);
+  
+  const getLocalizedErrorMessage = (msg) => {
+    if (!msg || typeof msg !== "string" || !isEn) return msg;
+    
+    const lowerMsg = msg.toLowerCase();
+    if (lowerMsg.includes("belirli ürünlere uygulanabilir") || lowerMsg.includes("sepetinizde bu ürünler bulunmuyor")) {
+      return t.restrictedProductCoupon;
+    }
+    if (lowerMsg.includes("geçersiz") || lowerMsg.includes("bulunamadı")) {
+      return t.invalidCoupon;
+    }
+    if (lowerMsg.includes("süresi dolmuş") || lowerMsg.includes("geçmiş")) {
+      return t.expiredCoupon;
+    }
+    if (lowerMsg.includes("limit") || lowerMsg.includes("kullanım sınırı")) {
+      return t.limitReachedCoupon;
+    }
+    if (lowerMsg.includes("minimum sepet tutarı") || lowerMsg.includes("alt limit")) {
+      return t.minAmountNotMet;
+    }
+    if (lowerMsg.includes("daha önce kullanılmış") || lowerMsg.includes("zaten kullanılmış")) {
+      return t.alreadyUsedCoupon;
+    }
+    if (lowerMsg.includes("birleştirilemez") || lowerMsg.includes("başka kampanya")) {
+      return t.combineCampaignError;
+    }
+    
+    return msg;
+  };
 
   const setQuantity = async (id, quantity, action) => {
     // Minimum 1 kontrolü - 1'den küçük olamaz
@@ -173,12 +209,12 @@ export default function ShopCart() {
     try {
       const result = await updateQuantity(id, quantity);
       if (result && result.error) {
-        setErrorToastMessage(result.message || t.errorUpdate);
+        setErrorToastMessage(getLocalizedErrorMessage(result.message) || t.errorUpdate);
         setShowErrorToast(true);
       }
     } catch (error) {
       console.error("Miktar güncelleme hatası:", error);
-      setErrorToastMessage(error?.message || t.systemError);
+      setErrorToastMessage(getLocalizedErrorMessage(error?.message) || t.systemError);
       setShowErrorToast(true);
     } finally {
       setLoadingActions((prev) => {
@@ -220,13 +256,13 @@ export default function ShopCart() {
         setCouponCode("");
         setTimeout(() => setCouponSuccess(false), 3000);
       } else {
-        setCouponError((result && result.message) || t.failedApply);
+        setCouponError(getLocalizedErrorMessage((result && result.message) || t.failedApply));
         setTimeout(() => setCouponError(""), 4000);
       }
     } catch (error) {
       if (error.response) {
         const msg = error.response?.data?.message;
-        setCouponError(msg && String(msg).trim() ? msg : t.failedApply);
+        setCouponError(getLocalizedErrorMessage(msg && String(msg).trim() ? msg : t.failedApply));
       } else {
         setCouponError(t.failedApply);
       }
@@ -246,11 +282,11 @@ export default function ShopCart() {
     try {
       const success = await removeCoupon(coupon.code);
       if (!success) {
-        setCouponError(t.couponError);
+        setCouponError(getLocalizedErrorMessage(t.couponError));
         setTimeout(() => setCouponError(""), 4000);
       }
     } catch (error) {
-      setCouponError(t.couponError);
+      setCouponError(getLocalizedErrorMessage(t.couponError));
       setTimeout(() => setCouponError(""), 4000);
       log("Kupon kaldırma hatası:", error);
     } finally {
@@ -557,6 +593,7 @@ export default function ShopCart() {
                                                   setIsStockLimitForToast(isStockLimiting);
                                                   setShowMaxReachedToast(true);
                                                 }}
+                                                lang={lang}
                                               />
                                             </div>
                                             <div

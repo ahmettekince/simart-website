@@ -2,6 +2,42 @@
 import { useState, useEffect, useRef, useImperativeHandle, forwardRef } from "react";
 import { log } from "@/utils/logger";
 import apiClient from "@/utils/apiClient";
+import { useLangStore } from "@/stores/langStore";
+
+const translations = {
+  tr: {
+    cardInfo: "Kart Bilgileri",
+    cardHolderName: "Kart Üzerindeki Ad, Soyad",
+    cardNumber: "Kart Numarası",
+    expiryDate: "Son Kullanma Tarihi (AA/YY)",
+    cvv: "CVV",
+    cvvTooltip: "Kartınızın arkasındaki 3 haneli güvenlik numarası",
+    installmentOptions: "Taksit Seçenekleri",
+    installmentPlaceholder: "Kart numarasının ilk 6 hanesini girdiğinizde taksit seçenekleri burada görünecektir.",
+    loadingInstallments: "Taksit seçenekleri yükleniyor...",
+    singlePaymentOnly: "Bu kart ile sadece tek çekim yapılabilir.",
+    singlePayment: "Tek Çekim",
+    installments: "Taksit",
+    campaign: "Kampanya",
+    locale: "tr-TR"
+  },
+  en: {
+    cardInfo: "Card Information",
+    cardHolderName: "Name on Card",
+    cardNumber: "Card Number",
+    expiryDate: "Expiry Date (MM/YY)",
+    cvv: "CVV",
+    cvvTooltip: "3-digit security number on the back of your card",
+    installmentOptions: "Installment Options",
+    installmentPlaceholder: "Installment options will appear here once you enter the first 6 digits of your card number.",
+    loadingInstallments: "Loading installment options...",
+    singlePaymentOnly: "Only single payment is available with this card.",
+    singlePayment: "Single Payment",
+    installments: "Installments",
+    campaign: "Campaign",
+    locale: "en-US"
+  }
+};
 
 // Kart numarasını 4'lü gruplara formatlar
 function formatCardNumber(value) {
@@ -13,6 +49,8 @@ function formatCardNumber(value) {
 }
 
 const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
+  const lang = useLangStore((s) => s.lang);
+  const t = translations[lang] || translations.tr;
   // Kart bilgileri state'leri
   const [cardNumber, setCardNumber] = useState("");
   const [cardHolderName, setCardHolderName] = useState("");
@@ -140,7 +178,7 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
         {/* Sol: Kart Bilgileri */}
         <div className="payment2-card">
           <div className="payment2-card__header">
-            <div className="payment2-card__title">Kart Bilgileri</div>
+            <div className="payment2-card__title">{t.cardInfo}</div>
           </div>
           <div className="payment2-card__body">
             <div className="floating-label-field">
@@ -154,10 +192,10 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
                 value={cardHolderName}
                 onChange={(e) => {
                   const value = e.target.value.replace(/\d/g, "");
-                  setCardHolderName(value.toLocaleUpperCase("tr-TR"));
+                  setCardHolderName(value.toLocaleUpperCase(lang === "tr" ? "tr-TR" : "en-US"));
                 }}
               />
-              <label className="floating-label-text" htmlFor="card-holder">Kart Üzerindeki Ad, Soyad</label>
+              <label className="floating-label-text" htmlFor="card-holder">{t.cardHolderName}</label>
             </div>
 
             <div className="floating-label-field">
@@ -191,7 +229,7 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
                 onFocus={() => requestAnimationFrame(() => syncCardNumberFromInput())}
                 maxLength={19}
               />
-              <label className="floating-label-text" htmlFor="card-number">Kart Numarası</label>
+              <label className="floating-label-text" htmlFor="card-number">{t.cardNumber}</label>
             </div>
 
             <div className="payment2-row">
@@ -228,7 +266,7 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
                   }}
                   maxLength={5}
                 />
-                <label className="floating-label-text" htmlFor="expiry-date">Son Kullanma Tarihi (AA/YY)</label>
+                <label className="floating-label-text" htmlFor="expiry-date">{t.expiryDate}</label>
               </div>
 
               <div className="floating-label-field">
@@ -246,8 +284,8 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
                   }}
                   maxLength={3}
                 />
-                <label className="floating-label-text" htmlFor="cvv">CVV</label>
-                <div className="cvv-help" title="Kartınızın arkasındaki 3 haneli güvenlik numarası">
+                <label className="floating-label-text" htmlFor="cvv">{t.cvv}</label>
+                <div className="cvv-help" title={t.cvvTooltip}>
                   <span style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -270,23 +308,23 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
         {/* Sağ: Taksit Seçenekleri (ödeme alanının parçası gibi) */}
         <div className="payment2-card">
           <div className="payment2-card__header">
-            <div className="payment2-card__title">Taksit Seçenekleri</div>
+            <div className="payment2-card__title">{t.installmentOptions}</div>
           </div>
           <div className="payment2-card__body payment2-card__body--tight">
             {cardNumber.replace(/\s/g, "").length < 6 && (
               <div className="payment2-empty">
-                Kart numarasının ilk 6 hanesini girdiğinizde taksit seçenekleri burada görünecektir.
+                {t.installmentPlaceholder}
               </div>
             )}
 
             {isLoadingInstallments && cardNumber.replace(/\s/g, "").length >= 6 && (
-              <div className="payment2-empty">Taksit seçenekleri yükleniyor...</div>
+              <div className="payment2-empty">{t.loadingInstallments}</div>
             )}
 
             {!isLoadingInstallments && installmentOptions.length > 0 && (
               <>
                 {paymentType === "single" ? (
-                  <div className="payment2-empty">Bu kart ile sadece tek çekim yapılabilir.</div>
+                  <div className="payment2-empty">{t.singlePaymentOnly}</div>
                 ) : (
                   <div className="payment2-installments">
 
@@ -296,8 +334,8 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
                         const count = o.installment_count;
                         const monthly = Number(o.monthly_payment);
                         const total = Number(o.total_payment);
-                        const monthlyText = `${monthly.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TL`;
-                        const totalText = `${total.toLocaleString("tr-TR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TL`;
+                        const monthlyText = `${monthly.toLocaleString(t.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TL`;
+                        const totalText = `${total.toLocaleString(t.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} TL`;
                         return (
                           <label
                             key={count}
@@ -311,10 +349,10 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
                               onChange={() => setSelectedInstallment(count)}
                             />
                             <span className="payment2-installment__left">
-                              {count === 1 ? "Tek Çekim" : `${count} Taksit`}
+                              {count === 1 ? t.singlePayment : `${count} ${t.installments}`}
                               {o.campaign_applied && campaign && (
                                 <span className="payment2-badge">
-                                  {campaign.campaign_type_label || campaign.name || "Kampanya"}
+                                  {campaign.campaign_type_label || campaign.name || t.campaign}
                                 </span>
                               )}
                             </span>

@@ -1,26 +1,47 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { i18n, getLocaleDisplayName } from "@/config/i18n";
 import { useLangStore } from "@/stores/langStore";
+import { useCartStore } from "@/stores/cartStore";
 import { translatePath } from "@/utils/i18n";
 
 const languageOptions = [
-    { id: "tr", label: "Türkçe" },
-    { id: "en", label: "English" },
+    { id: "tr", label: "Türkçe", flag: "/images/flags/turkey.svg" },
+    { id: "en", label: "English", flag: "/images/flags/us.svg" },
 ];
 
 export default function LanguageSelect({
     parentClassName = "image-select center style-default type-languages",
     topStart = false,
     textColor = "currentColor",
+    isMobileMenu = false,
+    isFlow = false, // Flow mode: Açılınca elemenları aşağı iter (yüzmez)
 }) {
     const router = useRouter();
     const pathname = usePathname();
-    const { lang, setLang } = useLangStore();
+    const { lang, setLang, alternatePaths } = useLangStore();
+    const fetchCart = useCartStore((s) => s.fetchCart);
     const [isDDOpen, setIsDDOpen] = useState(false);
     const languageSelect = useRef();
+
+    // URL'deki dili store ile senkronize et
+    useEffect(() => {
+        const segments = pathname.split("/").filter(Boolean);
+        const localeInUrl = segments[0];
+
+        if (i18n.locales.includes(localeInUrl)) {
+            if (lang !== localeInUrl) {
+                setLang(localeInUrl);
+            }
+        } else {
+            if (lang !== i18n.defaultLocale) {
+                setLang(i18n.defaultLocale);
+            }
+        }
+    }, [pathname, lang, setLang]);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -43,17 +64,33 @@ export default function LanguageSelect({
             return;
         }
 
-        const newPathname = translatePath(pathname, newLocale);
+        // 1. Önce store'daki dinamik path'e (product/category slugs) bak (Detail ve MagazaDisplay orayı dolduruyor)
+        let targetPath = alternatePaths?.[newLocale];
+        
+        // 2. Yoksa mevcut path'i translatePath ile çevirmeyi dene (Statik sayfalar: /iletisim -> /en/contact gibi)
+        if (!targetPath) {
+            // translatePath fonksiyonu /en/shop gibi top-level ve configde tanımlı slugları hallediyor
+            targetPath = translatePath(pathname, newLocale);
+        }
+
+        // 3. Eğer hala bir yer belirlenemediyse dille uyumlu anasayfaya git
+        if (!targetPath || targetPath === "/" || targetPath === `/${newLocale}`) {
+            // Eğer anasayfadaysak veya bir hata varsa
+            targetPath = newLocale === i18n.defaultLocale ? "/" : `/${newLocale}`;
+        }
+        
         setLang(newLocale);
         setIsDDOpen(false);
-        router.push(newPathname);
+        // Dil değiştiğinde sepeti API'den tekrar çek (yerelleştirilmiş isim/slug için)
+        fetchCart();
+        router.push(targetPath);
     };
 
     return (
         <div
             className={`dropdown ${parentClassName}`}
             ref={languageSelect}
-            style={{ position: "relative" }}
+            style={{ position: "relative", width: "auto" }}
         >
             <div
                 className={`btn-language-select ${isDDOpen ? "active" : ""}`}
@@ -61,7 +98,7 @@ export default function LanguageSelect({
                 style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: "4px",
+                    gap: "6px",
                     color: textColor,
                     fontSize: "13px",
                     fontWeight: "600",
@@ -72,74 +109,86 @@ export default function LanguageSelect({
                     transition: "all 0.2s ease"
                 }}
             >
-                {lang}
+                <div style={{ display: "flex", alignItems: "center", position: "relative", width: "18px", height: "12px" }}>
+                    <Image
+                        src={lang === "tr" ? "/images/flags/us.svg" : "/images/flags/turkey.svg"}
+                        alt={lang === "tr" ? "English" : "Türkçe"}
+                        fill
+                        style={{ objectFit: "cover", borderRadius: "2px" }}
+                    />
+                </div>
+                {lang === "tr" ? "en" : "tr"}
                 <i className={`icon icon-arrow-down`} style={{ fontSize: "8px", transition: "transform 0.2s", transform: isDDOpen ? "rotate(180deg)" : "rotate(0)" }} />
             </div>
 
-            <div
-                className={`dropdown-menu ${isDDOpen ? "show" : ""} `}
-                style={{
-                    position: "absolute",
-                    top: "100%",
-                    right: "0",
-                    left: "auto",
-                    margin: "8px 0 0 0",
-                    display: isDDOpen ? "block" : "none",
-                    background: "white",
-                    border: "none",
-                    borderRadius: "12px",
-                    boxShadow: "0 10px 30px rgba(0,0,0,0.12)",
-                    zIndex: 9999,
-                    minWidth: "120px",
-                    padding: "6px",
-                    animation: "fadeInUp 0.2s ease-out"
-                }}
-            >
-                <ul
+            {isDDOpen && (
+                <div
+                    className={`dropdown-menu show`}
                     style={{
-                        listStyle: "none",
-                        margin: 0,
-                        padding: 0,
+                        position: "absolute",
+                        top: "100%",
+                        right: "0",
+                        left: "auto",
+                        marginTop: "8px",
+                        background: "white",
+                        border: "none",
+                        borderRadius: "12px",
+                        boxShadow: "0 10px 30px rgba(0,0,0,0.12)",
+                        zIndex: 9999,
+                        minWidth: "110px",
+                        width: "max-content",
+                        padding: "4px",
+                        animation: "fadeIn 0.2s ease-out"
                     }}
                 >
-                    {languageOptions.map((elm, i) => (
-                        <li
-                            key={i}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleLanguageChange(elm.id);
-                            }}
-                            style={{
-                                padding: "10px 14px",
-                                cursor: "pointer",
-                                backgroundColor: lang === elm.id ? "#f8f9fa" : "transparent",
-                                transition: "all 0.2s ease",
-                                borderRadius: "8px",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "space-between"
-                            }}
-                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#f8f9fa"}
-                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = lang === elm.id ? "#f8f9fa" : "transparent"}
-                        >
-                            <span style={{
-                                color: "#111",
-                                fontSize: "14px",
-                                fontWeight: lang === elm.id ? "600" : "500"
-                            }}>
-                                {elm.label}
-                            </span>
-                            {lang === elm.id && (
-                                <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "#e21e25" }} />
-                            )}
-                        </li>
-                    ))}
-                </ul>
-            </div>
+                    <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+                        {languageOptions.map((elm, i) => (
+                            <li
+                                key={i}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleLanguageChange(elm.id);
+                                }}
+                                style={{
+                                    padding: "8px 12px",
+                                    cursor: "pointer",
+                                    backgroundColor: lang === elm.id ? "#f8f9fa" : "transparent",
+                                    transition: "all 0.2s ease",
+                                    borderRadius: "8px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "10px",
+                                    whiteSpace: "nowrap"
+                                }}
+                            >
+                                <div style={{ display: "flex", alignItems: "center", position: "relative", width: "18px", height: "12px", flexShrink: 0 }}>
+                                    <Image
+                                        src={elm.flag}
+                                        alt={elm.label}
+                                        fill
+                                        style={{ objectFit: "cover", borderRadius: "2px" }}
+                                    />
+                                </div>
+                                <span style={{
+                                    color: "#111",
+                                    fontSize: "13px",
+                                    fontWeight: lang === elm.id ? "600" : "500",
+                                    flexGrow: 1
+                                }}>
+                                    {elm.label}
+                                </span>
+                                {lang === elm.id && (
+                                    <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "#e21e25", flexShrink: 0 }} />
+                                )}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
             <style jsx>{`
-                @keyframes fadeInUp {
-                    from { opacity: 0; transform: translateY(4px); }
-                    to { opacity: 1; transform: translateY(0); }
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
                 }
             `}</style>
         </div>

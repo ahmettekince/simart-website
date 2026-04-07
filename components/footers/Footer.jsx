@@ -37,7 +37,7 @@ const translations = {
     subscribeSuccess: "Successfully subscribed.",
     subscribeError: "An error occurred.",
     subscribeGeneralError: "An error occurred. Please try again.",
-    copyright: "© 2020-2026 Simart Technology. All Rights Reserved."
+    copyright: "© 2020-2026 Şımart Technology. All Rights Reserved."
   }
 };
 

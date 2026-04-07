@@ -3,11 +3,10 @@
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import Topbar from "@/components/headers/Topbar";
-
-const HIDE_TOPBAR_PATHS = ["/odeme", "/qr-", "/qr", "/kqr", "/3d"];
-const MOBILE_BREAKPOINT_PX = 768;
-
 import { i18n } from "@/config/i18n";
+
+const HIDE_TOPBAR_PATHS = ["/odeme", "/qr-", "/qr", "/kqr", "/3d", "/checkout", "/en/checkout", "/en/qr-", "/en/qr", "/en/3d"];
+const MOBILE_BREAKPOINT_PX = 768;
 
 function isProductDetailPage(pathname) {
   const segments = pathname.split("/").filter(Boolean);
@@ -36,7 +35,7 @@ export default function ConditionalTopbar({ data, isActive }) {
     const cleanPath = i18n.locales.includes(pathname.split("/").filter(Boolean)[0])
       ? pathname.replace(/^\/[^\/]+/, "") || "/"
       : pathname;
-    return cleanPath.startsWith(path);
+    return pathname.startsWith(path) || cleanPath.startsWith(path);
   });
   const hideByProductDetail = isProductDetailPage(pathname) && isMobile;
   const hideTopbar = hideByPath || hideByProductDetail;

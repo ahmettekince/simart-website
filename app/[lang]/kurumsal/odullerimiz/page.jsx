@@ -2,36 +2,16 @@
 import { AboutLayout } from "@/components/about/about-layout"
 import { AwardsSection } from "@/components/about/awards-section"
 
-export const metadata = {
-    title: "Ödüllerimiz - Şımart Teknoloji",
-    description: "Şımart Teknoloji, A'Design Award'da Gümüş Ödül kazanarak, yerli tasarım robot süpürgesi 'Katya' ile ülkemizi gururlandırdı. Başarılarımızı keşfedin.",
-    keywords: "Şımart Teknoloji, A'Design Award, Gümüş Ödül, Katya Robot Süpürge, Yerli Tasarım, Ürün Tasarımı, Türk Mühendislik, Ödüllerimiz, Tasarım Başarıları, Akıllı Ev Ürünleri",
-    author: "Şımart Teknoloji",
-    robots: "index, follow",
-    og: {
-        title: "Ödüllerimiz - Şımart Teknoloji",
-        description: "Şımart Teknoloji, A'Design Award'da Gümüş Ödül kazanarak, yerli tasarım robot süpürgesi 'Katya' ile ülkemizi gururlandırdı. Başarılarımızı keşfedin.",
-        image: "https://simart.me/uploads/systems/og.jpg",
-        url: "https://simart.me/kurumsal/odullerimiz",
-        type: "website",
-        locale: "tr_TR",
-    },
-    twitter: {
-        card: "summary_large_image",
-        title: "Ödüllerimiz - Şımart Teknoloji",
-        description: "Şımart Teknoloji, A'Design Award'da Gümüş Ödül kazanarak, yerli tasarım robot süpürgesi 'Katya' ile ülkemizi gururlandırdı. Başarılarımızı keşfedin.",
-        image: "https://simart.me/uploads/systems/twitter.jpg",
-        site: "@simartteknoloji",
-        creator: "@simartteknoloji",
-    },
-    other: {
-        "itemprop:name": "Ödüllerimiz - Şımart Teknoloji",
-        "itemprop:description": "Şımart Teknoloji, A'Design Award'da Gümüş Ödül kazanarak, yerli tasarım robot süpürgesi 'Katya' ile ülkemizi gururlandırdı. Başarılarımızı keşfedin.",
-        "itemprop:image": "https://simart.me/uploads/systems/seo.jpg",
-    },
+export async function generateMetadata({ params }) {
+    const { lang } = await params;
+    const isEn = lang === "en";
+    return {
+        title: isEn ? "Our Awards - Şımart Technology" : "Ödüllerimiz - Şımart Teknoloji",
+        description: isEn ? "Şımart Technology won the Silver Award at A'Design Award..." : "Şımart Teknoloji, A'Design Award'da Gümüş Ödül kazandı.",
+    };
 }
 
-const awardsData = [
+const awardsDataTr = [
     {
         title: "A'Design Award - Gümüş Ödül",
         content: [
@@ -45,33 +25,45 @@ const awardsData = [
     }
 ]
 
-export default function OdullerimizPage() {
-    return (
-        <>
-            <AboutLayout currentSectionId="odullerimiz">
-                {/* Section Title */}
-                <div className="mb-4">
-                    <h1 className="about-section-title" style={{
-                        fontSize: '24px',
-                        fontWeight: 'bold',
-                        color: 'var(--primary, #3c81b5)',
-                        borderBottom: '3px solid var(--primary, #3c81b5)',
-                        display: 'inline-block',
-                        paddingBottom: '8px',
-                        textTransform: 'uppercase',
-                        marginBottom: '24px',
-                        whiteSpace: 'nowrap',
-                        maxWidth: '100%',
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                    }}>
-                        ÖDÜLLERİMİZ
-                    </h1>
-                </div>
+const awardsDataEn = [
+    {
+        title: "A'Design Award - Silver Award",
+        content: [
+            "Şımart Technology won the <strong>'Silver Award'</strong> in the product design category of the <strong>'A'Design Award'</strong>, one of the world's most prestigious design awards.",
+            "Designed by Turkish engineers, \"katya\" is Turkey's domestic design robot vacuum cleaner.",
+            "We would like to thank all our teammates and collaborators who let us bring this pride to our country by being deemed worthy of this award."
+        ],
+        image: "/images/awards/adesign-right.jpg",
+        backgroundImage: "/images/awards/adesign-background.png",
+    }
+]
 
-                {/* Content Area */}
-                <AwardsSection awards={awardsData} />
-            </AboutLayout>
-        </>
+export default async function OdullerimizPage({ params }) {
+    const { lang } = await params;
+    const isEn = lang === "en";
+
+    return (
+        <AboutLayout currentSectionId="odullerimiz" lang={lang}>
+            <div className="mb-4">
+                <h1 className="about-section-title" style={{
+                    fontSize: '24px',
+                    fontWeight: 'bold',
+                    color: 'var(--primary, #3c81b5)',
+                    borderBottom: '3px solid var(--primary, #3c81b5)',
+                    display: 'inline-block',
+                    paddingBottom: '8px',
+                    textTransform: 'uppercase',
+                    marginBottom: '24px',
+                    whiteSpace: 'nowrap',
+                    maxWidth: '100%',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                }}>
+                    {isEn ? "OUR AWARDS" : "ÖDÜLLERİMİZ"}
+                </h1>
+            </div>
+
+            <AwardsSection awards={isEn ? awardsDataEn : awardsDataTr} />
+        </AboutLayout>
     )
 }

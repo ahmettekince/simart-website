@@ -1,32 +1,63 @@
-
 import React from "react";
 import Link from "next/link";
 
 
-import { defaultFaqTabs } from "@/data/faqs";
+import { defaultFaqTabs, defaultFaqTabsEn } from "@/data/faqs";
 import Accordion from "@/components/common/Accordion";
 import { getLocalizedUrl } from "@/utils/i18n";
 
-export const metadata = {
+export async function generateMetadata({ params }) {
+  const { lang } = params;
+  
+  if (lang === "en") {
+    return {
+      title: "Frequently Asked Questions - Şımart Technology",
+      description: "Frequently asked questions and answers about Şımart Technology.",
+    };
+  }
+
+  return {
     title: "Sıkça Sorulan Sorular - Şımart Teknoloji",
     description: "Şımart Teknoloji hakkında sıkça sorulan sorular ve yanıtları.",
-};
+  };
+}
 
 export default async function Page({ params: { lang } }) {
-    const finalFaqs = defaultFaqTabs.map(tab => ({
+    const currentTabs = lang === "en" ? defaultFaqTabsEn : defaultFaqTabs;
+    
+    const finalFaqs = currentTabs.map(tab => ({
         id: tab.id,
         slug: tab.id,
         name: tab.label,
         faqs: tab.faqs,
-        lang: lang // lang bilgisini içeri aktaralım
+        lang: lang
     }));
+
+    const t = {
+        tr: {
+            title: "Sıkça Sorulan Sorular",
+            contactUs: "Bize Ulaşın",
+            noContent: "Henüz SSS içeriği bulunmamaktadır."
+        },
+        en: {
+            title: "Frequently Asked Questions",
+            contactUs: "Contact Us",
+            noContent: "No FAQ content available yet."
+        }
+    }[lang] || {
+        tr: {
+            title: "Sıkça Sorulan Sorular",
+            contactUs: "Bize Ulaşın",
+            noContent: "Henüz SSS içeriği bulunmamaktadır."
+        }
+    }.tr;
 
     return (
         <>
             {/* page-title */}
             <div className="tf-page-title style-2">
                 <div className="container-full">
-                    <div className="heading text-center">Sıkça Sorulan Sorular</div>
+                    <div className="heading text-center">{t.title}</div>
                 </div>
             </div>
             {/* /page-title */}
@@ -59,7 +90,7 @@ export default async function Page({ params: { lang } }) {
                                         href={getLocalizedUrl("/destek#destek-formu", lang)}
                                         scroll={true}
                                     >
-                                        <h6 className="fw-5">Bize Ulaşın</h6>
+                                        <h6 className="fw-5">{t.contactUs}</h6>
                                         <div className="icon">
                                             <i className="icon-arrow1-top-left" />
                                         </div>
@@ -82,7 +113,7 @@ export default async function Page({ params: { lang } }) {
                                 ))
                             ) : (
                                 <div className="text-center py-5">
-                                    <p className="text-muted">Henüz SSS içeriği bulunmamaktadır.</p>
+                                    <p className="text-muted">{t.noContent}</p>
                                 </div>
                             )}
                         </div>

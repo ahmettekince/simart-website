@@ -2,9 +2,12 @@
 
 import { useEffect, useState, useRef } from "react";
 
-export default function Quantity({ setQuantity = (value) => { }, minQuantity = 1, maxQuantity = null, initialValue = null, disabled = false, isLoading = false, onMaxQuantityReached = null }) {
+export default function Quantity({ setQuantity = (value) => { }, minQuantity = 1, maxQuantity = null, initialValue = null, disabled = false, isLoading = false, onMaxQuantityReached = null, lang = "tr" }) {
+  const loadingText = lang === "tr" ? "Yükleniyor" : "Loading";
+  const loadingTextDots = lang === "tr" ? "Yükleniyor..." : "Loading...";
   // Global maksimum limit
   const GLOBAL_MAX = 999;
+
 
   // maxQuantity = 0 ise sınırsız (null), değilse o değere kadar sınırlı
   const parsedMax = maxQuantity === null || maxQuantity === undefined ? null : Number(maxQuantity);
@@ -190,9 +193,9 @@ export default function Quantity({ setQuantity = (value) => { }, minQuantity = 1
               borderRightColor: "transparent",
             }}
           >
-            <span className="visually-hidden">Yükleniyor...</span>
+            <span className="visually-hidden">{loadingTextDots}</span>
           </div>
-          <span style={{ fontSize: "11px", color: "#666", fontWeight: "500" }}>Yükleniyor</span>
+          <span style={{ fontSize: "11px", color: "#666", fontWeight: "500" }}>{loadingText}</span>
         </div>
       )}
       <span

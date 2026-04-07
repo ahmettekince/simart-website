@@ -1,15 +1,16 @@
 "use client";
-
 import React, { useState, useRef } from "react";
 import Image from "next/image";
 import apiClient from "@/utils/apiClient";
 import { useReviewStore } from "@/stores/reviewStore";
+import { useLangStore } from "@/stores/langStore";
 
 const MAX_IMAGES = 5;
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
 export default function ReviewDashboardModal({ open, onClose, onSuccess, products = [] }) {
+  const lang = useLangStore((s) => s.lang);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
@@ -19,6 +20,49 @@ export default function ReviewDashboardModal({ open, onClose, onSuccess, product
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const fileInputRef = useRef(null);
+
+  const t = {
+    tr: {
+      title: "Yorum Yap",
+      close: "Kapat",
+      successMsg: "Yorumunuz gönderildi. Onaylandıktan sonra görünecektir.",
+      selectProduct: "Yorum yapmak istediğiniz ürünü seçin:",
+      order: "Sipariş",
+      change: "Değiştir",
+      yourRating: "Puanınız",
+      yourComment: "Yorumunuz",
+      commentPlaceholder: "Ürün hakkındaki düşüncelerinizi yazın...",
+      photoOptional: "Fotoğraf (isteğe bağlı)",
+      selectPhoto: "Fotoğraf seç",
+      submitting: "Gönderiliyor...",
+      submit: "Yorumu Gönder",
+      errorComment: "Yorumunuzu yazın.",
+      errorRating: "Lütfen puan seçin.",
+      errorGeneral: "Bir hata oluştu.",
+      errorSubmit: "Yorum gönderilemedi.",
+      invalidFile: "Lütfen geçerli bir resim dosyası seçin."
+    },
+    en: {
+      title: "Write a Review",
+      close: "Close",
+      successMsg: "Your review has been submitted. It will be visible after approval.",
+      selectProduct: "Select the product you want to review:",
+      order: "Order",
+      change: "Change",
+      yourRating: "Your Rating",
+      yourComment: "Your Comment",
+      commentPlaceholder: "Write your thoughts about the product...",
+      photoOptional: "Photo (optional)",
+      selectPhoto: "Select photo",
+      submitting: "Submitting...",
+      submit: "Submit Review",
+      errorComment: "Please write your comment.",
+      errorRating: "Please select a rating.",
+      errorGeneral: "An error occurred.",
+      errorSubmit: "Review could not be submitted.",
+      invalidFile: "Please select a valid image file."
+    }
+  }[lang] || {};
 
   const removeReviewableProduct = useReviewStore((s) => s.removeReviewableProduct);
 
@@ -48,11 +92,11 @@ export default function ReviewDashboardModal({ open, onClose, onSuccess, product
     e.preventDefault();
     setError("");
     if (!comment.trim()) {
-      setError("Yorumunuzu yazın.");
+      setError(t.errorComment);
       return;
     }
     if (rating < 1) {
-      setError("Lütfen puan seçin.");
+      setError(t.errorRating);
       return;
     }
     const prod = selectedProduct || (products.length === 1 ? products[0] : null);
@@ -75,10 +119,10 @@ export default function ReviewDashboardModal({ open, onClose, onSuccess, product
         onSuccess?.();
         setTimeout(() => handleClose(), 1500);
       } else {
-        setError(res.data?.message || "Yorum gönderilemedi.");
+        setError(res.data?.message || t.errorSubmit);
       }
     } catch (err) {
-      setError(err.response?.data?.message || err.message || "Bir hata oluştu.");
+      setError(err.response?.data?.message || err.message || t.errorGeneral);
     } finally {
       setIsSubmitting(false);
     }
@@ -120,15 +164,15 @@ export default function ReviewDashboardModal({ open, onClose, onSuccess, product
         onClick={(e) => e.stopPropagation()}
       >
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "18px" }}>
-          <h5 style={{ margin: 0, fontSize: "18px", fontWeight: 700 }}>Yorum Yap</h5>
-          <button type="button" onClick={handleClose} aria-label="Kapat" style={{ border: "none", background: "transparent", cursor: "pointer", padding: 4, color: "#666", fontSize: "22px" }}>×</button>
+          <h5 style={{ margin: 0, fontSize: "18px", fontWeight: 700 }}>{t.title}</h5>
+          <button type="button" onClick={handleClose} aria-label={t.close} style={{ border: "none", background: "transparent", cursor: "pointer", padding: 4, color: "#666", fontSize: "22px" }}>×</button>
         </div>
 
         {success ? (
-          <p style={{ color: "#0bc15c", fontWeight: 600, margin: 0 }}>Yorumunuz gönderildi. Onaylandıktan sonra görünecektir.</p>
+          <p style={{ color: "#0bc15c", fontWeight: 600, margin: 0 }}>{t.successMsg}</p>
         ) : showProductSelector ? (
           <div>
-            <p style={{ fontSize: "13px", color: "#555", marginBottom: "14px" }}>Yorum yapmak istediğiniz ürünü seçin:</p>
+            <p style={{ fontSize: "13px", color: "#555", marginBottom: "14px" }}>{t.selectProduct}</p>
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {products.map((p) => (
                 <button
@@ -152,7 +196,7 @@ export default function ReviewDashboardModal({ open, onClose, onSuccess, product
                   )}
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 600, fontSize: "14px" }}>{p.name}</div>
-                    <div style={{ fontSize: "12px", color: "#888" }}>Sipariş: {p.order_number}</div>
+                    <div style={{ fontSize: "12px", color: "#888" }}>{t.order}: {p.order_number}</div>
                   </div>
                 </button>
               ))}
@@ -167,18 +211,18 @@ export default function ReviewDashboardModal({ open, onClose, onSuccess, product
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontWeight: 600, fontSize: "14px" }}>{product.name}</div>
                 {product.order_number && (
-                  <div style={{ fontSize: "12px", color: "#666", marginTop: "2px" }}>Sipariş: {product.order_number}</div>
+                  <div style={{ fontSize: "12px", color: "#666", marginTop: "2px" }}>{t.order}: {product.order_number}</div>
                 )}
                 {products.length > 1 && (
                   <button type="button" onClick={() => setSelectedProduct(null)} style={{ fontSize: "12px", color: "#666", background: "none", border: "none", cursor: "pointer", padding: 0, textDecoration: "underline", marginTop: "4px" }}>
-                    Değiştir
+                    {t.change}
                   </button>
                 )}
               </div>
             </div>
 
             <div style={{ marginBottom: "14px" }}>
-              <label style={{ display: "block", marginBottom: "6px", fontSize: "13px", color: "#555" }}>Puanınız</label>
+              <label style={{ display: "block", marginBottom: "6px", fontSize: "13px", color: "#555" }}>{t.yourRating}</label>
               <div style={{ display: "flex", gap: 4 }}>
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
@@ -196,21 +240,21 @@ export default function ReviewDashboardModal({ open, onClose, onSuccess, product
             </div>
 
             <div style={{ marginBottom: "14px" }}>
-              <label htmlFor="review-modal-comment" style={{ display: "block", marginBottom: "6px", fontSize: "13px", color: "#555" }}>Yorumunuz</label>
+              <label htmlFor="review-modal-comment" style={{ display: "block", marginBottom: "6px", fontSize: "13px", color: "#555" }}>{t.yourComment}</label>
               <textarea
                 id="review-modal-comment"
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                placeholder="Ürün hakkındaki düşüncelerinizi yazın..."
+                placeholder={t.commentPlaceholder}
                 rows={3}
                 style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1px solid #ddd", fontSize: "14px", resize: "vertical", boxSizing: "border-box" }}
               />
             </div>
 
             <div style={{ marginBottom: "16px" }}>
-              <label style={{ display: "block", marginBottom: "6px", fontSize: "13px", color: "#555" }}>Fotoğraf (isteğe bağlı)</label>
+              <label style={{ display: "block", marginBottom: "6px", fontSize: "13px", color: "#555" }}>{t.photoOptional}</label>
               <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple onChange={handleImageChange} style={{ display: "none" }} />
-              <button type="button" onClick={() => fileInputRef.current?.click()} className="tf-btn btn-line" style={{ fontSize: "13px" }}>Fotoğraf seç</button>
+              <button type="button" onClick={() => fileInputRef.current?.click()} className="tf-btn btn-line" style={{ fontSize: "13px" }}>{t.selectPhoto}</button>
               {images.length > 0 && (
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 8 }}>
                   {images.map((file, i) => (
@@ -224,7 +268,7 @@ export default function ReviewDashboardModal({ open, onClose, onSuccess, product
             </div>
 
             {error && <div style={{ color: "#dc3545", fontSize: "13px", marginBottom: 10 }}>{error}</div>}
-            <button type="submit" className="tf-btn btn-fill" disabled={isSubmitting}>{isSubmitting ? "Gönderiliyor..." : "Yorumu Gönder"}</button>
+            <button type="submit" className="tf-btn btn-fill" disabled={isSubmitting}>{isSubmitting ? t.submitting : t.submit}</button>
           </form>
         ) : null}
       </div>

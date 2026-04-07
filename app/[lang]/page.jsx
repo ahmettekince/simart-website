@@ -27,8 +27,8 @@ const translations = {
     itempropImage: "https://simart.me/uploads/systems/seo.jpg",
   },
   en: {
-    title: "Simart Technology - Robot Vacuum and Smart Home Systems",
-    description: "Simart Technology is a pioneer in robot vacuums, smart home systems, and IoT solutions. We are at your service with home automation and life-enhancing technologies.",
+    title: "Şımart Technology - Robot Vacuum and Smart Home Systems",
+    description: "Şımart Technology is a pioneer in robot vacuums, smart home systems, and IoT solutions. We are at your service with home automation and life-enhancing technologies.",
     ogImage: "https://simart.me/og_en.jpg",
     twitterImage: "https://simart.me/og_en.jpg",
     itempropImage: "https://simart.me/uploads/systems/seo_en.jpg",

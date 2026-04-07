@@ -6,6 +6,7 @@ import { getProductButtonState } from "@/utils/productStock";
 import MaxQuantityToast from "@/components/common/MaxQuantityToast";
 import ErrorToast from "@/components/common/ErrorToast";
 import Quantity from "./Quantity";
+import { useLangStore } from "@/stores/langStore";
 
 export default function SmartStickyBar({
   product = null,
@@ -16,6 +17,7 @@ export default function SmartStickyBar({
   isStockLimit = false,
   soldOut = false
 }) {
+  const lang = useLangStore((s) => s.lang);
   const { addItem } = useCartStore();
   const cartItems = useCartStore((s) => s.items);
   const [isAdding, setIsAdding] = useState(false);
@@ -25,6 +27,27 @@ export default function SmartStickyBar({
   const [errorToastMessage, setErrorToastMessage] = useState("");
   const [isVisible, setIsVisible] = useState(false);
   const observerRef = useRef(null);
+
+  const translations = {
+    tr: {
+      added: "Sepete Eklendi",
+      adding: "Ekleniyor...",
+      errorAdd: "Hata oluştu.",
+      systemError: "Sistemsel bir hata.",
+      outOfStock: "Stokta Yok",
+      locale: "tr-TR"
+    },
+    en: {
+      added: "Added to Cart",
+      adding: "Adding...",
+      errorAdd: "An error occurred.",
+      systemError: "A system error.",
+      outOfStock: "Out of Stock",
+      locale: "en-US"
+    }
+  };
+
+  const t = translations[lang] || translations.tr;
 
   // Initial check for mobile to show bar immediately
   useEffect(() => {
@@ -73,7 +96,7 @@ export default function SmartStickyBar({
 
   const productName = product?.name || product?.title || "";
   const productImage = product?.cover_image?.url || (product?.images && product?.images[0]?.url) || (product?.images && product?.images[0]) || "";
-  const buttonState = product ? getProductButtonState(product) : { buttonText: "Sepete Ekle", buttonDisabled: false };
+  const buttonState = product ? getProductButtonState(product, lang) : { buttonText: "Add to Cart", buttonDisabled: false };
 
   const finalPrice = useMemo(() => {
     if (!product) return 0;
@@ -112,12 +135,12 @@ export default function SmartStickyBar({
         if (result?.errorType === 'MAX_REACHED') {
           setShowMaxReachedToast(true);
         } else {
-          setErrorToastMessage(result?.message || "Hata oluştu.");
+          setErrorToastMessage(result?.message || t.errorAdd);
           setShowErrorToast(true);
         }
       }
     } catch (error) {
-      setErrorToastMessage("Sistemsel bir hata.");
+      setErrorToastMessage(t.systemError);
       setShowErrorToast(true);
     } finally {
       setIsAdding(false);
@@ -127,7 +150,7 @@ export default function SmartStickyBar({
   if (!product) return null;
 
   return (
-    <div className={`smart-sticky-wrapper ${isVisible ? "is-visible" : ""} ${buttonState.buttonText === "Stokta Yok" ? "d-none d-md-block" : ""}`}>
+    <div className={`smart-sticky-wrapper ${isVisible ? "is-visible" : ""} ${buttonState.buttonText === t.outOfStock ? "d-none d-md-block" : ""}`}>
       <MaxQuantityToast visible={showMaxReachedToast} onHide={() => setShowMaxReachedToast(false)} maxQuantity={maxQuantity} isStockLimit={isStockLimit} />
       <ErrorToast visible={showErrorToast} onHide={() => setShowErrorToast(false)} message={errorToastMessage} />
 
@@ -146,17 +169,17 @@ export default function SmartStickyBar({
             )}
           </div>
           <div className="ss-details">
-            <h6 className={`ss-title d-none d-md-block ${buttonState.buttonText === "Stokta Yok" ? "full-title" : ""}`}>
-              {buttonState.buttonText === "Stokta Yok" ? productName : (productName.length > 18 ? productName.slice(0, 18) + "..." : productName)}
+            <h6 className={`ss-title d-none d-md-block ${buttonState.buttonText === t.outOfStock ? "full-title" : ""}`}>
+              {buttonState.buttonText === t.outOfStock ? productName : (productName.length > 18 ? productName.slice(0, 18) + "..." : productName)}
             </h6>
-            {buttonState.buttonText !== "Stokta Yok" && (
+            {buttonState.buttonText !== t.outOfStock && (
               <div className="ss-price-row">
                 <span className={`ss-current-price ${originalPrice ? 'ss-has-discount' : ''}`}>
-                  {Number(finalPrice).toLocaleString("tr-TR")} TL
+                  {Number(finalPrice).toLocaleString(t.locale)} TL
                 </span>
                 {originalPrice && (
                   <span className="ss-old-price">
-                    {Number(originalPrice).toLocaleString("tr-TR")} TL
+                    {Number(originalPrice).toLocaleString(t.locale)} TL
                   </span>
                 )}
               </div>
@@ -166,7 +189,7 @@ export default function SmartStickyBar({
 
         {/* Actions Section */}
         <div className="ss-actions">
-          {buttonState.buttonText !== "Stokta Yok" && (
+          {buttonState.buttonText !== t.outOfStock && (
             <div className="ss-quantity-wrapper">
               <Quantity
                 setQuantity={setQuantity}
@@ -178,14 +201,14 @@ export default function SmartStickyBar({
             </div>
           )}
           <button
-            className={`ss-submit-btn ${showSuccess ? 'success' : ''} ${buttonState.buttonDisabled ? 'disabled' : ''} ${buttonState.buttonText === 'Stokta Yok' ? 'out-of-stock' : ''}`}
+            className={`ss-submit-btn ${showSuccess ? 'success' : ''} ${buttonState.buttonDisabled ? 'disabled' : ''} ${buttonState.buttonText === t.outOfStock ? 'out-of-stock' : ''}`}
             onClick={handleAddToCart}
             disabled={isAdding || showSuccess || buttonState.buttonDisabled}
           >
             <span className="btn-label">
-              {showSuccess ? "Sepete Eklendi" : isAdding ? "Ekleniyor..." : buttonState.buttonText}
+              {showSuccess ? t.added : isAdding ? t.adding : buttonState.buttonText}
             </span>
-            {showSuccess && <div className="btn-success-overlay">Sepete Eklendi</div>}
+            {showSuccess && <div className="btn-success-overlay">{t.added}</div>}
           </button>
         </div>
       </div>

@@ -5,42 +5,47 @@ import { webPageSchema } from "@/lib/schema"
 import { siteConfig } from "@/config/site"
 import { getPress } from "@/api/press";
 
-export const metadata = {
-    title: "Basında Biz - Şımart Teknoloji",
-    description: "Şımart Teknoloji basın sayfasına hoş geldiniz. Akıllı ev sistemlerimiz hakkında en güncel haberleri, duyuruları ve basın görsellerini burada bulabilirsiniz. Şımart Teknoloji'nin sektördeki yeniliklerini ve başarı hikayelerini keşfedin.",
-    keywords: "Şımart Teknoloji Basın, Şımart Teknoloji Haberler, Şımart Teknoloji Görseller, Akıllı Ev Sistemleri Basın, Şımart Basın Duyuruları, Şımart Basın Haberleri, Şımart Teknoloji Sektör Yenilikleri, Şımart Başarı Hikayeleri, Şımart Teknoloji Basın Sayfası",
-    author: "Şımart Teknoloji",
-    robots: "index, follow",
-    og: {
-        title: "Basında Biz - Şımart Teknoloji",
-        description: "Şımart Teknoloji basın sayfasına hoş geldiniz. Akıllı ev sistemlerimiz hakkında en güncel haberleri, duyuruları ve basın görsellerini burada bulabilirsiniz. Şımart Teknoloji'nin sektördeki yeniliklerini ve başarı hikayelerini keşfedin.",
-        image: "https://simart.me/uploads/systems/og.jpg",
-        url: "https://simart.me/kurumsal/basinda-biz",
-        type: "website",
-        locale: "tr_TR",
-    },
-    twitter: {
-        card: "summary_large_image",
-        title: "Basında Biz - Şımart Teknoloji",
-        description: "Şımart Teknoloji basın sayfasına hoş geldiniz. Akıllı ev sistemlerimiz hakkında en güncel haberleri, duyuruları ve basın görsellerini burada bulabilirsiniz. Şımart Teknoloji'nin sektördeki yeniliklerini ve başarı hikayelerini keşfedin.",
-        image: "https://simart.me/uploads/systems/twitter.jpg",
-        site: "@simartteknoloji",
-        creator: "@simartteknoloji",
-    },
-    other: {
-        "itemprop:name": "Basında Biz - Şımart Teknoloji",
-        "itemprop:description": "Şımart Teknoloji basın sayfasına hoş geldiniz. Akıllı ev sistemlerimiz hakkında en güncel haberleri, duyuruları ve basın görsellerini burada bulabilirsiniz. Şımart Teknoloji'nin sektördeki yeniliklerini ve başarı hikayelerini keşfedin.",
-        "itemprop:image": "https://simart.me/uploads/systems/seo.jpg",
-    },
+
+export async function generateMetadata({ params }) {
+    const { lang } = await params;
+    const isEn = lang === "en";
+
+    const title = isEn ? "Press - Şımart Technology" : "Basında Biz - Şımart Teknoloji";
+    const description = isEn
+        ? "Welcome to Şımart Technology press page. Discover our latest news, announcements and press images about our smart home systems."
+        : "Şımart Teknoloji basın sayfasına hoş geldiniz. Akıllı ev sistemlerimiz hakkında en güncel haberleri, duyuruları ve basın görsellerini burada bulabilirsiniz.";
+
+    return {
+        title,
+        description,
+        keywords: isEn
+            ? "Şımart Technology Press, News, Announcements, Smart Home Press"
+            : "Şımart Teknoloji Basın, Haberler, Duyurular, Akıllı Ev Sistemleri Basın",
+        author: isEn ? "Şımart Technology" : "Şımart Teknoloji",
+        robots: "index, follow",
+        alternates: {
+            canonical: isEn ? "https://simart.me/en/corporate/press" : "https://simart.me/kurumsal/basinda-biz",
+        },
+        og: {
+            title,
+            description,
+            image: "https://simart.me/uploads/systems/og.jpg",
+            url: isEn ? "https://simart.me/en/corporate/press" : "https://simart.me/kurumsal/basinda-biz",
+            type: "website",
+            locale: isEn ? "en_US" : "tr_TR",
+        },
+    };
 }
 
-export default async function BasindaBizPage() {
-    const pressItems = await getPress();
+export default async function BasindaBizPage({ params }) {
+    const { lang } = await params;
+    const isEn = lang === "en";
+    const pressItems = await getPress(lang);
 
     const pageJsonLd = webPageSchema({
-        name: "Basında Biz - Şımart Teknoloji",
-        url: `${siteConfig.site.url}/kurumsal/basinda-biz`,
-        description: metadata.description,
+        name: isEn ? "Press - Şımart Technology" : "Basında Biz - Şımart Teknoloji",
+        url: isEn ? `${siteConfig.site.url}/en/corporate/press` : `${siteConfig.site.url}/kurumsal/basinda-biz`,
+        description: isEn ? "Şımart Technology Press Page" : "Şımart Teknoloji Basın Sayfası",
     });
 
     return (
@@ -51,7 +56,7 @@ export default async function BasindaBizPage() {
                 suppressHydrationWarning
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(pageJsonLd) }}
             />
-            <AboutLayout currentSectionId="basinda-biz">
+            <AboutLayout currentSectionId="basinda-biz" lang={lang}>
                 {/* Section Title */}
                 <div className="mb-4">
                     <h1 className="about-section-title" style={{
@@ -64,12 +69,12 @@ export default async function BasindaBizPage() {
                         textTransform: 'uppercase',
                         marginBottom: '24px',
                     }}>
-                        BASINDA BİZ
+                        {isEn ? "PRESS" : "BASINDA BİZ"}
                     </h1>
                 </div>
 
                 {/* Content Area */}
-                <PressSection items={pressItems} />
+                <PressSection items={pressItems} lang={lang} />
             </AboutLayout>
         </>
     )

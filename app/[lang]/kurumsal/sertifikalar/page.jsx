@@ -3,60 +3,38 @@ import { AboutLayout } from "@/components/about/about-layout"
 import { CertificatesSection } from "@/components/about/certificates-section"
 import { getCertificates } from "@/api/certificates";
 
-export const metadata = {
-    title: "Sertifikalar - Şımart Teknoloji",
-    description: "Şımart Teknoloji'nin kalite, güvenlik ve çevreye duyarlılık alanlarında kazandığı sertifikalar hakkında bilgi edinin. Güvenilir ve yenilikçi çözümlerimizle tanışın.",
-    keywords: "Şımart Teknoloji, Sertifikalar, Kalite Sertifikası, Güvenlik Sertifikası, Çevre Sertifikası, Güvenilir Teknoloji, Şımart Kalite, Akıllı Ev Çözümleri, Yenilikçi Teknoloji, Kalite Belgeleri",
-    author: "Şımart Teknoloji",
-    robots: "index, follow",
-    og: {
-        title: "Sertifikalar - Şımart Teknoloji",
-        description: "Şımart Teknoloji'nin kalite, güvenlik ve çevreye duyarlılık alanlarında kazandığı sertifikalar hakkında bilgi edinin. Güvenilir ve yenilikçi çözümlerimizle tanışın.",
-        image: "https://simart.me/uploads/systems/og.jpg",
-        url: "https://simart.me/kurumsal/sertifikalar",
-        type: "website",
-        locale: "tr_TR",
-    },
-    twitter: {
-        card: "summary_large_image",
-        title: "Sertifikalar - Şımart Teknoloji",
-        description: "Şımart Teknoloji'nin kalite, güvenlik ve çevreye duyarlılık alanlarında kazandığı sertifikalar hakkında bilgi edinin. Güvenilir ve yenilikçi çözümlerimizle tanışın.",
-        image: "https://simart.me/uploads/systems/twitter.jpg",
-        site: "@simartteknoloji",
-        creator: "@simartteknoloji",
-    },
-    other: {
-        "itemprop:name": "Sertifikalar - Şımart Teknoloji",
-        "itemprop:description": "Şımart Teknoloji'nin kalite, güvenlik ve çevreye duyarlılık alanlarında kazandığı sertifikalar hakkında bilgi edinin. Güvenilir ve yenilikçi çözümlerimizle tanışın.",
-        "itemprop:image": "https://simart.me/uploads/systems/seo.jpg",
-    },
+export async function generateMetadata({ params }) {
+    const { lang } = await params;
+    const isEn = lang === "en";
+    return {
+        title: isEn ? "Certificates - Şımart Technology" : "Sertifikalar - Şımart Teknoloji",
+        description: isEn ? "Discover our certificates..." : "Şımart Teknoloji'nin kazandığı sertifikalar hakkında bilgi edinin.",
+    };
 }
 
-export default async function SertifikalarPage() {
-    const certificates = await getCertificates();
+export default async function SertifikalarPage({ params }) {
+    const { lang } = await params;
+    const isEn = lang === "en";
+    const certificates = await getCertificates(lang);
 
     return (
-        <>
-            <AboutLayout currentSectionId="sertifikalar">
-                {/* Section Title */}
-                <div className="mb-4">
-                    <h1 className="about-section-title" style={{
-                        fontSize: '24px',
-                        fontWeight: 'bold',
-                        color: 'var(--primary, #3c81b5)',
-                        borderBottom: '3px solid var(--primary, #3c81b5)',
-                        display: 'inline-block',
-                        paddingBottom: '8px',
-                        textTransform: 'uppercase',
-                        marginBottom: '24px',
-                    }}>
-                        SERTİFİKALAR
-                    </h1>
-                </div>
+        <AboutLayout currentSectionId="sertifikalar" lang={lang}>
+            <div className="mb-4">
+                <h1 className="about-section-title" style={{
+                    fontSize: '24px',
+                    fontWeight: 'bold',
+                    color: 'var(--primary, #3c81b5)',
+                    borderBottom: '3px solid var(--primary, #3c81b5)',
+                    display: 'inline-block',
+                    paddingBottom: '8px',
+                    textTransform: 'uppercase',
+                    marginBottom: '24px',
+                }}>
+                    {isEn ? "CERTIFICATES" : "SERTİFİKALAR"}
+                </h1>
+            </div>
 
-                {/* Content Area */}
-                <CertificatesSection certificates={certificates} />
-            </AboutLayout>
-        </>
+            <CertificatesSection certificates={certificates} />
+        </AboutLayout>
     )
 }

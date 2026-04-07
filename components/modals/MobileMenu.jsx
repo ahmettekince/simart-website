@@ -8,6 +8,7 @@ import log from "@/utils/logger";
 import apiClient from "@/utils/apiClient";
 import { openCartModal } from "@/utils/openCartModal";
 import { getLocalizedUrl } from "@/utils/i18n";
+import LanguageSelect from "@/components/common/LanguageSelect";
 
 export default function MobileMenu({ menuItems: initialMenuItems = [], lang = "tr" }) {
   const pathname = usePathname();
@@ -137,7 +138,12 @@ export default function MobileMenu({ menuItems: initialMenuItems = [], lang = "t
   return (
     <>
       <div className="offcanvas offcanvas-start canvas-mb" id="mobileMenu">
-        <span className="icon-close icon-close-popup" data-bs-dismiss="offcanvas" aria-label="Close" />
+        <div className="mb-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "15px 20px", borderBottom: "1px solid #f0f0f0" }}>
+          <span className="icon-close icon-close-popup" data-bs-dismiss="offcanvas" aria-label="Close" style={{ position: "static", fontSize: "20px", margin: 0 }} />
+          <div className="mb-language-select-wrapper">
+            <LanguageSelect parentClassName="image-select style-default type-languages" isFlow={true} />
+          </div>
+        </div>
         <div className="mb-canvas-content">
           <div className="mb-body">
             <ul className="nav-ul-mb" id="wrapper-menu-navigation">
@@ -207,7 +213,7 @@ export default function MobileMenu({ menuItems: initialMenuItems = [], lang = "t
               </div>
             </div>
           </div>
-          <div className="mb-bottom">
+          <div className="mb-bottom" style={{ flexDirection: "column", alignItems: "flex-start", gap: "10px" }}>
             {isAuthenticated ? (
               <a href="#" onClick={(e) => { e.preventDefault(); setShowLogoutConfirm(true); }} className="site-nav-icon">
                 <i className="icon icon-account" />

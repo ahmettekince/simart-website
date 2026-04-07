@@ -6,20 +6,34 @@ import { getCategories } from "@/api/home";
 import { getCategoryWithProducts } from "@/api/products";
 import { webPageSchema } from "@/lib/schema";
 
-export const metadata = {
-  title: "Destek - Şımart Teknoloji",
-  description: "Şımart Teknoloji destek sayfası. Sorularınız için bizimle iletişime geçin.",
-};
+export async function generateMetadata({ params }) {
+  const { lang } = params;
+  
+  if (lang === "en") {
+    return {
+      title: "Support - Şımart Technology",
+      description: "Şımart Technology support page. Contact us for your questions.",
+    };
+  }
 
-export default async function SupportPage() {
+  return {
+    title: "Destek - Şımart Teknoloji",
+    description: "Şımart Teknoloji destek sayfası. Sorularınız için bizimle iletişime geçin.",
+  };
+}
+
+export default async function SupportPage({ params }) {
+  const { lang } = params;
+
   const supportJsonLd = webPageSchema({
-    name: "Destek - Şımart Teknoloji",
-    url: "https://simart.me/destek",
-    description:
-      "Şımart Teknoloji Destek sayfasında akıllı ev sistemleri ürün açıklamaları, kullanım videoları ve teknik destek bilgilerine ulaşın. Şımart Teknoloji ile hayatınızı kolaylaştırın",
+    name: lang === "en" ? "Support - Şımart Technology" : "Destek - Şımart Teknoloji",
+    url: `https://simart.me/${lang === "en" ? "en/support" : "destek"}`,
+    description: lang === "en" 
+      ? "On the Şımart Technology Support page, find smart home systems product descriptions, usage videos and technical support information. Simplify your life with Şımart Technology"
+      : "Şımart Teknoloji Destek sayfasında akıllı ev sistemleri ürün açıklamaları, kullanım videoları ve teknik destek bilgilerine ulaşın. Şımart Teknoloji ile hayatınızı kolaylaştırın",
   });
 
-  const categories = await getCategories();
+  const categories = await getCategories(lang);
   const filtered = (categories || []).filter(
     (c) => c && c.slug && c.name && c.is_active !== false
   );
@@ -27,7 +41,7 @@ export default async function SupportPage() {
   const productsByCategory = {};
   await Promise.all(
     filtered.map(async (cat) => {
-      const { products } = await getCategoryWithProducts(cat.slug);
+      const { products } = await getCategoryWithProducts(cat.slug, lang);
       productsByCategory[cat.slug] = products || [];
     })
   );

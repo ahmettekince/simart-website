@@ -28,6 +28,8 @@ export default function ProductImageSwiper({
     campaignTags = [],
     categorySlug = "urunler",
     isPriority = false,
+    detailUrl = null,
+    onLinkClick = null,
 }) {
     const [currentIndex, setCurrentIndex] = useState(0);
     const swiperRef = useRef(null);
@@ -81,7 +83,8 @@ export default function ProductImageSwiper({
                 {renderTags.map((tag) => (
                     <Link
                         key={tag.key}
-                        href={`/magaza/${categorySlug}/${productSlug}`}
+                        href={detailUrl || `/magaza/${categorySlug}/${productSlug}`}
+                        onClick={onLinkClick}
                         className="campaign-tag"
                         style={{
                             ...tag.style,
@@ -141,7 +144,8 @@ export default function ProductImageSwiper({
             <>
                 <div style={{ position: 'relative', width: '100%', height: '100%' }}>
                     <Link
-                        href={`/magaza/${categorySlug}/${productSlug}`}
+                        href={detailUrl || `/magaza/${categorySlug}/${productSlug}`}
+                        onClick={onLinkClick}
                         className="product-img no-hover-effect"
                         style={{
                             position: 'relative',
@@ -225,7 +229,12 @@ export default function ProductImageSwiper({
                         const imageUrl = getImageUrl(image);
                         return (
                             <SwiperSlide key={index}>
-                                <Link href={`/magaza/${categorySlug}/${productSlug}`} className="product-img" style={{ display: "block", width: "100%" }}>
+                                <Link
+                                    href={detailUrl || `/magaza/${categorySlug}/${productSlug}`}
+                                    onClick={onLinkClick}
+                                    className="product-img"
+                                    style={{ display: "block", width: "100%" }}
+                                >
                                     <Image
                                         className="img-product"
                                         src={imageUrl}

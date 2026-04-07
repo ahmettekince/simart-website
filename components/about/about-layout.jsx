@@ -1,10 +1,13 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 import { SidebarNav } from "./sidebar-nav"
-import { menuItems } from "@/lib/about-data"
+import { getMenuItems } from "@/lib/about-data"
+import { getLocalizedUrl } from "@/utils/i18n"
+import { useLangStore } from "@/stores/langStore"
+import { localizedRoutes } from "@/config/i18n"
 
 // Icon component'leri
 const MenuIcon = () => (
@@ -19,13 +22,48 @@ const CloseIcon = () => (
     </svg>
 )
 
-export function AboutLayout({ children, currentSectionId }) {
+export function AboutLayout({ children, currentSectionId, lang = "tr" }) {
     const pathname = usePathname()
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+    const { setAlternatePaths } = useLangStore()
+    const items = getMenuItems(lang)
 
     // Pathname'den section ID'yi çıkar
-    const sectionId = currentSectionId || pathname.split('/').pop() || 'biz-kimiz'
-    const currentLabel = menuItems.find(m => m.id === sectionId)?.label || "Menü"
+    let sectionId = currentSectionId || pathname.split('/').pop() || 'biz-kimiz'
+
+    // Eğer sectionId bir EN slug ise (örn: our-story), onu orijinal TR ID'sine çevir
+    // Bu sayede hem menü aktifliği hem de dil değiştirici yolları doğru çalışır
+    if (lang === "en" && !currentSectionId) {
+        const foundTrPath = Object.keys(localizedRoutes.en).find(trKey => {
+            const enPath = localizedRoutes.en[trKey]
+            return enPath === sectionId || enPath.endsWith(`/${sectionId}`)
+        })
+        if (foundTrPath) {
+            sectionId = foundTrPath.split('/').pop()
+        }
+    }
+
+    const currentLabel = items.find(m => m.id === sectionId)?.label || (lang === "en" ? "Menu" : "Menü")
+
+    // Dil değiştirici için yolları senkronize et
+    useEffect(() => {
+        const paths = {
+            tr: `/kurumsal/${sectionId}`,
+            en: `/en/corporate/${sectionId}` // Default fallback
+        }
+
+        // Eğer i18n config'de özel bir eşleşme varsa onu kullan
+        const trPath = `kurumsal/${sectionId}`
+        const enSlug = localizedRoutes.en[trPath]
+        
+        if (enSlug) {
+            paths.en = `/en/${enSlug}`
+        }
+
+        setAlternatePaths(paths)
+        
+        return () => setAlternatePaths({})
+    }, [sectionId, setAlternatePaths])
 
     return (
         <main className="about-page-main" style={{ minHeight: '100vh', padding: '32px 0' }}>
@@ -35,8 +73,9 @@ export function AboutLayout({ children, currentSectionId }) {
                     <aside className="col-lg-3 d-none d-lg-block">
                         <div className="about-sidebar-wrapper" style={{ position: 'sticky', top: '100px' }}>
                             <SidebarNav
-                                items={menuItems}
+                                items={items}
                                 activeSection={sectionId}
+                                lang={lang}
                             />
                         </div>
                     </aside>
@@ -83,8 +122,9 @@ export function AboutLayout({ children, currentSectionId }) {
                                 onClick={(e) => e.stopPropagation()}
                             >
                                 <SidebarNav
-                                    items={menuItems}
+                                    items={items}
                                     activeSection={sectionId}
+                                    lang={lang}
                                 />
                             </div>
                         </div>
@@ -97,10 +137,10 @@ export function AboutLayout({ children, currentSectionId }) {
                         {/* Quick Navigation Pills for Mobile */}
                         <div className="mt-4 d-lg-none">
                             <div className="d-flex flex-wrap gap-2">
-                                {menuItems.map((item) => (
+                                {items.map((item) => (
                                     <Link
                                         key={item.id}
-                                        href={`/kurumsal/${item.id}`}
+                                        href={getLocalizedUrl(`/kurumsal/${item.id}`, lang)}
                                         className={`btn ${sectionId === item.id ? 'btn-primary' : 'btn-outline-secondary'}`}
                                         style={{ fontSize: '14px', padding: '6px 12px', textDecoration: 'none' }}
                                     >

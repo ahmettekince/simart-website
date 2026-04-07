@@ -128,8 +128,73 @@ function ProductProtocolHelp({ description, protocolName }) {
   );
 }
 
+import { useLangStore } from "@/stores/langStore";
+
 export default function Detail({ product }) {
+  const lang = useLangStore((s) => s.lang);
   const [currentColor, setCurrentColor] = useState(colors[0]);
+
+  const translations = {
+    tr: {
+      added: "Sepete Eklendi",
+      adding: "Ekleniyor...",
+      errorAdd: "Sepete eklenirken bir hata oluştu.",
+      systemError: "Sistemsel bir hata oluştu. Lütfen tekrar deneyin.",
+      outOfStock: "Stokta Yok",
+      reviews: "Değerlendirme",
+      protocolPrefix: "Bu ürün ",
+      protocolSuffix: " ile çalışmaktadır.",
+      countdownTitle: "Sınırlı Süre için geçerli",
+      countdownSubtitle: "İndirim bitmeden hemen satın alın!",
+      view3d: "3D GÖRÜNTÜLEME",
+      watchVideo: "ÜRÜN VİDEOSUNU İZLE",
+      bundleNote: "(Bu puan paketteki ürünlerin ortalama puanıdır.)",
+      moreInfo: "Daha fazla bilgi",
+      locale: "tr-TR"
+    },
+    en: {
+      added: "Added to Cart",
+      adding: "Adding...",
+      errorAdd: "An error occurred while adding to cart.",
+      systemError: "A system error occurred. Please try again.",
+      outOfStock: "Out of Stock",
+      reviews: "Reviews",
+      protocolPrefix: "This product works with ",
+      protocolSuffix: ".",
+      countdownTitle: "Limited Time Offer",
+      countdownSubtitle: "Buy now before the discount ends!",
+      view3d: "VIEW IN 3D",
+      watchVideo: "WATCH PRODUCT VIDEO",
+      bundleNote: "(This rating is the average of items in the bundle.)",
+      moreInfo: "More info",
+      locale: "en-US"
+    }
+  };
+
+  const t = translations[lang] || translations.tr;
+
+  const setAlternatePaths = useLangStore((s) => s.setAlternatePaths);
+
+  // Alternatif dillerdeki URL'leri store'a kaydet (Dinamik dil değişimi için)
+  useEffect(() => {
+    if (product && product.slugs) {
+      const paths = {};
+      // Birincil kategori veya ilk kategoriyi al
+      const catSlugs = product.primary_category?.slugs || (product.categories?.[0]?.slugs);
+
+      ["tr", "en"].forEach(currLang => {
+        const pSlug = product.slugs[currLang] || product.slug;
+        const cSlug = catSlugs?.[currLang] || (product.primary_category?.slug || "urunler");
+        
+        // TR için default prefix /magaza, EN için /en/shop
+        const prefix = currLang === "en" ? "/en/shop" : "/magaza";
+        paths[currLang] = `${prefix}/${cSlug}/${pSlug}`;
+      });
+
+      setAlternatePaths(paths);
+    }
+    return () => setAlternatePaths({}); // Sayfadan ayrılınca temizle
+  }, [product, setAlternatePaths]);
 
   // Sayfa yüklendiğinde ve ürün değiştiğinde GTM View Item takibi
   useEffect(() => {
@@ -334,8 +399,8 @@ export default function Detail({ product }) {
 
   // Stok durumuna göre buton metni ve durumu
   const buttonState = useMemo(() => {
-    return getProductButtonState(product);
-  }, [product]);
+    return getProductButtonState(product, lang);
+  }, [product, lang]);
 
   const handleAddToCartAnimated = async () => {
     if (isAdding || showSuccess) return;
@@ -380,12 +445,12 @@ export default function Detail({ product }) {
         setTimeout(() => setShowSuccess(false), 2000);
       } else if (!result?.isGiftSelection) {
         // Hediye seçimi için duraklatılmadıysa ve eklenemediyse hata göster
-        setErrorToastMessage(result?.message || "Sepete eklenirken bir hata oluştu.");
+        setErrorToastMessage(result?.message || t.errorAdd);
         setShowErrorToast(true);
       }
     } catch (error) {
       console.error("Sepete ekleme hatası:", error);
-      setErrorToastMessage(error?.message || "Sistemsel bir hata oluştu. Lütfen tekrar deneyin.");
+      setErrorToastMessage(error?.message || t.systemError);
       setShowErrorToast(true);
     } finally {
       setIsAdding(false);
@@ -450,7 +515,7 @@ export default function Detail({ product }) {
                             style={{ fontSize: "13px", color: "#888", display: "inline-flex", alignItems: "center", gap: "4px", background: "none", border: "none", padding: 0, cursor: "pointer", fontFamily: "inherit" }}
                           >
                             <b style={{ fontWeight: "600", color: "#777" }}>{product.reviews?.count || product.reviews_count || product.review_count || 0} </b>
-                            Değerlendirme
+                            {t.reviews}
                             {product.reviews?.fotografli_yorum && (
                               <span style={{ display: "inline-flex", alignItems: "center", marginLeft: "2px" }} title="Fotoğraflı yorumlar">
                                 <Image src="/images/products/camera.png" alt="Fotoğraflı yorumlar" width={28} height={18} style={{ flexShrink: 0, display: "block" }} />
@@ -460,7 +525,7 @@ export default function Detail({ product }) {
                         </div>
                         {product.bundle_items && Array.isArray(product.bundle_items) && product.bundle_items.length > 0 && (
                           <div style={{ fontSize: "12px", color: "#6b7280", marginTop: "6px" }}>
-                            (Bu puan paketteki ürünlerin ortalama puanıdır.)
+                            {t.bundleNote}
                           </div>
                         )}
                       </div>
@@ -493,11 +558,11 @@ export default function Detail({ product }) {
                           {(product.is_in_stock || product.is_pre_order) ? (
                             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                               <span className="price-on-sale" style={{ fontSize: "20px", fontWeight: "700", color: originalPrice ? "#0bc15c" : "var(--primary, #3c81b5)" }}>
-                                {Number(finalPrice).toLocaleString("tr-TR", { minimumFractionDigits: 0, maximumFractionDigits: Number(finalPrice) % 1 === 0 ? 0 : 2 })} TL
+                                {Number(finalPrice).toLocaleString(t.locale, { minimumFractionDigits: 0, maximumFractionDigits: Number(finalPrice) % 1 === 0 ? 0 : 2 })} TL
                               </span>
                               {originalPrice != null && originalPrice > finalPrice && (
                                 <span className="compare-at-price" style={{ fontSize: "16px", color: "#999", textDecoration: "line-through" }}>
-                                  {Number(originalPrice).toLocaleString("tr-TR", { minimumFractionDigits: 0, maximumFractionDigits: Number(originalPrice) % 1 === 0 ? 0 : 2 })} TL
+                                  {Number(originalPrice).toLocaleString(t.locale, { minimumFractionDigits: 0, maximumFractionDigits: Number(originalPrice) % 1 === 0 ? 0 : 2 })} TL
                                 </span>
                               )}
                             </div>
@@ -509,7 +574,7 @@ export default function Detail({ product }) {
                           {product.product_protocol && (
                             <div className="d-none d-lg-flex" style={{ alignItems: "center", gap: "4px", flexShrink: 0 }}>
                               <span style={{ fontSize: "14px", color: "#666", lineHeight: 1.5, whiteSpace: "nowrap" }}>
-                                Bu ürün{" "}
+                                {t.protocolPrefix}
                                 {product.product_protocol.image?.url ? (
                                   <Image
                                     src={product.product_protocol.image.url}
@@ -522,7 +587,7 @@ export default function Detail({ product }) {
                                 ) : (
                                   <strong>{product.product_protocol.name}</strong>
                                 )}{" "}
-                                ile çalışmaktadır.
+                                {t.protocolSuffix}
                               </span>
                               {product.product_protocol.description && (
                                 <ProductProtocolHelp
@@ -535,7 +600,7 @@ export default function Detail({ product }) {
                         </div>
                       </div>
                     )}
-                    <Trendyol productSlug={product.slug} />
+                    <Trendyol productSlug={product.slugs?.tr || product.slug} />
 
                     {showPromoBox && (
                       <PromoCartBox
@@ -562,7 +627,7 @@ export default function Detail({ product }) {
                       <div className="d-lg-none">
                         <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                           <span style={{ fontSize: "12px", color: "#666" }}>
-                            Bu ürün{" "}
+                            {t.protocolPrefix}
                             {product.product_protocol.image?.url ? (
                               <Image
                                 src={product.product_protocol.image.url}
@@ -575,7 +640,7 @@ export default function Detail({ product }) {
                             ) : (
                               <strong>{product.product_protocol.name}</strong>
                             )}{" "}
-                            ile çalışmaktadır.
+                            {t.protocolSuffix}
                           </span>
                           {product.product_protocol.description && (
                             <ProductProtocolHelp
@@ -592,8 +657,8 @@ export default function Detail({ product }) {
                         <CountdownComponent
                           targetDate={countdownTargetDate}
                           variant="soft"
-                          title="Sınırlı Süre için geçerli"
-                          subtitle="İndirim bitmeden hemen satın alın!"
+                          title={t.countdownTitle}
+                          subtitle={t.countdownSubtitle}
                         />
                       </div>
                     )}
@@ -621,7 +686,7 @@ export default function Detail({ product }) {
                           leftIcon={<Model3dIcon size={12} />}
                           className="static-cta"
                         >
-                          3D GÖRÜNTÜLEME
+                          {t.view3d}
                         </OverlayCtaButton>
                       )}
                       {product.video_url && (
@@ -631,7 +696,7 @@ export default function Detail({ product }) {
                           rightIcon={<ArrowIcon size={10} />}
                           className="static-cta"
                         >
-                          ÜRÜN VİDEOSUNU İZLE
+                          {t.watchVideo}
                         </OverlayCtaButton>
                       )}
                     </div>
@@ -700,18 +765,18 @@ export default function Detail({ product }) {
                               type="button"
                               onClick={handleAddToCartAnimated}
                               disabled={isAdding || showSuccess || buttonState.buttonDisabled}
-                              className={`main-cart-btn ${showSuccess ? "success-animation" : ""} ${buttonState.buttonText === "Stokta Yok" ? "out-of-stock" : ""}`}
+                              className={`main-cart-btn ${showSuccess ? "success-animation" : ""} ${buttonState.buttonText === t.outOfStock ? "out-of-stock" : ""}`}
                             >
                               <span className="button-text-main">
                                 {showSuccess
-                                  ? "Sepete Eklendi"
+                                  ? t.added
                                   : isAdding
-                                    ? "Ekleniyor..."
+                                    ? t.adding
                                     : buttonState.buttonText}
                               </span>
                               {showSuccess && (
                                 <span className="button-text-slide">
-                                  Sepete Eklendi
+                                  {t.added}
                                 </span>
                               )}
                             </button>

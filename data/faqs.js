@@ -95,6 +95,102 @@ export const defaultFaqTabs = [
   },
 ];
 
+export const defaultFaqTabsEn = [
+  {
+    id: "iptal-iacode",
+    label: "Cancellation and Returns",
+    faqs: [
+      {
+        title: "I want to return my order, what should I do?",
+        content:
+          "<p>You can get your return code by contacting customer service. You must deliver the product you will return to the cargo together with the invoice and return code. If you do not report this code to the cargo branch or official, they may charge you for cargo fees. You should send the returned product in its original box and packaging.</p>",
+      },
+      {
+        title: "I want to cancel my order, what should I do?",
+        content:
+          "<p>You can cancel your order by contacting customer service before your order is shipped.</p>",
+      },
+      {
+        title: "The refund for the product I cancelled has not been reflected in my account, what should I do?",
+        content:
+          "<p>Refunds for cancelled orders are made within 3 business days. After your refund is processed by us, it is stated as 3-8 business days for the refund to be reflected in your statement depending on your bank. If you think this period has expired, you can reach us by contacting Customer service or through the Contact or Support page.</p>",
+      },
+      {
+        title: "I want to learn the status of the product I returned, what should I do?",
+        content:
+          "<p>You can check it from the My Orders page. You can contact customer service.</p>",
+      },
+    ],
+  },
+  {
+    id: "kargo-teslimat",
+    label: "Shipping and Delivery",
+    faqs: [
+      {
+        title: "My order was delivered broken/damaged, what should I do?",
+        content:
+          "<p>You can contact customer service. You can send images and videos showing that the product is broken/damaged through our WhatsApp line.</p>",
+      },
+      {
+        title: "My order still appears as not shipped, what should I do?",
+        content:
+          "<p>You can contact customer service. If you see that the specified shipping date has been exceeded by our company, you can reach us through the Contact page or 'Support'.</p>",
+      },
+      {
+        title: "My order arrived wrong/missing, what should I do?",
+        content:
+          "<p>Please photograph the relevant box with its opening visible. (Pay attention to photograph the box size so that the products are visible.) You can also send your request through our WhatsApp line with the box size image. We will get back to you as quickly as possible.</p>",
+      },
+      {
+        title: "There is a missing product in my order, what should I do?",
+        content:
+          "<p>By contacting us, we will ship your missing product as soon as possible.</p>",
+      },
+      {
+        title: "My order appears to be in transit, when will it reach me?",
+        content:
+          "<p>Cargo delivery time may change according to the density of cargo companies. You can track the status of your cargo from the website of the relevant cargo company using the code in the SMS regarding the cargo sent to you.</p>",
+      },
+      {
+        title: "How can I find out my cargo tracking code?",
+        content:
+          "<p>You can find out your cargo tracking code via the SMS from the cargo company to your mobile phone or by following up on the Orders page.</p>",
+      },
+    ],
+  },
+  {
+    id: "siparisler",
+    label: "Orders",
+    faqs: [
+      {
+        title: "I want to add product/products to my order, what should I do?",
+        content:
+          "<p>A new product cannot be added to orders. You can create a new order if you wish.</p>",
+      },
+      {
+        title: "How can I find out the status of my order?",
+        content:
+          "<p>You can reach your order details from the Orders page by logging in as a member.</p>",
+      },
+      {
+        title: "I want to view my invoice, what should I do?",
+        content:
+          "<p>You can reach your order details and invoices from the Orders page by logging in as a member.</p>",
+      },
+      {
+        title: "I cannot make payment on the site, what should I do?",
+        content:
+          "<p>You can try logging in from a different browser by changing browsers or clearing cookies. If you wish, you can also obtain our products via Hepsiburada, Trendyol, Amazon, Çiçeksepeti, n11, Pazarama, PttAVM, and Allesgo.</p>",
+      },
+      {
+        title: "I want to change my delivery address, what should I do?",
+        content:
+          "<p>After your order is completed, address and/or recipient changes cannot be made. You can change your address by contacting Customer service before your order is shipped.</p>",
+      },
+    ],
+  },
+];
+
 export const faqs1 = [
   {
     title: "Pellentesque habitant morbi tristique senectus et netus?",

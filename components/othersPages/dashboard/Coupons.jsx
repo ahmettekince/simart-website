@@ -1,15 +1,46 @@
 "use client";
-
 import React, { useEffect, useState } from "react";
 import apiClient from "@/utils/apiClient";
 import Link from "next/link";
 import SimartButton from "@/components/common/SimartButton";
+import { useLangStore } from "@/stores/langStore";
+import { getLocalizedUrl } from "@/utils/i18n";
 
 export default function Coupons() {
+  const lang = useLangStore((s) => s.lang);
   const [coupons, setCoupons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [copiedId, setCopiedId] = useState(null);
+
+  const t = {
+    tr: {
+      loading: "Kuponlarınız yükleniyor...",
+      error: "Kuponlarınız yüklenirken bir hata oluştu.",
+      noCoupons: "Henüz tanımlı bir kuponunuz bulunmuyor.",
+      startShopping: "Alışverişe Başla",
+      autoApplied: "Sepette otomatik uygulanır.",
+      validity: "Geçerlilik",
+      unlimited: "Süresiz",
+      minCartAmount: "Minimum Sepet Tutarı",
+      copyCode: "Kodu Kopyala",
+      copied: "Kopyalandı!",
+      copy: "Kopyala"
+    },
+    en: {
+      loading: "Loading your coupons...",
+      error: "An error occurred while loading your coupons.",
+      noCoupons: "You don't have any defined coupons yet.",
+      startShopping: "Start Shopping",
+      autoApplied: "Automatically applied in cart.",
+      validity: "Validity",
+      unlimited: "Unlimited",
+      minCartAmount: "Minimum Cart Amount",
+      copyCode: "Copy Code",
+      copied: "Copied!",
+      copy: "Copy"
+    }
+  }[lang] || {};
 
   useEffect(() => {
     let mounted = true;
@@ -32,7 +63,7 @@ export default function Coupons() {
         setCoupons(sorted);
       } catch (e) {
         if (!mounted) return;
-        setError("Kuponlarınız yüklenirken bir hata oluştu.");
+        setError(t.error);
       } finally {
         if (mounted) setLoading(false);
       }
@@ -42,23 +73,22 @@ export default function Coupons() {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [lang, t.error]);
 
   const formatDate = (dateString) => {
     if (!dateString) return null;
     try {
       const date = new Date(dateString);
-      // Tarih kısmı: 17 Mart 2026
-      const datePart = date.toLocaleDateString("tr-TR", {
+      const isEn = lang === "en";
+      const locale = isEn ? "en-US" : "tr-TR";
+      
+      const datePart = date.toLocaleDateString(locale, {
         day: "numeric",
         month: "long",
         year: "numeric",
       });
-      // Saat kısmı: 14:30
-      // Eğer backend sadece YYYY-MM-DD dönüyorsa saat 00:00 olur, bu durumda saati göstermemek daha mantıklı olabilir.
-      // Ancak istek "saat gibi yapalım" olduğu için saati ekliyoruz.
-      // Eğer tarih string'i saat içermiyorsa kontrol edilebilir.
-      const timePart = date.toLocaleTimeString("tr-TR", {
+      
+      const timePart = date.toLocaleTimeString(locale, {
         hour: "2-digit",
         minute: "2-digit",
       });
@@ -79,11 +109,13 @@ export default function Coupons() {
     });
   };
 
+  const isEn = lang === "en";
+
   return (
     <div className="my-account-content account-coupons">
       {loading && (
         <div style={{ padding: "16px", textAlign: "center" }}>
-          Kuponlarınız yükleniyor...
+          {t.loading}
         </div>
       )}
 
@@ -96,14 +128,14 @@ export default function Coupons() {
       {!loading && !error && coupons.length === 0 && (
         <div className="row align-items-center w-100" style={{ rowGap: 20 }}>
           <div className="col-lg-4 col-md-6 fs-18">
-            Henüz tanımlı bir kuponunuz bulunmuyor.
+            {t.noCoupons}
           </div>
           <div className="col-lg-3 col-md-6">
             <SimartButton
-              href="/magaza"
+              href={getLocalizedUrl("/magaza", lang)}
               fullWidth
             >
-              Alışverişe Başla
+              {t.startShopping}
             </SimartButton>
           </div>
         </div>
@@ -122,18 +154,18 @@ export default function Coupons() {
                     <div className="d-flex flex-column">
                       <h5 className="coupon-title">{coupon.name}</h5>
                       <p className="mb-0 text-muted" style={{ fontSize: '13px', lineHeight: '1.4', marginTop: '4px' }}>
-                        {coupon.description || "Sepette otomatik uygulanır."}
+                        {coupon.description || t.autoApplied}
                       </p>
                     </div>
 
                     <div className="valid-date">
                       {coupon.end_date ? (
-                        <span>Geçerlilik: {formatDate(coupon.end_date)}</span>
+                        <span>{t.validity}: {formatDate(coupon.end_date)}</span>
                       ) : (
-                        <span>Süresiz</span>
+                        <span>{t.unlimited}</span>
                       )}
                       {coupon.min_cart_amount && (
-                        <div style={{ marginTop: '2px' }}>Minimum Sepet Tutarı: <span style={{ color: 'var(--primary)', fontWeight: '700' }}>{Number(coupon.min_cart_amount).toLocaleString("tr-TR")} TL</span></div>
+                        <div style={{ marginTop: '2px' }}>{t.minCartAmount}: <span style={{ color: 'var(--primary)', fontWeight: '700' }}>{Number(coupon.min_cart_amount).toLocaleString(isEn ? "en-US" : "tr-TR")} {isEn ? "TL" : "TL"}</span></div>
                       )}
                     </div>
                   </div>
@@ -142,7 +174,7 @@ export default function Coupons() {
                     className="ticket-right"
                     onClick={() => isUsable && handleCopy(coupon.code, coupon.id)}
                     style={{ cursor: isUsable ? 'pointer' : 'default' }}
-                    title={isUsable ? "Kodu Kopyala" : ""}
+                    title={isUsable ? t.copyCode : ""}
                   >
                     <div className="status-badge" style={{
                       background: isUsable ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
@@ -169,11 +201,11 @@ export default function Coupons() {
                           fontWeight: 'bold',
                           boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
                         }}>
-                          Kopyalandı!
+                          {t.copied}
                         </span>
                       )}
                       {!isCopied && isUsable && (
-                        <span style={{ fontSize: '10px', marginTop: '4px', opacity: 0.8 }}>Kopyala</span>
+                        <span style={{ fontSize: '10px', marginTop: '4px', opacity: 0.8 }}>{t.copy}</span>
                       )}
                     </div>
                   </div>

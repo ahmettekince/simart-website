@@ -4,14 +4,56 @@ import Link from "next/link";
 import { useSearchParams, notFound } from "next/navigation";
 import Cookies from "js-cookie";
 import { log } from "@/utils/logger";
+import { useLangStore } from "@/stores/langStore";
+import { getLocalizedUrl } from "@/utils/i18n";
 
 export default function PaymentResultContent() {
+  const { lang } = useLangStore();
   const searchParams = useSearchParams();
   const [resultData, setResultData] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const t = {
+    tr: {
+      loading: "Yükleniyor...",
+      checking: "Sonuç kontrol ediliyor...",
+      successTitle: "Siparişiniz Tamamlandı!",
+      failTitle: "Siparişiniz Tamamlanamadı",
+      successDefaultMsg: "Ödeme işleminiz başarıyla gerçekleşti.",
+      failDefaultMsg: "Ödeme işlemi sırasında bir hata oluştu.",
+      orderNumber: "Sipariş Numarası",
+      backToHome: "Ana Sayfaya Dön",
+      viewOrders: "Siparişlerimi Görüntüle",
+      tryAgain: "Tekrar Dene"
+    },
+    en: {
+      loading: "Loading...",
+      checking: "Checking the result...",
+      successTitle: "Your Order is Complete!",
+      failTitle: "Your Order Could Not Be Completed",
+      successDefaultMsg: "Your payment has been successfully processed.",
+      failDefaultMsg: "An error occurred during the payment process.",
+      orderNumber: "Order Number",
+      backToHome: "Back to Home",
+      viewOrders: "View My Orders",
+      tryAgain: "Try Again"
+    }
+  }[lang] || {
+    tr: {
+      loading: "Yükleniyor...",
+      checking: "Sonuç kontrol ediliyor...",
+      successTitle: "Siparişiniz Tamamlandı!",
+      failTitle: "Siparişiniz Tamamlanamadı",
+      successDefaultMsg: "Ödeme işleminiz başarıyla gerçekleşti.",
+      failDefaultMsg: "Ödeme işlemi sırasında bir hata oluştu.",
+      orderNumber: "Sipariş Numarası",
+      backToHome: "Ana Sayfaya Dön",
+      viewOrders: "Siparişlerimi Görüntüle",
+      tryAgain: "Tekrar Dene"
+    }
+  }.tr;
+
   useEffect(() => {
-    // 1. Session Storage'dan veriyi oku (Ara sayfadan gelen)
     const storedData = sessionStorage.getItem("payment_result_storage");
 
     if (storedData) {
@@ -23,7 +65,6 @@ export default function PaymentResultContent() {
       }
       setLoading(false);
     } else {
-      // Fallback: URL parametreleri
       const params = {};
       searchParams.forEach((value, key) => {
         params[key] = value;
@@ -33,13 +74,11 @@ export default function PaymentResultContent() {
         setResultData(params);
         setLoading(false);
       } else {
-        // HİÇBİR VERİ YOKSA -> 404 Sayfasına Git
         notFound();
       }
     }
   }, [searchParams]);
 
-  // Affiliate ref cookie'sini temizle ve GTM Purchase takibi yap
   useEffect(() => {
     if (!resultData || typeof window === 'undefined') return;
 
@@ -59,49 +98,38 @@ export default function PaymentResultContent() {
       Cookies.remove("affiliate_ref");
 
       if (orderData) {
-        // Eğer sipariş numarası API sonucundan farklıysa güncelle
         if (resultData.order_number || resultData.OrderId) {
           orderData.id = resultData.order_number || resultData.OrderId;
         }
 
         trackPurchase(orderData);
         log('GTM Purchase tracked from PaymentResultContent:', orderData);
-
-        // Tekrar tetiklenmemesi için temizle
         sessionStorage.removeItem('pending_purchase');
       }
     } else {
-      // Başarısız Durumu
-      const errorMsg = resultData.bank_code_message || resultData.message || "Ödeme işlemi sırasında bir hata oluştu.";
+      const errorMsg = resultData.bank_code_message || resultData.message || t.failDefaultMsg;
       const orderId = resultData.order_number || resultData.OrderId || (orderData ? orderData.id : null);
 
       trackPurchaseFailure(errorMsg, orderId);
       log('GTM Purchase Failure tracked:', errorMsg);
     }
-  }, [resultData]);
+  }, [resultData, t.failDefaultMsg]);
 
   if (loading) {
     return (
       <div style={{ textAlign: "center", padding: "80px 0" }}>
         <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Yükleniyor...</span>
+          <span className="visually-hidden">{t.loading}</span>
         </div>
-        <p className="mt-3 text-secondary">Sonuç kontrol ediliyor...</p>
+        <p className="mt-3 text-secondary">{t.checking}</p>
       </div>
     );
   }
 
-  // Eğer veri yoksa (notFound çalışana kadar boş dönsün)
   if (!resultData) return null;
 
-  // Sonuç Durumunu Belirle
-  // Genelde 'status'='success' veya 'MdStatus'='1' başarılıdır.
   const isSuccess = resultData?.status === 'success';
-
-  // Mesaj önceliği: bank_code_message > message > Genel hata
-  const displayMessage = resultData?.bank_code_message || resultData?.message || (isSuccess ? "Ödeme işleminiz başarıyla gerçekleşti." : "Ödeme işlemi sırasında bir hata oluştu.");
-
-  // Sipariş Numarası
+  const displayMessage = resultData?.bank_code_message || resultData?.message || (isSuccess ? t.successDefaultMsg : t.failDefaultMsg);
   const orderNumber = resultData?.order_number || resultData?.OrderId || "-";
 
   return (
@@ -117,7 +145,6 @@ export default function PaymentResultContent() {
               border: "1px solid #f0f0f0",
               textAlign: "center"
             }}>
-              {/* İKON */}
               <div style={{
                 width: "80px",
                 height: "80px",
@@ -134,18 +161,15 @@ export default function PaymentResultContent() {
                 <i className={isSuccess ? "icon-check" : "icon-close"}></i>
               </div>
 
-              {/* BAŞLIK */}
               <h2 style={{ marginBottom: "15px", color: "#333", fontWeight: "700" }}>
-                {isSuccess ? "Siparişiniz Tamamlandı!" : "Siparişiniz Tamamlanamadı"}
+                {isSuccess ? t.successTitle : t.failTitle}
               </h2>
 
-              {/* MESAJ */}
               <p
                 style={{ color: "#666", fontSize: "16px", lineHeight: "1.6", marginBottom: "30px", maxWidth: "80%", margin: "0 auto 30px" }}
                 dangerouslySetInnerHTML={{ __html: displayMessage }}
               />
 
-              {/* SİPARİŞ NUMARASI KUTUSU */}
               {orderNumber !== "-" && (
                 <div style={{
                   background: "#f8f9fa",
@@ -156,7 +180,7 @@ export default function PaymentResultContent() {
                   border: "1px dashed #ced4da"
                 }}>
                   <span style={{ display: "block", fontSize: "12px", color: "#888", marginBottom: "5px", textTransform: "uppercase", letterSpacing: "1px" }}>
-                    Sipariş Numarası
+                    {t.orderNumber}
                   </span>
                   <span style={{ fontSize: "20px", fontWeight: "bold", color: "#333", fontFamily: "monospace" }}>
                     {orderNumber}
@@ -164,19 +188,18 @@ export default function PaymentResultContent() {
                 </div>
               )}
 
-              {/* BUTONLAR */}
               <div style={{ display: "flex", gap: "15px", justifyContent: "center", flexWrap: "wrap" }}>
-                <Link href="/" className="tf-btn btn-fill radius-3 animate-hover-btn">
-                  Ana Sayfaya Dön
+                <Link href={getLocalizedUrl("/", lang)} className="tf-btn btn-fill radius-3 animate-hover-btn">
+                  {t.backToHome}
                 </Link>
                 {isSuccess && (
-                  <Link href="/siparislerim" className="tf-btn btn-line radius-3">
-                    Siparişlerimi Görüntüle
+                  <Link href={getLocalizedUrl("/siparislerim", lang)} className="tf-btn btn-line radius-3">
+                    {t.viewOrders}
                   </Link>
                 )}
                 {!isSuccess && (
-                  <Link href="/odeme" className="tf-btn btn-line radius-3">
-                    Tekrar Dene
+                  <Link href={getLocalizedUrl("/odeme", lang)} className="tf-btn btn-line radius-3">
+                    {t.tryAgain}
                   </Link>
                 )}
               </div>

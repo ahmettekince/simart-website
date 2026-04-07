@@ -5,9 +5,10 @@ import { API_REVALIDATE } from "@/config/apiConfig";
 /**
  * Basında Biz (Press) verilerini getirir.
  */
-export async function getPress() {
+export async function getPress(lang = "tr") {
     try {
         const response = await serverFetch("/press", {
+            lang,
             next: { revalidate: API_REVALIDATE.PRESS },
         });
 

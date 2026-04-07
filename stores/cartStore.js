@@ -5,7 +5,7 @@
 
 import { create } from 'zustand';
 import { openCartModal } from '@/utils/openCartModal';
-import { addToCart as addToCartAPI, removeFromCart as removeFromCartAPI, updateCartQuantity as updateCartQuantityAPI, applyCoupon as applyCouponAPI, removeCoupon as removeCouponAPI, clearCart as clearCartAPI } from '@/api/cart';
+import { addToCart as addToCartAPI, removeFromCart as removeFromCartAPI, updateCartQuantity as updateCartQuantityAPI, applyCoupon as applyCouponAPI, removeCoupon as removeCouponAPI, clearCart as clearCartAPI, getCart as getCartAPI } from '@/api/cart';
 import { log } from '@/utils/logger';
 import { trackAddToCart } from '@/utils/analytics';
 
@@ -77,6 +77,22 @@ export const useCartStore = create(
 
 
         // Actions
+        /**
+         * Sepeti API'den çek ve store'u güncelle
+         */
+        fetchCart: async () => {
+            try {
+                const cartData = await getCartAPI();
+                if (cartData) {
+                    get().syncFromAPI(cartData);
+                    return true;
+                }
+                return false;
+            } catch (error) {
+                log('[CartStore] fetchCart error:', error);
+                return false;
+            }
+        },
 
         /**
          * Bekleyen hediye seçimini iptal et (modal kapatılınca)

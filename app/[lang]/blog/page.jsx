@@ -13,8 +13,9 @@ export const metadata = {
   robots: "index, follow",
 };
 
-export default async function page() {
-  const blogs = await getBlogs();
+export default async function page({ params }) {
+  const { lang } = await params;
+  const blogs = await getBlogs(lang);
 
   const blogJsonLd = webPageSchema({
     name: "Blog - Şımart Teknoloji",
@@ -50,7 +51,7 @@ export default async function page() {
         </div>
       </div>
 
-      <BlogGrid blogs={blogs} />
+      <BlogGrid blogs={blogs} lang={lang} />
     </>
   );
 }

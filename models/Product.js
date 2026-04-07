@@ -279,8 +279,17 @@ export class ProductModel {
             influencer_videos: product.influencer_videos || [],
 
             // Kategoriler
-            categories: categories,
-            primary_category: primaryCategory,
+            categories: categories.map(cat => ({
+                ...cat,
+                slugs: cat.slugs || null
+            })),
+            primary_category: primaryCategory ? {
+                ...primaryCategory,
+                slugs: primaryCategory.slugs || null
+            } : null,
+
+            // Çok dilli sluglar (Yeni API desteği)
+            slugs: product.slugs || null,
 
             // Kampanya etiketleri
             campaign_tags: product.campaign_tags || [],

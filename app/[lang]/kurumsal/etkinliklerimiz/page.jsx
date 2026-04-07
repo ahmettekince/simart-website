@@ -1,43 +1,24 @@
-
 import { AboutLayout } from "@/components/about/about-layout"
 import { EventsSection } from "@/components/about/events-section"
 import { getEvents } from "@/api/events";
 
-export const metadata = {
-    title: "Etkinliklerimiz - Şımart Teknoloji",
-    description: "Şımart Teknoloji'nin düzenlediği etkinlikler, seminerler ve sosyal sorumluluk projeleri hakkında bilgi alın. Yenilikçi çözümlerimizle topluma katkıda bulunuyoruz.",
-    keywords: "Şımart Teknoloji, Etkinlikler, Seminerler, Sosyal Sorumluluk Projeleri, Teknoloji Etkinlikleri, Yenilikçi Çözümler, Topluma Katkı, Şımart Etkinlik Takvimi, Eğitim Programları",
-    author: "Şımart Teknoloji",
-    robots: "index, follow",
-    og: {
-        title: "Etkinliklerimiz - Şımart Teknoloji",
-        description: "Şımart Teknoloji'nin düzenlediği etkinlikler, seminerler ve sosyal sorumluluk projeleri hakkında bilgi alın. Yenilikçi çözümlerimizle topluma katkıda bulunuyoruz.",
-        image: "https://simart.me/uploads/systems/og.jpg",
-        url: "https://simart.me/kurumsal/etkinliklerimiz",
-        type: "website",
-        locale: "tr_TR",
-    },
-    twitter: {
-        card: "summary_large_image",
-        title: "Etkinliklerimiz - Şımart Teknoloji",
-        description: "Şımart Teknoloji'nin düzenlediği etkinlikler, seminerler ve sosyal sorumluluk projeleri hakkında bilgi alın. Yenilikçi çözümlerimizle topluma katkıda bulunuyoruz.",
-        image: "https://simart.me/uploads/systems/twitter.jpg",
-        site: "@simartteknoloji",
-        creator: "@simartteknoloji",
-    },
-    other: {
-        "itemprop:name": "Etkinliklerimiz - Şımart Teknoloji",
-        "itemprop:description": "Şımart Teknoloji'nin düzenlediği etkinlikler, seminerler ve sosyal sorumluluk projeleri hakkında bilgi alın. Yenilikçi çözümlerimizle topluma katkıda bulunuyoruz.",
-        "itemprop:image": "https://simart.me/uploads/systems/seo.jpg",
-    },
+export async function generateMetadata({ params }) {
+    const { lang } = await params;
+    const isEn = lang === "en";
+    return {
+        title: isEn ? "Our Events - Şımart Technology" : "Etkinliklerimiz - Şımart Teknoloji",
+        description: isEn ? "Discover our events..." : "Şımart Teknoloji etkinlik ve katıldığımız fuarlar.",
+    };
 }
 
-export default async function EtkinliklerimizPage() {
+export default async function EtkinliklerimizPage({ params }) {
+    const { lang } = await params;
+    const isEn = lang === "en";
     const eventsData = await getEvents();
 
     return (
         <>
-            <AboutLayout currentSectionId="etkinliklerimiz">
+            <AboutLayout currentSectionId="etkinliklerimiz" lang={lang}>
                 {/* Section Title */}
                 <div className="mb-4">
                     <h1 className="about-section-title" style={{
@@ -50,7 +31,7 @@ export default async function EtkinliklerimizPage() {
                         textTransform: 'uppercase',
                         marginBottom: '24px',
                     }}>
-                        ETKİNLİKLERİMİZ
+                        {isEn ? "OUR EVENTS" : "ETKİNLİKLERİMİZ"}
                     </h1>
                 </div>
 

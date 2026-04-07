@@ -10,6 +10,7 @@ import NavDotsPill from "@/components/common/NavDotsPill";
 import { useCartStore } from "@/stores/cartStore";
 import MaxQuantityToast from "@/components/common/MaxQuantityToast";
 import ErrorToast from "@/components/common/ErrorToast";
+import { useLangStore } from "@/stores/langStore";
 
 /**
  * Sepet üstünde gösterilen cross-sale / öneriler alanı.
@@ -19,10 +20,45 @@ import ErrorToast from "@/components/common/ErrorToast";
  * - Target ürünler ID bazında tekrarsızdır
  * - Sepette zaten olan target ürünler listelenmez
  */
-export default function BirlikteAlSepet({ title = "Sepetinize ekleyebilirsiniz", products = [] }) {
+export default function BirlikteAlSepet({ title, products = [] }) {
   const cross_sale_campaigns = useCartStore((state) => state.cross_sale_campaigns);
   const items = useCartStore((state) => state.items);
   const addItem = useCartStore((state) => state.addItem);
+  const lang = useLangStore((state) => state.lang);
+
+  const t = {
+    tr: {
+      defaultTitle: "Sepetinize ekleyebilirsiniz",
+      addToCart: "Sepete Ekle",
+      adding: "Ekleniyor...",
+      noImage: "Görsel yok",
+      ariaLabel: "Birlikte al önerileri",
+      errorAdd: "Sepete eklenirken bir hata oluştu.",
+      systemError: "Sistemsel bir hata oluştu.",
+      locale: "tr-TR"
+    },
+    en: {
+      defaultTitle: "You can add to your cart",
+      addToCart: "Add to Cart",
+      adding: "Adding...",
+      noImage: "No image",
+      ariaLabel: "Buy together suggestions",
+      errorAdd: "An error occurred while adding to cart.",
+      systemError: "A system error occurred.",
+      locale: "en-US"
+    }
+  }[lang] || {
+    defaultTitle: "Sepetinize ekleyebilirsiniz",
+    addToCart: "Sepete Ekle",
+    adding: "Ekleniyor...",
+    noImage: "Görsel yok",
+    ariaLabel: "Birlikte al önerileri",
+    errorAdd: "Sepete eklenirken bir hata oluştu.",
+    systemError: "Sistemsel bir hata oluştu.",
+    locale: "tr-TR"
+  };
+
+  const displayTitle = title || t.defaultTitle;
 
   const swiperRef = useRef(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -186,13 +222,13 @@ export default function BirlikteAlSepet({ title = "Sepetinize ekleyebilirsiniz",
           setIsStockLimitForToast(true); // Genelde sepet üstünde limit hatası stoktandır
           setShowMaxReachedToast(true);
         } else {
-          setErrorToastMessage(result.message || "Sepete eklenirken bir hata oluştu.");
+          setErrorToastMessage(result.message || t.errorAdd);
           setShowErrorToast(true);
         }
       }
     } catch (e) {
       console.error("Cross-sale sepete ekleme hatası:", e);
-      setErrorToastMessage(e.message || "Sistemsel bir hata oluştu.");
+      setErrorToastMessage(e.message || t.systemError);
       setShowErrorToast(true);
     } finally {
       setAddingSlug(null);
@@ -206,14 +242,14 @@ export default function BirlikteAlSepet({ title = "Sepetinize ekleyebilirsiniz",
       <MaxQuantityToast visible={showMaxReachedToast} onHide={() => setShowMaxReachedToast(false)} maxQuantity={maxQuantityForToast} isStockLimit={isStockLimitForToast} />
       <ErrorToast visible={showErrorToast} onHide={() => setShowErrorToast(false)} message={errorToastMessage} />
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8, minWidth: 0 }}>
-        <span style={{ fontSize: 16, fontWeight: 700, color: "#111", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{title}</span>
+        <span style={{ fontSize: 16, fontWeight: 700, color: "#111", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{displayTitle}</span>
         {targetProducts.length > 1 && (
           <div style={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
             <NavDotsPill
               total={targetProducts.length}
               activeIndex={activeIndex}
               onDotClick={(i) => swiperRef.current?.slideTo?.(i)}
-              ariaLabel="Birlikte al önerileri"
+              ariaLabel={t.ariaLabel}
             />
           </div>
         )}
@@ -239,24 +275,24 @@ export default function BirlikteAlSepet({ title = "Sepetinize ekleyebilirsiniz",
           }}
           style={{ width: "100%", maxWidth: "100%" }}
         >
-          {targetProducts.map((t, i) => {
-            const cat = t.category_slug || "urunler";
-            const slug = t.slug || "";
+          {targetProducts.map((item, i) => {
+            const cat = item.category_slug || "urunler";
+            const slug = item.slug || "";
             const url = `/magaza/${cat}/${slug}`;
-            const price = t.price ?? 0;
-            const final = t.final_price ?? 0;
+            const price = item.price ?? 0;
+            const final = item.final_price ?? 0;
             const hasDiscount = final < price && price > 0;
-            const img = t.cover_image?.thumbnail_url || t.cover_image?.url || t.image || t.imgSrc || t.product?.cover_image?.thumbnail_url || t.product?.cover_image?.url || null;
-            const isAdding = addingSlug === t.slug;
+            const img = item.cover_image?.thumbnail_url || item.cover_image?.url || item.image || item.imgSrc || item.product?.cover_image?.thumbnail_url || item.product?.cover_image?.url || null;
+            const isAdding = addingSlug === item.slug;
 
             return (
-              <SwiperSlide key={t.id || i} style={{ height: "auto", boxSizing: "border-box", width: "100%", maxWidth: "100%" }}>
+              <SwiperSlide key={item.id || i} style={{ height: "auto", boxSizing: "border-box", width: "100%", maxWidth: "100%" }}>
                 <div style={{ display: "flex", alignItems: "center", border: "1px solid #d1d5db", borderRadius: 12, background: "#fff", overflow: "hidden", minHeight: 100, width: "100%", maxWidth: "100%", boxSizing: "border-box", paddingLeft: 12, paddingRight: 12 }}>
                   {img ? (
                     <div style={{ width: 72, minWidth: 72, height: 72, flexShrink: 0, overflow: "hidden", background: "#f5f5f5" }}>
                       <Image
                         src={img}
-                        alt={t.cover_image?.alt_text || t.name || ""}
+                        alt={item.cover_image?.alt_text || item.name || ""}
                         width={80}
                         height={80}
                         unoptimized={String(img).startsWith("http")}
@@ -265,7 +301,7 @@ export default function BirlikteAlSepet({ title = "Sepetinize ekleyebilirsiniz",
                     </div>
                   ) : (
                     <div style={{ width: 72, minWidth: 72, height: 72, flexShrink: 0, background: "#eee", display: "flex", alignItems: "center", justifyContent: "center", color: "#999", fontSize: 12 }}>
-                      Görsel yok
+                      {t.noImage}
                     </div>
                   )}
 
@@ -273,20 +309,20 @@ export default function BirlikteAlSepet({ title = "Sepetinize ekleyebilirsiniz",
                     <Link
                       href={url}
                       style={{ margin: 0, fontSize: 13, fontWeight: 500, color: "#111", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", minWidth: 0, textDecoration: "none" }}
-                      title={t.name}
+                      title={item.name}
                     >
-                      {t.name}
+                      {item.name}
                     </Link>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0, overflow: "hidden" }}>
-                      <span style={{ fontSize: 15, fontWeight: 700, color: hasDiscount ? "#0bc15c" : "#3c81b5" }}>{Number(final).toLocaleString("tr-TR")} TL</span>
-                      {hasDiscount && <span style={{ fontSize: 13, color: "#999", textDecoration: "line-through" }}>{Number(price).toLocaleString("tr-TR")} TL</span>}
+                      <span style={{ fontSize: 15, fontWeight: 700, color: hasDiscount ? "#0bc15c" : "#3c81b5" }}>{Number(final).toLocaleString(t.locale)} TL</span>
+                      {hasDiscount && <span style={{ fontSize: 13, color: "#999", textDecoration: "line-through" }}>{Number(price).toLocaleString(t.locale)} TL</span>}
                     </div>
                   </div>
 
                   <button
                     type="button"
                     disabled={isAdding}
-                    onClick={() => handleAddToCart(t)}
+                    onClick={() => handleAddToCart(item)}
                     style={{
                       flexShrink: 0,
                       minWidth: 80,
@@ -305,7 +341,7 @@ export default function BirlikteAlSepet({ title = "Sepetinize ekleyebilirsiniz",
                       opacity: isAdding ? 0.8 : 1,
                     }}
                   >
-                    {isAdding ? "Ekleniyor..." : "Sepete Ekle"}
+                    {isAdding ? t.adding : t.addToCart}
                   </button>
                 </div>
               </SwiperSlide>

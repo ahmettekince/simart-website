@@ -1,4 +1,21 @@
+import { useLangStore } from "@/stores/langStore";
+
+const translations = {
+    tr: {
+        opportunity: "Kaçırılmayacak Fırsat",
+        description: "Birçok ürün, Trendyol’da geçerli olmak üzere %50’ye varan kampanyalı fiyatlarla sunuluyor.",
+        goToProduct: "Ürüne Git"
+    },
+    en: {
+        opportunity: "Opportunity Not to Be Missed",
+        description: "Many products are offered at discounted prices up to 50%, valid on Trendyol.",
+        goToProduct: "Go to Product"
+    }
+};
+
 export default function Trendyol({ productSlug }) {
+    const lang = useLangStore((s) => s.lang);
+    const t = translations[lang] || translations.tr;
     const getTrendyolUrl = (slug) => {
         const mapping = {
             "akilli-bluetooth-ampul": "https://www.trendyol.com/simart-teknoloji/akilli-rgb-led-ampul-bluetooth-16m-renk-ayarlanabilir-parlaklik-p-376730755?boutiqueId=61&merchantId=790294&filterOverPriceListings=false&sav=true",
@@ -84,9 +101,9 @@ export default function Trendyol({ productSlug }) {
                 />
 
                 <div className="try-text text-start">
-                    <div className="fw-normal" style={{ fontSize: "14px", color: "#333", marginBottom: "0px" }}>Kaçırılmayacak Fırsat</div>
+                    <div className="fw-normal" style={{ fontSize: "14px", color: "#333", marginBottom: "0px" }}>{t.opportunity}</div>
                     <div className="try-highlight" style={{ fontSize: "14px", color: "#f27a1a", fontWeight: "500", lineHeight: "1.2" }}>
-                        Birçok ürün, Trendyol’da geçerli olmak üzere %50’ye varan kampanyalı fiyatlarla sunuluyor.
+                        {t.description}
                     </div>
                 </div>
             </div>
@@ -104,7 +121,7 @@ export default function Trendyol({ productSlug }) {
                     whiteSpace: "nowrap",
                 }}
             >
-                Ürüne Git
+                {t.goToProduct}
             </a>
 
             <style jsx>{`

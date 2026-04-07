@@ -6,16 +6,23 @@ import React from "react";
 import { checkAuthServer } from "@/utils/authServer";
 import { redirect } from "next/navigation";
 
-export const metadata = {
-  title: "Hesabım - Robot Süpürge ve Akıllı Ev Sistemleri",
-  description: "Şımart Teknoloji hesap yönetim paneli. Kişisel bilgilerinizi güncelleyin, siparişlerinizi görüntüleyin ve hesap ayarlarınızı yönetin.",
+import { getLocalizedUrl } from "@/utils/i18n";
 
-};
-export default async function page() {
+export async function generateMetadata({ params }) {
+  const { lang } = await params;
+  const isEn = lang === "en";
+  return {
+    title: isEn ? "My Account - Şımart Technology" : "Hesabım - Robot Süpürge ve Akıllı Ev Sistemleri",
+    description: isEn ? "Şımart Technology account management panel." : "Şımart Teknoloji hesap yönetim paneli.",
+  };
+}
+
+export default async function page({ params }) {
+  const { lang } = await params;
   const isAuthenticated = await checkAuthServer();
 
   if (!isAuthenticated) {
-    redirect("/giris-yap");
+    redirect(getLocalizedUrl("/giris-yap", lang));
   }
 
   return (

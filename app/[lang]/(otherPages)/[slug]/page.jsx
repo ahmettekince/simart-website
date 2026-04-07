@@ -101,7 +101,7 @@ export default async function DynamicPage({ params }) {
   if (slug.startsWith("qr-")) {
     const [qrData, menuItems] = await Promise.all([
       getQrCard(slug),
-      getMenus(),
+      getMenus(lang),
     ]);
 
     if (qrData) {
@@ -110,7 +110,10 @@ export default async function DynamicPage({ params }) {
   }
 
   // Standart Sayfa/Blog Kontrolü
-  const page = await getPageBySlug(slug, lang);
+  const [page, menuItems] = await Promise.all([
+    getPageBySlug(slug, lang),
+    getMenus(lang)
+  ]);
 
   if (!page) {
     return notFound();
@@ -146,6 +149,8 @@ export default async function DynamicPage({ params }) {
         htmlContent={page.content}
         title={page.title}
         image={page.image}
+        slugs={page.slugs}
+        menuItems={menuItems}
       />
     </>
   );
