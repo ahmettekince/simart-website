@@ -185,7 +185,7 @@ export default function Detail({ product }) {
       ["tr", "en"].forEach(currLang => {
         const pSlug = product.slugs[currLang] || product.slug;
         const cSlug = catSlugs?.[currLang] || (product.primary_category?.slug || "urunler");
-        
+
         // TR için default prefix /magaza, EN için /en/shop
         const prefix = currLang === "en" ? "/en/shop" : "/magaza";
         paths[currLang] = `${prefix}/${cSlug}/${pSlug}`;
@@ -586,7 +586,7 @@ export default function Detail({ product }) {
                                   />
                                 ) : (
                                   <strong>{product.product_protocol.name}</strong>
-                                )}{" "}
+                                )}
                                 {t.protocolSuffix}
                               </span>
                               {product.product_protocol.description && (

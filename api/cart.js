@@ -7,10 +7,8 @@ import { log } from "@/utils/logger";
  */
 export async function getCart() {
     try {
-        const response = await apiClient.get("/cart", {
+        const response = await apiClient.get(`/cart?t=${Date.now()}`, {
             validateStatus: (status) => status === 200 || status === 404
-
-
         });
         log("[API cart.js] getCart failed:", response.data);
 

@@ -9,8 +9,8 @@ import { useCartStore } from "@/stores/cartStore";
 import { translatePath } from "@/utils/i18n";
 
 const languageOptions = [
-    { id: "tr", label: "Türkçe", flag: "/images/flags/turkey.svg" },
-    { id: "en", label: "English", flag: "/images/flags/us.svg" },
+    { id: "tr", label: "TR" },
+    { id: "en", label: "EN" },
 ];
 
 export default function LanguageSelect({
@@ -101,7 +101,7 @@ export default function LanguageSelect({
                     gap: "6px",
                     color: textColor,
                     fontSize: "13px",
-                    fontWeight: "600",
+                    fontWeight: "700",
                     textTransform: "uppercase",
                     cursor: "pointer",
                     padding: "4px 8px",
@@ -109,15 +109,7 @@ export default function LanguageSelect({
                     transition: "all 0.2s ease"
                 }}
             >
-                <div style={{ display: "flex", alignItems: "center", position: "relative", width: "18px", height: "12px" }}>
-                    <Image
-                        src={lang === "tr" ? "/images/flags/us.svg" : "/images/flags/turkey.svg"}
-                        alt={lang === "tr" ? "English" : "Türkçe"}
-                        fill
-                        style={{ objectFit: "cover", borderRadius: "2px" }}
-                    />
-                </div>
-                {lang === "tr" ? "en" : "tr"}
+                {lang}
                 <i className={`icon icon-arrow-down`} style={{ fontSize: "8px", transition: "transform 0.2s", transform: isDDOpen ? "rotate(180deg)" : "rotate(0)" }} />
             </div>
 
@@ -135,7 +127,7 @@ export default function LanguageSelect({
                         borderRadius: "12px",
                         boxShadow: "0 10px 30px rgba(0,0,0,0.12)",
                         zIndex: 9999,
-                        minWidth: "110px",
+                        minWidth: "60px",
                         width: "max-content",
                         padding: "4px",
                         animation: "fadeIn 0.2s ease-out"
@@ -157,29 +149,17 @@ export default function LanguageSelect({
                                     borderRadius: "8px",
                                     display: "flex",
                                     alignItems: "center",
-                                    gap: "10px",
+                                    justifyContent: "center",
                                     whiteSpace: "nowrap"
                                 }}
                             >
-                                <div style={{ display: "flex", alignItems: "center", position: "relative", width: "18px", height: "12px", flexShrink: 0 }}>
-                                    <Image
-                                        src={elm.flag}
-                                        alt={elm.label}
-                                        fill
-                                        style={{ objectFit: "cover", borderRadius: "2px" }}
-                                    />
-                                </div>
                                 <span style={{
                                     color: "#111",
                                     fontSize: "13px",
-                                    fontWeight: lang === elm.id ? "600" : "500",
-                                    flexGrow: 1
+                                    fontWeight: lang === elm.id ? "700" : "500",
                                 }}>
                                     {elm.label}
                                 </span>
-                                {lang === elm.id && (
-                                    <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "#e21e25", flexShrink: 0 }} />
-                                )}
                             </li>
                         ))}
                     </ul>

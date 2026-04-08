@@ -10,7 +10,39 @@ import { openCartModal } from "@/utils/openCartModal";
 import { getLocalizedUrl } from "@/utils/i18n";
 import LanguageSelect from "@/components/common/LanguageSelect";
 
+const translations = {
+  tr: {
+    myCart: "Sepetim",
+    search: "Ara",
+    needHelp: "Yardıma mı ihtiyacınız var?",
+    address: "Adres",
+    email: "Email",
+    phone: "Telefon",
+    logout: "Çıkış Yap",
+    login: "Giriş Yap",
+    loggingOut: "Çıkış yapılıyor...",
+    logoutConfirm: "Çıkış yapmak istiyor musunuz?",
+    yesLogout: "Evet, Çıkış Yap",
+    cancel: "Vazgeç"
+  },
+  en: {
+    myCart: "My Cart",
+    search: "Search",
+    needHelp: "Need help?",
+    address: "Address",
+    email: "Email",
+    phone: "Phone",
+    logout: "Log Out",
+    login: "Log In",
+    loggingOut: "Logging out...",
+    logoutConfirm: "Are you sure you want to log out?",
+    yesLogout: "Yes, Log Out",
+    cancel: "Cancel"
+  }
+};
+
 export default function MobileMenu({ menuItems: initialMenuItems = [], lang = "tr" }) {
+  const t = translations[lang] || translations.tr;
   const pathname = usePathname();
   const [menuItems, setMenuItems] = useState(initialMenuItems);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
@@ -160,7 +192,7 @@ export default function MobileMenu({ menuItems: initialMenuItems = [], lang = "t
                   className="site-nav-icon"
                 >
                   <i className="icon icon-cart" />
-                  Sepetim
+                  {t.myCart}
                 </a>
                 <a
                   href="#"
@@ -189,25 +221,25 @@ export default function MobileMenu({ menuItems: initialMenuItems = [], lang = "t
                   className="site-nav-icon"
                 >
                   <i className="icon icon-search" />
-                  Ara
+                  {t.search}
                 </a>
               </div>
               <div className="mb-notice">
                 <Link href={getLocalizedUrl("/destek", lang)} className="text-need" onClick={closeMenu}>
-                  Yardıma mı ihtiyacınız var?
+                  {t.needHelp}
                 </Link>
               </div>
               <div style={{ marginTop: "20px", marginBottom: "15px" }}>
 
                 <ul className="mb-info">
                   <li>
-                    Adres: Yeşilova Mah. 4023 Cad. <br /> Ser Tower Apt. Dış Kapı: 1 G Etimesgut/Ankara
+                    {t.address}: Yeşilova Mah. 4023 Cad. <br /> Ser Tower Apt. Dış Kapı: 1 G Etimesgut/Ankara
                   </li>
                   <li>
-                    Email: <a href="mailto:destek@simart.me" style={{ color: "inherit", textDecoration: "none" }}><b>destek@simart.me</b></a>
+                    {t.email}: <a href="mailto:destek@simart.me" style={{ color: "inherit", textDecoration: "none" }}><b>destek@simart.me</b></a>
                   </li>
                   <li>
-                    Phone: <a href="tel:+908503466126" style={{ color: "inherit", textDecoration: "none" }}><b>+90 850 346 6126</b></a>
+                    {t.phone}: <a href="tel:+908503466126" style={{ color: "inherit", textDecoration: "none" }}><b>+90 850 346 6126</b></a>
                   </li>
                 </ul>
               </div>
@@ -217,12 +249,12 @@ export default function MobileMenu({ menuItems: initialMenuItems = [], lang = "t
             {isAuthenticated ? (
               <a href="#" onClick={(e) => { e.preventDefault(); setShowLogoutConfirm(true); }} className="site-nav-icon">
                 <i className="icon icon-account" />
-                Çıkış Yap
+                {t.logout}
               </a>
             ) : (
               <Link href={getLocalizedUrl("/giris-yap", lang)} className="site-nav-icon" onClick={closeMenu}>
                 <i className="icon icon-account" />
-                Giriş Yap
+                {t.login}
               </Link>
             )}
           </div>
@@ -257,7 +289,7 @@ export default function MobileMenu({ menuItems: initialMenuItems = [], lang = "t
             }}
           >
             <div style={{ fontSize: "18px", marginBottom: "10px", color: "#333", fontWeight: "700" }}>
-              {isLoggingOut ? "Çıkış yapılıyor..." : "Çıkış yapmak istiyor musunuz?"}
+              {isLoggingOut ? t.loggingOut : t.logoutConfirm}
             </div>
             <div style={{ display: "flex", gap: "12px", marginTop: "25px" }}>
               <button
@@ -275,7 +307,7 @@ export default function MobileMenu({ menuItems: initialMenuItems = [], lang = "t
                   cursor: isLoggingOut ? "wait" : "pointer",
                 }}
               >
-                Evet, Çıkış Yap
+                {t.yesLogout}
               </button>
               <button
                 onClick={() => !isLoggingOut && setShowLogoutConfirm(false)}
@@ -292,7 +324,7 @@ export default function MobileMenu({ menuItems: initialMenuItems = [], lang = "t
                   cursor: isLoggingOut ? "not-allowed" : "pointer",
                 }}
               >
-                Vazgeç
+                {t.cancel}
               </button>
             </div>
           </div>

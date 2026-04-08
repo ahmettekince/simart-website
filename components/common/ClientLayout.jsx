@@ -6,6 +6,7 @@ import { useCartStore } from "@/stores/cartStore";
 import { useAuthStore } from "@/stores/authStore";
 import { getCart } from "@/api/cart";
 import dynamic from "next/dynamic";
+import { i18n } from "@/config/i18n";
 
 // Modalları ve ağır bileşenleri dinamik (lazy) olarak yüklüyoruz. 
 // ssr: false sayesinde sunucu yükü azalır ve tarayıcı açıldığı an arka planda yüklenirler.
@@ -162,14 +163,17 @@ export default function ClientLayout({ children, lang }) {
     useEffect(() => {
         const parts = pathname.split("/").filter(Boolean);
         // Dil önekini temizleyip temiz yolu alalım (ör: /tr/qr-genar -> /qr-genar)
-        const cleanPath = (parts.length > 0 && ["tr", "en"].includes(parts[0]))
+        const cleanPath = (parts.length > 0 && i18n.locales.includes(parts[0]))
             ? "/" + parts.slice(1).join("/")
             : pathname;
 
         const isHideToolbarPage =
             cleanPath === "/odeme" ||
+            cleanPath === "/checkout" ||
             cleanPath === "/3d" ||
-            cleanPath.startsWith("/qr");
+            cleanPath.startsWith("/qr") ||
+            cleanPath.startsWith("/odeme-") ||
+            cleanPath.startsWith("/payment-");
 
         if (isHideToolbarPage) {
             document.body.classList.add("odeme-page");
@@ -179,42 +183,26 @@ export default function ClientLayout({ children, lang }) {
         return () => document.body.classList.remove("odeme-page");
     }, [pathname]);
 
-    // Cart'ı API'den sync et (sadece ilk yüklemede)
+    // Cart'ı API'den sync et (İlk yüklemede VE her dil değişiminde)
     useEffect(() => {
-        if (typeof window !== "undefined" && !isSynced) {
-            const fetchCart = async () => {
-                try {
-                    const cartData = await getCart();
-                    if (cartData) {
-                        // syncFromAPI'yı direkt store'dan al (dependency'den çıkar)
-                        const { syncFromAPI: syncFn } = useCartStore.getState();
-                        syncFn(cartData);
-                    }
-                } catch (error) {
-                    console.error("[ClientLayout] Cart sync error:", error);
-                }
-            };
-            fetchCart();
+        if (typeof window !== "undefined") {
+            const { fetchCart: fetchCartAction } = useCartStore.getState();
+            fetchCartAction();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isSynced]); // syncFromAPI'yı dependency'den çıkardık
+    }, [lang]); // Dil her değiştiğinde (ve ilk yüklemede) sepeti API'den tazele
+
 
     return (
         <>
             <div id="wrapper">{children}</div>
-            <ShopCart />
-            {/* <AskQuestion /> */}
+            <ShopCart key={lang} />
             <SearchModal />
             <ToolbarBottom />
             <ToolbarShop />
-            {/* <ShareModal /> */}
             <GlobalGiftSelectionModal />
             <CampaignTab />
             <ScrollTop />
-            {/* WhatsApp butonu*/}
-            {/* <div className="whatsapp-floating-btn">
-                <WhatsappButton />
-            </div> */}
             <CookieConsentBanner />
             <Analytics />
         </>

@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useCartStore } from "@/stores/cartStore";
 import { useAuthStore } from "@/stores/authStore";
 import { useEffect, useState, useMemo, useRef } from "react";
@@ -14,6 +15,7 @@ import PhoneInput from "@/components/common/PhoneInput";
 import { calculateCartTotals } from "@/utils/cartTotals";
 import { formatTcInput, formatTaxNumberInput, formatNameInput, formatFirstNameInput, formatLastNameInput } from "@/utils/inputFormatters";
 import { useLangStore } from "@/stores/langStore";
+import { getLocalizedUrl } from "@/utils/i18n";
 
 const translations = {
   tr: {
@@ -95,6 +97,9 @@ const translations = {
     select: "Seçiniz",
     selectCityFirst: "Önce il seçiniz",
     selectDistrictFirst: "Önce ilçe seçiniz",
+    emptyCartTitle: "Sepetinizde ürün bulunamadı",
+    emptyCartDesc: "Ödeme yapabilmek için sepetinize en az bir ürün eklemelisiniz.",
+    startShopping: "Alışverişe Başla",
     locale: "tr-TR"
   },
   en: {
@@ -176,6 +181,9 @@ const translations = {
     select: "Select",
     selectCityFirst: "Select city first",
     selectDistrictFirst: "Select district first",
+    emptyCartTitle: "Your cart is empty",
+    emptyCartDesc: "You must add at least one product to your cart to proceed with payment.",
+    startShopping: "Start Shopping",
     locale: "en-US"
   }
 };
@@ -917,27 +925,58 @@ export default function Checkout() {
   };
 
   return (
-
     <>
-      {/* Mobil sepet tutarı bar - sadece mobilde görünür; yüklenene kadar skeleton */}
-      <div className="checkout-mobile-cart-bar">
-        <div className="checkout-mobile-cart-bar-row">
-          <span className="checkout-mobile-cart-bar-label">{t.cartAmount}</span>
-          <div className="checkout-mobile-cart-bar-right">
-            {isCartSynced ? (
-              <>
-                <span className="checkout-mobile-cart-bar-price">{cartTotals.total.toLocaleString(t.locale)} TL</span>
-                <span className="checkout-mobile-cart-bar-kdv">{t.includingKdv}</span>
-              </>
-            ) : (
-              <span className="skeleton-content skeleton-rect" style={{ display: "inline-block", width: "90px", height: "20px", borderRadius: "8px" }} />
-            )}
+      {/* Mobil sepet tutarı bar - sepet boşsa gizle */}
+      {(!isCartSynced || items.length > 0) && (
+        <div className="checkout-mobile-cart-bar">
+          <div className="checkout-mobile-cart-bar-row">
+            <span className="checkout-mobile-cart-bar-label">{t.cartAmount}</span>
+            <div className="checkout-mobile-cart-bar-right">
+              {isCartSynced ? (
+                <>
+                  <span className="checkout-mobile-cart-bar-price">{cartTotals.total.toLocaleString(t.locale)} TL</span>
+                  <span className="checkout-mobile-cart-bar-kdv">{t.includingKdv}</span>
+                </>
+              ) : (
+                <span className="skeleton-content skeleton-rect" style={{ display: "inline-block", width: "90px", height: "20px", borderRadius: "8px" }} />
+              )}
+            </div>
           </div>
         </div>
-      </div>
-      <div className="container">
-        <div className="row g-3 g-lg-4 checkout-sm-layout">
-          <div className="col-12 col-lg-8">
+      )}
+
+      <div className="container" style={{ marginTop: "20px", marginBottom: "40px" }}>
+        {isCartSynced && items.length === 0 ? (
+          <div className="row">
+            <div className="col-12">
+              <div className="tf-page-cart-wrap layout-2" style={{ padding: "80px 20px", textAlign: "center", background: "#fff", borderRadius: "20px" }}>
+                <div className="d-flex flex-column align-items-center">
+                  <div style={{
+                    width: "120px",
+                    height: "120px",
+                    background: "#f8f9fa",
+                    borderRadius: "50%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: "30px"
+                  }}>
+                    <i className="icon-bag" style={{ fontSize: "50px", color: "#3c81b5" }} />
+                  </div>
+                  <h3 className="fw-6 mb_10">{t.emptyCartTitle}</h3>
+                  <p className="text_black-2 mb_30" style={{ maxWidth: "400px", margin: "0 auto 30px" }}>
+                    {t.emptyCartDesc}
+                  </p>
+                  <Link href={getLocalizedUrl("/magaza", lang)} className="tf-btn btn-fill animate-hover-btn radius-3">
+                    {t.startShopping}
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="row g-3 g-lg-4 checkout-sm-layout">
+            <div className="col-12 col-lg-8">
             <div className="tf-page-cart-item">
               {/* Sol sütun: sepet senkronize olana kadar skeleton - login ise sadece teslimat, misafirse kayıt + teslimat (auth bilinmiyorsa misafir skeleton) */}
               {!isCartSynced ? (
@@ -1848,8 +1887,8 @@ export default function Checkout() {
                                       name="billing-invoice-type"
                                       id="billing-invoice-individual"
                                       value="individual"
-                                      checked={billingInvoiceType === "individual"}
-                                      onChange={(e) => setBillingInvoiceType(e.target.value)}
+                                      checked={invoiceType === "individual"}
+                                      onChange={(e) => setInvoiceType(e.target.value)}
                                       style={{ margin: 0, verticalAlign: "middle" }}
                                     />
                                     <label htmlFor="billing-invoice-individual" style={{ margin: 0, lineHeight: "1.5" }}>
@@ -1862,8 +1901,8 @@ export default function Checkout() {
                                       name="billing-invoice-type"
                                       id="billing-invoice-corporate"
                                       value="corporate"
-                                      checked={billingInvoiceType === "corporate"}
-                                      onChange={(e) => setBillingInvoiceType(e.target.value)}
+                                      checked={invoiceType === "corporate"}
+                                      onChange={(e) => setInvoiceType(e.target.value)}
                                       style={{ margin: 0, verticalAlign: "middle" }}
                                     />
                                     <label htmlFor="billing-invoice-corporate" style={{ margin: 0, lineHeight: "1.5" }}>
@@ -1873,7 +1912,7 @@ export default function Checkout() {
                                 </div>
                               </fieldset>
 
-                              {billingInvoiceType === "individual" && (
+                              {invoiceType === "individual" && (
                                 <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
                                   <label htmlFor="billing_tc_identity">{t.tcIdentity}*</label>
                                   <input required type="text" id="billing_tc_identity" name="billing_tc_identity" maxLength={11} inputMode="numeric" autoComplete="off" placeholder={t.tcIdentityPlaceholder} onInput={formatTcInput} style={billingAddressErrors.tckn ? { borderColor: "#dc3545" } : undefined} />
@@ -1883,7 +1922,7 @@ export default function Checkout() {
                                 </fieldset>
                               )}
 
-                              {billingInvoiceType === "corporate" && (
+                              {invoiceType === "corporate" && (
                                 <>
                                   <fieldset className="box fieldset" style={{ marginBottom: "20px" }}>
                                     <label htmlFor="billing_company_name">{t.companyName}*</label>
@@ -2007,9 +2046,9 @@ export default function Checkout() {
               lang={lang}
             />
           </div>
-        </div>
+          </div>
+        )}
       </div>
     </>
-
   );
 }

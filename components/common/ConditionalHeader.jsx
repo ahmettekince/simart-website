@@ -3,7 +3,18 @@
 import { usePathname } from "next/navigation";
 import { i18n } from "@/config/i18n";
 
-const HIDE_HEADER_PATHS = ["/odeme", "/qr", "/3d", "/checkout", "/en/checkout", "/en/qr", "/en/3d"];
+const HIDE_HEADER_PATHS = [
+    "/odeme", 
+    "/checkout",
+    "/qr", 
+    "/3d", 
+    "/en/checkout", 
+    "/en/qr", 
+    "/en/3d",
+    "/sepetim",
+    "/cart",
+    "/en/cart"
+];
 
 export default function ConditionalHeader({ children }) {
     const pathname = usePathname();
