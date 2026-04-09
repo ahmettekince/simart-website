@@ -5,23 +5,30 @@ import Link from "next/link";
 import { getBlogs } from "@/api/blogs";
 import { webPageSchema } from "@/lib/schema";
 
-export const metadata = {
-  title: "Blog - Şımart Teknoloji",
-  description:
-    "Şımart Teknoloji blog sayfası, akıllı ev sistemleri ve teknolojik yenilikler hakkında en güncel bilgi kaynağınız.",
-  author: "Şımart Teknoloji",
-  robots: "index, follow",
-};
+export async function generateMetadata({ params }) {
+  const { lang } = await params;
+  const isEn = lang === "en";
+  return {
+    title: isEn ? "Blog - Şımart Technology" : "Blog - Şımart Teknoloji",
+    description: isEn 
+      ? "Şımart Technology blog page, your most up-to-date source of information about smart home systems and technological innovations."
+      : "Şımart Teknoloji blog sayfası, akıllı ev sistemleri ve teknolojik yenilikler hakkında en güncel bilgi kaynağınız.",
+    author: "Şımart Teknoloji",
+    robots: "index, follow",
+  };
+}
 
 export default async function page({ params }) {
   const { lang } = await params;
+  const isEn = lang === "en";
   const blogs = await getBlogs(lang);
 
   const blogJsonLd = webPageSchema({
-    name: "Blog - Şımart Teknoloji",
-    url: "https://simart.me/blog",
-    description:
-      "Şımart Teknoloji blog sayfası, akıllı ev sistemleri ve teknolojik yenilikler hakkında en güncel bilgi kaynağınız.",
+    name: isEn ? "Blog - Şımart Technology" : "Blog - Şımart Teknoloji",
+    url: `https://simart.me/${lang}/blog`,
+    description: isEn
+      ? "Şımart Technology blog page, your most up-to-date source of information about smart home systems and technological innovations."
+      : "Şımart Teknoloji blog sayfası, akıllı ev sistemleri ve teknolojik yenilikler hakkında en güncel bilgi kaynağınız.",
   });
 
   return (
@@ -36,10 +43,10 @@ export default async function page({ params }) {
         <div className="container-full">
           <div className="row">
             <div className="col-12">
-              <div className="heading text-center">Şımart Blog</div>
+              <div className="heading text-center">{isEn ? "Şımart Blog" : "Şımart Blog"}</div>
               <ul className="breadcrumbs d-flex align-items-center justify-content-center">
                 <li>
-                  <Link href={`/`}>Anasayfa</Link>
+                  <Link href={isEn ? "/en" : "/"}>{isEn ? "Home" : "Anasayfa"}</Link>
                 </li>
                 <li>
                   <i className="icon-arrow-right" />

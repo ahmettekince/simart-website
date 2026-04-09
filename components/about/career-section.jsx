@@ -7,7 +7,8 @@ import apiClient from "@/utils/apiClient"
 import { formatFullNameValue } from "@/utils/inputFormatters"
 import RecaptchaV3 from "@/components/common/RecaptchaV3"
 
-export function CareerSection({ faqs = [] }) {
+export function CareerSection({ faqs = [], lang }) {
+    const isEn = lang === "en"
     const formRef = useRef()
     const executeRecaptchaRef = useRef(null)
     const [loading, setLoading] = useState(false)
@@ -24,6 +25,35 @@ export function CareerSection({ faqs = [] }) {
     const [privacyAccepted, setPrivacyAccepted] = useState(false)
     const [fileError, setFileError] = useState("")
     const [fieldErrors, setFieldErrors] = useState({})
+
+    const t = {
+        fullName: isEn ? "Full Name *" : "Ad Soyad *",
+        phone: isEn ? "Phone *" : "Telefon *",
+        message: isEn ? "Your Message *" : "Mesajınız *",
+        chooseFile: isEn ? "Choose File" : "Dosya Seç",
+        noFile: isEn ? "No file chosen" : "Dosya seçilmedi",
+        maxFileSize: isEn ? "Max file size: 3MB" : "Maksimum dosya boyutu: 3MB",
+        privacyNote: isEn ? (
+            <>
+                I have read and accept the <a href="/en/privacy-policy" target="_blank" className="text-decoration-underline text-primary">Privacy Policy</a>.
+            </>
+        ) : (
+            <>
+                <a href="/gizlilik-politikasi" target="_blank" className="text-decoration-underline text-primary">Gizlilik Sözleşmesi</a>'ni okudum ve kabul ediyorum.
+            </>
+        ),
+        send: isEn ? "Send" : "Gönder",
+        sending: isEn ? "Sending..." : "Gönderiliyor...",
+        faqTitle: isEn ? "Frequently Asked Questions" : "Sık Sorulan Sorular",
+        charsEntered: isEn ? "characters entered." : "karakter girildi.",
+        fileSizeError: isEn ? "File size cannot be larger than 3MB." : "Dosya boyutu 3MB'dan büyük olamaz.",
+        privacyError: isEn ? "Please accept the privacy policy." : "Lütfen gizlilik sözleşmesini kabul edin.",
+        messageLengthError: isEn ? "Your message cannot be longer than 500 characters." : "Mesajınız 500 karakterden uzun olamaz.",
+        recaptchaError: isEn ? "Security verification failed." : "Güvenlik doğrulaması yapılamadı.",
+        recaptchaMissing: isEn ? "Please complete the security step." : "Lütfen güvenlik adımını tamamlayın.",
+        successMsg: isEn ? "Your application has been sent successfully." : "Başvurunuz başarıyla gönderildi.",
+        genericError: isEn ? "An error occurred. Please try again." : "Bir hata oluştu. Lütfen tekrar deneyin."
+    }
 
     const handleShowMessage = () => {
         setShowMessage(true)
@@ -57,7 +87,7 @@ export function CareerSection({ faqs = [] }) {
         const file = e.target.files[0]
         if (file) {
             if (file.size > 3 * 1024 * 1024) {
-                setFileError("Dosya boyutu 3MB'dan büyük olamaz.")
+                setFileError(t.fileSizeError)
                 setSelectedFile(null)
                 e.target.value = "" // Reset input
             } else {
@@ -108,7 +138,7 @@ export function CareerSection({ faqs = [] }) {
 
         if (!privacyAccepted) {
             setSuccess(false)
-            setApiMessage("Lütfen gizlilik sözleşmesini kabul edin.")
+            setApiMessage(t.privacyError)
             handleShowMessage()
             return
         }
@@ -122,7 +152,7 @@ export function CareerSection({ faqs = [] }) {
 
         if (message.length > 500) {
             setSuccess(false)
-            setApiMessage("Mesajınız 500 karakterden uzun olamaz.")
+            setApiMessage(t.messageLengthError)
             handleShowMessage()
             return
         }
@@ -135,7 +165,7 @@ export function CareerSection({ faqs = [] }) {
             } catch (e) {
                 console.error("reCAPTCHA hatası:", e);
                 setSuccess(false)
-                setApiMessage("Güvenlik doğrulaması yapılamadı.")
+                setApiMessage(t.recaptchaError)
                 handleShowMessage()
                 return
             }
@@ -143,7 +173,7 @@ export function CareerSection({ faqs = [] }) {
 
         if (!token) {
             setSuccess(false)
-            setApiMessage("Lütfen güvenlik adımını tamamlayın.")
+            setApiMessage(t.recaptchaMissing)
             handleShowMessage()
             return
         }
@@ -160,7 +190,7 @@ export function CareerSection({ faqs = [] }) {
 
             if (response.data.status === "success") {
                 setSuccess(true)
-                setApiMessage("Başvurunuz başarıyla gönderildi.")
+                setApiMessage(t.successMsg)
                 e.target.reset()
                 setSelectedFile(null)
                 setMessageLength(0)
@@ -174,10 +204,10 @@ export function CareerSection({ faqs = [] }) {
                 const errors = response.data.errors
                 if (errors && Object.keys(errors).length > 0) {
                     setFieldErrors(errors)
-                    setApiMessage(response.data.message || "Bir hata oluştu.")
+                    setApiMessage(response.data.message || t.genericError)
                     handleShowMessage()
                 } else {
-                    setApiMessage(response.data.message || "Bir hata oluştu.")
+                    setApiMessage(response.data.message || t.genericError)
                     handleShowMessage()
                 }
             }
@@ -188,10 +218,10 @@ export function CareerSection({ faqs = [] }) {
             const errorData = error.response?.data
             if (errorData?.errors && Object.keys(errorData.errors).length > 0) {
                 setFieldErrors(errorData.errors)
-                setApiMessage(errorData.message || "Bir hata oluştu. Lütfen tekrar deneyin.")
+                setApiMessage(errorData.message || t.genericError)
                 handleShowMessage()
             } else {
-                const errorMessage = errorData?.message || "Bir hata oluştu. Lütfen tekrar deneyin."
+                const errorMessage = errorData?.message || t.genericError
                 setApiMessage(errorMessage)
                 handleShowMessage()
             }
@@ -214,7 +244,7 @@ export function CareerSection({ faqs = [] }) {
                                     name="full_name"
                                     id="full_name"
                                     required
-                                    placeholder="Ad Soyad *"
+                                    placeholder={t.fullName}
                                     value={fullName}
                                     onChange={handleFullNameChange}
                                     className={fieldErrors.full_name ? "error-border" : ""}
@@ -235,7 +265,7 @@ export function CareerSection({ faqs = [] }) {
                                     name="phone"
                                     id="phone"
                                     required
-                                    placeholder="Telefon *"
+                                    placeholder={t.phone}
                                     value={phone}
                                     onChange={handlePhoneChange}
                                     maxLength={17}
@@ -256,7 +286,7 @@ export function CareerSection({ faqs = [] }) {
                                     name="message"
                                     id="message"
                                     required
-                                    placeholder="Mesajınız *"
+                                    placeholder={t.message}
                                     cols={30}
                                     rows={10}
                                     maxLength={500}
@@ -265,7 +295,7 @@ export function CareerSection({ faqs = [] }) {
                                     className={fieldErrors.message ? "error-border" : ""}
                                 />
                                 <div className="text-muted mt-1" style={{ fontSize: '12px', color: '#666' }}>
-                                    {messageLength} / 500 karakter girildi.
+                                    {messageLength} / 500 {t.charsEntered}
                                 </div>
                                 {fieldErrors.message && (
                                     <div className="text-danger mt-1" style={{ fontSize: '12px' }}>
@@ -291,13 +321,13 @@ export function CareerSection({ faqs = [] }) {
                                     className={`btn btn-outline-secondary ${fieldErrors.resume_file ? "border-danger text-danger" : ""}`}
                                     style={{ cursor: 'pointer', margin: 0, padding: '8px 16px' }}
                                 >
-                                    Dosya Seç
+                                    {t.chooseFile}
                                 </label>
                                 <span className="text-muted" style={{ fontSize: '14px' }}>
-                                    {selectedFile || "Dosya seçilmedi"}
+                                    {selectedFile || t.noFile}
                                 </span>
                                 <div className="w-100 text-muted" style={{ fontSize: '12px' }}>
-                                    Maksimum dosya boyutu: 3MB
+                                    {t.maxFileSize}
                                 </div>
                                 {fileError && <div className="w-100 text-danger" style={{ fontSize: '12px' }}>{fileError}</div>}
                                 {fieldErrors.resume_file && (
@@ -320,7 +350,7 @@ export function CareerSection({ faqs = [] }) {
                                     style={{ marginTop: '4px' }}
                                 />
                                 <label htmlFor="privacyAccepted" className="text_black-2 fw-4" style={{ fontSize: '14px', cursor: 'pointer' }}>
-                                    <a href="/gizlilik-politikasi" target="_blank" className="text-decoration-underline text-primary">Gizlilik Sözleşmesi</a>'ni okudum ve kabul ediyorum.
+                                    {t.privacyNote}
                                 </label>
                             </div>
                         </div>
@@ -350,7 +380,7 @@ export function CareerSection({ faqs = [] }) {
                                     cursor: loading || !privacyAccepted ? 'not-allowed' : 'pointer'
                                 }}
                             >
-                                {loading ? "Gönderiliyor..." : "Gönder"}
+                                {loading ? t.sending : t.send}
                             </button>
                         </div>
                     </form>
@@ -383,7 +413,7 @@ export function CareerSection({ faqs = [] }) {
             {faqs && faqs.length > 0 && (
                 <div className="mt-5">
                     <h5 className="mb_24">
-                        Sık Sorulan Sorular
+                        {t.faqTitle}
                     </h5>
                     <div className="flat-accordion style-default has-btns-arrow">
                         <Accordion faqs={faqs} />

@@ -67,7 +67,7 @@ export default function Register() {
       generalError: "An error occurred during registration.",
       recaptchaError: "Security verification failed.",
       recaptchaRequired: "Please complete the security step.",
-      termsLink: "/terms-conditions"
+      termsLink: "/enterms-and-conditions"
     }
   }[lang] || {
     tr: {

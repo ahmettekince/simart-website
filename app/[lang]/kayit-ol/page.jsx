@@ -37,11 +37,12 @@ export async function generateMetadata({ params }) {
   };
 }
 
-export default async function page() {
+export default async function page({ params }) {
+  const { lang } = await params;
   const isAuthenticated = await checkAuthServer();
 
   if (isAuthenticated) {
-    redirect("/hesabim");
+    redirect(lang === "en" ? "/en/my-account" : "/hesabim");
   }
 
   return (
