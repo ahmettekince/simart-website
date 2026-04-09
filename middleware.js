@@ -70,7 +70,14 @@ export async function middleware(request) {
     }
   }
 
+  const cookieLocale = request.cookies.get("NEXT_LOCALE")?.value;
+
   if (pathnameIsMissingLocale) {
+    // Eğer root'taysak (/) ve hatırlanan dil varsayılan dilden farklıysa yönlendir
+    if (pathname === "/" && cookieLocale && cookieLocale !== i18n.defaultLocale && i18n.locales.includes(cookieLocale)) {
+      return NextResponse.redirect(new URL(`/${cookieLocale}`, request.url));
+    }
+
     if (
       pathname.startsWith(`/${i18n.defaultLocale}/`) ||
       pathname === `/${i18n.defaultLocale}`
@@ -86,6 +93,23 @@ export async function middleware(request) {
       );
     }
   } else {
+    // URL'de bir dil var, bu dili cookie'ye de işle (senkronizasyon)
+    const urlLocale = pathname.split("/")[1];
+    if (urlLocale && i18n.locales.includes(urlLocale) && urlLocale !== cookieLocale) {
+      // Yanıtın (response) daha sonra oluşturulduğunu düşünürsek 
+      // burada response henüz tanımlı değilse NextResponse.next() ile başlatabiliriz
+      if (finalPathname !== pathname) {
+        response = NextResponse.rewrite(new URL(finalPathname, request.url));
+      } else {
+        response = NextResponse.next();
+      }
+      response.cookies.set("NEXT_LOCALE", urlLocale, {
+        maxAge: 31536000, // 1 yıl
+        path: "/",
+      });
+      return response;
+    }
+
     if (finalPathname !== pathname) {
       response = NextResponse.rewrite(new URL(finalPathname, request.url));
     } else {

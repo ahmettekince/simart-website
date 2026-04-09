@@ -33,7 +33,7 @@ export function getProductButtonState(product, lang = "tr") {
   let buttonDisabled = false;
 
   // Özel Durum: Katya Akıllı Robot Süpürge (Yadigar Model)
-  if (product?.name === "katya Robot Süpürge") {
+  if (product?.name === "katya Robot Süpürge" || product?.name === "katya Robot Vacuum") {
     return {
       buttonText: t.museum,
       buttonDisabled: true,
