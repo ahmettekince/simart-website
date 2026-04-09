@@ -552,7 +552,7 @@ export default function Detail({ product }) {
                       </div>
                     )}
 
-                    {product?.name !== "katya Robot Süpürge" && product?.name !== "Katya Akıllı Robot Süpürge" && (
+                    {product?.name !== "katya Robot Süpürge" && product?.name !== "katya Robot Vacuum" && (
                       <div className="tf-product-info-price d-none d-md-block" style={{ marginBottom: "16px", width: "100%" }}>
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", flexWrap: "nowrap", width: "100%" }}>
                           {(product.is_in_stock || product.is_pre_order) ? (
@@ -754,7 +754,7 @@ export default function Detail({ product }) {
                       </>
                     )}
 
-                    {!showPromoBox && product?.name !== "katya Robot Süpürge" && product?.name !== "Katya Akıllı Robot Süpürge" && (
+                    {!showPromoBox && product?.name !== "katya Robot Süpürge" && product?.name !== "Katya Akıllı Robot Süpürge" && product?.name !== "katya Robot Vacuum" && (
                       <div className="tf-product-info-buy-button">
                         <form onSubmit={(e) => e.preventDefault()} className="">
                           <div className="tf-product-buy-actions d-none d-md-flex" style={{ alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>

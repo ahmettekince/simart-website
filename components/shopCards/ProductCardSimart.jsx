@@ -27,7 +27,7 @@ export default function ProductCardSimart({ product, isPriority = false }) {
 
   // -- Veriler --
   const title = product.name || product.title;
-  const isMuseumItem = title === "katya Robot Süpürge";
+  const isMuseumItem = title === "katya Robot Süpürge" || title === "katya Robot Vacuum";
 
   // Kategori slug'ını al (aktif dile göre)
   const getCategorySlug = () => {
