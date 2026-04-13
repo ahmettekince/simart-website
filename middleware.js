@@ -96,19 +96,20 @@ export async function middleware(request) {
     // URL'de bir dil var, bu dili cookie'ye de işle (senkronizasyon)
     const urlLocale = pathname.split("/")[1];
     
-    // 🔥 ÖNEMLİ: Ön yükleme (prefetch) veya veri istekleri (data transfer) çerezi ezmemeli.
-    // Aksi takdirde kullanıcı dili değiştirdiğinde, arkada kalan eski dildeki prefetch'ler çerezi geri döndürebilir.
+    // 🔥 ÖNEMLİ: Çerez senkronizasyonunu sadece gerçek sayfa (HTML) isteklerinde yap.
+    // Prefetch (ön yükleme) ve veri isteklerinin çerezi ezmesini engelle.
+    const isHtmlRequest = request.headers.get("accept")?.includes("text/html");
     const isPrefetch = request.headers.get("purpose") === "prefetch" || 
                        request.headers.get("x-purpose") === "prefetch" || 
-                       request.headers.get("x-next-purpose") === "prefetch";
-    const isDataRequest = pathname.startsWith("/_next/data/");
+                       request.headers.get("x-next-purpose") === "prefetch" ||
+                       request.headers.get("next-router-prefetch") === "1";
 
     if (
+      isHtmlRequest && 
+      !isPrefetch &&
       urlLocale && 
       i18n.locales.includes(urlLocale) && 
-      urlLocale !== cookieLocale &&
-      !isPrefetch &&
-      !isDataRequest
+      urlLocale !== cookieLocale
     ) {
       if (finalPathname !== pathname) {
         response = NextResponse.rewrite(new URL(finalPathname, request.url));
