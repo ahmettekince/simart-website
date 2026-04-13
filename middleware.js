@@ -118,7 +118,8 @@ export async function middleware(request) {
       response.cookies.set("NEXT_LOCALE", urlLocale, {
         maxAge: 31536000, // 1 yıl
         path: "/",
-        sameSite: 'lax'
+        sameSite: 'lax',
+        secure: false
       });
       return response;
     }

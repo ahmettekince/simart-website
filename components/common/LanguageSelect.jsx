@@ -68,11 +68,10 @@ export default function LanguageSelect({
         if (typeof document !== "undefined") {
             const expires = new Date();
             expires.setTime(expires.getTime() + 365 * 24 * 60 * 60 * 1000); // 1 yıl
-            const secure = window.location.protocol === "https:" ? ";Secure" : "";
-
+            
             // Olası çerez çakışmalarını temizle ve yenisini yaz
             document.cookie = `NEXT_LOCALE=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-            document.cookie = `NEXT_LOCALE=${newLocale};expires=${expires.toUTCString()};path=/;SameSite=Lax${secure}`;
+            document.cookie = `NEXT_LOCALE=${newLocale};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
         }
 
         // Yönlendirme hedefi
