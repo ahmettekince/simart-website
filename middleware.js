@@ -19,6 +19,7 @@ export async function middleware(request) {
     "/katya-u-akilli-robot-supurge": "/magaza/robotlar/katya-u-akilli-robot-supurge",
     "/katya-v-akilli-robot-supurge": "/magaza/robotlar/katya-v-akilli-robot-supurge",
     "/katya-v-plus-akilli-robot-supurge": "/magaza/robotlar/katya-v-plus-akilli-robot-supurge",
+    "/akilli-6-hazneli-mama-kabi": "/magaza/evcil-canlilar/akilli-6-hazneli-mama-kabi",
     // Buraya yeni kritik yönlendirmeler eklenebilir
   };
 
