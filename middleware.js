@@ -14,6 +14,18 @@ export async function middleware(request) {
 
   const { pathname } = url;
 
+  // 🔥 0.5. KRİTİK ÜRÜN YÖNLENDİRMELERİ (Hızlı Erişim)
+  const LEGACY_PRODUCT_REDIRECTS = {
+    "/katya-u-akilli-robot-supurge": "/magaza/robotlar/katya-u-akilli-robot-supurge",
+    "/katya-v-akilli-robot-supurge": "/magaza/robotlar/katya-v-akilli-robot-supurge",
+    "/katya-v-plus-akilli-robot-supurge": "/magaza/robotlar/katya-v-plus-akilli-robot-supurge",
+    // Buraya yeni kritik yönlendirmeler eklenebilir
+  };
+
+  if (LEGACY_PRODUCT_REDIRECTS[pathname]) {
+    return NextResponse.redirect(new URL(LEGACY_PRODUCT_REDIRECTS[pathname], request.url), 301);
+  }
+
   // 1. API ve statik skip
   if (
     pathname.startsWith("/api/") ||
@@ -95,20 +107,20 @@ export async function middleware(request) {
   } else {
     // URL'de bir dil var, bu dili cookie'ye de işle (senkronizasyon)
     const urlLocale = pathname.split("/")[1];
-    
+
     // 🔥 ÖNEMLİ: Çerez senkronizasyonunu sadece gerçek sayfa (HTML) isteklerinde yap.
     // Prefetch (ön yükleme) ve veri isteklerinin çerezi ezmesini engelle.
     const isHtmlRequest = request.headers.get("accept")?.includes("text/html");
-    const isPrefetch = request.headers.get("purpose") === "prefetch" || 
-                       request.headers.get("x-purpose") === "prefetch" || 
-                       request.headers.get("x-next-purpose") === "prefetch" ||
-                       request.headers.get("next-router-prefetch") === "1";
+    const isPrefetch = request.headers.get("purpose") === "prefetch" ||
+      request.headers.get("x-purpose") === "prefetch" ||
+      request.headers.get("x-next-purpose") === "prefetch" ||
+      request.headers.get("next-router-prefetch") === "1";
 
     if (
-      isHtmlRequest && 
+      isHtmlRequest &&
       !isPrefetch &&
-      urlLocale && 
-      i18n.locales.includes(urlLocale) && 
+      urlLocale &&
+      i18n.locales.includes(urlLocale) &&
       urlLocale !== cookieLocale
     ) {
       if (finalPathname !== pathname) {
