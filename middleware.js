@@ -95,9 +95,21 @@ export async function middleware(request) {
   } else {
     // URL'de bir dil var, bu dili cookie'ye de işle (senkronizasyon)
     const urlLocale = pathname.split("/")[1];
-    if (urlLocale && i18n.locales.includes(urlLocale) && urlLocale !== cookieLocale) {
-      // Yanıtın (response) daha sonra oluşturulduğunu düşünürsek 
-      // burada response henüz tanımlı değilse NextResponse.next() ile başlatabiliriz
+    
+    // 🔥 ÖNEMLİ: Ön yükleme (prefetch) veya veri istekleri (data transfer) çerezi ezmemeli.
+    // Aksi takdirde kullanıcı dili değiştirdiğinde, arkada kalan eski dildeki prefetch'ler çerezi geri döndürebilir.
+    const isPrefetch = request.headers.get("purpose") === "prefetch" || 
+                       request.headers.get("x-purpose") === "prefetch" || 
+                       request.headers.get("x-next-purpose") === "prefetch";
+    const isDataRequest = pathname.startsWith("/_next/data/");
+
+    if (
+      urlLocale && 
+      i18n.locales.includes(urlLocale) && 
+      urlLocale !== cookieLocale &&
+      !isPrefetch &&
+      !isDataRequest
+    ) {
       if (finalPathname !== pathname) {
         response = NextResponse.rewrite(new URL(finalPathname, request.url));
       } else {
@@ -106,6 +118,7 @@ export async function middleware(request) {
       response.cookies.set("NEXT_LOCALE", urlLocale, {
         maxAge: 31536000, // 1 yıl
         path: "/",
+        sameSite: 'lax'
       });
       return response;
     }
