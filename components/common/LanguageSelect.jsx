@@ -69,29 +69,23 @@ export default function LanguageSelect({
             const expires = new Date();
             expires.setTime(expires.getTime() + 365 * 24 * 60 * 60 * 1000); // 1 yıl
             const secure = window.location.protocol === "https:" ? ";Secure" : "";
+
+            // Olası çerez çakışmalarını temizle ve yenisini yaz
+            document.cookie = `NEXT_LOCALE=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
             document.cookie = `NEXT_LOCALE=${newLocale};expires=${expires.toUTCString()};path=/;SameSite=Lax${secure}`;
         }
 
-        // 1. Önce store'daki dinamik path'e (product/category slugs) bak (Detail ve MagazaDisplay orayı dolduruyor)
-        let targetPath = alternatePaths?.[newLocale];
+        // Yönlendirme hedefi
+        let targetPath = alternatePaths?.[newLocale] || translatePath(pathname, newLocale);
 
-        // 2. Yoksa mevcut path'i translatePath ile çevirmeyi dene (Statik sayfalar: /iletisim -> /en/contact gibi)
-        if (!targetPath) {
-            // translatePath fonksiyonu /en/shop gibi top-level ve configde tanımlı slugları hallediyor
-            targetPath = translatePath(pathname, newLocale);
-        }
-
-        // 3. Eğer hala bir yer belirlenemediyse dille uyumlu anasayfaya git
+        // Eğer hedef belirlenemezse ana sayfaya git
         if (!targetPath || targetPath === "/" || targetPath === `/${newLocale}`) {
-            // Eğer anasayfadaysak veya bir hata varsa
             targetPath = newLocale === i18n.defaultLocale ? "/" : `/${newLocale}`;
         }
 
-        setLang(newLocale);
         setIsDDOpen(false);
-        // Dil değiştiğinde sepeti API'den tekrar çek (yerelleştirilmiş isim/slug için)
-        fetchCart();
-        router.push(targetPath);
+        // FULL REFRESH: Sunucu tarafındaki Middleware'in yeni çerezi kesin görmesi için
+        window.location.href = targetPath;
     };
 
     return (
