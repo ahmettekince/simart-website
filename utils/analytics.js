@@ -1,5 +1,9 @@
 import { log } from "./logger";
 
+const GOOGLE_ADS_CONVERSIONS = {
+    purchase: 'AW-353997655/KnKoCL-l-KUaENem5qgB',
+};
+
 /**
  * Google Tag Manager (GTM) E-ticaret Etkinlikleri (GA4 Standardı)
  */
@@ -200,13 +204,6 @@ export const trackBeginCheckout = (items, totals, couponCode = null) => {
         items: normalizedItems
     });
 
-    // // Meta Pixel
-    // trackMetaEvent('InitiateCheckout', {
-    //     content_ids: normalizedItems.map(i => i.item_id),
-    //     content_type: 'product',
-    //     value: totalValue,
-    //     currency: 'TRY'
-    // });
 };
 
 /**
@@ -243,6 +240,17 @@ export const trackPurchase = (orderData) => {
         value: totalValue,
         currency: 'TRY',
     });
+
+    // Google Ads
+    if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+        window.gtag('event', 'conversion', {
+            send_to: GOOGLE_ADS_CONVERSIONS.purchase,
+            value: totalValue,
+            currency: 'TRY',
+            transaction_id: transactionId,
+        });
+        log(`[Analytics] Google Ads conversion sent: ${transactionId}`);
+    }
 };
 
 /**
