@@ -15,6 +15,7 @@ import { calculateCartTotals } from "@/utils/cartTotals";
 import ErrorToast from "@/components/common/ErrorToast";
 import { useLangStore } from "@/stores/langStore";
 import { getLocalizedUrl } from "@/utils/i18n";
+import { manualRecommendations } from "@/data/cartManualRecommendations";
 
 const translations = {
   tr: {
@@ -315,10 +316,30 @@ export default function ShopCart() {
                   <BirlikteAlSepet title={t.interestedTitle} products={recommendations} />
                 </div>
               )}
+
+              {/* Manuel Öneriler - Sepet Boşken (Sadece Türkçe ise göster) */}
+              {lang === 'tr' && items.length === 0 && manualRecommendations.map((section) => (
+                <div key={section.id} className="tf-mini-cart-item">
+                  <BirlikteAlSepet
+                    title={section.title[lang] || section.title.tr}
+                    products={section.products.map(p => ({
+                      ...p,
+                      name: typeof p.name === 'object' ? (p.name[lang] || p.name.tr) : p.name,
+                      category_name: typeof p.category_name === 'object' ? (p.category_name[lang] || p.category_name.tr) : p.category_name
+                    }))}
+                  />
+                </div>
+              ))}
               <div className="tf-mini-cart-wrap">
                 <div className="tf-mini-cart-main">
                   <div className="tf-mini-cart-sroll">
                     <div className="tf-mini-cart-items">
+                      {hasCrossSale && (
+                        <div className="tf-mini-cart-item ">
+                          <BirlikteAlSepet />
+                        </div>
+                      )}
+
                       {hasCrossSale && (
                         <div className="tf-mini-cart-item ">
                           <BirlikteAlSepet />
