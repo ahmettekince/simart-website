@@ -5,22 +5,28 @@ export default function Station({ type = "toz" }) {
     const config = useMemo(() => {
         if (type === "hayir") return { w: 0.4, h: 0.15, d: 0.3, color: "#111", details: false };
         // Tüm istasyonlar (Toz veya Hepsi) aynı standart boyutta ve renkte
-        // Artık 'toz' ve 'hepsi' arasında fark yok, tek tip standart istasyon
-        return { w: 0.7, h: 1.0, d: 0.5, color: "#0a0a0a", details: true }; 
+        return { w: 0.7, h: 1.0, d: 0.5, color: "#181818", details: true }; 
     }, [type]);
 
     return <group position={[0, 0, -4.7]}>
+        {/* ALT TABAN */}
         <mesh position={[0, 0.015, config.d / 2]}>
             <boxGeometry args={[config.w + 0.1, 0.03, config.d + 0.2]} />
-            <meshStandardMaterial color="#222" roughness={0.4} />
+            <meshStandardMaterial color="#0a0a0a" roughness={0.8} />
         </mesh>
+        {/* ANA GÖVDE (Yansıtıcı hale getirildi) */}
         <mesh position={[0, config.h / 2, 0]}>
             <boxGeometry args={[config.w, config.h, config.d]} />
-            <meshStandardMaterial color={config.color} roughness={0.4} />
+            <meshStandardMaterial 
+                color={config.color} 
+                roughness={0.2} 
+                metalness={0.8} 
+            />
         </mesh>
+        {/* ÜST KAPAK (Ayna Efekti) */}
         <mesh position={[0, config.h + 0.02, 0]}>
             <boxGeometry args={[config.w + 0.02, 0.05, config.d + 0.02]} />
-            <meshStandardMaterial color="#222" metalness={0.5} />
+            <meshStandardMaterial color="#050505" metalness={0.9} roughness={0.1} />
         </mesh>
 
         {config.details && type === "hepsi" && (

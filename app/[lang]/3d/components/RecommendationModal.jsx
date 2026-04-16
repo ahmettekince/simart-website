@@ -90,12 +90,13 @@ export default function RecommendationModal({ showModal, setShowModal, recommend
                         <span style={{ fontSize: "14px", color: "#95a5a6", fontWeight: "500", textDecoration: "line-through" }}>{recommendedRobot.oldPrice}</span>
                     </div>
 
+                    <div style={{ fontSize: "12px", color: "#747d8c", fontWeight: "600", marginBottom: "8px" }}>Sınırlı süre için geçerli indirim kuponunuz:</div>
                     <div style={{
                         border: "2px dashed #3c81b5",
                         background: "#e1f5fe",
                         padding: "10px",
                         borderRadius: "10px",
-                        marginTop: "10px"
+                        marginTop: "2px"
                     }}>
                         <div style={{ fontSize: "20px", fontWeight: "900", color: "#0984e3", letterSpacing: "2px" }}>{recommendedRobot.couponCode}</div>
                     </div>

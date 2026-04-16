@@ -3,7 +3,7 @@
 import * as THREE from "three";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useState, useRef, useMemo, Suspense, useEffect } from "react";
-import { OrbitControls, Line, ContactShadows, Text, useTexture } from "@react-three/drei";
+import { OrbitControls, Line, ContactShadows, Text, useTexture, Environment } from "@react-three/drei";
 
 //components
 import { ROBOTS } from "./robots";
@@ -67,13 +67,15 @@ function VirtualWall({ p1, p2 }) {
 }
 
 function WallMaterial() {
+    /* 
     const tex = useTexture('/images/3d/wallpaper.jpg');
     if (tex) {
         tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-        tex.repeat.set(4, 2); // Duvar boyutuna göre ayarlanabilir
+        tex.repeat.set(10, 5);
     }
+    */
 
-    return <meshStandardMaterial map={tex} roughness={0.8} metalness={0.0} />;
+    return <meshStandardMaterial color="#f1f2f6" roughness={0.8} metalness={0.0} />;
 }
 const floorMat = <meshStandardMaterial color="#d8cfbf" roughness={0.2} metalness={0.15} />;
 
@@ -614,17 +616,16 @@ function House({ type, trail, posRef, rotRef, recommendedRobot, isCleaning }) {
             </>
         )}
 
-        {/* ROBOTUN TEMİZLİK ROTASI (Ovalleştirilmiş Beyaz Çizgi) */}
+        {/* ROBOTUN TEMİZLİK ROTASI (Şımart Mavisi Çizgi) */}
         {
             trail.length > 1 && (() => {
                 const curvePoints = trail.map(p => new THREE.Vector3(p[0], 0.05, p[2]));
-                // Eğer yeterli nokta varsa (en az 3) ovalleştir, yoksa düz çizgi
                 if (trail.length > 2) {
-                    const curve = new THREE.CatmullRomCurve3(curvePoints, false, 'catmullrom', 0); // Keskin köşeler için 0
-                    const points = curve.getPoints(trail.length * 4); // Daha fazla nokta ile pürüzsüzlük
-                    return <Line points={points} color="white" lineWidth={2} transparent opacity={0.6} />;
+                    const curve = new THREE.CatmullRomCurve3(curvePoints, false, 'catmullrom', 0); 
+                    const points = curve.getPoints(trail.length * 4); 
+                    return <Line points={points} color="white" lineWidth={3} transparent opacity={0.8} />;
                 } else {
-                    return <Line points={curvePoints} color="white" lineWidth={2} transparent opacity={0.6} />;
+                    return <Line points={curvePoints} color="white" lineWidth={3} transparent opacity={0.8} />;
                 }
             })()
         }
@@ -997,12 +998,7 @@ export default function Plan3D() {
                     <h1 style={{ fontSize: isMobile ? "20px" : "26px", fontWeight: "800", margin: 0, lineHeight: "1.3", color: "#1a1a1a" }}>
                         Size Uygun Robot Süpürgeyi Seçelim
                     </h1>
-                    <button
-                        onClick={reset}
-                        style={{ background: "none", border: "none", color: "#636e72", cursor: "pointer", fontWeight: "700", fontSize: "13px", padding: "5px 10px", borderRadius: "5px", border: "1px solid #eee" }}
-                    >
-                        ↻
-                    </button>
+
                 </div>
 
                 {/* ADIM GÖSTERGESİ */}
@@ -1049,43 +1045,54 @@ export default function Plan3D() {
                                 <div className="step-enter" style={{ marginTop: "30px" }}>
                                     <div style={{
                                         background: "#fff",
-                                        borderRadius: "15px",
-                                        padding: "10px",
-                                        boxShadow: "0 10px 25px rgba(0,0,0,0.05)",
-                                        border: "1px solid #eee",
+                                        borderRadius: "20px",
+                                        padding: "15px",
+                                        boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+                                        border: "1px solid #f1f2f6",
                                         textAlign: "center"
                                     }}>
                                         <div style={{
                                             width: "100%",
-                                            height: "240px",
+                                            height: "220px",
                                             background: "#fff",
-                                            borderRadius: "10px",
+                                            borderRadius: "15px",
                                             marginBottom: "15px",
                                             display: "flex",
                                             alignItems: "center",
                                             justifyContent: "center",
                                             overflow: "hidden",
+                                            border: "1px solid #eee"
                                         }}>
-                                            <img src={recommendedRobot.image} alt={recommendedRobot.name} style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                                            <img src={recommendedRobot.image} alt={recommendedRobot.name} style={{ width: "90%", height: "90%", objectFit: "contain" }} />
                                         </div>
 
-                                        <h3 style={{ fontSize: "16px", fontWeight: "800", color: "#1a1a1a" }}>{recommendedRobot.name}</h3>
-                                        <p style={{ fontSize: "12px", color: "#747d8c" }}>Seçimlerinize en uygun modelimiz.</p>
+                                        <h3 style={{ fontSize: "17px", fontWeight: "800", color: "#3c81b5", marginBottom: "4px" }}>{recommendedRobot.name}</h3>
+                                        
+                                        <div style={{ display: "flex", justifyContent: "center", gap: "10px", alignItems: "baseline", marginBottom: "12px" }}>
+                                            <span style={{ fontSize: "19px", fontWeight: "900", color: "#0bc15c" }}>{recommendedRobot.price}</span>
+                                            <span style={{ fontSize: "13px", color: "#95a5a6", fontWeight: "500", textDecoration: "line-through" }}>{recommendedRobot.oldPrice}</span>
+                                        </div>
 
-                                        <div style={{ background: "#f1f2f6", padding: "10px", borderRadius: "10px", marginBottom: "15px" }}>
-                                            <p style={{ fontSize: "18px", color: "#3c81b5", margin: 0, fontWeight: "900", letterSpacing: "1px" }}>{recommendedRobot.couponCode}</p>
+                                        <div style={{ fontSize: "11px", color: "#747d8c", fontWeight: "600", marginBottom: "8px" }}>Sınırlı süre için geçerli indirim kuponunuz:</div>
+                                        <div style={{
+                                            border: "2px dashed #3c81b5",
+                                            background: "#e1f5fe",
+                                            padding: "10px",
+                                            borderRadius: "10px",
+                                            marginBottom: "15px"
+                                        }}>
+                                            <div style={{ fontSize: "18px", fontWeight: "900", color: "#3c81b5", letterSpacing: "1px" }}>{recommendedRobot.couponCode}</div>
                                         </div>
 
                                         <button
-                                            onClick={() => window.open(recommendedRobot.link, "_blank")}
+                                            onClick={() => window.open(`${recommendedRobot.link}?kupon=${recommendedRobot.couponCode}`, '_blank')}
                                             style={{
                                                 width: "100%",
                                                 padding: "14px",
+                                                borderRadius: "12px",
+                                                border: "none",
                                                 background: "#3c81b5",
                                                 color: "#fff",
-                                                border: "none",
-                                                borderRadius: "10px",
-                                                fontWeight: "800",
                                                 cursor: "pointer",
                                                 boxShadow: "0 5px 15px rgba(60,129,181,0.2)"
                                             }}
@@ -1094,27 +1101,27 @@ export default function Plan3D() {
                                         </button>
                                     </div>
 
-                                    {/* BÜYÜK SEÇİM ÖZETİ (FOTOĞRAF 1 TASARIMI) - KARTIN ALTINDA */}
-                                    <div style={{ marginTop: "25px", paddingTop: "0px" }}>
-                                        <div style={{ fontSize: "14px", fontWeight: "800", color: "#3c81b5", textTransform: "uppercase", marginBottom: "15px", letterSpacing: "1px" }}>Seçim Özetiniz</div>
-                                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-                                            <div style={{ background: "#f8f9fa", padding: "12px", borderRadius: "12px", border: "1px solid #f1f2f6" }}>
-                                                <div style={{ fontSize: "10px", color: "#b2bec3", fontWeight: "700", marginBottom: "5px" }}>ALAN</div>
-                                                <div style={{ fontSize: "14px", color: "#2d3436", fontWeight: "800" }}>{metrekare ? `${metrekare} m²` : "-"}</div>
-                                            </div>
-                                            <div style={{ background: "#f8f9fa", padding: "12px", borderRadius: "12px", border: "1px solid #f1f2f6" }}>
-                                                <div style={{ fontSize: "10px", color: "#b2bec3", fontWeight: "700", marginBottom: "5px" }}>EVCİL HAYVAN</div>
-                                                <div style={{ fontSize: "14px", color: "#2d3436", fontWeight: "800" }}>{pet === null ? "-" : (pet ? "Var" : "Yok")}</div>
-                                            </div>
-                                            <div style={{ background: "#f8f9fa", padding: "12px", borderRadius: "12px", border: "1px solid #f1f2f6" }}>
-                                                <div style={{ fontSize: "10px", color: "#b2bec3", fontWeight: "700", marginBottom: "5px" }}>HALI YOĞUNLUĞU</div>
-                                                <div style={{ fontSize: "14px", color: "#2d3436", fontWeight: "800" }}>{carpet || "-"}</div>
-                                            </div>
-                                            <div style={{ background: "#f8f9fa", padding: "12px", borderRadius: "12px", border: "1px solid #f1f2f6" }}>
-                                                <div style={{ fontSize: "10px", color: "#b2bec3", fontWeight: "700", marginBottom: "5px" }}>İSTASYON</div>
-                                                <div style={{ fontSize: "14px", color: "#2d3436", fontWeight: "800" }}>{station ? (station === "toz" ? "Toz Boşaltmalı" : station === "hepsi" ? "Tam İstasyon" : "İstenmiyor") : "-"}</div>
-                                            </div>
-                                        </div>
+                                    {/* YENİDEN BAŞLAT BUTONU (Sade ve hafif) */}
+                                    <div style={{ marginTop: "15px", textAlign: "center" }}>
+                                        <button 
+                                            onClick={reset} 
+                                            style={{ 
+                                                background: "none", 
+                                                border: "none", 
+                                                color: "#747d8c", 
+                                                fontSize: "11px", 
+                                                fontWeight: "800", 
+                                                cursor: "pointer", 
+                                                display: "inline-flex",
+                                                alignItems: "center",
+                                                gap: "5px",
+                                                transition: "all 0.2s ease"
+                                            }}
+                                            onMouseOver={e => e.currentTarget.style.color = "#3c81b5"}
+                                            onMouseOut={e => e.currentTarget.style.color = "#747d8c"}
+                                        >
+                                            <span style={{ fontSize: "14px" }}>↻</span> Yeniden Başla
+                                        </button>
                                     </div>
                                 </div>
                             )}
