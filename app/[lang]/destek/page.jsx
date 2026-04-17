@@ -55,6 +55,9 @@ export default async function SupportPage({ params }) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(supportJsonLd) }}
       />
       <main className="support-page-main">
+        <h1 style={{ position: 'absolute', width: '1px', height: '1px', padding: '0', margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', border: '0' }}>
+          {lang === "en" ? "Şımart Technology Support and Help Center" : "Şımart Teknoloji Destek ve Yardım Merkezi"}
+        </h1>
         {/* Mobilde form üstte, desktopta altta */}
         <section className="support-page-layout flat-spacing-11">
           <div className="container">

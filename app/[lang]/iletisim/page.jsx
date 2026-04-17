@@ -26,6 +26,9 @@ export default async function Contact({ params }) {
     const { lang } = await params;
     return (
         <>
+            <h1 style={{ position: 'absolute', width: '1px', height: '1px', padding: '0', margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', border: '0' }}>
+                {lang === "en" ? "Şımart Technology Contact - Get in Touch" : "Şımart Teknoloji İletişim - Bize Ulaşın"}
+            </h1>
             <ContactForm lang={lang} />
             <Map lang={lang} />
         </>

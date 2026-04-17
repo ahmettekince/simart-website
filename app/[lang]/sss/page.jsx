@@ -7,24 +7,24 @@ import Accordion from "@/components/common/Accordion";
 import { getLocalizedUrl } from "@/utils/i18n";
 
 export async function generateMetadata({ params }) {
-  const { lang } = params;
-  
-  if (lang === "en") {
-    return {
-      title: "Frequently Asked Questions - Şımart Technology",
-      description: "Frequently asked questions and answers about Şımart Technology.",
-    };
-  }
+    const { lang } = params;
 
-  return {
-    title: "Sıkça Sorulan Sorular - Şımart Teknoloji",
-    description: "Şımart Teknoloji hakkında sıkça sorulan sorular ve yanıtları.",
-  };
+    if (lang === "en") {
+        return {
+            title: "Frequently Asked Questions - Şımart Technology",
+            description: "Frequently asked questions and answers about Şımart Technology.",
+        };
+    }
+
+    return {
+        title: "Sıkça Sorulan Sorular - Şımart Teknoloji",
+        description: "Şımart Teknoloji hakkında sıkça sorulan sorular ve yanıtları.",
+    };
 }
 
 export default async function Page({ params: { lang } }) {
     const currentTabs = lang === "en" ? defaultFaqTabsEn : defaultFaqTabs;
-    
+
     const finalFaqs = currentTabs.map(tab => ({
         id: tab.id,
         slug: tab.id,
@@ -54,6 +54,9 @@ export default async function Page({ params: { lang } }) {
 
     return (
         <>
+            <h1 style={{ position: 'absolute', width: '1px', height: '1px', padding: '0', margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', border: '0' }}>
+                {lang === "en" ? "Şımart Technology Frequently Asked Questions" : "Şımart Teknoloji Sıkça Sorulan Sorular"}
+            </h1>
             {/* page-title */}
             <div className="tf-page-title style-2">
                 <div className="container-full">

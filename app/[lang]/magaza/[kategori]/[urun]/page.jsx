@@ -33,10 +33,6 @@ export async function generateMetadata({ params }) {
 
   const productName = product.name || product.title || "Ürün";
 
-  // SEO Bilgileri
-  // const metaDescription = `${productName} ile evinizi akıllı hale getirin! Hemen ${productName} ürününe sahip olun, evinizi geleceğin teknolojisiyle buluşturun!`;
-  // const metaKeywords = `${productName}, Akıllı ev cihazı, IoT teknolojisi, Akıllı telefon kontrolü, Enerji tasarrufu IoT, Güvenlik IoT ürünü, Akıllı yaşam teknolojisi, Evinizi akıllandırın, IoT ile akıllı ev, Akıllı ev otomasyonu`;
-
   const seoTitle = product.seo?.title || `${productName} - Şımart Teknoloji`;
   const metaDescription = product.seo?.description || `${productName} ile evinizi akıllı hale getirin! Hemen ${productName} ürününe sahip olun, evinizi geleceğin teknolojisiyle buluşturun!`;
   const metaKeywords = product.seo?.keywords || `${productName}, Akıllı ev cihazı, IoT teknolojisi, Akıllı telefon kontrolü, Enerji tasarrufu IoT, Güvenlik IoT ürünü, Akıllı yaşam teknolojisi, Evinizi akıllandırın, IoT ile akıllı ev, Akıllı ev otomasyonu`;
@@ -193,6 +189,12 @@ export default async function page({ params }) {
           </div>
         </div>
       </div>
+      
+      <h1 style={{ position: 'absolute', width: '1px', height: '1px', padding: '0', margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', border: '0' }}>
+        {lang === "tr" 
+          ? `${productName} - Şımart Teknoloji Akıllı Ev Sistemleri` 
+          : `${productName} - Şımart Technology Smart Home Systems`}
+      </h1>
       <Detail product={product} />
 
       {/* Detaylı Açıklama Alanı */}

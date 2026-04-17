@@ -10,13 +10,15 @@ const translations = {
     title: "Mağaza - Şımart Teknoloji",
     description: "Şımart Teknoloji mağaza sayfası, tüm ürünlerimizi keşfedin.",
     heading: "Mağaza",
-    subheading: "Tüm ürünlerimizi keşfedin"
+    subheading: "Tüm ürünlerimizi keşfedin",
+    seoH1: "Robot Süpürge ve Akıllı Ev Sistemleri"
   },
   en: {
     title: "Shop - Şımart Technology",
     description: "Şımart Technology shop page, explore all our products.",
     heading: "Shop",
-    subheading: "Explore all our products"
+    subheading: "Explore all our products",
+    seoH1: "Robot Vacuum and Smart Home Systems"
   }
 };
 
@@ -58,6 +60,10 @@ export default async function MagazaPage({ params }) {
           <p className="text-center text-2 text_black-2 mt_5">{t.subheading}</p>
         </div>
       </div>
+
+      <h1 style={{ position: 'absolute', width: '1px', height: '1px', padding: '0', margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', border: '0' }}>
+        {t.seoH1}
+      </h1>
 
       {/* Ürün Listesi (Client Component) */}
       <MagazaDisplay products={products} categories={categories} />

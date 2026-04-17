@@ -66,7 +66,7 @@ export default function CategoriesClient({ categories, lang = "tr" }) {
                 </div>
                 <div className="collection-content" style={{ position: 'relative', inset: 'unset', padding: '0 10px 20px', textAlign: 'center' }}>
                   <div className="top">
-                    <h5 className="fw-5" style={{ fontSize: "14px" }} >{item.name}</h5>
+                    <h2 className="fw-5" style={{ fontSize: "14px", margin: 0, padding: 0, lineHeight: "inherit" }} >{item.name}</h2>
                   </div>
                 </div>
               </Link>

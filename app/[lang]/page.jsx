@@ -87,7 +87,7 @@ export default async function Home({ params }) {
     description: t.description,
   });
 
-  return (
+    return (
     <>
       {/* Organization JSON-LD */}
       <script
@@ -95,6 +95,9 @@ export default async function Home({ params }) {
         suppressHydrationWarning
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
       />
+      <h1 style={{ position: 'absolute', width: '1px', height: '1px', padding: '0', margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', border: '0' }}>
+        {lang === "en" ? "Şımart Technology - Smart Home Systems and Robot Vacuums" : "Şımart Teknoloji - Akıllı Ev Sistemleri ve Robot Süpürgeler"}
+      </h1>
       <div className="color-primary-15">
         <Hero banners={banners} />
         <Categories lang={lang} />

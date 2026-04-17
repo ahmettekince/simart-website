@@ -15,22 +15,12 @@ export default function MagazaDisplay({ products: initialProducts = [], categori
 
     // Kategori için alternatif dillerdeki URL'leri store'a kaydet
     useEffect(() => {
-        let catSlugs = initialCategory?.slugs;
-
-        // Eğer kategori objesinde slugs yoksa, ilk ürünün içindeki kategori bilgisini dene
-        if (!catSlugs && initialProducts && initialProducts.length > 0) {
-            const firstProduct = initialProducts[0];
-            // Kategori listesinden eşleşen veya birincil kategoriyi bul
-            const categoryData = firstProduct.primary_category || (firstProduct.categories && firstProduct.categories[0]);
-            if (categoryData && categoryData.slugs) {
-                catSlugs = categoryData.slugs;
-            }
-        }
-
-        if (catSlugs) {
+        // Sadece bir kategori sayfası içindeysek (initialCategory varsa) alternatePaths set et
+        if (initialCategory && initialCategory.slugs) {
+            const catSlugs = initialCategory.slugs;
             const paths = {};
             ["tr", "en"].forEach(currLang => {
-                const cSlug = catSlugs[currLang] || initialCategory?.slug;
+                const cSlug = catSlugs[currLang] || initialCategory.slug;
                 if (!cSlug) return;
                 // TR: /magaza/[slug], EN: /en/shop/[slug]
                 const prefix = currLang === "en" ? "/en/shop" : "/magaza";
@@ -40,9 +30,13 @@ export default function MagazaDisplay({ products: initialProducts = [], categori
             if (Object.keys(paths).length > 0) {
                 setAlternatePaths(paths);
             }
+        } else {
+            // Ana mağaza sayfasındaysak veya kategori verisi yoksa store'u temizle
+            setAlternatePaths({});
         }
+
         return () => setAlternatePaths({});
-    }, [initialCategory, initialProducts, setAlternatePaths]);
+    }, [initialCategory, setAlternatePaths]);
 
     const sortByDefault = (list) => {
         const isAvailable = (p) => p.is_in_stock || p.is_pre_order;

@@ -621,8 +621,8 @@ function House({ type, trail, posRef, rotRef, recommendedRobot, isCleaning }) {
             trail.length > 1 && (() => {
                 const curvePoints = trail.map(p => new THREE.Vector3(p[0], 0.05, p[2]));
                 if (trail.length > 2) {
-                    const curve = new THREE.CatmullRomCurve3(curvePoints, false, 'catmullrom', 0); 
-                    const points = curve.getPoints(trail.length * 4); 
+                    const curve = new THREE.CatmullRomCurve3(curvePoints, false, 'catmullrom', 0);
+                    const points = curve.getPoints(trail.length * 4);
                     return <Line points={points} color="white" lineWidth={3} transparent opacity={0.8} />;
                 } else {
                     return <Line points={curvePoints} color="white" lineWidth={3} transparent opacity={0.8} />;
@@ -1067,7 +1067,7 @@ export default function Plan3D() {
                                         </div>
 
                                         <h3 style={{ fontSize: "17px", fontWeight: "800", color: "#3c81b5", marginBottom: "4px" }}>{recommendedRobot.name}</h3>
-                                        
+
                                         <div style={{ display: "flex", justifyContent: "center", gap: "10px", alignItems: "baseline", marginBottom: "12px" }}>
                                             <span style={{ fontSize: "19px", fontWeight: "900", color: "#0bc15c" }}>{recommendedRobot.price}</span>
                                             <span style={{ fontSize: "13px", color: "#95a5a6", fontWeight: "500", textDecoration: "line-through" }}>{recommendedRobot.oldPrice}</span>
@@ -1103,15 +1103,15 @@ export default function Plan3D() {
 
                                     {/* YENİDEN BAŞLAT BUTONU (Sade ve hafif) */}
                                     <div style={{ marginTop: "15px", textAlign: "center" }}>
-                                        <button 
-                                            onClick={reset} 
-                                            style={{ 
-                                                background: "none", 
-                                                border: "none", 
-                                                color: "#747d8c", 
-                                                fontSize: "11px", 
-                                                fontWeight: "800", 
-                                                cursor: "pointer", 
+                                        <button
+                                            onClick={reset}
+                                            style={{
+                                                background: "none",
+                                                border: "none",
+                                                color: "#747d8c",
+                                                fontSize: "11px",
+                                                fontWeight: "800",
+                                                cursor: "pointer",
                                                 display: "inline-flex",
                                                 alignItems: "center",
                                                 gap: "5px",

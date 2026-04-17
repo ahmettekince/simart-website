@@ -10,7 +10,7 @@ export async function generateMetadata({ params }) {
   const isEn = lang === "en";
   return {
     title: isEn ? "Blog - Şımart Technology" : "Blog - Şımart Teknoloji",
-    description: isEn 
+    description: isEn
       ? "Şımart Technology blog page, your most up-to-date source of information about smart home systems and technological innovations."
       : "Şımart Teknoloji blog sayfası, akıllı ev sistemleri ve teknolojik yenilikler hakkında en güncel bilgi kaynağınız.",
     author: "Şımart Teknoloji",
@@ -39,6 +39,9 @@ export default async function page({ params }) {
         suppressHydrationWarning
         dangerouslySetInnerHTML={{ __html: JSON.stringify(blogJsonLd) }}
       />
+      <h1 style={{ position: 'absolute', width: '1px', height: '1px', padding: '0', margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', border: '0' }}>
+        {isEn ? "Şımart Technology Blogs" : "Şımart Teknoloji Bloglar"}
+      </h1>
       <div className="tf-page-title">
         <div className="container-full">
           <div className="row">
