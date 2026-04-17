@@ -32,8 +32,9 @@ export async function generateMetadata({ params }) {
   }
 
   const productName = product.name || product.title || "Ürün";
+  const titleSuffix = lang === "en" ? "Şımart Technology" : "Şımart Teknoloji";
 
-  const seoTitle = product.seo?.title || `${productName} - Şımart Teknoloji`;
+  const seoTitle = product.seo?.title || `${productName} - ${titleSuffix}`;
   const metaDescription = product.seo?.description || `${productName} ile evinizi akıllı hale getirin! Hemen ${productName} ürününe sahip olun, evinizi geleceğin teknolojisiyle buluşturun!`;
   const metaKeywords = product.seo?.keywords || `${productName}, Akıllı ev cihazı, IoT teknolojisi, Akıllı telefon kontrolü, Enerji tasarrufu IoT, Güvenlik IoT ürünü, Akıllı yaşam teknolojisi, Evinizi akıllandırın, IoT ile akıllı ev, Akıllı ev otomasyonu`;
 

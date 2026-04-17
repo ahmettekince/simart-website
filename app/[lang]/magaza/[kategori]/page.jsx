@@ -24,8 +24,10 @@ export async function generateMetadata({ params }) {
     `${categoryName} kategorisindeki ürünlerimizi keşfedin.`;
   const seoKeywords = category.seo_keywords ?? undefined;
 
+  const titleSuffix = lang === "en" ? "Şımart Technology" : "Şımart Teknoloji";
+  
   return {
-    title: `${categoryName} - Şımart Teknoloji`,
+    title: `${categoryName} - ${titleSuffix}`,
     description: seoDescription,
     ...(seoKeywords && { keywords: seoKeywords }),
   };
