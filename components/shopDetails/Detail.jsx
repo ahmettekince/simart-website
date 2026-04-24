@@ -23,6 +23,7 @@ import OverlayCtaButton, { Model3dIcon, PlayIcon, ArrowIcon } from "@/components
 import VolumeDiscount from "./VolumeDiscount";
 import InfoTicker from "./InfoTicker";
 import Trendyol from "@/components/common/Trendyol";
+import PreOrderNotice from "@/components/common/PreOrderNotice";
 import PromoCartBox from "./PromoCartBox";
 import { trackViewItem } from "@/utils/analytics";
 
@@ -601,6 +602,7 @@ export default function Detail({ product }) {
                       </div>
                     )}
                     <Trendyol productSlug={product.slugs?.tr || product.slug} />
+                    <PreOrderNotice productSlug={product.slugs?.tr || product.slug} />
 
                     {showPromoBox && (
                       <PromoCartBox
