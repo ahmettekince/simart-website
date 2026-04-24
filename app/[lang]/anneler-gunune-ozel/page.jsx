@@ -17,7 +17,8 @@ const MOTHERS_DAY_SLUGS = [
     "akilli-bebek-kamerasi",
     "hava-nemlendirici",
     "akilli-kahve-makinesi",
-    "akilli-dik-supurge"
+    "akilli-dik-supurge",
+    "akilli-hava-fritozu-airfryer"
 ];
 
 const translations = {
