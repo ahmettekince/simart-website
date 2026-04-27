@@ -22,7 +22,7 @@ import ModelViewerModal from "@/components/modals/ModelViewerModal";
 import OverlayCtaButton, { Model3dIcon, PlayIcon, ArrowIcon } from "@/components/common/OverlayCtaButton";
 import VolumeDiscount from "./VolumeDiscount";
 import InfoTicker from "./InfoTicker";
-import Trendyol from "@/components/common/Trendyol";
+
 import PreOrderNotice from "@/components/common/PreOrderNotice";
 import PromoCartBox from "./PromoCartBox";
 import { trackViewItem } from "@/utils/analytics";
@@ -130,6 +130,7 @@ function ProductProtocolHelp({ description, protocolName }) {
 }
 
 import { useLangStore } from "@/stores/langStore";
+import MediaMarkt from "../common/MediaMarkt";
 
 export default function Detail({ product }) {
   const lang = useLangStore((s) => s.lang);
@@ -601,7 +602,8 @@ export default function Detail({ product }) {
                         </div>
                       </div>
                     )}
-                    <Trendyol productSlug={product.slugs?.tr || product.slug} />
+                    <MediaMarkt productSlug={product.slugs?.tr || product.slug} />
+
                     <PreOrderNotice productSlug={product.slugs?.tr || product.slug} />
 
                     {showPromoBox && (
