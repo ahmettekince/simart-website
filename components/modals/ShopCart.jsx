@@ -663,7 +663,7 @@ export default function ShopCart() {
                                                   className="tf-cart-campaign-badge"
                                                   style={{
                                                     fontSize: "11px",
-                                                    color: isNextTier ? "#dc3545" : "#0bc15c",
+                                                    color: isNextTier ? "#dc3545" : "#3c81b5",
                                                     marginTop: "4px",
                                                     lineHeight: "1.4",
                                                   }}
@@ -749,14 +749,14 @@ export default function ShopCart() {
                                           {giftSourceNames.length > 0 ? (
                                             <div
                                               className="tf-cart-campaign-badge"
-                                              style={{ fontSize: "11px", color: "#0bc15c", marginTop: "4px" }}
+                                              style={{ fontSize: "11px", color: "#3c81b5", marginTop: "4px" }}
                                             >
                                               {giftSourceNames.join(", ")}
                                             </div>
                                           ) : giftCampaign?.applied_tier?.min_cart_amount ? (
                                             <div
                                               className="tf-cart-campaign-badge"
-                                              style={{ fontSize: "11px", color: "#0bc15c", marginTop: "4px" }}
+                                              style={{ fontSize: "11px", color: "#3c81b5", marginTop: "4px" }}
                                             >
                                               {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString(
                                                 t.locale,
@@ -839,14 +839,14 @@ export default function ShopCart() {
                                     {giftSourceNames.length > 0 ? (
                                       <div
                                         className="tf-cart-campaign-badge"
-                                        style={{ fontSize: "11px", color: "#0bc15c", marginTop: "4px" }}
+                                        style={{ fontSize: "11px", color: "#3c81b5", marginTop: "4px" }}
                                       >
                                         {giftSourceNames.join(", ")}
                                       </div>
                                     ) : giftCampaign?.applied_tier?.min_cart_amount ? (
                                       <div
                                         className="tf-cart-campaign-badge"
-                                        style={{ fontSize: "11px", color: "#0bc15c", marginTop: "4px" }}
+                                        style={{ fontSize: "11px", color: "#3c81b5", marginTop: "4px" }}
                                       >
                                         {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString(t.locale)}{" "}
                                         {t.specialDiscount}
@@ -883,7 +883,7 @@ export default function ShopCart() {
                                   className="tf-mini-cart-item tf-mini-cart-gift-item"
                                   style={{
                                     paddingLeft: "10px",
-                                    borderLeft: "3px solid #0bc15c",
+                                    borderLeft: "3px solid #3c81b5",
                                     backgroundColor: "#f5f5f5",
                                   }}
                                 >
@@ -922,14 +922,14 @@ export default function ShopCart() {
                                     {giftSourceNames.length > 0 ? (
                                       <div
                                         className="tf-cart-campaign-badge"
-                                        style={{ fontSize: "11px", color: "#0bc15c", marginTop: "4px" }}
+                                        style={{ fontSize: "11px", color: "#3c81b5", marginTop: "4px" }}
                                       >
                                         {giftSourceNames.join(", ")}
                                       </div>
                                     ) : giftCampaign?.applied_tier?.min_cart_amount ? (
                                       <div
                                         className="tf-cart-campaign-badge"
-                                        style={{ fontSize: "11px", color: "#0bc15c", marginTop: "4px" }}
+                                        style={{ fontSize: "11px", color: "#3c81b5", marginTop: "4px" }}
                                       >
                                         {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString(t.locale)}{" "}
                                         {t.specialGift}
@@ -995,7 +995,7 @@ export default function ShopCart() {
                                   </div>
                                   <div
                                     className="tf-cart-total-value fw-6"
-                                    style={{ fontSize: "14px", color: "#0bc15c" }}
+                                    style={{ fontSize: "14px", color: "#3c81b5" }}
                                   >
                                     - {cartTotals.customDiscountAmount.toLocaleString(t.locale)} {t.currency}
                                   </div>
@@ -1009,7 +1009,7 @@ export default function ShopCart() {
                                   </div>
                                   <div
                                     className="tf-cart-total-value fw-6"
-                                    style={{ fontSize: "14px", color: "#0bc15c" }}
+                                    style={{ fontSize: "14px", color: "#3c81b5" }}
                                   >
                                     - {cartTotals.campaignDiscountAmount.toLocaleString(t.locale)} {t.currency}
                                   </div>
@@ -1047,7 +1047,7 @@ export default function ShopCart() {
                                   </div>
                                   <div
                                     className="tf-cart-total-value fw-6"
-                                    style={{ fontSize: "14px", color: "#0bc15c" }}
+                                    style={{ fontSize: "14px", color: "#3c81b5" }}
                                   >
                                     - {cartTotals.couponDiscountAmount.toLocaleString(t.locale)} {t.currency}
                                   </div>
@@ -1125,7 +1125,7 @@ export default function ShopCart() {
                                     <div
                                       key={`cart-campaign-${campaign.id || idx}`}
                                       style={{
-                                        color: "#0bc15c",
+                                        color: "#3c81b5",
                                         fontSize: "11px",
                                         lineHeight: "1.4",
                                         marginBottom: "4px",
@@ -1158,11 +1158,7 @@ export default function ShopCart() {
                               style={{
                                 width: "100%",
                                 padding: "0 80px 0 15px", // Sağdan pay bırak
-                                border: couponError
-                                  ? "1px solid #dc3545"
-                                  : couponSuccess
-                                    ? "1px solid #0bc15c"
-                                    : "1px solid #e5e5e5",
+                                border: couponError ? "1px solid #dc3545" : couponSuccess ? "1px solid #3c81b5" : "1px solid #e5e5e5",
                                 borderRadius: "12px",
                                 fontSize: "16px",
                                 height: "42px",
@@ -1195,7 +1191,7 @@ export default function ShopCart() {
                             <div style={{ marginTop: "8px", fontSize: "12px", color: "#dc3545" }}>{couponError}</div>
                           )}
                           {couponSuccess && (
-                            <div style={{ marginTop: "8px", fontSize: "12px", color: "#0bc15c" }}>
+                             <div style={{ marginTop: "8px", fontSize: "12px", color: "#3c81b5" }}>
                               {t.couponSuccess}
                             </div>
                           )}
@@ -1210,7 +1206,7 @@ export default function ShopCart() {
                               style={{
                                 marginBottom: "8px",
                                 fontSize: "13px",
-                                color: "#10b981",
+                                 color: "#3c81b5",
                                 lineHeight: "1.5",
                               }}
                             >

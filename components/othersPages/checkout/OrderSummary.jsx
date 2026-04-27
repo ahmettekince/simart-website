@@ -448,7 +448,7 @@ export default function OrderSummary({
                               {itemCampaignMessages.length > 0 && (
                                 <div style={{ marginTop: '4px' }}>
                                   {itemCampaignMessages.map(({ campaign, message, isNextTier }, idx) => (
-                                    <div key={`product-campaign-${campaign.id || idx}`} style={{ fontSize: '11px', color: isNextTier ? '#dc3545' : '#0bc15c', lineHeight: '1.4' }}>
+                                    <div key={`product-campaign-${campaign.id || idx}`} style={{ fontSize: '11px', color: isNextTier ? '#dc3545' : '#3c81b5', lineHeight: '1.4' }}>
                                       {message}
                                     </div>
                                   ))}
@@ -598,7 +598,7 @@ export default function OrderSummary({
                     backgroundColor: '#f5f5f5',
                     padding: '12px',
                     borderRadius: '12px',
-                    borderLeft: '3px solid #0bc15c',
+                    borderLeft: '3px solid #3c81b5',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '12px'
@@ -620,7 +620,7 @@ export default function OrderSummary({
                             {giftSourceNames.join(", ")}
                           </div>
                         ) : giftCampaign?.applied_tier?.min_cart_amount ? (
-                          <div style={{ fontSize: '11px', color: '#0bc15c' }}>
+                          <div style={{ fontSize: '11px', color: '#3c81b5' }}>
                             {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString(localeStr)} {t.specialGiftForCart}
                           </div>
                         ) : null}
@@ -672,7 +672,7 @@ export default function OrderSummary({
                   style={{
                     flex: 1,
                     padding: "6px 10px",
-                    border: couponError ? "1px solid #dc3545" : couponSuccess ? "1px solid #0bc15c" : "1px solid #e5e5e5",
+                    border: couponError ? "1px solid #dc3545" : couponSuccess ? "1px solid #3c81b5" : "1px solid #e5e5e5",
                     borderRadius: "6px",
                     fontSize: "14px",
                     height: "36px",
@@ -702,7 +702,7 @@ export default function OrderSummary({
                 </div>
               )}
               {couponSuccess && (
-                <div style={{ marginTop: "8px", fontSize: "12px", color: "#0bc15c" }}>
+                <div style={{ marginTop: "8px", fontSize: "12px", color: "#3c81b5" }}>
                   {t.applied}
                 </div>
               )}
@@ -803,7 +803,7 @@ export default function OrderSummary({
                       );
                     }
                     return (
-                      <div key={`cart-campaign-${campaign.id || idx}`} style={{ color: '#0bc15c', fontSize: '11px', lineHeight: '1.4', marginBottom: '4px' }}>
+                      <div key={`cart-campaign-${campaign.id || idx}`} style={{ color: '#3c81b5', fontSize: '11px', lineHeight: '1.4', marginBottom: '4px' }}>
                         {campaign.name}
                       </div>
                     );
@@ -827,7 +827,7 @@ export default function OrderSummary({
                   style={{
                     marginBottom: "8px",
                     fontSize: "13px",
-                    color: "#10b981",
+                    color: "#3c81b5",
                     lineHeight: "1.5",
                   }}
                 >

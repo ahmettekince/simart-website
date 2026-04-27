@@ -367,11 +367,11 @@ export default function Cart({ lang = "tr" }) {
                                               key={`product-campaign-${campaign.id || idx}`}
                                               style={{
                                                 fontSize: "11px",
-                                                color: isNextTier ? "#dc3545" : "#0bc15c",
+                                                color: isNextTier ? "#dc3545" : "#3c81b5",
                                                 lineHeight: "1.4",
                                                 backgroundColor: isNextTier
                                                   ? "rgba(220, 53, 69, 0.1)"
-                                                  : "rgba(11, 193, 92, 0.1)",
+                                                  : "rgba(60, 129, 181, 0.1)",
                                                 padding: "4px 8px",
                                                 borderRadius: "4px",
                                                 display: "inline-block",
@@ -447,7 +447,7 @@ export default function Cart({ lang = "tr" }) {
                                                 key={campaignId}
                                                 style={{
                                                   fontSize: "11px",
-                                                  color: "#10b981",
+                                                  color: "#3c81b5",
                                                   fontWeight: "500",
                                                   marginTop: "4px",
                                                   padding: "4px 8px",
@@ -563,16 +563,16 @@ export default function Cart({ lang = "tr" }) {
                                         {giftItem.name} <span style={{ color: "#3c81b5" }}>x{giftItem.quantity}</span>
                                       </div>
                                       {giftSourceNames.length > 0 ? (
-                                        <div style={{ fontSize: "12px", color: "#10b981" }}>
+                                        <div style={{ fontSize: "12px", color: "#3c81b5" }}>
                                           {giftSourceNames.join(", ")}
                                         </div>
                                       ) : giftCampaign?.applied_tier?.min_cart_amount ? (
-                                        <div style={{ fontSize: "12px", color: "#10b981" }}>
+                                        <div style={{ fontSize: "12px", color: "#3c81b5" }}>
                                           {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString(localeStr)}{" "}
                                           {t.specialGift}
                                         </div>
                                       ) : (
-                                        <div style={{ fontSize: "12px", color: "#10b981" }}>{t.giftProduct}</div>
+                                        <div style={{ fontSize: "12px", color: "#3c81b5" }}>{t.giftProduct}</div>
                                       )}
                                     </div>
                                   </td>
@@ -593,7 +593,7 @@ export default function Cart({ lang = "tr" }) {
                                     cart-data-title={t.total}
                                     style={{ borderTop: "none", paddingTop: "10px", paddingBottom: "10px" }}
                                   >
-                                    <div className="cart-total" style={{ color: "#10b981" }}>
+                                    <div className="cart-total" style={{ color: "#3c81b5" }}>
                                       {t.gift}
                                     </div>
                                   </td>
@@ -668,15 +668,15 @@ export default function Cart({ lang = "tr" }) {
                                     {giftItem.name} <span style={{ color: "#3c81b5" }}>x{giftItem.quantity}</span>
                                   </div>
                                   {giftSourceNames.length > 0 ? (
-                                    <div style={{ fontSize: "12px", color: "#10b981" }}>
+                                    <div style={{ fontSize: "12px", color: "#3c81b5" }}>
                                       {giftSourceNames.join(", ")}
                                     </div>
                                   ) : giftCampaign?.applied_tier?.min_cart_amount ? (
-                                    <div style={{ fontSize: "12px", color: "#10b981" }}>
+                                    <div style={{ fontSize: "12px", color: "#3c81b5" }}>
                                       {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString(localeStr)} {t.specialGift}
                                     </div>
                                   ) : (
-                                    <div style={{ fontSize: "12px", color: "#10b981" }}>{t.campaignGift}</div>
+                                    <div style={{ fontSize: "12px", color: "#3c81b5" }}>{t.campaignGift}</div>
                                   )}
                                 </div>
                               </td>
@@ -697,7 +697,7 @@ export default function Cart({ lang = "tr" }) {
                                 cart-data-title="Toplam"
                                 style={{ paddingTop: "10px", paddingBottom: "10px" }}
                               >
-                                <div className="cart-total" style={{ color: "#10b981" }}>
+                                <div className="cart-total" style={{ color: "#3c81b5" }}>
                                   Hediye
                                 </div>
                               </td>
@@ -770,11 +770,11 @@ export default function Cart({ lang = "tr" }) {
                                     {giftItem.name} <span style={{ color: "#3c81b5" }}>x{giftItem.quantity}</span>
                                   </div>
                                   {giftSourceNames.length > 0 ? (
-                                    <div style={{ fontSize: "12px", color: "#10b981" }}>
+                                    <div style={{ fontSize: "12px", color: "#3c81b5" }}>
                                       {giftSourceNames.join(", ")}
                                     </div>
                                   ) : giftCampaign?.applied_tier?.min_cart_amount ? (
-                                    <div style={{ fontSize: "12px", color: "#10b981" }}>
+                                    <div style={{ fontSize: "12px", color: "#3c81b5" }}>
                                       {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString(localeStr)} {t.specialGift}
                                     </div>
                                   ) : null}
@@ -797,7 +797,7 @@ export default function Cart({ lang = "tr" }) {
                                 cart-data-title="Toplam"
                                 style={{ paddingTop: "10px", paddingBottom: "10px" }}
                               >
-                                <div className="cart-total" style={{ color: "#10b981" }}>
+                                <div className="cart-total" style={{ color: "#3c81b5" }}>
                                   Hediye
                                 </div>
                               </td>
