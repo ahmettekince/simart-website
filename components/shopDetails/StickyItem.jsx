@@ -316,7 +316,7 @@ export default function StickyItem({
           white-space: nowrap;
         }
         .tf-sticky-atc-price-wrap.has-discount .price-on-sale {
-          color: #0bc15c;
+          color: #3c81b5;
         }
         .tf-sticky-atc-price-wrap .compare-at-price {
           font-size: 13px;

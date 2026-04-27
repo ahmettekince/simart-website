@@ -96,7 +96,7 @@ export default function BirlikteAlNew({ variations = [], currentSlug = null, cur
                                     <div style={{ flex: 1, minWidth: 0, overflow: "hidden", padding: "8px 12px", display: "flex", flexDirection: "column", gap: 4, justifyContent: "center" }}>
                                         <p style={{ margin: 0, fontSize: 13, fontWeight: 500, color: "#111", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", minWidth: 0 }} title={v.name}>{v.name}</p>
                                         <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0, overflow: "hidden" }}>
-                                            <span style={{ fontSize: 15, fontWeight: 700, color: hasDiscount ? "#0bc15c" : "#3c81b5" }}>{finalPriceLocale} TL</span>
+                                            <span style={{ fontSize: 15, fontWeight: 700, color: "#3c81b5" }}>{finalPriceLocale} TL</span>
                                             {hasDiscount && <span style={{ fontSize: 13, color: "#999", textDecoration: "line-through" }}>{originalPriceLocale} TL</span>}
                                         </div>
                                     </div>

@@ -254,7 +254,7 @@ export default function SearchModal() {
                               {product.is_in_stock !== false && (
                                 product.discount_price && product.discount_price < product.price ? (
                                   <>
-                                    <div className="price-on-sale fw-6" style={{ color: "#0bc15c", fontWeight: "700" }}>
+                                    <div className="price-on-sale fw-6" style={{ color: "#3c81b5", fontWeight: "700" }}>
                                       {formatPrice(product.final_price || product.discount_price)}
                                     </div>
                                     <div className="compare-at-price" style={{ textDecoration: "line-through", color: "#999", fontSize: "0.9em" }}>

@@ -135,7 +135,7 @@ export default function VolumeDiscount({ product, setQuantity }) {
             <div className="d-flex flex-column align-items-end" style={{ gap: "2px" }}>
               <div className="rule-price-total" style={{ textAlign: "right" }}>
                 <div style={{ display: "flex", alignItems: "baseline", gap: "6px", justifyContent: "flex-end" }}>
-                  <div className="price-regular" style={{ fontSize: "16px", fontWeight: "800", color: "#0bc15c" }}>
+                  <div className="price-regular" style={{ fontSize: "16px", fontWeight: "800", color: "#3c81b5" }}>
                     {discount.priceRegular}
                   </div>
                   {discount.priceCompare && (

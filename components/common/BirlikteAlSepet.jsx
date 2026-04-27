@@ -314,7 +314,7 @@ export default function BirlikteAlSepet({ title, products = [] }) {
                       {item.name}
                     </Link>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0, overflow: "hidden" }}>
-                      <span style={{ fontSize: 15, fontWeight: 700, color: hasDiscount ? "#0bc15c" : "#3c81b5" }}>{Number(final).toLocaleString(t.locale)} TL</span>
+                      <span style={{ fontSize: 15, fontWeight: 700, color: "#3c81b5" }}>{Number(final).toLocaleString(t.locale)} TL</span>
                       {hasDiscount && <span style={{ fontSize: 13, color: "#999", textDecoration: "line-through" }}>{Number(price).toLocaleString(t.locale)} TL</span>}
                     </div>
                   </div>

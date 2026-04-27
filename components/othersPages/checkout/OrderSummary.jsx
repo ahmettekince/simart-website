@@ -458,7 +458,7 @@ export default function OrderSummary({
                             <span className="price">
                               {displayDiscountPrice != null && displayRegularPrice != null && displayDiscountPrice < displayRegularPrice ? (
                                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                                  <span style={{ color: '#0bc15c', fontWeight: '600', whiteSpace: 'nowrap' }}>
+                                  <span style={{ color: '#3c81b5', fontWeight: '600', whiteSpace: 'nowrap' }}>
                                     {(displayDiscountPrice * item.quantity).toLocaleString(localeStr)} TL
                                   </span>
                                   <span style={{ textDecoration: 'line-through', color: '#999', fontSize: '12px', whiteSpace: 'nowrap' }}>
@@ -509,14 +509,14 @@ export default function OrderSummary({
                           <div className="content" style={{ flex: 1 }}>
                             <div className="info">
                               <Link href={productUrl} className="name" style={{ fontSize: '13px', fontWeight: '500', color: '#141414', lineHeight: '1.4', display: 'block', marginBottom: '2px' }}>
-                                {giftItem.name} <span style={{ color: '#0bc15c', fontWeight: 'bold' }}>x{giftItem.quantity}</span>
+                                {giftItem.name} <span style={{ color: '#3c81b5', fontWeight: 'bold' }}>x{giftItem.quantity}</span>
                               </Link>
                               {giftSourceNames.length > 0 ? (
-                                <div style={{ fontSize: '11px', color: '#0bc15c' }}>
+                                <div style={{ fontSize: '11px', color: '#3c81b5' }}>
                                   {giftSourceNames.join(", ")}
                                 </div>
                               ) : giftCampaign?.applied_tier?.min_cart_amount ? (
-                                <div style={{ fontSize: '11px', color: '#0bc15c' }}>
+                                <div style={{ fontSize: '11px', color: '#3c81b5' }}>
                                   {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString(localeStr)} {t.specialDiscountForCart}
                                 </div>
                               ) : null}
@@ -562,14 +562,14 @@ export default function OrderSummary({
                     <div className="content" style={{ flex: 1 }}>
                       <div className="info">
                         <Link href={productUrl} className="name" style={{ fontSize: '13px', fontWeight: '500', color: '#141414', lineHeight: '1.4', display: 'block', marginBottom: '2px' }}>
-                          {giftItem.name} <span style={{ color: '#0bc15c', fontWeight: 'bold' }}>x{giftItem.quantity}</span>
+                          {giftItem.name} <span style={{ color: '#3c81b5', fontWeight: 'bold' }}>x{giftItem.quantity}</span>
                         </Link>
                         {giftSourceNames.length > 0 ? (
-                          <div style={{ fontSize: '11px', color: '#0bc15c' }}>
+                          <div style={{ fontSize: '11px', color: '#3c81b5' }}>
                             {giftSourceNames.join(", ")}
                           </div>
                         ) : giftCampaign?.applied_tier?.min_cart_amount ? (
-                          <div style={{ fontSize: '11px', color: '#0bc15c' }}>
+                          <div style={{ fontSize: '11px', color: '#3c81b5' }}>
                             {Number(giftCampaign.applied_tier.min_cart_amount).toLocaleString(localeStr)} {t.specialGiftForCart}
                           </div>
                         ) : null}
@@ -613,10 +613,10 @@ export default function OrderSummary({
                     <div className="content" style={{ flex: 1 }}>
                       <div className="info">
                         <Link href={productUrl} className="name" style={{ fontSize: '13px', fontWeight: '500', color: '#141414', lineHeight: '1.4', display: 'block', marginBottom: '2px' }}>
-                          {giftItem.name} <span style={{ color: '#0bc15c', fontWeight: 'bold' }}>x{giftItem.quantity}</span>
+                          {giftItem.name} <span style={{ color: '#3c81b5', fontWeight: 'bold' }}>x{giftItem.quantity}</span>
                         </Link>
                         {giftSourceNames.length > 0 ? (
-                          <div style={{ fontSize: '11px', color: '#0bc15c' }}>
+                          <div style={{ fontSize: '11px', color: '#3c81b5' }}>
                             {giftSourceNames.join(", ")}
                           </div>
                         ) : giftCampaign?.applied_tier?.min_cart_amount ? (
@@ -728,7 +728,7 @@ export default function OrderSummary({
                 <h6 className="fw-5" style={{ fontSize: "14px" }}>
                   {t.customDiscount}
                 </h6>
-                <h6 className="fw-5" style={{ fontSize: "14px", color: "#0bc15c" }}>
+                <h6 className="fw-5" style={{ fontSize: "14px", color: "#3c81b5" }}>
                   -{cartTotals.customDiscountAmount.toLocaleString(localeStr)} TL
                 </h6>
               </div>
@@ -738,7 +738,7 @@ export default function OrderSummary({
                 <h6 className="fw-5" style={{ fontSize: "14px" }}>
                   {t.campaignDiscount}
                 </h6>
-                <h6 className="fw-5" style={{ fontSize: "14px", color: "#0bc15c" }}>
+                <h6 className="fw-5" style={{ fontSize: "14px", color: "#3c81b5" }}>
                   -{cartTotals.campaignDiscountAmount.toLocaleString(localeStr)} TL
                 </h6>
               </div>
@@ -769,7 +769,7 @@ export default function OrderSummary({
                     {isRemovingCoupon ? t.removing : t.remove}
                   </button>
                 </h6>
-                <h6 className="fw-5" style={{ fontSize: "14px", color: "#0bc15c" }}>
+                <h6 className="fw-5" style={{ fontSize: "14px", color: "#3c81b5" }}>
                   -{cartTotals.couponDiscountAmount.toLocaleString(localeStr)} TL
                 </h6>
               </div>

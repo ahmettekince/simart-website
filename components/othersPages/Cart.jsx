@@ -405,7 +405,7 @@ export default function Cart({ lang = "tr" }) {
                                           >
                                             {displayRegularPrice.toLocaleString(localeStr)} TL
                                           </span>
-                                          <span style={{ color: "#0bc15c", fontWeight: "600" }}>
+                                          <span style={{ color: "#3c81b5", fontWeight: "600" }}>
                                             {displayDiscountPrice.toLocaleString(localeStr)} TL
                                           </span>
                                         </>

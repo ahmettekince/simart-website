@@ -394,7 +394,7 @@ export default function SmartStickyBar({
         }
 
         .ss-current-price.ss-has-discount {
-          color: #0bc15c;
+          color: #3c81b5;
         }
 
         .ss-old-price {

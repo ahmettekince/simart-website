@@ -375,7 +375,7 @@ export default function ProductCardSimart({ product, isPriority = false }) {
           color: #3c81b5;
         }
         .price-new.price-discount {
-          color: #0bc15c;
+          color: #3c81b5;
         }
                 
         .main-cart-btn {

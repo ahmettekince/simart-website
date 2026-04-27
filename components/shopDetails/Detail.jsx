@@ -559,7 +559,7 @@ export default function Detail({ product }) {
                         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "16px", flexWrap: "nowrap", width: "100%" }}>
                           {(product.is_in_stock || product.is_pre_order) ? (
                             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                              <span className="price-on-sale" style={{ fontSize: "20px", fontWeight: "700", color: originalPrice ? "#0bc15c" : "var(--primary, #3c81b5)" }}>
+                              <span className="price-on-sale" style={{ fontSize: "20px", fontWeight: "700", color: "#3c81b5" }}>
                                 {Number(finalPrice).toLocaleString(t.locale, { minimumFractionDigits: 0, maximumFractionDigits: Number(finalPrice) % 1 === 0 ? 0 : 2 })} TL
                               </span>
                               {originalPrice != null && originalPrice > finalPrice && (

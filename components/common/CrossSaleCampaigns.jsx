@@ -188,7 +188,7 @@ export default function CrossSaleCampaigns() {
                   <div style={{ flex: 1, minWidth: 0, overflow: "hidden", padding: "10px 12px", display: "flex", flexDirection: "column", gap: 4, justifyContent: "center" }}>
                     <Link href={url} style={{ margin: 0, fontSize: 13, fontWeight: 500, color: "#111", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", minWidth: 0, textDecoration: "none" }} title={t.name}>{t.name}</Link>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, minWidth: 0, overflow: "hidden" }}>
-                      <span style={{ fontSize: 15, fontWeight: 700, color: hasDiscount ? "#0bc15c" : "#3c81b5" }}>{Number(final).toLocaleString("tr-TR")} TL</span>
+                      <span style={{ fontSize: 15, fontWeight: 700, color: "#3c81b5" }}>{Number(final).toLocaleString("tr-TR")} TL</span>
                       {hasDiscount && <span style={{ fontSize: 13, color: "#999", textDecoration: "line-through" }}>{Number(price).toLocaleString("tr-TR")} TL</span>}
                     </div>
                   </div>

@@ -557,7 +557,7 @@ export default function ShopCart() {
                                               displayDiscountPrice < displayRegularPrice ? (
                                               <>
                                                 <span
-                                                  style={{ color: "#0bc15c", fontWeight: "600", marginRight: "8px" }}
+                                                  style={{ color: "#3c81b5", fontWeight: "600", marginRight: "8px" }}
                                                 >
                                                   {displayDiscountPrice.toLocaleString(t.locale)} {t.currency}
                                                 </span>
