@@ -5,7 +5,7 @@ import ProductCardSimart from "@/components/shopCards/ProductCardSimart";
 import Link from "next/link";
 
 // Kampanya dahilindeki ürünlerin slug listesi
-const MOTHERS_DAY_SLUGS = [
+const MOTHERS_DAY_SLUGS = ["anneler-gunu-firsat-paketi",
     "katya-uu-akilli-robot-supurge",
     "katya-v-plus-akilli-robot-supurge",
     "katya-v-akilli-robot-supurge",
