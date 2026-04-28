@@ -21,13 +21,13 @@ const MOTHERS_DAY_SLUGS = [
 
 const translations = {
     tr: {
-        title: "Anneler Günü Hediyeleri - Şımart Teknoloji",
+        title: "Anneler Gününe Özel - Şımart Teknoloji",
         description: "Anneler Günü'ne özel akıllı hediye seçenekleri! Annelerimizi teknolojiyle gülümsetecek en iyi ürünler Şımart'ta.",
         h1: "Şımart Teknoloji - Anneler Günü Özel Kampanyası",
         pageTitle: "Anneler Gününe Özel"
     },
     en: {
-        title: "Mother's Day Gifts - Şımart Technology",
+        title: "Mother's Day Special - Şımart Technology",
         description: "Special smart gift options for Mother's Day! The best products to make our mothers smile with technology are at Şımart.",
         h1: "Şımart Technology - Mother's Day Special Campaign",
         pageTitle: "Mother's Day"
@@ -41,6 +41,7 @@ export async function generateMetadata({ params }) {
     return {
         title: t.title,
         description: t.description,
+        keywords: ["anneler günü", "anneler günü hediyeleri", "anneler günü kampanyası", "hediye", "anneler günü hediyeleri", "akıllı hediye", "teknolojinin anneler günü", "anneler günü indirimleri"]
     };
 }
 
