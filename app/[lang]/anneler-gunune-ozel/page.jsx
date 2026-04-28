@@ -1,11 +1,9 @@
 import React from "react";
-import Image from "next/image";
 import { getProducts } from "@/api/products";
 import ProductCardSimart from "@/components/shopCards/ProductCardSimart";
-import Link from "next/link";
 
-// Kampanya dahilindeki ürünlerin slug listesi
-const MOTHERS_DAY_SLUGS = ["anneler-gunu-firsat-paketi",
+const MOTHERS_DAY_SLUGS = [
+    "anneler-gunu-firsat-paketi",
     "katya-uu-akilli-robot-supurge",
     "katya-v-plus-akilli-robot-supurge",
     "katya-v-akilli-robot-supurge",

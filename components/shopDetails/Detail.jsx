@@ -1073,7 +1073,7 @@ export default function Detail({ product }) {
                                           item.bundle_discount_price !==
                                           item.normal_price ? (
                                           <>
-                                            <div className="price price-on-sale">
+                                            <div className="price price-on-sale" style={{ color: "#3c81b5" }}>
                                               {typeof item.bundle_discount_price ===
                                                 "number"
                                                 ? `${item.bundle_discount_price.toLocaleString("tr-TR")} TL`
