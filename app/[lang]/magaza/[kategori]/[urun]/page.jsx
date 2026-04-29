@@ -55,19 +55,23 @@ export async function generateMetadata({ params }) {
     product.images || product.gallery_images || (product.image ? [product.image] : [])
   );
 
-  const productUrl = `https://simart.me/magaza/${kategori}/${urun}`;
+  const urlPrefix = lang === "en" ? "/en/shop" : "/magaza";
+  const productUrl = `https://simart.me${urlPrefix}/${product.primary_category?.slug || kategori}/${product.slug || urun}`;
 
   return {
     title: seoTitle,
     description: metaDescription,
     keywords: metaKeywords,
     robots: robots,
+    alternates: {
+      canonical: productUrl,
+    },
     openGraph: {
       title: seoTitle,
       description: metaDescription,
       images: "https://simart.me/uploads/systems/og.jpg",
       url: productUrl,
-      locale: "tr_TR",
+      locale: lang === "en" ? "en_US" : "tr_TR",
     },
     other: {
       "og:type": "product",
@@ -127,7 +131,8 @@ export default async function page({ params }) {
     product.images || product.gallery_images || (product.image ? [product.image] : [])
   );
 
-  const url = `https://simart.me/magaza/${kategori}/${urun}`;
+  const urlPrefix = lang === "en" ? "/en/shop" : "/magaza";
+  const url = `https://simart.me${urlPrefix}/${product.primary_category?.slug || kategori}/${product.slug || urun}`;
 
   const ratingValueFromApi =
     product.reviews?.average_rating || product.rating_value;

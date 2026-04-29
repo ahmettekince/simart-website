@@ -10,7 +10,7 @@ export async function GET() {
       targetUrl = `${backendUrl.replace('/api', '')}/xml/products.xml`;
     }
 
-    const authHeader = `Basic ${Buffer.from('simart:Şımart!!2020').toString('base64')}`;
+    const authHeader = `Basic ${Buffer.from('simart:Simart!!2020').toString('base64')}`;
     const response = await fetch(targetUrl, {
       method: 'GET',
       headers: {
@@ -101,7 +101,7 @@ export async function GET() {
   } catch (error) {
     console.error('XML formatting error:', error);
     return new NextResponse(
-      '<?xml version="1.0" encoding="UTF-8"?><error><message>Hata oluştu, veri formatlanamadı.</message></error>',
+      `<?xml version="1.0" encoding="UTF-8"?><error><message>Hata oluştu, veri formatlanamadı.</message><details>${error.message}</details></error>`,
       {
         status: 500,
         headers: {

@@ -26,10 +26,22 @@ export async function generateMetadata({ params }) {
 
   const titleSuffix = lang === "en" ? "Şımart Technology" : "Şımart Teknoloji";
   
+  const urlPrefix = lang === "en" ? "/en/shop" : "/magaza";
+  const categoryUrl = `https://simart.me${urlPrefix}/${category.slug || kategori}`;
+
   return {
     title: `${categoryName} - ${titleSuffix}`,
     description: seoDescription,
     ...(seoKeywords && { keywords: seoKeywords }),
+    alternates: {
+      canonical: categoryUrl,
+    },
+    openGraph: {
+      title: `${categoryName} - ${titleSuffix}`,
+      description: seoDescription,
+      url: categoryUrl,
+      locale: lang === "en" ? "en_US" : "tr_TR",
+    }
   };
 }
 
