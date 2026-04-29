@@ -19,7 +19,7 @@ import { getLocalizedUrl } from "@/utils/i18n";
 const translations = {
   tr: {
     myCart: "Sepetim",
-    interestedTitle: "İlginizi çekebilecekler",
+    interestedTitle: "İlginizi çekebilir",
     loading: "Yükleniyor...",
     remove: "Kaldır",
     removing: "Kaldırılıyor...",
@@ -171,10 +171,10 @@ export default function ShopCart() {
       setRecommendations([]);
     }
   }, [items.length, fetchRecommendations]);
-  
+
   const getLocalizedErrorMessage = (msg) => {
     if (!msg || typeof msg !== "string" || !isEn) return msg;
-    
+
     const lowerMsg = msg.toLowerCase();
     if (lowerMsg.includes("belirli ürünlere uygulanabilir") || lowerMsg.includes("sepetinizde bu ürünler bulunmuyor")) {
       return t.restrictedProductCoupon;
@@ -197,7 +197,7 @@ export default function ShopCart() {
     if (lowerMsg.includes("birleştirilemez") || lowerMsg.includes("başka kampanya")) {
       return t.combineCampaignError;
     }
-    
+
     return msg;
   };
 
@@ -1191,7 +1191,7 @@ export default function ShopCart() {
                             <div style={{ marginTop: "8px", fontSize: "12px", color: "#dc3545" }}>{couponError}</div>
                           )}
                           {couponSuccess && (
-                             <div style={{ marginTop: "8px", fontSize: "12px", color: "#3c81b5" }}>
+                            <div style={{ marginTop: "8px", fontSize: "12px", color: "#3c81b5" }}>
                               {t.couponSuccess}
                             </div>
                           )}
@@ -1206,7 +1206,7 @@ export default function ShopCart() {
                               style={{
                                 marginBottom: "8px",
                                 fontSize: "13px",
-                                 color: "#3c81b5",
+                                color: "#3c81b5",
                                 lineHeight: "1.5",
                               }}
                             >

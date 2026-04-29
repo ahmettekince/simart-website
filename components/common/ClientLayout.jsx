@@ -170,7 +170,7 @@ export default function ClientLayout({ children, lang }) {
         const isHideToolbarPage =
             cleanPath === "/odeme" ||
             cleanPath === "/checkout" ||
-            cleanPath === "/3d" ||
+            cleanPath === "/robot-supurge-secim-rehberi" ||
             cleanPath.startsWith("/qr") ||
             cleanPath.startsWith("/odeme-") ||
             cleanPath.startsWith("/payment-");

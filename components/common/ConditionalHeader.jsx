@@ -4,13 +4,13 @@ import { usePathname } from "next/navigation";
 import { i18n } from "@/config/i18n";
 
 const HIDE_HEADER_PATHS = [
-    "/odeme", 
+    "/odeme",
     "/checkout",
-    "/qr", 
-    "/3d", 
-    "/en/checkout", 
-    "/en/qr", 
-    "/en/3d",
+    "/qr",
+    "/robot-supurge-secim-rehberi",
+    "/en/checkout",
+    "/en/qr",
+    "/en/robot-supurge-secim-rehberi",
     "/sepetim",
     "/cart",
     "/en/cart"

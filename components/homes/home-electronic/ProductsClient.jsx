@@ -6,7 +6,7 @@ import ProductCardSimart from "@/components/shopCards/ProductCardSimart";
 
 const translations = {
     tr: {
-        title: "İlginizi çekebilecekler"
+        title: "İlginizi Çekebilir"
     },
     en: {
         title: "You might be interested in"

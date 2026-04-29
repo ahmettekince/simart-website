@@ -146,9 +146,9 @@ function Window({ x, z, w, t, h, winH = 1.2, bottomH = 0.9, rotate = false }) {
 
 /* --- UTILS --- */
 function sweep(xMin, xMax, zMin, zMax, fromPos = null, sw = 0.50, exclusion = null, skipPerimeter = false, orientation = 'vertical') {
-    const M = 0.41; // Güvenli marj
+    const M = 0.45; // Güvenli marj
 
-    // Yasaklı alan kontrolü: Robot yarıçapı kadar marj ekliyoruz
+    // Yasaklı alan kontrolü: Robot yarıçapıs kadar marj ekliyoruz
     const isForbidden = (x, z) => {
         if (!exclusion) return false;
         return x >= exclusion[0][0] - 0.2 && x <= exclusion[0][1] + 0.2 &&
@@ -495,17 +495,17 @@ function House({ type, trail, posRef, rotRef, recommendedRobot, isCleaning }) {
                     <Floor w={10} z={5} x={0} zPos={-2.5} color="#ee5253" opacity={0.35} />
                     <Floor w={5} z={5} x={2.5} zPos={2.5} color="#ee5253" opacity={0.35} />
                     <Floor w={5} z={5} x={-2.5} zPos={2.5} color="#10ac84" opacity={0.35} />
-                    <Text position={[0, 0.1, -2.5]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.4} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+                    <Text position={[0, 0.1, -2.5]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.45} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
                         SALON-MUTFAK
                     </Text>
-                    <Text position={[-2.5, 0.1, 2.5]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.5} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+                    <Text position={[-2.5, 0.1, 2.5]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.55} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
                         ODA
                     </Text>
                 </>
             ) : (
                 <>
                     <Floor w={10} z={10} x={0} zPos={0} color="#ee5253" opacity={0.35} />
-                    <Text position={[0, 0.1, 0]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.6} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+                    <Text position={[0, 0.1, 0]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.65} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
                         SALON
                     </Text>
                 </>
@@ -522,16 +522,16 @@ function House({ type, trail, posRef, rotRef, recommendedRobot, isCleaning }) {
             <mesh position={[-4.5, 0.015, 2.5]}><boxGeometry args={[4.8, 0.01, 4.8]} /><meshStandardMaterial color="#10ac84" opacity={0.35} transparent /></mesh>
             <mesh position={[-4.5, 0.015, -2.5]}><boxGeometry args={[4.8, 0.01, 4.8]} /><meshStandardMaterial color="#00d2d3" opacity={0.35} transparent /></mesh>
 
-            <Text position={[4.5, 0.1, 0]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.5} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+            <Text position={[4.5, 0.1, 0]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.55} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
                 SALON
             </Text>
-            <Text position={[0, 0.1, 0]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.5} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+            <Text position={[0, 0.1, 0]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.55} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
                 HOL
             </Text>
-            <Text position={[-4.5, 0.1, 2.5]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.5} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+            <Text position={[-4.5, 0.1, 2.5]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.55} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
                 ODA 1
             </Text>
-            <Text position={[-4.5, 0.1, -2.5]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.5} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
+            <Text position={[-4.5, 0.1, -2.5]} rotation={[-Math.PI / 2, 0, 0]} fontSize={0.55} color="white" font="/fonts/gilroy/Gilroy-Bold.ttf" anchorX="center" anchorY="middle" letterSpacing={0.1}>
                 ODA 2
             </Text>
         </>}
@@ -746,10 +746,15 @@ export default function Plan3D() {
 
             let mSq = 0;
             if (metrekare === "180+") mSq = 181;
+            else if (metrekare === "65+") mSq = 66;
+            else if (metrekare === "125+") mSq = 126;
+            else if (metrekare === "150+") mSq = 151;
+            else if (metrekare === "151+") mSq = 152;
             else if (metrekare.includes("-")) mSq = parseInt(metrekare.split("-")[1]);
             else mSq = parseInt(metrekare);
 
             if (mopPref === "auto" || station === "hepsi") {
+                if (carpet === "Çok") return ROBOTS.find(r => r.id === "katya-uu-akilli-robot-supurge");
                 return ROBOTS.find(r => r.id === "katya-u-akilli-robot-supurge");
             }
 
@@ -760,6 +765,23 @@ export default function Plan3D() {
             }
 
             if (station === "hayir") {
+                // 3+2 ve üzeri evlerde kesinlikle en az V öner
+                // 3+1'de ise sadece metrekare büyükse (90+) V öner, küçükse P halledebilir
+                const isVeryLarge = ["3+2", "4 ve üzeri"].includes(type);
+                const isLargeNormal = type === "3+1" && mSq > 90;
+
+                if (isVeryLarge || isLargeNormal) {
+                    return ROBOTS.find(r => r.id === "katya-v-akilli-robot-supurge");
+                }
+
+                // 1+0 özel kurguları
+                if (type === "1+0") {
+                    // 65+ m2 ise doğrudan P
+                    if (mSq > 65) return ROBOTS.find(r => r.id === "katya-p-akilli-robot-supurge");
+                    // Yoğun halı + Evcil hayvan yok ise P
+                    if (carpet === "Çok" && !pet) return ROBOTS.find(r => r.id === "katya-p-akilli-robot-supurge");
+                }
+
                 if (carpet === "Çok") return ROBOTS.find(r => r.id === "katya-v-akilli-robot-supurge");
                 if (pet && (carpet === "Az" || carpet === "Orta")) return ROBOTS.find(r => r.id === "katya-p-akilli-robot-supurge");
                 return ROBOTS.find(r => r.id === "katya-z-akilli-robot-supurge");
@@ -778,13 +800,14 @@ export default function Plan3D() {
         if (ideal.inStock) return ideal;
 
         // Stokta yoksa: En yakın alternatifi bul.
-        // Hassas Tercih Sırası: V -> P -> V+ -> Z -> U
+        // Hassas Tercih Sırası: V -> P -> V+ -> Z -> U -> Ü
         const tierList = [
             "katya-v-akilli-robot-supurge",
             "katya-p-akilli-robot-supurge",
             "katya-v-plus-akilli-robot-supurge",
             "katya-z-akilli-robot-supurge",
-            "katya-u-akilli-robot-supurge"
+            "katya-u-akilli-robot-supurge",
+            "katya-uu-akilli-robot-supurge"
         ];
 
         const idealIdx = tierList.indexOf(ideal.id);
@@ -1109,7 +1132,7 @@ export default function Plan3D() {
                                                 background: "none",
                                                 border: "none",
                                                 color: "#747d8c",
-                                                fontSize: "11px",
+                                                fontSize: "12px",
                                                 fontWeight: "800",
                                                 cursor: "pointer",
                                                 display: "inline-flex",
@@ -1120,7 +1143,7 @@ export default function Plan3D() {
                                             onMouseOver={e => e.currentTarget.style.color = "#3c81b5"}
                                             onMouseOut={e => e.currentTarget.style.color = "#747d8c"}
                                         >
-                                            <span style={{ fontSize: "14px" }}>↻</span> Yeniden Başla
+                                            <span style={{ fontSize: "15px" }}>↻</span> Yeniden Başla
                                         </button>
                                     </div>
                                 </div>
@@ -1133,7 +1156,7 @@ export default function Plan3D() {
                         {/* SORU 1: EV TİPİ */}
                         {currentStep === 1 && (
                             <div className="step-enter">
-                                <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: "15px", fontWeight: "700" }}>Eviniz Kaç Odalı?</p>
+                                <p style={{ fontSize: isMobile ? "13px" : "15px", color: "#636e72", marginBottom: "15px", fontWeight: "700" }}>Eviniz Kaç Odalı?</p>
                                 <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
                                     {["1+0", "1+1", "2+1", "3+1", "3+2", "4 ve üzeri"].map(t => (
                                         <button
@@ -1161,26 +1184,29 @@ export default function Plan3D() {
                         {/* SORU 2: METREKARE */}
                         {currentStep === 2 && (
                             <div className="step-enter">
-                                <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: "15px", fontWeight: "700" }}>Eviniz Kaç Metrekare?</p>
-                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
-                                    {["0-60", "61-90", "91-120", "121-150", "151-180", "180+"].map(m => (
-                                        <button
-                                            key={m}
-                                            onClick={() => { setMetrekare(m); setCurrentStep(3); }}
-                                            style={{
-                                                padding: "16px",
-                                                borderRadius: "10px",
-                                                border: metrekare === m ? "2.5px solid #3c81b5" : "1px solid #e0e0e0",
-                                                background: metrekare === m ? "#3c81b5" : "#fff",
-                                                color: metrekare === m ? "#fff" : "#2d3436",
-                                                fontWeight: "800",
-                                                cursor: "pointer",
-                                                transition: "all 0.2s ease"
-                                            }}
-                                        >
-                                            {m} m²
-                                        </button>
-                                    ))}
+                                <p style={{ fontSize: isMobile ? "13px" : "15px", color: "#636e72", marginBottom: "15px", fontWeight: "700" }}>Eviniz Kaç Metrekare?</p>
+                                <div style={{ display: "grid", gridTemplateColumns: ["1+0", "1+1", "2+1"].includes(type) ? "1fr" : "1fr 1fr", gap: "10px" }}>
+                                    {(type === "2+1" ? ["0-85", "85-125", "125+"] :
+                                        ["1+0", "1+1"].includes(type) ? ["0-65", "65+"] :
+                                            ["3+2", "4 ve üzeri"].includes(type) ? ["0-80", "80-150", "151+"] :
+                                                ["0-90", "90-150", "150+"]).map(m => (
+                                                <button
+                                                    key={m}
+                                                    onClick={() => { setMetrekare(m); setCurrentStep(3); }}
+                                                    style={{
+                                                        padding: "16px",
+                                                        borderRadius: "10px",
+                                                        border: metrekare === m ? "2.5px solid #3c81b5" : "1px solid #e0e0e0",
+                                                        background: metrekare === m ? "#3c81b5" : "#fff",
+                                                        color: metrekare === m ? "#fff" : "#2d3436",
+                                                        fontWeight: "800",
+                                                        cursor: "pointer",
+                                                        transition: "all 0.2s ease"
+                                                    }}
+                                                >
+                                                    {m} m²
+                                                </button>
+                                            ))}
                                 </div>
                             </div>
                         )}
@@ -1188,7 +1214,7 @@ export default function Plan3D() {
                         {/* SORU 3: HALI YOĞUNLUĞU */}
                         {currentStep === 3 && (
                             <div className="step-enter">
-                                <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: "15px", fontWeight: "700" }}>Evinizdeki Halı Yoğunluk Derecesi Nedir?</p>
+                                <p style={{ fontSize: isMobile ? "13px" : "15px", color: "#636e72", marginBottom: "15px", fontWeight: "700" }}>Evinizdeki Halı Yoğunluk Derecesi Nedir?</p>
                                 <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                                     {[
                                         { id: "Az", label: "Az", desc: "Çoğunlukla parke veya fayans." },
@@ -1210,8 +1236,8 @@ export default function Plan3D() {
                                                 transition: "all 0.2s ease"
                                             }}
                                         >
-                                            <div style={{ fontWeight: "800", fontSize: "15px" }}>{c.label}</div>
-                                            <div style={{ fontSize: "12px", opacity: 0.8, marginTop: "4px" }}>{c.desc}</div>
+                                            <div style={{ fontWeight: "800", fontSize: "16px" }}>{c.label}</div>
+                                            <div style={{ fontSize: "13px", opacity: 0.8, marginTop: "4px" }}>{c.desc}</div>
                                         </button>
                                     ))}
                                 </div>
@@ -1221,7 +1247,7 @@ export default function Plan3D() {
                         {/* SORU 4: EVCİL HAYVAN */}
                         {currentStep === 4 && (
                             <div className="step-enter">
-                                <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: "15px", fontWeight: "700" }}>Evcil Hayvanınız Var mı?</p>
+                                <p style={{ fontSize: isMobile ? "13px" : "15px", color: "#636e72", marginBottom: "15px", fontWeight: "700" }}>Evcil Hayvanınız Var mı?</p>
                                 <div style={{ display: "flex", gap: "12px" }}>
                                     {[
                                         { val: true, label: "Evet", icon: "🐾" },
@@ -1260,8 +1286,8 @@ export default function Plan3D() {
                         {/* SORU 5: İSTASYON (TOZ TOPLAMA ÜNİTESİ) */}
                         {currentStep === 5 && (
                             <div className="step-enter">
-                                <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: "5px", fontWeight: "700" }}>Bir Robot Süpürgeden Beklentiniz Nedir?</p>
-                                <p style={{ fontSize: "12px", color: "#95a5a6", marginBottom: "20px" }}>Tüm işi robot süpürge mi yapmalı yoksa iş paylaşımı mı olmalı?</p>
+                                <p style={{ fontSize: isMobile ? "13px" : "15px", color: "#636e72", marginBottom: "5px", fontWeight: "700" }}>Bir Robot Süpürgeden Beklentiniz Nedir?</p>
+                                <p style={{ fontSize: "13px", color: "#95a5a6", marginBottom: "20px" }}>Tüm işi robot süpürge mi yapmalı yoksa iş paylaşımı mı olmalı?</p>
                                 <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                                     {[
                                         { id: "hepsi", label: "Her Şeyi Robot Süpürge Yapsın", desc: "Paspaslama dahil 60 güne kadar el değmeden temizlik yapın." },
@@ -1293,8 +1319,8 @@ export default function Plan3D() {
                                                 gap: "4px"
                                             }}
                                         >
-                                            <div style={{ fontWeight: "800", fontSize: "15px" }}>{s.label}</div>
-                                            <div style={{ fontSize: "12px", opacity: 0.8, marginTop: "4px" }}>{s.desc}</div>
+                                            <div style={{ fontWeight: "800", fontSize: "16px" }}>{s.label}</div>
+                                            <div style={{ fontSize: "13px", opacity: 0.8, marginTop: "4px" }}>{s.desc}</div>
                                         </button>
                                     ))}
                                 </div>
@@ -1304,8 +1330,8 @@ export default function Plan3D() {
                         {/* SORU 6: PASPAS KONFORU */}
                         {currentStep === 6 && (
                             <div className="step-enter">
-                                <p style={{ fontSize: isMobile ? "12px" : "14px", color: "#636e72", marginBottom: "5px", fontWeight: "700" }}>Paspaslama Sırasında Halı Yüzeylere Temas Edilebilir</p>
-                                <p style={{ fontSize: "11px", color: "#95a5a6", marginBottom: "20px" }}>Bazı modeller halı yüzeyleri tanıyarak paspaslarını otomatik yukarı kaldırır ve halıları ıslatmaz.</p>
+                                <p style={{ fontSize: isMobile ? "13px" : "15px", color: "#636e72", marginBottom: "5px", fontWeight: "700" }}>Paspaslama Sırasında Halı Yüzeylere Temas Edilebilir</p>
+                                <p style={{ fontSize: "12px", color: "#95a5a6", marginBottom: "20px" }}>Bazı modeller halı yüzeyleri tanıyarak paspaslarını otomatik yukarı kaldırır ve halıları ıslatmaz.</p>
                                 <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                                     {[
                                         { id: "manual", label: "Sorun Değil Yönetebilirim", desc: "Halı yüzeyleri uygulama üzerinden yasaklı olan olarak tanımlayabilir ya da paspaslama bittikten hemen sonra paspas aparatını çıkarabilirsiniz." },
@@ -1330,8 +1356,8 @@ export default function Plan3D() {
                                                 transition: "all 0.2s ease"
                                             }}
                                         >
-                                            <div style={{ fontWeight: "800", fontSize: "15px" }}>{m.label}</div>
-                                            <div style={{ fontSize: "12px", opacity: 0.8, marginTop: "4px" }}>{m.desc}</div>
+                                            <div style={{ fontWeight: "800", fontSize: "16px" }}>{m.label}</div>
+                                            <div style={{ fontSize: "13px", opacity: 0.8, marginTop: "4px" }}>{m.desc}</div>
                                         </button>
                                     ))}
                                 </div>
@@ -1364,7 +1390,7 @@ export default function Plan3D() {
                 {/* DURUM GÖSTERGESİ */}
                 <div style={{ position: "absolute", top: isMobile ? "15px" : "30px", left: isMobile ? "15px" : "30px", padding: "8px 14px", background: "#fff", borderRadius: "10px", boxShadow: "0 4px 15px rgba(0,0,0,0.05)", display: "flex", alignItems: "center", gap: "8px", border: "1px solid #eee" }}>
                     <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: isAuto ? "#2ed573" : "#ff4757" }} />
-                    <span style={{ fontSize: "11px", fontWeight: "800", color: "#2f3542" }}>{status.toUpperCase()}</span>
+                    <span style={{ fontSize: "12px", fontWeight: "800", color: "#2f3542" }}>{status.toUpperCase()}</span>
                 </div>
 
 

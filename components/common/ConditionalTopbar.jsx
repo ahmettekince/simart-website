@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import Topbar from "@/components/headers/Topbar";
 import { i18n } from "@/config/i18n";
 
-const HIDE_TOPBAR_PATHS = ["/odeme", "/qr-", "/qr", "/kqr", "/3d", "/checkout", "/en/checkout", "/en/qr-", "/en/qr", "/en/3d"];
+const HIDE_TOPBAR_PATHS = ["/odeme", "/qr-", "/qr", "/kqr", "/robot-supurge-secim-rehberi", "/checkout", "/en/checkout", "/en/qr-", "/en/qr", "/en/3d"];
 const MOBILE_BREAKPOINT_PX = 768;
 
 function isProductDetailPage(pathname) {

@@ -30,7 +30,7 @@ import { trackViewItem } from "@/utils/analytics";
 const TOOLTIP_MAX_WIDTH = 360;
 const TOOLTIP_MARGIN = 16;
 
-import { ROBOTS } from "@/app/[lang]/3d/robots";
+import { ROBOTS } from "@/app/[lang]/robot-supurge-secim-rehberi/robots";
 
 function ProductProtocolHelp({ description, protocolName }) {
   const [open, setOpen] = useState(false);
