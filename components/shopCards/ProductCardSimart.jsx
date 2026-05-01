@@ -213,6 +213,11 @@ export default function ProductCardSimart({ product, isPriority = false }) {
             <button
               onClick={async (e) => {
                 e.stopPropagation();
+                // Ödeme altyapısı sorunu nedeniyle geçici olarak ürün sayfasına yönlendiriliyor
+                handleNavigate(e);
+                return;
+
+                /* 
                 if (isMuseumItem) {
                   handleNavigate(e);
                   return;
@@ -268,6 +273,7 @@ export default function ProductCardSimart({ product, isPriority = false }) {
                 } finally {
                   setIsAdding(false);
                 }
+                */
               }}
               disabled={buttonDisabled || isAdding || showSuccess}
               className={`main-cart-btn ${showSuccess ? "success-animation" : ""} ${buttonText === t.outOfStock ? "out-of-stock" : ""}`}

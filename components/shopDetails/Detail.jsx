@@ -131,6 +131,7 @@ function ProductProtocolHelp({ description, protocolName }) {
 
 import { useLangStore } from "@/stores/langStore";
 import MediaMarkt from "../common/MediaMarkt";
+import MarketplaceNotification from "../common/MarketplaceNotification";
 
 export default function Detail({ product }) {
   const lang = useLangStore((s) => s.lang);
@@ -603,9 +604,11 @@ export default function Detail({ product }) {
                       </div>
                     )}
                     <MediaMarkt productSlug={product.slugs?.tr || product.slug} />
+                    <MarketplaceNotification />
 
-                    <PreOrderNotice productSlug={product.slugs?.tr || product.slug} />
+                    {/* <PreOrderNotice productSlug={product.slugs?.tr || product.slug} /> */}
 
+                    {/* 
                     {showPromoBox && (
                       <PromoCartBox
                         product={product}
@@ -618,13 +621,15 @@ export default function Detail({ product }) {
                         onOpen3dModel={() => setModel3dModalOpen(true)}
                       />
                     )}
+                    */}
 
-                    {/* Yeni Sade Bilgi Kaydırağı */}
+                    {/* Yeni Sade Bilgi Kaydırağı 
                     {(product.is_in_stock || product.is_pre_order) && announcementMessages && announcementMessages.length > 0 && (
                       <div style={{ marginBottom: "12px" }}>
                         <InfoTicker messages={announcementMessages} />
                       </div>
                     )}
+                    */}
 
                     {/* Ürün Protokolü - Sadece mobilde duyuru altında, masaüstünde fiyatın yanında */}
                     {product.product_protocol && (
@@ -758,6 +763,7 @@ export default function Detail({ product }) {
                       </>
                     )}
 
+                    {/* 
                     {!showPromoBox && product?.name !== "katya Robot Süpürge" && product?.name !== "Katya Akıllı Robot Süpürge" && product?.name !== "katya Robot Vacuum" && (
                       <div className="tf-product-info-buy-button">
                         <form onSubmit={(e) => e.preventDefault()} className="">
@@ -789,6 +795,7 @@ export default function Detail({ product }) {
 
                       </div>
                     )}
+                    */}
 
                     <VolumeDiscount product={product} setQuantity={setQuantity} />
 

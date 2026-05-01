@@ -187,7 +187,7 @@ export default function SmartStickyBar({
           </div>
         </div>
 
-        {/* Actions Section */}
+        {/* Actions Section 
         <div className="ss-actions">
           {buttonState.buttonText !== t.outOfStock && (
             <div className="ss-quantity-wrapper">
@@ -211,6 +211,7 @@ export default function SmartStickyBar({
             {showSuccess && <div className="btn-success-overlay">{t.added}</div>}
           </button>
         </div>
+        */}
       </div>
 
       <style jsx>{`
