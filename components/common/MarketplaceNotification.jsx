@@ -3,12 +3,12 @@ import { useLangStore } from "@/stores/langStore";
 const translations = {
     tr: {
         title: "Satın Alma Bildirimi",
-        description: "Değerli müşterilerimiz, ödeme altyapımızdaki geçici bir çalışma nedeniyle şu an sitemiz üzerinden sipariş alınamamaktadır. Ürünlerimizi aşağıdaki platformlar üzerinden güvenle satın alabilirsiniz:",
+        description: "Değerli müşterilerimiz,\nödeme altyapımızda gerçekleştirilen bakım çalışması nedeniyle web sitemiz üzerinden şu an sipariş verilememektedir.\n\nÇalışma en kısa sürede tamamlanacaktır.\nBu süreçte ürünlerimizi aşağıdaki platformlar üzerinden güvenle satın alabilirsiniz.",
         platforms: "Hepsiburada, Trendyol, Amazon, Çiçeksepeti, n11, Pazarama, PttAVM ve Allesgo"
     },
     en: {
         title: "Purchase Notification",
-        description: "Dear customers, due to temporary maintenance on our payment infrastructure, we are currently unable to accept orders through our website. You can safely purchase our products through the following platforms:",
+        description: "Dear customers,\ndue to maintenance work on our payment infrastructure, we are currently unable to accept orders through our website.\n\nThe work will be completed as soon as possible.\nIn the meantime, you can safely purchase our products through the following platforms.",
         platforms: "Hepsiburada, Trendyol, Amazon, Çiçeksepeti, n11, Pazarama, PttAVM, and Allesgo"
     }
 };
@@ -21,7 +21,7 @@ export default function MarketplaceNotification() {
         <div className="marketplace-notification p-3 mt-3">
             <div className="notification-content">
                 <div className="fw-bold mb-2" style={{ fontSize: "16px", color: "#d32f2f" }}>{t.title}</div>
-                <div style={{ fontSize: "14px", color: "#555", lineHeight: "1.5" }}>
+                <div style={{ fontSize: "14px", color: "#555", lineHeight: "1.5", whiteSpace: "pre-wrap" }}>
                     {t.description}
                 </div>
                 <div className="mt-3 marketplace-links" style={{ fontSize: "14px", display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center" }}>
