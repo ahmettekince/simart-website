@@ -229,7 +229,7 @@ export default function Footer({ bgColor = "", footerMenus = null, lang = "tr" }
             </div>
           </div>
         </div>
-        <div className="footer-bottom">
+        <div className="footer-bottom" style={{ paddingBottom: "50px" }}>
           <div className="container">
             <div className="row">
               <div className="col-12">
@@ -260,21 +260,49 @@ export default function Footer({ bgColor = "", footerMenus = null, lang = "tr" }
                       })}
                     </ul>
                   </div>
-                  <div className="etbis-logo">
-                    <a
-                      href="https://etbis.ticaret.gov.tr/tr/Anasayfa/SiteAraSonuc?siteId=c2f2afe3-b443-4375-8fef-27b0f895293e"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
+                  <div className="footer-bottom-right d-flex align-items-center gap-20 flex-wrap">
+                    <div className="payment-logos d-flex align-items-center gap-15">
                       <Image
-                        src="/images/etbis/etbis.png"
-                        alt="ETBİS"
-                        width={70}
-                        height={81}
-                        style={{ height: 'auto' }}
+                        src="/iyzico.svg"
+                        alt="iyzico"
+                        width={64}
+                        height={24}
+                        style={{ height: "auto" }}
                         loading="lazy"
                       />
-                    </a>
+                      <Image
+                        src="/visa.svg"
+                        alt="visa"
+                        width={40}
+                        height={24}
+                        style={{ height: "auto" }}
+                        loading="lazy"
+                      />
+                      <Image
+                        src="/mastercard.svg"
+                        alt="mastercard"
+                        width={32}
+                        height={24}
+                        style={{ height: "auto" }}
+                        loading="lazy"
+                      />
+                    </div>
+                    <div className="etbis-logo">
+                      <a
+                        href="https://etbis.ticaret.gov.tr/tr/Anasayfa/SiteAraSonuc?siteId=c2f2afe3-b443-4375-8fef-27b0f895293e"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Image
+                          src="/images/etbis/etbis.png"
+                          alt="ETBİS"
+                          width={70}
+                          height={81}
+                          style={{ height: 'auto' }}
+                          loading="lazy"
+                        />
+                      </a>
+                    </div>
                   </div>
                 </div>
               </div>
