@@ -289,7 +289,7 @@ export default function Footer({ bgColor = "", footerMenus = null, lang = "tr" }
                     </div>
                     <div className="etbis-logo">
                       <a
-                        href="https://etbis.ticaret.gov.tr/tr/Anasayfa/SiteAraSonuc?siteId=c2f2afe3-b443-4375-8fef-27b0f895293e"
+                        href="https://etbis.ticaret.gov.tr/tr/SiteSorgulamaSonuc?siteId=c2f2afe3-b443-4375-8fef-27b0f895293e"
                         target="_blank"
                         rel="noopener noreferrer"
                       >
