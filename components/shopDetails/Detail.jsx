@@ -607,9 +607,6 @@ export default function Detail({ product }) {
                     <MediaMarkt productSlug={product.slugs?.tr || product.slug} />
                     <PaymentStatusNotification />
 
-
-                    <PreOrderNotice productSlug={product.slugs?.tr || product.slug} />
-
                     {showPromoBox && (
                       <PromoCartBox
                         product={product}
