@@ -178,6 +178,8 @@ export default async function page({ params }) {
     });
   }
 
+  const metaKeywords = product.seo?.keywords || `${productName}, Akıllı ev cihazı, IoT teknolojisi, Akıllı telefon kontrolü, Enerji tasarrufu IoT, Güvenlik IoT ürünü, Akıllı yaşam teknolojisi, Evinizi akıllandırın, IoT ile akıllı ev, Akıllı ev otomasyonu`;
+
   return (
     <>
       {/* Product JSON-LD (ürün sayfası) */}
@@ -201,10 +203,10 @@ export default async function page({ params }) {
           ? `${productName} - Şımart Teknoloji Akıllı Ev Sistemleri` 
           : `${productName} - Şımart Technology Smart Home Systems`}
       </h1>
-      <Detail product={product} />
+      <Detail product={product} pageKeywords={metaKeywords} />
 
       {/* Detaylı Açıklama Alanı */}
-      <ProductDescription product={product} />
+      <ProductDescription product={product} pageKeywords={metaKeywords} />
 
       {/* Birlikte Al - Mobilde Açıklama ve Sekmeler arasında */}
       {allVariations.length > 0 && (

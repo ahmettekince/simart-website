@@ -26,17 +26,22 @@ export default function ProductCardSimart({ product, isPriority = false }) {
   const [errorToastMessage, setErrorToastMessage] = useState("");
 
   // -- Veriler --
-  const title = product.name || product.title;
+  const pName = product.name || product.title;
+  const keywords = product.seo?.keywords;
+  const dynamicAlt = pName 
+    ? (keywords ? `${pName} - ${keywords}` : `${pName} - Şımart Teknoloji`)
+    : "Şımart Teknoloji";
+  const title = pName;
   const isMuseumItem = title === "katya Robot Süpürge" || title === "katya Robot Vacuum";
 
   // Kategori slug'ını al (aktif dile göre)
   const getCategorySlug = () => {
     const activeLang = lang || "tr";
-    
+
     // 1. Ürünün birincil kategorisinin o dildeki slug'ı var mı?
     const primaryCat = product.primary_category || product.categories?.[0];
     if (primaryCat?.slugs?.[activeLang]) return primaryCat.slugs[activeLang];
-    
+
     // 2. product.category_slug (genelde TR gelir)
     if (product.category_slug) return product.category_slug;
 
@@ -49,7 +54,7 @@ export default function ProductCardSimart({ product, isPriority = false }) {
   const activeLang = lang || "tr";
   const categorySlug = getCategorySlug();
   const productSlug = product.slugs?.[activeLang] || product.slug || product.id;
-  
+
   // Prefix dille uyumlu olsun (Explicit SEO Control)
   const prefix = activeLang === "en" ? "/en/shop" : "/magaza";
   const detailUrl = `${prefix}/${categorySlug}/${productSlug}`;
@@ -174,7 +179,7 @@ export default function ProductCardSimart({ product, isPriority = false }) {
         <ProductImageSwiper
           images={product.images || []}
           productSlug={productSlug}
-          productName={title}
+          productName={dynamicAlt}
           width={500}
           height={500}
           sizes="(max-width: 480px) 50vw, (max-width: 768px) 33vw, (max-width: 1200px) 25vw, 320px"
@@ -213,7 +218,7 @@ export default function ProductCardSimart({ product, isPriority = false }) {
             <button
               onClick={async (e) => {
                 e.stopPropagation();
-                
+
                 if (isMuseumItem) {
                   handleNavigate(e);
                   return;

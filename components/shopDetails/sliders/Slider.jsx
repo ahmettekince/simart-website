@@ -41,7 +41,12 @@ export default function Slider({
   product = {},
   onOpenModel3d = () => { },
   onOpenVideo = () => { },
+  pageKeywords = "",
 }) {
+  const pName = product.name || product.title || "";
+  const dynamicAlt = pName 
+    ? (pageKeywords ? `${pName} - ${pageKeywords}` : `${pName} - Şımart Teknoloji`)
+    : "Şımart Teknoloji";
   // Tek kaynak: galleryImages. İlk görsel zaten cover olarak kabul edilir.
   const normalized = Array.isArray(galleryImages)
     ? galleryImages
@@ -51,7 +56,7 @@ export default function Slider({
         return {
           id: index + 1,
           src,
-          alt: typeof img === "object" ? img?.alt_text || img?.alt || "" : "",
+          alt: dynamicAlt,
           width: typeof img === "object" ? img?.width || 770 : 770,
           height: typeof img === "object" ? img?.height || 1075 : 1075,
           dataValue: currentColor?.toLowerCase?.() || "beige",
@@ -67,7 +72,7 @@ export default function Slider({
         {
           id: 1,
           src: "/images/placeholder.jpg",
-          alt: "",
+          alt: dynamicAlt,
           width: 770,
           height: 1075,
           dataValue: currentColor?.toLowerCase?.() || "beige",
@@ -246,7 +251,7 @@ export default function Slider({
                         className="tf-image-zoom lazyload"
                         data-zoom={slide.src}
                         data-src={slide.src}
-                        alt="image"
+                        alt={slide.alt}
                         src={slide.src}
                         width={slide.width}
                         height={slide.height}

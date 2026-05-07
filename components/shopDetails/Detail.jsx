@@ -134,7 +134,7 @@ import MediaMarkt from "../common/MediaMarkt";
 import PaymentStatusNotification from "../common/PaymentStatusNotification";
 
 
-export default function Detail({ product }) {
+export default function Detail({ product, pageKeywords }) {
   const lang = useLangStore((s) => s.lang);
   const [currentColor, setCurrentColor] = useState(colors[0]);
 
@@ -476,6 +476,7 @@ export default function Detail({ product }) {
                       currentColor={currentColor.value}
                       galleryImages={product.images || product.gallery_images || []}
                       product={product}
+                      pageKeywords={pageKeywords}
                       onOpenModel3d={() => setModel3dModalOpen(true)}
                       onOpenVideo={() => setYoutubeModalOpen(true)}
                     />

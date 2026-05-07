@@ -238,7 +238,7 @@ export default function ProductImageSwiper({
                                     <Image
                                         className="img-product"
                                         src={imageUrl}
-                                        alt={`${productName} - ${index + 1}`}
+                                        alt={productName}
                                         width={width}
                                         height={height}
                                         sizes={sizes}
