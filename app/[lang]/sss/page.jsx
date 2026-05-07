@@ -54,6 +54,25 @@ export default async function Page({ params: { lang } }) {
 
     return (
         <>
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: JSON.stringify({
+                        "@context": "https://schema.org",
+                        "@type": "FAQPage",
+                        "mainEntity": finalFaqs.flatMap(item =>
+                            item.faqs.map(faq => ({
+                                "@type": "Question",
+                                "name": faq.title,
+                                "acceptedAnswer": {
+                                    "@type": "Answer",
+                                    "text": faq.content
+                                }
+                            }))
+                        )
+                    })
+                }}
+            />
             <h1 style={{ position: 'absolute', width: '1px', height: '1px', padding: '0', margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', border: '0' }}>
                 {lang === "en" ? "Şımart Technology Frequently Asked Questions" : "Şımart Teknoloji Sıkça Sorulan Sorular"}
             </h1>
