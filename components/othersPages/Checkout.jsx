@@ -250,6 +250,7 @@ export default function Checkout() {
   const [orderErrorMessage, setOrderErrorMessage] = useState(""); // Genel hata mesajı
   const [deliveryAddressErrors, setDeliveryAddressErrors] = useState({}); // Teslimat adresi API hataları (alan bazlı)
   const [billingAddressErrors, setBillingAddressErrors] = useState({}); // Fatura adresi API hataları (alan bazlı)
+  const [selectedInstallmentInfo, setSelectedInstallmentInfo] = useState(null); // Seçili taksit bilgisi (count, total)
 
   // Hataları 5 saniye sonra temizle
   useEffect(() => {
@@ -2010,7 +2011,11 @@ export default function Checkout() {
                         return (
                           <>
                             <h5 className="fw-5 mb_20 mt_40">{paymentStepNum} - {lang === "tr" ? "Ödeme Bilgileri" : "Payment Information"}</h5>
-                            <PaymentOptions ref={paymentOptionsRef} cartTotal={cartTotals.total} />
+                            <PaymentOptions
+                              ref={paymentOptionsRef}
+                              cartTotal={cartTotals.total}
+                              onInstallmentChange={(info) => setSelectedInstallmentInfo(info)}
+                            />
 
                           </>
                         );
@@ -2043,6 +2048,7 @@ export default function Checkout() {
                 if (!checked) setPreferredDeliveryDate("");
               }}
               onPreferredDeliveryDateChange={setPreferredDeliveryDate}
+              selectedInstallmentInfo={selectedInstallmentInfo}
               lang={lang}
             />
           </div>

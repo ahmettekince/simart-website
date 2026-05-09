@@ -41,7 +41,8 @@ const translations = {
     specialDiscountForCart: "Sepet Tutarına Özel İndirim",
     placeOrder: "Sipariş Ver",
     submitting: "Gönderiliyor...",
-    laterDeliveryNotice: "Resmi tatillere ve pazar günlerine denk gelen siparişlerde süre değişiklik gösterebilir."
+    laterDeliveryNotice: "Resmi tatillere ve pazar günlerine denk gelen siparişlerde süre değişiklik gösterebilir.",
+    installments: "Taksit"
   },
   en: {
     orderInfo: "Order Information",
@@ -74,7 +75,8 @@ const translations = {
     specialDiscountForCart: "Special Discount for Cart Total",
     placeOrder: "Place Order",
     submitting: "Submitting...",
-    laterDeliveryNotice: "Duration may vary for orders coinciding with public holidays and Sundays."
+    laterDeliveryNotice: "Duration may vary for orders coinciding with public holidays and Sundays.",
+    installments: "Installments"
   }
 };
 
@@ -97,6 +99,7 @@ export default function OrderSummary({
   preferredDeliveryDate = "",
   onPreferLaterDeliveryChange,
   onPreferredDeliveryDateChange,
+  selectedInstallmentInfo,
   buttonText,
   showNotes = true,
   showAgreements = true,
@@ -814,8 +817,16 @@ export default function OrderSummary({
           </div>
 
           <div className="d-flex justify-content-between" style={{ borderTop: "1px solid #e5e5e5", paddingTop: "10px", marginTop: "10px" }}>
-            <h6 className="fw-5" style={{ fontSize: "18px" }}>{t.total}</h6>
-            <h6 className="total fw-5" style={{ fontSize: "18px" }}>{cartTotals.total.toLocaleString(localeStr)} TL</h6>
+            <h6 className="fw-5" style={{ fontSize: "18px" }}>
+              {selectedInstallmentInfo && selectedInstallmentInfo.count > 1 
+                ? `${t.total} (${selectedInstallmentInfo.count} ${t.installments})` 
+                : t.total}
+            </h6>
+            <h6 className="total fw-5" style={{ fontSize: "18px" }}>
+              {(selectedInstallmentInfo && selectedInstallmentInfo.count > 1 
+                ? selectedInstallmentInfo.total 
+                : cartTotals.total).toLocaleString(localeStr)} TL
+            </h6>
           </div>
 
           {/* Sepet İpuçları (Cart Tips) */}

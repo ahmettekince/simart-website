@@ -3,6 +3,7 @@ import { useState, useEffect, useRef, useImperativeHandle, forwardRef } from "re
 import { log } from "@/utils/logger";
 import apiClient from "@/utils/apiClient";
 import { useLangStore } from "@/stores/langStore";
+import CircularLoading from "@/components/common/CircularLoading";
 
 const translations = {
   tr: {
@@ -48,7 +49,7 @@ function formatCardNumber(value) {
   return cleaned.slice(0, 16).match(/.{1,4}/g)?.join(" ") || cleaned.slice(0, 16);
 }
 
-const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
+const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal, onInstallmentChange }, ref) {
   const lang = useLangStore((s) => s.lang);
   const t = translations[lang] || translations.tr;
   // Kart bilgileri state'leri
@@ -70,15 +71,17 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
 
   // Kart numarası değiştiğinde taksit seçeneklerini getir (ilk 6 hane = BIN; autofill 16 hane getirdiğinde de çalışır)
   const lastBinRef = useRef(null);
+  const lastTotalRef = useRef(null);
   useEffect(() => {
     const fetchInstallmentOptions = async () => {
       const cleanCardNumber = (cardNumber || "").replace(/\s/g, "");
       const bin = cleanCardNumber.length >= 6 ? cleanCardNumber.substring(0, 6) : null;
 
       if (bin) {
-        // Aynı BIN için tekrar istek atma
-        if (lastBinRef.current === bin) return;
+        // Aynı BIN ve aynı tutar için tekrar istek atma
+        if (lastBinRef.current === bin && lastTotalRef.current === cartTotal) return;
         lastBinRef.current = bin;
+        lastTotalRef.current = cartTotal;
         const amount = cartTotal.toFixed(2);
         setIsLoadingInstallments(true);
         try {
@@ -93,7 +96,17 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
             if (response.data.payment_type === "single") {
               setSelectedInstallment(1);
             } else if (response.data.options?.length > 0) {
-              setSelectedInstallment(response.data.options[0].installment_count);
+              // Mevcut seçili taksiti yeni seçenekler arasında bulmaya çalış
+              const currentSelected = selectedInstallment;
+              const isStillAvailable = response.data.options.some(
+                (o) => o.installment_count === currentSelected && o.is_available
+              );
+
+              if (isStillAvailable) {
+                setSelectedInstallment(currentSelected);
+              } else {
+                setSelectedInstallment(response.data.options[0].installment_count);
+              }
             }
           }
         } catch (error) {
@@ -118,6 +131,26 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
     const timeoutId = setTimeout(fetchInstallmentOptions, 400);
     return () => clearTimeout(timeoutId);
   }, [cardNumber, cartTotal]);
+
+  // Seçili taksit veya seçenekler değiştiğinde parent'ı bilgilendir
+  useEffect(() => {
+    if (onInstallmentChange) {
+      if (installmentOptions.length > 0) {
+        const selected = installmentOptions.find(o => o.installment_count === selectedInstallment);
+        if (selected) {
+          onInstallmentChange({
+            count: selected.installment_count,
+            total: Number(selected.total_payment),
+            isAvailable: selected.is_available
+          });
+        } else {
+          onInstallmentChange(null);
+        }
+      } else {
+        onInstallmentChange(null);
+      }
+    }
+  }, [selectedInstallment, installmentOptions, onInstallmentChange]);
 
   // Autofill: input uncontrolled; değeri periyodik + focus'ta okuyup state'e yazıyoruz (taksit isteği tetiklensin)
   const syncCardNumberFromInput = () => {
@@ -310,19 +343,39 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
           <div className="payment2-card__header">
             <div className="payment2-card__title">{t.installmentOptions}</div>
           </div>
-          <div className="payment2-card__body payment2-card__body--tight">
+          <div className="payment2-card__body payment2-card__body--tight" style={{ position: 'relative', minHeight: '100px' }}>
+            {/* Loading Overlay: Eğer yükleniyorsa ve zaten taksit seçenekleri varsa listenin üzerine göster */}
+            {isLoadingInstallments && installmentOptions.length > 0 && (
+              <div style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(255, 255, 255, 0.7)',
+                zIndex: 5,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderRadius: '8px',
+                backdropFilter: 'blur(1px)'
+              }}>
+                <CircularLoading size={30} />
+              </div>
+            )}
+
             {cardNumber.replace(/\s/g, "").length < 6 && (
               <div className="payment2-empty">
                 {t.installmentPlaceholder}
               </div>
             )}
 
-            {isLoadingInstallments && cardNumber.replace(/\s/g, "").length >= 6 && (
+            {isLoadingInstallments && cardNumber.replace(/\s/g, "").length >= 6 && installmentOptions.length === 0 && (
               <div className="payment2-empty">{t.loadingInstallments}</div>
             )}
 
-            {!isLoadingInstallments && installmentOptions.length > 0 && (
-              <>
+            {installmentOptions.length > 0 && (
+              <div style={{ opacity: isLoadingInstallments ? 0.6 : 1, transition: 'opacity 0.2s' }}>
                 {paymentType === "single" ? (
                   <div className="payment2-empty">{t.singlePaymentOnly}</div>
                 ) : (
@@ -363,7 +416,7 @@ const PaymentOptions = forwardRef(function PaymentOptions({ cartTotal }, ref) {
                       })}
                   </div>
                 )}
-              </>
+              </div>
             )}
           </div>
         </div>
