@@ -35,7 +35,7 @@ export default function PaymentStatusNotification() {
                     <span className="separator">•</span>
                     <a href="https://www.ciceksepeti.com/d/tum-urunler?storeid=1500071511" target="_blank" rel="noopener noreferrer" className="market-link">Çiçeksepeti</a>
                     <span className="separator">•</span>
-                    <a href="https://www.allesgo.com/b2c/magaza/simart-teknoloji" target="_blank" rel="noopener noreferrer" className="market-link">Allesgo</a>
+                    <a href="https://www.teknosa.com/magaza/simart-pazarlama" target="_blank" rel="noopener noreferrer" className="market-link">Teknosa</a>
                     <span className="separator">•</span>
                     <a href="https://www.pttavm.com/magaza/simartpazarlama" target="_blank" rel="noopener noreferrer" className="market-link">PttAVM</a>
                 </div>
