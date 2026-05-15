@@ -11,6 +11,8 @@ const Categories = nextDynamic(() => import("@/components/homes/home-electronic/
 const CollectionBanner = nextDynamic(() => import("@/components/homes/home-electronic/CollectionBanner"), { ssr: true });
 const Collections = nextDynamic(() => import("@/components/homes/home-electronic/Collections"), { ssr: true });
 const Products = nextDynamic(() => import("@/components/homes/home-electronic/Products"), { ssr: true });
+const HomeSeoText = nextDynamic(() => import("@/components/homes/home-electronic/HomeSeoText"), { ssr: true });
+
 
 import React from "react";
 import { getCategories, getBanners, getCollectionBanner, getCollections, getReviews } from "@/api/home";
@@ -107,6 +109,7 @@ export default async function Home({ params }) {
         <HomeReviews reviews={reviews} lang={lang} />
         <Blogs lang={lang} />
         <Features lang={lang} />
+        <HomeSeoText lang={lang} />
       </div>
     </>
   );
