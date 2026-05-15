@@ -1,46 +1,16 @@
 import React from "react";
 
+
+
 export default function HomeSeoText({ lang = "tr" }) {
   if (lang !== "tr") return null;
 
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "Şımart Teknoloji'de hangi ürünleri bulabilirsiniz?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Şımart Teknoloji; yerli üretim robot süpürge (katya), hava temizleyici ve cam silme robotu gibi yenilikçi akıllı ev sistemleri sunmaktadır."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "katya robot süpürge serisi özellikleri nelerdir?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "katya robot süpürge serisi; yüksek emiş gücü ve akıllı haritalama teknolojisine sahiptir."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Şımart Teknoloji teknik servis hizmeti nasıldır?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Tüm Şımart ürünleri, 48 saatte çözüm garantili teknik servis hizmeti güvencesiyle sunulmaktadır."
-        }
-      }
-    ]
-  };
+
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
       <section className="flat-spacing-1">
+
         <div className="container">
           <div className="row">
             <div className="col-12">

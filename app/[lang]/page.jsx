@@ -18,7 +18,7 @@ import React from "react";
 import { getCategories, getBanners, getCollectionBanner, getCollections, getReviews } from "@/api/home";
 import { getMenus } from "@/api/menus";
 import { siteConfig } from "@/config/site";
-import { organizationSchema } from "@/lib/schema";
+import { homeSchemas } from "@/data/homeSchemas";
 
 const translations = {
   tr: {
@@ -84,19 +84,17 @@ export default async function Home({ params }) {
   ]);
   const t = translations[lang] || translations.tr;
 
-  const organizationJsonLd = organizationSchema({
-    url: siteConfig.site.url,
-    description: t.description,
-  });
+  const allSchemas = homeSchemas(t);
 
-    return (
+  return (
     <>
-      {/* Organization JSON-LD */}
       <script
         type="application/ld+json"
         suppressHydrationWarning
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(allSchemas) }}
       />
+
+
       <h1 style={{ position: 'absolute', width: '1px', height: '1px', padding: '0', margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', border: '0' }}>
         {lang === "en" ? "Şımart Technology - Smart Home Systems and Robot Vacuums" : "Şımart Teknoloji - Akıllı Ev Sistemleri ve Robot Süpürgeler"}
       </h1>

@@ -1,12 +1,11 @@
 "use client";
-import { socialLinksWithBorder } from "@/data/socials";
-import Link from "next/link";
 import React, { useRef, useState, useEffect } from "react";
 import apiClient from "@/utils/apiClient";
-import { siteConfig } from "@/config/site";
 import SearchableSelect from "@/components/common/SearchableSelect";
 import PhoneInput from "@/components/common/PhoneInput";
 import RecaptchaV3 from "@/components/common/RecaptchaV3";
+
+
 import { formatFullNameValue } from "@/utils/inputFormatters";
 import { useLangStore } from "@/stores/langStore";
 
@@ -26,12 +25,19 @@ export default function SupportForm() {
   const [phone, setPhone] = useState("");
   const [fullName, setFullName] = useState("");
 
+
+  const [email, setEmail] = useState("");
+
+
   const t = {
     tr: {
       contactTitle: "Bizimle iletişime geçin",
       fullName: "İsim Soyisim *",
+      email: "E-posta *",
       phonePlaceholder: "+90 5XX XXX XX XX",
       selectProduct: "Ürün Seçiniz *",
+
+
       loading: "Yükleniyor...",
       searchProduct: "Ürün ara...",
       message: "Mesajınız *",
@@ -42,12 +48,17 @@ export default function SupportForm() {
       errorTryAgain: "Bir hata oluştu. Lütfen tekrar deneyin.",
       recaptchaError: "Güvenlik doğrulaması yapılamadı.",
       recaptchaRequired: "Lütfen güvenlik adımını tamamlayın.",
+      invalidEmail: "Geçersiz e-posta adresi.",
+
     },
     en: {
       contactTitle: "Contact us",
       fullName: "Full Name *",
+      email: "Email *",
       phonePlaceholder: "+90 5XX XXX XX XX",
       selectProduct: "Select Product *",
+
+
       loading: "Loading...",
       searchProduct: "Search product...",
       message: "Your Message *",
@@ -58,13 +69,18 @@ export default function SupportForm() {
       errorTryAgain: "An error occurred. Please try again.",
       recaptchaError: "Security verification failed.",
       recaptchaRequired: "Please complete the security step.",
+      invalidEmail: "Invalid email address.",
+
     }
   }[lang] || {
     tr: {
       contactTitle: "Bizimle iletişime geçin",
       fullName: "İsim Soyisim *",
+      email: "E-posta *",
       phonePlaceholder: "+90 5XX XXX XX XX",
       selectProduct: "Ürün Seçiniz *",
+
+
       loading: "Yükleniyor...",
       searchProduct: "Ürün ara...",
       message: "Mesajınız *",
@@ -75,6 +91,8 @@ export default function SupportForm() {
       errorTryAgain: "Bir hata oluştu. Lütfen tekrar deneyin.",
       recaptchaError: "Güvenlik doğrulaması yapılamadı.",
       recaptchaRequired: "Lütfen güvenlik adımını tamamlayın.",
+      invalidEmail: "Geçersiz e-posta adresi.",
+
     }
   }.tr;
 
@@ -84,9 +102,9 @@ export default function SupportForm() {
       try {
         setProductsLoading(true);
         const response = await apiClient.get("/products", {
-            headers: {
-                'X-Api-Lang': lang
-            }
+          headers: {
+            'X-Api-Lang': lang
+          }
         });
         if (response.data?.status === "success" && response.data?.data) {
           const items = Array.isArray(response.data.data) ? response.data.data : response.data.data?.items || [];
@@ -144,13 +162,23 @@ export default function SupportForm() {
     e.preventDefault();
     setLoading(true);
     setFieldErrors({});
-    
+
     const data = {
       full_name: fullName,
+      email: email,
       phone: phone,
       product: products.find((p) => String(p.id) === String(selectedProductId))?.name || "",
       message: message,
     };
+
+    // Email doğrulaması
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
+      setFieldErrors({ email: [t.invalidEmail] });
+      setLoading(false);
+      return;
+    }
+
 
     // V3: Token al
     let token = null;
@@ -187,6 +215,9 @@ export default function SupportForm() {
         setSelectedProductId("");
         setPhone("");
         setFullName("");
+
+
+        setEmail("");
         setMessage("");
         setFieldErrors({});
         e.target.reset();
@@ -234,8 +265,23 @@ export default function SupportForm() {
                         <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>{fieldErrors.full_name[0]}</div>
                       )}
                     </fieldset>
-
+                    <fieldset className="w-100">
+                      <input
+                        type="email"
+                        name="email"
+                        id="email"
+                        required
+                        placeholder={t.email}
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
+                      {fieldErrors.email && (
+                        <div style={{ color: "#dc3545", fontSize: "12px", marginTop: "4px" }}>{fieldErrors.email[0]}</div>
+                      )}
+                    </fieldset>
                   </div>
+
+
                   <div className="mb_15">
                     <fieldset className="w-100">
                       <PhoneInput
@@ -251,6 +297,7 @@ export default function SupportForm() {
                       )}
                     </fieldset>
                   </div>
+
                   <div className="mb_15">
                     <fieldset className="w-100">
                       <SearchableSelect
