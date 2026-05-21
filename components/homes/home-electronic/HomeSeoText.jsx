@@ -18,12 +18,12 @@ export default function HomeSeoText({ lang = "tr" }) {
                 Akıllı Ev Sistemleri ve Robot Süpürge Tercihinde Türkiye'nin Güvenilir Adresi: Şımart Teknoloji
               </h2>
               <p className="text-secondary" style={{ lineHeight: '1.8' }}>
-                Şımart Teknoloji olarak, yaşam alanlarınızı daha temiz ve daha konforlu hale getirmek için tasarlanmış yenilikçi <strong>akıllı ev sistemleri</strong> sunuyoruz.
-                <strong> katya</strong> adını verdiğimiz, yerli üretim <strong>robot süpürge</strong> modellerimiz; yüksek emiş gücü, akıllı haritalama teknolojisi ve ıslak-kuru silme özelliğiyle evinizi siz yorulmadan temiz tutar.
-                Kapalı alanlardaki toz, alerjen ve zararlı partikülleri etkili bir şekilde filtreleyen <strong>hava temizleyici</strong> ürünlerimiz, ailenizin her nefesini koruyan sağlıklı bir iç mekan ortamı sağlar.
-                <strong> Cam silme robotumuz</strong> ile zorlu ve yüksek noktalardaki camları artık riske girmeden temizleyebilirsiniz.
+                Şımart Teknoloji olarak, yaşam alanlarınızı daha temiz ve daha konforlu hale getirmek için tasarlanmış yenilikçi akıllı ev sistemleri sunuyoruz.
+                katya adını verdiğimiz, yerli üretim robot süpürge modellerimiz; yüksek emiş gücü, akıllı haritalama teknolojisi ve ıslak-kuru silme özelliğiyle evinizi siz yorulmadan temiz tutar.
+                Kapalı alanlardaki toz, alerjen ve zararlı partikülleri etkili bir şekilde filtreleyen hava temizleyici ürünlerimiz, ailenizin her nefesini koruyan sağlıklı bir iç mekan ortamı sağlar.
+                Cam silme robotumuz ile zorlu ve yüksek noktalardaki camları artık riske girmeden temizleyebilirsiniz.
                 Tüm ürünlerimiz, 48 saatte çözüm garantili teknik servis hizmeti güvencesiyle birlikte gelir.
-                Şımart <strong>akıllı ev sistemleri</strong> ile ev temizliğini teknolojiyle yeniden keşfedin.
+                Şımart akıllı ev sistemleri ile ev temizliğini teknolojiyle yeniden keşfedin.
               </p>
             </div>
           </div>
