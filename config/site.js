@@ -98,7 +98,7 @@ export const siteConfig = {
         logo: "https://simart.me/uploads/systems/logo.webp",
         author: "Şımart Teknoloji",
         description: "Şımart Teknoloji, robot süpürgeler, akıllı ev sistemleri ve IoT çözümlerinde öncüdür. Ev otomasyonu ve yaşamı kolaylaştıran teknolojilerle hizmetinizdeyiz.",
-        keywords: "Şımart Teknoloji, Akıllı Ev Sistemleri, IoT Çözümleri, Robot Süpürge, Akıllı Cihazlar, Teknolojik Ürünler, Ev Otomasyonu, Şımart Ürünleri, Akıllı Teknoloji, IoT Ürünleri",
+        keywords: "Robot süpürge, Şımart Teknoloji",
         recaptchaSiteKey: process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI", // Google test key - Production için değiştirin
 
         og: {
