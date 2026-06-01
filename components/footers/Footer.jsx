@@ -261,32 +261,6 @@ export default function Footer({ bgColor = "", footerMenus = null, lang = "tr" }
                     </ul>
                   </div>
                   <div className="footer-bottom-right d-flex align-items-center gap-20 flex-wrap">
-                    <div className="payment-logos d-flex align-items-center gap-15">
-                      <Image
-                        src="/iyzico.svg"
-                        alt="iyzico"
-                        width={64}
-                        height={24}
-                        style={{ height: "auto" }}
-                        loading="lazy"
-                      />
-                      <Image
-                        src="/visa.svg"
-                        alt="visa"
-                        width={40}
-                        height={24}
-                        style={{ height: "auto" }}
-                        loading="lazy"
-                      />
-                      <Image
-                        src="/mastercard.svg"
-                        alt="mastercard"
-                        width={32}
-                        height={24}
-                        style={{ height: "auto" }}
-                        loading="lazy"
-                      />
-                    </div>
                     <div className="etbis-logo">
                       <a
                         href="https://etbis.ticaret.gov.tr/tr/SiteSorgulamaSonuc?siteId=c2f2afe3-b443-4375-8fef-27b0f895293e"
