@@ -67,6 +67,7 @@ export default function MediaMarkt({ productSlug }) {
             "akilli-kapi-pencere-sensoru": "https://www.mediamarkt.com.tr/tr/product/_simart-wi-fi-kontrollu-ve-anlik-bildirimli-akilli-kapi-ve-pencere-sensoru-akilli-kapi-pencere-sensoru-165583668.html",
             "katya-u-akilli-robot-supurge-silme-supurme-sarf-seti": "",
             "hava-nemlendirici": "https://www.mediamarkt.com.tr/tr/product/_simart-akilli-wi-fi-kontrollu-5-l-su-hazneli-hava-nemlendirici-siyah-173765948.html",
+            "akilli-hava-nemlendirici": "https://www.mediamarkt.com.tr/tr/product/_simart-akilli-wi-fi-kontrollu-5-l-su-hazneli-hava-nemlendirici-siyah-173765948.html",
             "akilli-led-serit-2-5-metre": "https://www.mediamarkt.com.tr/tr/product/_simart-akilli-25-m-wi-fi-kontrollu-rgb-bluetooth-led-serit-aydinlatma-173773810.html",
             "akilli-led-serit-5-metre": "https://www.mediamarkt.com.tr/tr/product/_simart-akilli-5-m-wi-fi-kontrollu-rgb-bluetooth-led-serit-aydinlatma-173765897.html",
             "akilli-kedi-tuvaleti": "https://www.mediamarkt.com.tr/tr/product/_simart-80lt-otomatik-temizleme-ve-wi-fi-kontrollu-akilli-kedi-tuvaleti-174207456.html",

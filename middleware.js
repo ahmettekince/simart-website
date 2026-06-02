@@ -20,6 +20,9 @@ export async function middleware(request) {
     "/katya-v-akilli-robot-supurge": "/magaza/robotlar/katya-v-akilli-robot-supurge",
     "/katya-v-plus-akilli-robot-supurge": "/magaza/robotlar/katya-v-plus-akilli-robot-supurge",
     "/6-hazneli-akilli-mama-kabi": "/magaza/evcil-canlilar/6-hazneli-akilli-mama-kabi",
+    "/magaza/ev-aletleri/hava-nemlendirici": "/magaza/ev-aletleri/akilli-hava-nemlendirici",
+    "/en/shop/ev-aletleri/hava-nemlendirici": "/en/shop/ev-aletleri/akilli-hava-nemlendirici",
+    "/en/magaza/ev-aletleri/hava-nemlendirici": "/en/magaza/ev-aletleri/akilli-hava-nemlendirici",
     // Buraya yeni kritik yönlendirmeler eklenebilir
   };
 
