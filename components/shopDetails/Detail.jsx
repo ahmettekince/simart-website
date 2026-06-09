@@ -23,7 +23,7 @@ import OverlayCtaButton, { Model3dIcon, PlayIcon, ArrowIcon } from "@/components
 import VolumeDiscount from "./VolumeDiscount";
 import InfoTicker from "./InfoTicker";
 
-import PreOrderNotice from "@/components/common/PreOrderNotice";
+
 import PromoCartBox from "./PromoCartBox";
 import { trackViewItem } from "@/utils/analytics";
 
@@ -130,7 +130,6 @@ function ProductProtocolHelp({ description, protocolName }) {
 }
 
 import { useLangStore } from "@/stores/langStore";
-import MediaMarkt from "../common/MediaMarkt";
 import PaymentStatusNotification from "../common/PaymentStatusNotification";
 
 
@@ -605,7 +604,7 @@ export default function Detail({ product, pageKeywords }) {
                         </div>
                       </div>
                     )}
-                    <MediaMarkt productSlug={product.slugs?.tr || product.slug} />
+
                     <PaymentStatusNotification />
 
                     {showPromoBox && (
