@@ -24,6 +24,8 @@ export async function middleware(request) {
     "/en/shop/ev-aletleri/hava-nemlendirici": "/en/shop/ev-aletleri/akilli-hava-nemlendirici",
     "/en/magaza/ev-aletleri/hava-nemlendirici": "/en/magaza/ev-aletleri/akilli-hava-nemlendirici",
     // 🤖 Robot Süpürge Yönlendirmeleri (/magaza/robotlar → /magaza/robot-supurge)
+    "/magaza/robotlar": "/magaza/robot-supurge",
+    "/en/shop/robots": "/en/shop/robot-vacuum-cleaner",
     "/magaza/robotlar/katya-uu-akilli-robot-supurge": "/magaza/robot-supurge/katya-uu-akilli-robot-supurge",
     "/magaza/robotlar/katya-v-plus-akilli-robot-supurge": "/magaza/robot-supurge/katya-v-plus-akilli-robot-supurge",
     "/magaza/robotlar/katya-v-akilli-robot-supurge": "/magaza/robot-supurge/katya-v-akilli-robot-supurge",
@@ -35,7 +37,7 @@ export async function middleware(request) {
     "/en/shop/robots/katya-uu-smart-robot-vacuum": "/en/shop/robot-vacuum-cleaner/katya-uu-smart-robot-vacuum",
     "/en/shop/robots/katya-v-plus-smart-robot-vacuum": "/en/shop/robot-vacuum-cleaner/katya-v-plus-smart-robot-vacuum",
     "/en/shop/robots/katya-v-smart-robot-vacuum": "/en/shop/robot-vacuum-cleaner/katya-v-smart-robot-vacuum",
-    "/en/shop/robots/katyaz-smart-robot-vacuum": "/en/shop/robot-vacuum-cleaner/katya-z-smart-robot-vacuum",
+    "/en/shop/robots/katyaz-smart-robot-vacuum": "/en/shop/robot-vacuum-cleaner/katyaz-smart-robot-vacuum",
     "/en/shop/robots/katya-p-smart-robot-vacuum": "/en/shop/robot-vacuum-cleaner/katya-p-smart-robot-vacuum",
     "/en/shop/robots/katya-u-smart-robot-vacuum": "/en/shop/robot-vacuum-cleaner/katya-u-smart-robot-vacuum",
     "/en/shop/robots/katya-t-smart-robot-vacuum": "/en/shop/robot-vacuum-cleaner/katya-t-smart-robot-vacuum",
@@ -48,7 +50,7 @@ export async function middleware(request) {
     "/magaza/robotlar/cam-temizleme-robotu-kare": "/magaza/cam-temizleme-robotlari/cam-temizleme-robotu-kare",
     "/magaza/robotlar/cam-temizleme-robotu-yeni-nesil": "/magaza/cam-temizleme-robotlari/cam-temizleme-robotu-yeni-nesil",
     "/magaza/robotlar/cam-temizleme-robotu": "/magaza/cam-temizleme-robotlari/cam-temizleme-robotu",
-    // Buraya yeni kritik yönlendirmeler eklenebilir
+
   };
 
   if (LEGACY_PRODUCT_REDIRECTS[pathname]) {
