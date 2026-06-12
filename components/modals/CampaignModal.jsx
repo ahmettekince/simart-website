@@ -140,6 +140,10 @@ export default function CampaignModal({ open, onClose }) {
                                             : `%${campaign.details.discount_value} İNDİRİM`)
                                         : null);
 
+                                const campaignLink = campaign.description?.startsWith("http") || campaign.description?.startsWith("/")
+                                    ? campaign.description
+                                    : "/magaza";
+
                                 return (
                                     <div
                                         key={`${campaign.id}-${idx}`}
@@ -158,7 +162,7 @@ export default function CampaignModal({ open, onClose }) {
                                         className="campaign-item-minimal"
                                         onClick={() => {
                                             onClose();
-                                            window.location.href = "/magaza";
+                                            window.location.href = campaignLink;
                                         }}
                                     >
                                         <div style={{ flex: 1, minWidth: 0 }}>
@@ -186,16 +190,7 @@ export default function CampaignModal({ open, onClose }) {
                                                     </span>
                                                 )}
                                             </div>
-                                            <p
-                                                style={{
-                                                    fontSize: "11px",
-                                                    color: "#6b7280",
-                                                    lineHeight: 1.4,
-                                                    margin: 0,
-                                                }}
-                                            >
-                                                {campaign.description || "Kampanya detaylarını görmek için tıklayın."}
-                                            </p>
+
                                         </div>
                                         <button
                                             style={{
@@ -213,6 +208,11 @@ export default function CampaignModal({ open, onClose }) {
                                             }}
                                             onMouseOver={(e) => e.currentTarget.style.opacity = "0.9"}
                                             onMouseOut={(e) => e.currentTarget.style.opacity = "1"}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onClose();
+                                                window.location.href = campaignLink;
+                                            }}
                                         >
                                             ALIŞVERİŞE BAŞLA
                                         </button>
