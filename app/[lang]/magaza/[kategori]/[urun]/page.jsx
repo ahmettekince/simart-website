@@ -139,6 +139,8 @@ export default async function page({ params }) {
   const reviewCountFromApi =
     product.reviews?.count || product.review_count;
 
+  const inStock = product.unlimited_stock === true || (product.stock_quantity !== undefined && Number(product.stock_quantity) > 0);
+
   const jsonLd = productSchema({
     name: productName,
     description: productDescription,
@@ -150,6 +152,7 @@ export default async function page({ params }) {
     ratingValue: ratingValueFromApi ?? 0,
     reviewCount: reviewCountFromApi ?? 0,
     reviews: product.reviews?.items || [],
+    inStock,
   });
 
   // Varyasyonları hesapla (mobilde gösterilecek BirlikteAlNew için)
@@ -197,10 +200,10 @@ export default async function page({ params }) {
           </div>
         </div>
       </div>
-      
+
       <h1 style={{ position: 'absolute', width: '1px', height: '1px', padding: '0', margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', border: '0' }}>
-        {lang === "tr" 
-          ? `${productName} - Şımart Teknoloji Akıllı Ev Sistemleri` 
+        {lang === "tr"
+          ? `${productName} - Şımart Teknoloji Akıllı Ev Sistemleri`
           : `${productName} - Şımart Technology Smart Home Systems`}
       </h1>
       <Detail product={product} pageKeywords={metaKeywords} />
