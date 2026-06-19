@@ -23,7 +23,7 @@ export default function VolumeDiscount({ product, setQuantity }) {
       const val = Number(tier.discount_value) || 0;
 
       if (tier.discount_type === "fixed_amount" || tier.discount_type === "fixed") {
-        discountAmount = val;
+        discountAmount = val * qty;
       } else if (tier.discount_type === "percentage" || tier.discount_type === "percent") {
         discountAmount = (basePrice * qty * val) / 100;
       }
