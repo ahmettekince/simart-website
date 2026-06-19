@@ -72,7 +72,7 @@ function BannerContent({ images, isFirstSlide = false }) {
       {/* Desktop Version (>= 1024px) - görüntülenen boyuta uygun, büyük dosya indirilmez */}
       {/* Desktop */}
       <div className="d-none d-lg-block w-100" style={{ overflow: "hidden" }}>
-        <Image
+        <img
           src={images.desktop?.url}
           alt="Banner Desktop"
           width={1920}
@@ -88,7 +88,7 @@ function BannerContent({ images, isFirstSlide = false }) {
 
       {/* Tablet */}
       <div className="d-none d-md-block d-lg-none w-100" style={{ overflow: "hidden" }}>
-        <Image
+        <img
           src={images.tablet?.url}
           alt="Banner Tablet"
           width={1080}
@@ -104,7 +104,7 @@ function BannerContent({ images, isFirstSlide = false }) {
 
       {/* Mobile */}
       <div className="d-block d-md-none w-100" style={{ overflow: "hidden" }}>
-        <Image
+        <img
           src={images.mobile?.url}
           alt="Banner Mobile"
           width={750}
