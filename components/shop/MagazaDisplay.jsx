@@ -1,115 +1,154 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import ProductCardSimart from "@/components/shopCards/ProductCardSimart";
 import Sorting from "./Sorting";
 import ShopFilter from "./ShopFilter";
 import { useLangStore } from "@/stores/langStore";
 
-/**
- * MagazaDisplay - Client Component
- * Bu bileşen artık filtreleme ve sıralama özelliklerini de içeriyor.
- */
+const FILTER_LABELS = {
+    tr: "Kategoriler",
+    en: "Categories",
+};
+
+const BATCH_SIZE = 24;
+
+function sortByStockAvailability(list) {
+    return [...list].sort((a, b) => {
+        const availA = a.is_in_stock || a.is_pre_order;
+        const availB = b.is_in_stock || b.is_pre_order;
+        if (availA === availB) return 0;
+        return availA ? -1 : 1;
+    });
+}
+
+function buildAlternatePaths(category) {
+    if (!category?.slugs) return {};
+
+    const paths = {};
+    for (const currLang of ["tr", "en"]) {
+        const slug = category.slugs[currLang] || category.slug;
+        if (!slug) continue;
+        const prefix = currLang === "en" ? "/en/shop" : "/magaza";
+        paths[currLang] = `${prefix}/${slug}`;
+    }
+    return paths;
+}
+
 export default function MagazaDisplay({ products: initialProducts = [], categories = [], initialCategory = null }) {
     const lang = useLangStore((s) => s.lang);
     const setAlternatePaths = useLangStore((s) => s.setAlternatePaths);
 
-    // Kategori için alternatif dillerdeki URL'leri store'a kaydet
-    useEffect(() => {
-        // Sadece bir kategori sayfası içindeysek (initialCategory varsa) alternatePaths set et
-        if (initialCategory && initialCategory.slugs) {
-            const catSlugs = initialCategory.slugs;
-            const paths = {};
-            ["tr", "en"].forEach(currLang => {
-                const cSlug = catSlugs[currLang] || initialCategory.slug;
-                if (!cSlug) return;
-                // TR: /magaza/[slug], EN: /en/shop/[slug]
-                const prefix = currLang === "en" ? "/en/shop" : "/magaza";
-                paths[currLang] = `${prefix}/${cSlug}`;
-            });
-            
-            if (Object.keys(paths).length > 0) {
-                setAlternatePaths(paths);
-            }
-        } else {
-            // Ana mağaza sayfasındaysak veya kategori verisi yoksa store'u temizle
-            setAlternatePaths({});
-        }
+    const baseProducts = useMemo(
+        () => sortByStockAvailability(initialProducts),
+        [initialProducts]
+    );
 
+    const [sortedProducts, setSortedProducts] = useState([]);
+    const [visibleCount, setVisibleCount] = useState(BATCH_SIZE);
+    const lastTrackedIds = useRef("");
+    const loadMoreRef = useRef(null);
+    const isLoadingMore = useRef(false);
+
+    const displayProducts = useMemo(
+        () => (sortedProducts.length > 0 ? sortedProducts : baseProducts),
+        [sortedProducts, baseProducts]
+    );
+
+    const visibleProducts = useMemo(
+        () => displayProducts.slice(0, visibleCount),
+        [displayProducts, visibleCount]
+    );
+
+    const hasMore = visibleCount < displayProducts.length;
+
+    useEffect(() => {
+        setAlternatePaths(initialCategory ? buildAlternatePaths(initialCategory) : {});
         return () => setAlternatePaths({});
     }, [initialCategory, setAlternatePaths]);
 
-    const sortByDefault = (list) => {
-        const isAvailable = (p) => p.is_in_stock || p.is_pre_order;
-        return [...list].sort((a, b) => {
-            const availA = isAvailable(a);
-            const availB = isAvailable(b);
-            if (availA === availB) return 0;
-            return availA ? -1 : 1;
-        });
-    };
-
-    const [products, setProducts] = useState(() => sortByDefault(initialProducts));
-    const [finalSorted, setFinalSorted] = useState([]);
-    const lastTrackedIds = React.useRef("");
-
-    // Sayfa ilk yüklendiğinde veya prop değiştiğinde ürünleri set et (sıralayarak)
     useEffect(() => {
-        setProducts(sortByDefault(initialProducts));
+        setSortedProducts([]);
+        setVisibleCount(BATCH_SIZE);
     }, [initialProducts]);
 
-    // GTM - view_item_list takibi
     useEffect(() => {
-        const listToTrack = finalSorted.length > 0 ? finalSorted : products;
-        if (listToTrack && listToTrack.length > 0) {
-            // Liste içeriğini ID bazlı kontrol et (Mükerrer gönderimi önle)
-            const currentIds = listToTrack.map(p => p.id || p.productId).join(',');
-            if (lastTrackedIds.current === currentIds) return;
+        setVisibleCount((prev) => Math.min(prev, displayProducts.length || BATCH_SIZE));
+    }, [displayProducts.length]);
 
-            lastTrackedIds.current = currentIds;
+    useEffect(() => {
+        const sentinel = loadMoreRef.current;
+        if (!sentinel || !hasMore) return;
 
-            import('@/utils/analytics').then(({ trackViewItemList }) => {
-                trackViewItemList(listToTrack, 'Mağaza Ürün Listesi', 'shop_page');
-            });
-        }
-    }, [products, finalSorted]);
+        const observer = new IntersectionObserver(
+            (entries) => {
+                if (!entries[0]?.isIntersecting || isLoadingMore.current) return;
+
+                isLoadingMore.current = true;
+                setVisibleCount((prev) => {
+                    const next = Math.min(prev + BATCH_SIZE, displayProducts.length);
+                    isLoadingMore.current = false;
+                    return next;
+                });
+            },
+            { rootMargin: "400px 0px" }
+        );
+
+        observer.observe(sentinel);
+        return () => observer.disconnect();
+    }, [hasMore, displayProducts.length]);
+
+    useEffect(() => {
+        if (displayProducts.length === 0) return;
+
+        const currentIds = displayProducts.map((p) => p.id || p.productId).join(",");
+        if (lastTrackedIds.current === currentIds) return;
+
+        lastTrackedIds.current = currentIds;
+
+        import("@/utils/analytics").then(({ trackViewItemList }) => {
+            trackViewItemList(displayProducts, "Mağaza Ürün Listesi", "shop_page");
+        });
+    }, [displayProducts]);
 
     return (
         <>
             <section className="magaza-list-section">
                 <div className="container">
-                    {/* Filtre ve Sıralama Çubuğu */}
                     <div className="magaza-controls">
                         <div className="control-left">
                             <a href="#filterShop" data-bs-toggle="offcanvas" aria-controls="offcanvasLeft" className="tf-btn-filter">
                                 <span className="icon icon-filter" />
-                                <span className="text">
-                                    {lang === "en" ? "Categories" : "Kategoriler"}
-                                </span>
+                                <span className="text">{FILTER_LABELS[lang] || FILTER_LABELS.tr}</span>
                             </a>
                         </div>
 
                         <div className="control-right">
                             <div className="tf-dropdown-sort" data-bs-toggle="dropdown">
-                                <Sorting setFinalSorted={setFinalSorted} products={products} />
+                                <Sorting setFinalSorted={setSortedProducts} products={baseProducts} />
                             </div>
                         </div>
                     </div>
 
-                    {/* Ürün Izgarası (Grid) */}
                     <div className="product-grid">
-                        {(finalSorted.length > 0 ? finalSorted : products).map((product, index) => (
+                        {visibleProducts.map((product, index) => (
                             <div key={product.id || index} className="product-col">
-                                <ProductCardSimart product={product} />
+                                <ProductCardSimart
+                                    product={product}
+                                    lazyGallery
+                                    isPriority={index < 8}
+                                />
                             </div>
                         ))}
                     </div>
+
+                    {hasMore && <div ref={loadMoreRef} className="magaza-load-sentinel" aria-hidden="true" />}
                 </div>
 
                 <style jsx>{`
                     .magaza-list-section {
                         padding: 20px 0 80px;
                     }
-                    
+
                     .magaza-controls {
                         display: flex;
                         justify-content: space-between;
@@ -144,7 +183,11 @@ export default function MagazaDisplay({ products: initialProducts = [], categori
                         max-width: 25%;
                     }
 
-                    /* Responsive Ayarlar */
+                    .magaza-load-sentinel {
+                        width: 100%;
+                        height: 1px;
+                    }
+
                     @media (max-width: 1200px) {
                         .product-col {
                             flex: 0 0 33.333%;
@@ -178,8 +221,7 @@ export default function MagazaDisplay({ products: initialProducts = [], categori
                 `}</style>
             </section>
 
-            {/* Yan Filtre Menüsü (Offcanvas) */}
-            <ShopFilter setProducts={setProducts} products={initialProducts} categories={categories} />
+            <ShopFilter categories={categories} />
         </>
     );
 }

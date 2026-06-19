@@ -1,6 +1,5 @@
 "use client";
-import Image from "next/image";
-import React, { useEffect, useState, useRef, useMemo } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useCartStore } from "@/stores/cartStore";
 import { getProductButtonState } from "@/utils/productStock";
 import MaxQuantityToast from "@/components/common/MaxQuantityToast";
@@ -159,12 +158,13 @@ export default function SmartStickyBar({
         <div className="ss-product-info">
           <div className="ss-image-box d-none d-md-block">
             {productImage && (
-              <Image
+              <img
                 src={productImage}
                 alt={productName}
                 width={48}
                 height={48}
-                unoptimized={typeof productImage === 'string' && productImage.startsWith('http')}
+                loading="lazy"
+                style={{ objectFit: "cover", width: 48, height: 48 }}
               />
             )}
           </div>

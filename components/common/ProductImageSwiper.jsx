@@ -1,351 +1,288 @@
 "use client";
-import React, { useState, useRef } from "react";
-import Image from "next/image";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Pagination, Navigation } from "swiper/modules";
 import NavDotsPill from "@/components/common/NavDotsPill";
 
-/**
- * Product image swiper component
- * @param {Object} props
- * @param {Array} props.images - Array of image objects with url and thumbnail_url
- * @param {string} props.productSlug - Product slug for link
- * @param {string} props.productName - Product name for alt text
- * @param {number} props.width - Image width (default: 360)
- * @param {number} props.height - Image height (default: 360)
- * @param {string} props.sizes - Responsive sizes for smaller download (e.g. "(max-width: 768px) 50vw, 320px")
- * @param {Array} props.campaignTags - Array of campaign tag image URLs
- * @param {string} props.categorySlug - Category slug for link (optional, defaults to "urunler")
- */
+const FALLBACK_IMAGE = "/images/products/product-1.jpg";
+
+const IMAGE_STYLE = {
+    objectFit: "contain",
+    objectPosition: "center",
+    width: "100%",
+    height: "auto",
+    display: "block",
+};
+
+const SINGLE_IMAGE_LINK_STYLE = {
+    position: "relative",
+    display: "block",
+    width: "100%",
+};
+
+function getImageUrl(image) {
+    if (typeof image === "string") return image;
+    if (image && typeof image === "object") {
+        return image.url || image.webp_url || image.src || null;
+    }
+    return null;
+}
+
+function getDisplayImageUrl(image) {
+    if (typeof image === "string") return image;
+    if (image && typeof image === "object") {
+        return image.thumbnail_url || image.url || image.webp_url || image.src || null;
+    }
+    return null;
+}
+
+function getTagUrl(tag) {
+    if (typeof tag === "string") return tag;
+    if (tag && typeof tag === "object") {
+        const url = tag.url || tag.image_url || tag.src;
+        return typeof url === "string" ? url : null;
+    }
+    return null;
+}
+
+function CampaignTags({ tags, productHref, onLinkClick }) {
+    if (!tags?.length) return null;
+
+    const positionCounters = { left: 0, center: 0, right: 0 };
+    const items = [];
+
+    tags.forEach((tag, index) => {
+        const tagUrl = getTagUrl(tag);
+        if (!tagUrl) return;
+
+        const position = (typeof tag === "object" ? tag.position : null) || "left";
+        const counter = positionCounters[position];
+        if (counter >= 3) return;
+
+        let positionStyle = {};
+        if (position === "left") {
+            positionStyle = { left: "10px" };
+        } else if (position === "center") {
+            positionStyle = { left: "50%", transform: "translateX(-50%)" };
+        } else if (position === "right") {
+            positionStyle = { right: "10px" };
+        }
+
+        items.push(
+            <Link
+                key={`${position}-${counter}-${index}`}
+                href={productHref}
+                onClick={onLinkClick}
+                className="campaign-tag"
+                style={{
+                    position: "absolute",
+                    zIndex: 10,
+                    "--tag-index": counter,
+                    display: "block",
+                    ...positionStyle,
+                }}
+            >
+                <img
+                    src={tagUrl}
+                    alt="Campaign Tag"
+                    className="campaign-tag-img"
+                    loading="lazy"
+                />
+            </Link>
+        );
+
+        positionCounters[position]++;
+    });
+
+    return items;
+}
+
+function ProductImageLink({
+    href,
+    src,
+    alt,
+    width,
+    height,
+    isPriority,
+    onLinkClick,
+    className = "product-img",
+    style,
+}) {
+    return (
+        <Link href={href} onClick={onLinkClick} className={className} style={style}>
+            <img
+                className="img-product"
+                src={src}
+                alt={alt}
+                width={width}
+                height={height}
+                style={IMAGE_STYLE}
+                loading={isPriority ? "eager" : "lazy"}
+                fetchPriority={isPriority ? "high" : undefined}
+            />
+        </Link>
+    );
+}
+
+function ProductImageFrame({ productHref, onLinkClick, campaignTags, children }) {
+    return (
+        <div style={{ position: "relative", width: "100%" }}>
+            {children}
+            <CampaignTags tags={campaignTags} productHref={productHref} onLinkClick={onLinkClick} />
+        </div>
+    );
+}
+
 export default function ProductImageSwiper({
     images = [],
     productSlug,
     productName = "product",
     width = 360,
     height = 360,
-    sizes = "(max-width: 480px) 50vw, (max-width: 768px) 33vw, 320px",
     campaignTags = [],
     categorySlug = "urunler",
     isPriority = false,
     detailUrl = null,
     onLinkClick = null,
+    lazyGallery = false,
 }) {
-    const [currentIndex, setCurrentIndex] = useState(0);
+    const containerRef = useRef(null);
     const swiperRef = useRef(null);
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [galleryActivated, setGalleryActivated] = useState(!lazyGallery);
 
-    // Helper to render campaign tags
-    const renderCampaignTags = () => {
-        if (!campaignTags || campaignTags.length === 0) return null;
+    const productHref = detailUrl || `/magaza/${categorySlug}/${productSlug}`;
+    const resolveSlideSrc = lazyGallery ? getDisplayImageUrl : getImageUrl;
+    const useLoop = !lazyGallery;
 
-        const positionCounters = { left: 0, center: 0, right: 0 };
-        const renderTags = [];
+    useEffect(() => {
+        if (!lazyGallery || galleryActivated) return;
 
-        campaignTags.forEach((tag, index) => {
-            const tagUrl = typeof tag === 'string'
-                ? tag
-                : (tag?.url || tag?.image_url || tag?.src || tag);
+        const el = containerRef.current;
+        if (!el) return;
 
-            if (!tagUrl || typeof tagUrl !== 'string') return;
-
-            const position = (typeof tag === 'object' ? tag.position : null) || 'left';
-            const counter = positionCounters[position];
-
-            if (counter < 3) {
-                let positionStyle = {};
-
-                if (position === 'left') {
-                    positionStyle = { left: '10px' };
-                } else if (position === 'center') {
-                    positionStyle = { left: '50%', transform: 'translateX(-50%)' };
-                } else if (position === 'right') {
-                    positionStyle = { right: '10px' };
+        const observer = new IntersectionObserver(
+            ([entry]) => {
+                if (entry.isIntersecting) {
+                    setGalleryActivated(true);
+                    observer.disconnect();
                 }
-
-                renderTags.push({
-                    url: tagUrl,
-                    position: position,
-                    style: {
-                        position: 'absolute',
-                        zIndex: 10,
-                        '--tag-index': counter,
-                        ...positionStyle,
-                    },
-                    key: `${position}-${counter}-${index}`,
-                });
-
-                positionCounters[position]++;
-            }
-        });
-
-        return (
-            <>
-                {renderTags.map((tag) => (
-                    <Link
-                        key={tag.key}
-                        href={detailUrl || `/magaza/${categorySlug}/${productSlug}`}
-                        onClick={onLinkClick}
-                        className="campaign-tag"
-                        style={{
-                            ...tag.style,
-                            cursor: 'pointer',
-                            display: 'block',
-                        }}
-                    >
-                        <img
-                            src={tag.url}
-                            alt="Campaign Tag"
-                            className="campaign-tag-img"
-                        />
-                    </Link>
-                ))}
-            </>
+            },
+            { rootMargin: "250px 0px", threshold: 0 }
         );
+
+        observer.observe(el);
+        return () => observer.disconnect();
+    }, [lazyGallery, galleryActivated]);
+
+    const handleDotClick = (index) => {
+        if (useLoop) {
+            swiperRef.current?.slideToLoop?.(index);
+        } else {
+            swiperRef.current?.slideTo?.(index);
+        }
     };
 
-    if (!images || images.length === 0) {
+    if (images.length === 0) {
         return (
-            <div className="product-img">
-                <Image
-                    className="img-product"
-                    src="/images/products/product-1.jpg"
+            <ProductImageFrame productHref={productHref} onLinkClick={onLinkClick} campaignTags={campaignTags}>
+                <ProductImageLink
+                    href={productHref}
+                    src={FALLBACK_IMAGE}
                     alt={productName}
                     width={width}
                     height={height}
-                    sizes={sizes}
-                    quality={100}
-                    style={{
-                        objectFit: 'cover',
-                        objectPosition: 'center',
-                        width: '100%',
-                        height: 'auto'
-                    }}
+                    isPriority={isPriority}
+                    onLinkClick={onLinkClick}
+                    className="product-img no-hover-effect"
+                    style={SINGLE_IMAGE_LINK_STYLE}
                 />
-            </div>
+            </ProductImageFrame>
         );
     }
 
-    // Görsel URL'ini normalize et (string veya object olabilir)
-    const getImageUrl = (image) => {
-        if (typeof image === 'string') {
-            return image;
-        }
-        if (image && typeof image === 'object') {
-            return image.url || image.webp_url || image.src || image;
-        }
-        return image;
-    };
-
-    // Tek görsel varsa Swiper kullanma
     if (images.length === 1) {
-        const imageUrl = getImageUrl(images[0]);
+        const imageUrl = getDisplayImageUrl(images[0]) || FALLBACK_IMAGE;
 
         return (
-            <>
-                <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-                    <Link
-                        href={detailUrl || `/magaza/${categorySlug}/${productSlug}`}
-                        onClick={onLinkClick}
-                        className="product-img no-hover-effect"
-                        style={{
-                            position: 'relative',
-                            display: 'block',
-                            width: '100%',
-                            height: '100%'
-                        }}
-                    >
-                        <Image
-                            className="img-product"
-                            src={imageUrl}
-                            alt={productName}
-                            width={width}
-                            height={height}
-                            sizes={sizes}
-                            quality={100}
-                            style={{
-                                objectFit: 'cover',
-                                objectPosition: 'center',
-                                width: '100%',
-                                height: 'auto'
-                            }}
-                            priority={isPriority} // isPriority ile kontrol edilir
-                        />
-                    </Link>
-                    {renderCampaignTags()}
-                </div>
-                <style jsx global>{`
-                    /* Campaign Tags Styling */
-                    .campaign-tag {
-                        --tag-height: 75px; 
-                        --tag-gap: 10px;
-                        --base-top: 10px;
-                        
-                        top: calc(var(--base-top) + (var(--tag-index) * (var(--tag-height) + var(--tag-gap))));
-                    }
-                    .campaign-tag-img {
-                        max-width: 75px;
-                        height: auto;
-                        object-fit: contain;
-                        transition: all 0.2s ease;
-                    }
-
-                    /* Mobile Responsiveness for Tags */
-                    @media (max-width: 768px) {
-                        .campaign-tag {
-                            --tag-height: 50px;
-                            --tag-gap: 5px;
-                        }
-                        .campaign-tag-img {
-                            max-width: 50px;
-                            width: auto;
-                            max-height: 50px; 
-                        }
-                    }
-
-                    .no-hover-effect .img-product,
-                    .no-hover-effect:hover .img-product,
-                    .card-product-wrapper:hover .no-hover-effect .img-product {
-                        opacity: 1 !important;
-                    }
-                `}</style>
-            </>
+            <ProductImageFrame productHref={productHref} onLinkClick={onLinkClick} campaignTags={campaignTags}>
+                <ProductImageLink
+                    href={productHref}
+                    src={imageUrl}
+                    alt={productName}
+                    width={width}
+                    height={height}
+                    isPriority={isPriority}
+                    onLinkClick={onLinkClick}
+                    className="product-img no-hover-effect"
+                    style={SINGLE_IMAGE_LINK_STYLE}
+                />
+            </ProductImageFrame>
         );
     }
 
+    const showPreview = lazyGallery && !galleryActivated;
+    const previewUrl = getDisplayImageUrl(images[0]) || FALLBACK_IMAGE;
+
     return (
-        <>
-            <div className="product-img-swiper position-relative no-hover-effect">
-                <Swiper
-                    onSwiper={(swiper) => { swiperRef.current = swiper; }}
-                    modules={[Pagination, Navigation]}
-                    spaceBetween={0}
-                    slidesPerView={1}
-                    loop={true}
-                    pagination={false}
-                    onSlideChange={(swiper) => setCurrentIndex(swiper.realIndex)}
-                    className="product-images-swiper"
-                >
-                    {images.map((image, index) => {
-                        const imageUrl = getImageUrl(image);
-                        return (
+        <div
+            ref={lazyGallery ? containerRef : undefined}
+            className="product-img-swiper position-relative no-hover-effect"
+        >
+            {showPreview ? (
+                <ProductImageFrame productHref={productHref} onLinkClick={onLinkClick} campaignTags={campaignTags}>
+                    <ProductImageLink
+                        href={productHref}
+                        src={previewUrl}
+                        alt={productName}
+                        width={width}
+                        height={height}
+                        isPriority={isPriority}
+                        onLinkClick={onLinkClick}
+                        className="product-img no-hover-effect"
+                        style={SINGLE_IMAGE_LINK_STYLE}
+                    />
+                </ProductImageFrame>
+            ) : (
+                <>
+                    <Swiper
+                        nested
+                        touchReleaseOnEdges
+                        onSwiper={(swiper) => { swiperRef.current = swiper; }}
+                        spaceBetween={0}
+                        slidesPerView={1}
+                        loop={useLoop}
+                        onSlideChange={(swiper) => setCurrentIndex(swiper.realIndex)}
+                        className="product-images-swiper"
+                    >
+                        {images.map((image, index) => (
                             <SwiperSlide key={index}>
-                                <Link
-                                    href={detailUrl || `/magaza/${categorySlug}/${productSlug}`}
-                                    onClick={onLinkClick}
-                                    className="product-img"
+                                <ProductImageLink
+                                    href={productHref}
+                                    src={resolveSlideSrc(image) || FALLBACK_IMAGE}
+                                    alt={productName}
+                                    width={width}
+                                    height={height}
+                                    isPriority={isPriority && index === 0}
+                                    onLinkClick={onLinkClick}
                                     style={{ display: "block", width: "100%" }}
-                                >
-                                    <Image
-                                        className="img-product"
-                                        src={imageUrl}
-                                        alt={productName}
-                                        width={width}
-                                        height={height}
-                                        sizes={sizes}
-                                        quality={100}
-                                        style={{
-                                            objectFit: 'cover',
-                                            objectPosition: 'center',
-                                            width: '100%',
-                                            height: 'auto'
-                                        }}
-                                        priority={isPriority && index === 0}
-                                    />
-                                </Link>
+                                />
                             </SwiperSlide>
-                        );
-                    })}
-                </Swiper>
+                        ))}
+                    </Swiper>
 
-                {renderCampaignTags()}
+                    <CampaignTags tags={campaignTags} productHref={productHref} onLinkClick={onLinkClick} />
+                </>
+            )}
 
-                {images.length > 1 && (
-                    <div className="product-images-swiper__nav-dots">
-                        <NavDotsPill
-                            total={images.length}
-                            activeIndex={currentIndex}
-                            onDotClick={(i) => swiperRef.current?.slideToLoop(i)}
-                            ariaLabel="Ürün görselleri"
-                        />
-                    </div>
-                )}
+            <div className="product-images-swiper__nav-dots">
+                <NavDotsPill
+                    total={images.length}
+                    activeIndex={showPreview ? 0 : currentIndex}
+                    onDotClick={showPreview ? () => {} : handleDotClick}
+                    ariaLabel="Ürün görselleri"
+                />
             </div>
-            <style jsx global>{`
-                /* Campaign Tags Styling - Duplicate for Swiper version since JSX Styles are scoped or need to be global for this usage */
-               .campaign-tag {
-                    --tag-height: 75px; 
-                    --tag-gap: 10px;
-                    --base-top: 10px;
-                    
-                    top: calc(var(--base-top) + (var(--tag-index) * (var(--tag-height) + var(--tag-gap))));
-                }
-                .campaign-tag-img {
-                    max-width: 75px !important;
-                    height: auto;
-                    object-fit: contain;
-                    transition: all 0.2s ease;
-                }
-
-                /* Mobile Responsiveness for Tags */
-                @media (max-width: 768px) {
-                    .campaign-tag {
-                        --tag-height: 50px;
-                        --tag-gap: 5px;
-                    }
-                    .campaign-tag-img {
-                       max-width: 50px !important;
-                       width: auto !important;
-                       max-height: 50px !important;
-                    }
-                }
-
-                .no-hover-effect .img-product,
-                .no-hover-effect:hover .img-product,
-                .card-product-wrapper:hover .no-hover-effect .img-product {
-                    opacity: 1 !important;
-                }
-                /* Nav dots: fotoğrafın üzerinde, altta ve ortada */
-                .product-images-swiper__nav-dots {
-                    position: absolute;
-                    bottom: 12px;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    z-index: 20;
-                    pointer-events: none;
-                }
-                .product-images-swiper__nav-dots .nav-dots-pill {
-                    pointer-events: auto;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                }
-                .product-images-swiper .swiper-pagination {
-                    position: absolute;
-                    bottom: 10px;
-                    left: 50%;
-                    transform: translate3d(-50%, 0, 20px);
-                    z-index: 50;
-                    display: flex;
-                    gap: 6px;
-                    justify-content: center;
-                    width: auto !important;
-                }
-                .product-images-swiper .swiper-pagination-bullet {
-                    width: 6px !important;
-                    height: 6px !important;
-                    background-color: #f5f5f5 !important;
-                    opacity: 1 !important;
-                    border-radius: 50% !important;
-                    transition: all 0.3s ease !important;
-                    margin: 0 3px !important;
-                }
-                .product-images-swiper .swiper-pagination-bullet-active {
-                    width: 24px !important;
-                    height: 6px !important;
-                    background-color: #3c81b5 !important;
-                    border-radius: 3px !important;
-                }
-            `}</style>
-        </>
+        </div>
     );
 }

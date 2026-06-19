@@ -9,10 +9,9 @@ import ErrorToast from "@/components/common/ErrorToast";
 import StarRating from "@/components/common/StarRating";
 import CircularLoading from "@/components/common/CircularLoading";
 import { getProductButtonState } from "@/utils/productStock";
-import { getLocalizedUrl } from "@/utils/i18n";
 import { useLangStore } from "@/stores/langStore";
 
-export default function ProductCardSimart({ product, isPriority = false }) {
+export default function ProductCardSimart({ product, isPriority = false, lazyGallery = false }) {
   const router = useRouter();
   const { addItem } = useCartStore();
   const lang = useLangStore((s) => s.lang);
@@ -28,7 +27,7 @@ export default function ProductCardSimart({ product, isPriority = false }) {
   // -- Veriler --
   const pName = product.name || product.title;
   const keywords = product.seo?.keywords;
-  const dynamicAlt = pName 
+  const dynamicAlt = pName
     ? (keywords ? `${pName} - ${keywords}` : `${pName} - Şımart Teknoloji`)
     : "Şımart Teknoloji";
   const title = pName;
@@ -182,12 +181,12 @@ export default function ProductCardSimart({ product, isPriority = false }) {
           productName={dynamicAlt}
           width={500}
           height={500}
-          sizes="(max-width: 480px) 50vw, (max-width: 768px) 33vw, (max-width: 1200px) 25vw, 320px"
           campaignTags={product.campaign_tags || []}
           categorySlug={categorySlug}
           isPriority={isPriority}
           detailUrl={detailUrl}
           onLinkClick={handleNavigate}
+          lazyGallery={lazyGallery}
         />
       </div>
 

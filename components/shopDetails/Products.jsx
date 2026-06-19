@@ -1,8 +1,8 @@
 "use client";
 
+import { useMemo } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation } from "swiper/modules";
-import React from "react";
+import { Navigation, Virtual } from "swiper/modules";
 import ProductCardSimart from "@/components/shopCards/ProductCardSimart";
 import { useLangStore } from "@/stores/langStore";
 
@@ -15,12 +15,19 @@ const translations = {
     }
 };
 
+const VIRTUAL_THRESHOLD = 16;
+
 export default function Products({ products = [] }) {
   const lang = useLangStore((s) => s.lang);
   const t = translations[lang] || translations.tr;
   const displayProducts = Array.isArray(products) ? products : [];
+  const useVirtual = displayProducts.length >= VIRTUAL_THRESHOLD;
 
-  // Ürünler yoksa render etme
+  const swiperModules = useMemo(
+    () => (useVirtual ? [Navigation, Virtual] : [Navigation]),
+    [useVirtual]
+  );
+
   if (!displayProducts || displayProducts.length === 0) {
     return null;
   }
@@ -47,8 +54,9 @@ export default function Products({ products = [] }) {
               dir="ltr"
               slidesPerView={4}
               spaceBetween={30}
-              grabCursor={true}
+              grabCursor
               touchEventsTarget="container"
+              virtual={useVirtual}
               breakpoints={{
                 1100: { slidesPerView: 4, spaceBetween: 30 },
                 768: { slidesPerView: 3, spaceBetween: 20 },
@@ -56,14 +64,18 @@ export default function Products({ products = [] }) {
                 0: { slidesPerView: 2, spaceBetween: 8 },
               }}
               className="swiper-wrapper"
-              modules={[Navigation]}
+              modules={swiperModules}
               navigation={{
                 prevEl: ".snbp161",
                 nextEl: ".snbn161",
               }}
             >
               {displayProducts.map((product, index) => (
-                <SwiperSlide className="swiper-slide height-auto" key={product.id || index}>
+                <SwiperSlide
+                  className="swiper-slide height-auto"
+                  key={product.id || index}
+                  virtualIndex={index}
+                >
                   <ProductCardSimart product={product} />
                 </SwiperSlide>
               ))}

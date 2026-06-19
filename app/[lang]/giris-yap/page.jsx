@@ -4,7 +4,7 @@ import { checkAuthServer } from "@/utils/authServer";
 import { redirect } from "next/navigation";
 
 export async function generateMetadata({ params }) {
-  const { lang } = params;
+  const { lang } = await params;
   
   if (lang === "en") {
     return {

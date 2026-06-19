@@ -3255,3 +3255,61 @@ body.header-scroll-hide header.header-default {
   display: flex;
   flex-direction: column;
 }
+
+/* ProductImageSwiper – tek global stil bloğu (kart başına tekrar enjekte edilmesin) */
+.campaign-tag {
+  --tag-height: 75px;
+  --tag-gap: 10px;
+  --base-top: 10px;
+  top: calc(var(--base-top) + (var(--tag-index) * (var(--tag-height) + var(--tag-gap))));
+}
+
+.campaign-tag-img {
+  max-width: 75px !important;
+  height: auto;
+  object-fit: contain;
+  transition: all 0.2s ease;
+}
+
+@media (max-width: 768px) {
+  .campaign-tag {
+    --tag-height: 50px;
+    --tag-gap: 5px;
+  }
+
+  .campaign-tag-img {
+    max-width: 50px !important;
+    width: auto !important;
+    max-height: 50px !important;
+  }
+}
+
+.no-hover-effect .img-product,
+.no-hover-effect:hover .img-product,
+.card-product-wrapper:hover .no-hover-effect .img-product {
+  opacity: 1 !important;
+}
+
+.product-images-swiper__nav-dots {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  pointer-events: none;
+}
+
+.product-images-swiper__nav-dots .nav-dots-pill {
+  pointer-events: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.product-card-simart .product-img-swiper .img-product,
+.product-card-simart .product-img .img-product {
+  object-fit: contain !important;
+  width: 100%;
+  height: auto !important;
+  max-height: none;
+}

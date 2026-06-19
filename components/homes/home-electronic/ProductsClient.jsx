@@ -1,7 +1,7 @@
 "use client";
-import React from "react";
+import { useMemo } from "react";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay } from "swiper/modules";
+import { Autoplay, Virtual } from "swiper/modules";
 import ProductCardSimart from "@/components/shopCards/ProductCardSimart";
 
 const translations = {
@@ -13,9 +13,20 @@ const translations = {
     }
 };
 
+const VIRTUAL_THRESHOLD = 16;
+const LOOP_MAX = 12;
+
 export default function ProductsClient({ products = [], lang = "tr" }) {
     const t = translations[lang] || translations.tr;
     const displayProducts = Array.isArray(products) ? products : [];
+    const useVirtual = displayProducts.length >= VIRTUAL_THRESHOLD;
+    const canLoop = displayProducts.length > 1 && displayProducts.length <= LOOP_MAX && !useVirtual;
+
+    const swiperModules = useMemo(
+        () => (useVirtual ? [Autoplay, Virtual] : [Autoplay]),
+        [useVirtual]
+    );
+
     if (displayProducts.length === 0) return null;
 
     return (
@@ -30,13 +41,14 @@ export default function ProductsClient({ products = [], lang = "tr" }) {
                     <Swiper
                         dir="ltr"
                         spaceBetween={10}
-                        slidesPerView={2} // Mobil (Varsayılan)
-                        loop={true}
-                        grabCursor={true}
+                        slidesPerView={2}
+                        loop={canLoop}
+                        virtual={useVirtual}
+                        grabCursor
                         touchEventsTarget="container"
-                        speed={1500} // Kayma hızı (ms) - Daha yavaş ve smooth geçiş
+                        speed={600}
                         autoplay={{
-                            delay: 4000, // Her slaytta bekleme süresi
+                            delay: 4000,
                             disableOnInteraction: false,
                             pauseOnMouseEnter: true,
                         }}
@@ -45,17 +57,24 @@ export default function ProductsClient({ products = [], lang = "tr" }) {
                                 slidesPerView: 3,
                                 spaceBetween: 20,
                             },
-                            1024: { // Desktop
+                            1024: {
                                 slidesPerView: 4,
                                 spaceBetween: 30,
                             },
                         }}
-                        modules={[Autoplay]}
+                        modules={swiperModules}
                         className="simple-products-slider"
                     >
                         {displayProducts.map((product, index) => (
-                            <SwiperSlide key={product.id || index} className="height-auto">
-                                <ProductCardSimart product={product} isPriority={index < 8} />
+                            <SwiperSlide
+                                key={product.id || index}
+                                virtualIndex={index}
+                                className="height-auto"
+                            >
+                                <ProductCardSimart
+                                    product={product}
+                                    isPriority={index < 8}
+                                />
                             </SwiperSlide>
                         ))}
                     </Swiper>

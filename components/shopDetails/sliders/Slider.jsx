@@ -1,38 +1,60 @@
 "use client";
-import Image from "next/image";
 import Drift from "drift-zoom";
-import React, { useEffect, useRef, useState, forwardRef } from "react";
+import { useEffect, useRef, useState, forwardRef, useCallback, useMemo } from "react";
 import { Navigation, Thumbs } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Gallery, Item } from "react-photoswipe-gallery";
 import NavDotsPill from "@/components/common/NavDotsPill";
 import OverlayCtaButton, { Model3dIcon, PlayIcon, ArrowIcon } from "@/components/common/OverlayCtaButton";
-import CircularLoading from "@/components/common/CircularLoading";
 
-// Loading destekli Resim Bileşeni
-const SliderImage = forwardRef(({ onLoadingComplete, ...props }, ref) => {
-  const [loading, setLoading] = useState(true);
+function resolveImageSources(img) {
+  if (typeof img === "string") {
+    return { displaySrc: img, fullSrc: img };
+  }
+
+  const fullSrc = img?.url || img?.webp_url || img?.src || "";
+  const displaySrc = img?.thumbnail_url || fullSrc;
+
+  return { displaySrc, fullSrc };
+}
+
+const SliderImage = forwardRef(function SliderImage(
+  {
+    className,
+    src,
+    alt,
+    width,
+    height,
+    style,
+    priority = false,
+    "data-zoom": dataZoom,
+  },
+  ref
+) {
+  const setImgRef = useCallback((node) => {
+    if (typeof ref === "function") {
+      ref(node);
+    } else if (ref) {
+      ref.current = node;
+    }
+  }, [ref]);
 
   return (
-    <div className="slider-image-wrapper" style={{ position: "relative", width: "100%", height: "100%", minHeight: "200px" }}>
-      {loading && (
-        <div
-          className="d-flex align-items-center justify-content-center"
-          style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", zIndex: 1, background: "#f9f9f9" }}
-        >
-          <CircularLoading />
-        </div>
-      )}
-      <Image
-        ref={ref}
-        onLoad={() => setLoading(false)}
-        onError={() => setLoading(false)}
-        {...props}
-      />
-    </div>
+    <img
+      ref={setImgRef}
+      className={className}
+      src={src}
+      alt={alt}
+      width={width}
+      height={height}
+      style={style}
+      data-zoom={dataZoom}
+      loading="eager"
+      decoding="async"
+      fetchPriority={priority ? "high" : "auto"}
+    />
   );
 });
-SliderImage.displayName = "SliderImage";
 
 export default function Slider({
   currentColor = "Beige",
@@ -44,46 +66,67 @@ export default function Slider({
   pageKeywords = "",
 }) {
   const pName = product.name || product.title || "";
-  const dynamicAlt = pName 
+  const dynamicAlt = pName
     ? (pageKeywords ? `${pName} - ${pageKeywords}` : `${pName} - Şımart Teknoloji`)
     : "Şımart Teknoloji";
-  // Tek kaynak: galleryImages. İlk görsel zaten cover olarak kabul edilir.
-  const normalized = Array.isArray(galleryImages)
-    ? galleryImages
-      .map((img, index) => {
-        const src = typeof img === "string" ? img : img?.url || img?.src || "";
-        if (!src) return null;
-        return {
-          id: index + 1,
-          src,
-          alt: dynamicAlt,
-          width: typeof img === "object" ? img?.width || 770 : 770,
-          height: typeof img === "object" ? img?.height || 1075 : 1075,
-          dataValue: currentColor?.toLowerCase?.() || "beige",
-        };
-      })
-      .filter(Boolean)
-    : [];
 
-  const images =
-    normalized.length > 0
-      ? [...normalized]
-      : [
-        {
-          id: 1,
-          src: "/images/placeholder.jpg",
-          alt: dynamicAlt,
-          width: 770,
-          height: 1075,
-          dataValue: currentColor?.toLowerCase?.() || "beige",
-        },
-      ];
+  const images = useMemo(() => {
+    const normalized = Array.isArray(galleryImages)
+      ? galleryImages
+        .map((img, index) => {
+          const { displaySrc, fullSrc } = resolveImageSources(img);
+          if (!fullSrc) return null;
+
+          return {
+            id: index + 1,
+            displaySrc,
+            fullSrc,
+            alt: dynamicAlt,
+            width: typeof img === "object" ? img?.width || 770 : 770,
+            height: typeof img === "object" ? img?.height || 1075 : 1075,
+            dataValue: currentColor?.toLowerCase?.() || "beige",
+          };
+        })
+        .filter(Boolean)
+      : [];
+
+    if (normalized.length > 0) {
+      return normalized;
+    }
+
+    return [
+      {
+        id: 1,
+        displaySrc: "/images/placeholder.jpg",
+        fullSrc: "/images/placeholder.jpg",
+        alt: dynamicAlt,
+        width: 770,
+        height: 1075,
+        dataValue: currentColor?.toLowerCase?.() || "beige",
+      },
+    ];
+  }, [galleryImages, dynamicAlt, currentColor]);
 
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
   const swiperRef = useRef(null);
   const [activeSlideIndex, setActiveSlideIndex] = useState(0);
 
-  // Slide değişince: state güncelle + soldaki thumb listesini kaydır (loop modunda realIndex kullan)
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const urls = new Set();
+    images.forEach(({ displaySrc, fullSrc }) => {
+      if (displaySrc) urls.add(displaySrc);
+      if (fullSrc) urls.add(fullSrc);
+    });
+
+    urls.forEach((url) => {
+      const img = new window.Image();
+      img.decoding = "async";
+      img.src = url;
+    });
+  }, [images]);
+
   const handleSlideChange = (swiper) => {
     const idx = swiper.realIndex ?? swiper.activeIndex;
     setActiveSlideIndex(idx);
@@ -94,23 +137,21 @@ export default function Slider({
   };
 
   useEffect(() => {
-    const slideIndex = images.filter((elm) => elm.dataValue.toLowerCase() == currentColor.toLowerCase())[0].id - 1;
-    swiperRef.current.slideTo(slideIndex);
-  }, [currentColor]);
+    const match = images.find((elm) => elm.dataValue.toLowerCase() === currentColor.toLowerCase());
+    if (match && swiperRef.current) {
+      swiperRef.current.slideTo(match.id - 1);
+    }
+  }, [currentColor, images]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      // Dynamically import @google/model-viewer
-      import("@google/model-viewer").then(() => {
-        // Module is imported, you can use model-viewer functionality here
-      });
+      import("@google/model-viewer");
     }
   }, []);
 
   const driftInstancesRef = useRef([]);
 
   useEffect(() => {
-    // Function to initialize Drift
     const imageZoom = () => {
       if (typeof window === "undefined" || window.innerWidth < 768) return;
       const driftAll = document.querySelectorAll(".tf-image-zoom");
@@ -158,13 +199,11 @@ export default function Slider({
       element.addEventListener("mouseleave", handleMouseLeave);
     });
 
-    // Cleanup: sayfa değişince Drift overlay'leri kaldır
     return () => {
       zoomElements.forEach((element) => {
         element.removeEventListener("mouseover", handleMouseOver);
         element.removeEventListener("mouseleave", handleMouseLeave);
       });
-      // Drift örneklerini destroy et (zoom karesi ve pane gitsin)
       driftInstancesRef.current.forEach((instance) => {
         try {
           if (instance && typeof instance.destroy === "function") {
@@ -175,13 +214,12 @@ export default function Slider({
         }
       });
       driftInstancesRef.current = [];
-      // Body'de kalmış drift overlay'leri kaldır (Next.js client navigation sonrası)
       if (typeof document !== "undefined") {
         document.querySelectorAll(".drift-zoom-pane, .drift-bounding-box, .zoom-magnifier-containing .drift-zoom-pane").forEach((el) => el.remove());
         document.querySelectorAll(".section-image-zoom").forEach((el) => el.classList.remove("zoom-active"));
       }
     };
-  }, []); // Empty dependency array to run only once on mount
+  }, [images]);
 
   return (
     <>
@@ -190,11 +228,11 @@ export default function Slider({
         direction="vertical"
         spaceBetween={10}
         slidesPerView={5}
-        loop={true}
+        loop={images.length > 1}
         className="swiper tf-product-media-thumbs other-image-zoom"
         onSwiper={setThumbsSwiper}
         modules={[Thumbs]}
-        allowTouchMove={true}
+        allowTouchMove
         breakpoints={{
           0: {
             direction: "horizontal",
@@ -209,14 +247,14 @@ export default function Slider({
         {images.map((slide, index) => (
           <SwiperSlide className="swiper-slide" key={index}>
             <div className="item" style={{ border: "1px solid #f5f5f5", borderRadius: "8px" }}>
-              <Image
-                className="lazyload"
-                data-src={slide.src}
-                alt={""}
-                src={slide.src}
+              <img
+                alt={slide.alt}
+                src={slide.displaySrc}
                 width={slide.width}
                 height={slide.height}
-                quality={100}
+                loading="eager"
+                decoding="async"
+                style={{ objectFit: "contain", width: "100%", height: "auto", display: "block" }}
               />
             </div>
           </SwiperSlide>
@@ -229,7 +267,7 @@ export default function Slider({
             style={{ touchAction: "pan-y" }}
             spaceBetween={10}
             slidesPerView={1}
-            loop={true}
+            loop={images.length > 1}
             navigation={{
               nextEl: ".swiper-button-next",
               prevEl: ".swiper-button-prev",
@@ -243,22 +281,24 @@ export default function Slider({
           >
             {images.map((slide, index) => (
               <SwiperSlide className="swiper-slide" key={index}>
-                <Item original={slide.src} thumbnail={slide.src} width={slide.width} height={slide.height}>
+                <Item
+                  original={slide.fullSrc}
+                  thumbnail={slide.displaySrc}
+                  width={slide.width}
+                  height={slide.height}
+                >
                   {({ ref, open }) => (
                     <a onClick={open} className="item" style={{ border: "2px solid #f5f5f5", borderRadius: "8px", position: "relative", display: "block", height: "100%" }}>
                       <SliderImage
                         ref={ref}
-                        className="tf-image-zoom lazyload"
-                        data-zoom={slide.src}
-                        data-src={slide.src}
+                        className="tf-image-zoom"
+                        data-zoom={slide.fullSrc}
                         alt={slide.alt}
-                        src={slide.src}
+                        src={slide.displaySrc}
                         width={slide.width}
                         height={slide.height}
-                        quality={100}
                         style={{ objectFit: "contain", width: "100%", height: "100%" }}
                         priority={index === 0}
-                        loading="eager"
                       />
                     </a>
                   )}
@@ -273,12 +313,11 @@ export default function Slider({
               <NavDotsPill
                 total={images.length}
                 activeIndex={activeSlideIndex}
-                onDotClick={(i) => swiperRef.current?.slideTo(i)}
+                onDotClick={(i) => swiperRef.current?.slideToLoop?.(i) ?? swiperRef.current?.slideTo?.(i)}
                 ariaLabel="Ürün görselleri"
               />
             </div>
           )}
-          {/* Trendyol tarzı medya overlay butonları - Mobilde kalsın, desktopta Detail üstten hallediyor */}
           <div className="overlay-cta-buttons-wrapper d-md-none">
             {(product.model_3d_url || product.media?.model_3d_url) && (
               <OverlayCtaButton
