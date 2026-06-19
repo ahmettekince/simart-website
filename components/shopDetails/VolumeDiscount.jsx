@@ -68,19 +68,12 @@ export default function VolumeDiscount({ product, setQuantity }) {
           marginBottom: "8px",
           color: "#111",
           display: "flex",
-          flexDirection: "column",
-          gap: "4px"
+          alignItems: "center",
+          gap: "8px"
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <div style={{ backgroundColor: "#3c81b5", width: "4px", height: "16px", borderRadius: "2px" }}></div>
-          {campaign.name || "Çok Al Az Öde"}
-        </div>
-        {campaign.description && (
-          <div style={{ fontSize: "12px", fontWeight: "400", color: "#6b7280", paddingLeft: "12px" }}>
-            {campaign.description}
-          </div>
-        )}
+        <div style={{ backgroundColor: "#3c81b5", width: "4px", height: "16px", borderRadius: "2px" }}></div>
+        {campaign.name || "Çok Al Az Öde"}
       </div>
       <div className="flat-check-list list-volume-discount">
         {processedDiscounts.map((discount, index) => (
