@@ -11,7 +11,14 @@ import CircularLoading from "@/components/common/CircularLoading";
 import { getProductButtonState } from "@/utils/productStock";
 import { useLangStore } from "@/stores/langStore";
 
-export default function ProductCardSimart({ product, isPriority = false, lazyGallery = false }) {
+export default function ProductCardSimart({
+  product,
+  isPriority = false,
+  lazyGallery = false,
+  carouselMode = false,
+  initialGalleryActive = false,
+  onGalleryActivate = null,
+}) {
   const router = useRouter();
   const { addItem } = useCartStore();
   const lang = useLangStore((s) => s.lang);
@@ -187,6 +194,9 @@ export default function ProductCardSimart({ product, isPriority = false, lazyGal
           detailUrl={detailUrl}
           onLinkClick={handleNavigate}
           lazyGallery={lazyGallery}
+          carouselMode={carouselMode}
+          initialGalleryActive={initialGalleryActive}
+          onGalleryActivate={onGalleryActivate}
         />
       </div>
 

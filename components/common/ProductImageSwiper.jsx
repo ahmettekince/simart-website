@@ -145,18 +145,29 @@ export default function ProductImageSwiper({
     detailUrl = null,
     onLinkClick = null,
     lazyGallery = false,
+    carouselMode = false,
+    initialGalleryActive = false,
+    onGalleryActivate = null,
 }) {
     const containerRef = useRef(null);
     const swiperRef = useRef(null);
     const [currentIndex, setCurrentIndex] = useState(0);
-    const [galleryActivated, setGalleryActivated] = useState(!lazyGallery);
+    const [galleryActive, setGalleryActive] = useState(
+        !lazyGallery || initialGalleryActive
+    );
 
     const productHref = detailUrl || `/magaza/${categorySlug}/${productSlug}`;
     const resolveSlideSrc = lazyGallery ? getDisplayImageUrl : getImageUrl;
-    const useLoop = !lazyGallery;
+    const useLoop = !lazyGallery && !carouselMode;
 
     useEffect(() => {
-        if (!lazyGallery || galleryActivated) return;
+        if (initialGalleryActive) {
+            setGalleryActive(true);
+        }
+    }, [initialGalleryActive]);
+
+    useEffect(() => {
+        if (!lazyGallery || galleryActive) return;
 
         const el = containerRef.current;
         if (!el) return;
@@ -164,7 +175,8 @@ export default function ProductImageSwiper({
         const observer = new IntersectionObserver(
             ([entry]) => {
                 if (entry.isIntersecting) {
-                    setGalleryActivated(true);
+                    setGalleryActive(true);
+                    onGalleryActivate?.();
                     observer.disconnect();
                 }
             },
@@ -173,7 +185,7 @@ export default function ProductImageSwiper({
 
         observer.observe(el);
         return () => observer.disconnect();
-    }, [lazyGallery, galleryActivated]);
+    }, [lazyGallery, galleryActive, onGalleryActivate]);
 
     const handleDotClick = (index) => {
         if (useLoop) {
@@ -221,7 +233,7 @@ export default function ProductImageSwiper({
         );
     }
 
-    const showPreview = lazyGallery && !galleryActivated;
+    const showPreview = lazyGallery && !galleryActive;
     const previewUrl = getDisplayImageUrl(images[0]) || FALLBACK_IMAGE;
 
     return (
