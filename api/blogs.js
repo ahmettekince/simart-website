@@ -6,8 +6,9 @@ import { API_REVALIDATE } from "@/config/apiConfig";
  * Tüm blog yazılarını getirir.
  * @param {string} lang - Dil kodu (tr/en)
  */
-export async function getBlogs(lang = "tr") {
-    const response = await serverFetch("/blogs", {
+export async function getBlogs(lang = "tr", limit) {
+    const endpoint = limit ? `/blogs?limit=${limit}` : "/blogs";
+    const response = await serverFetch(endpoint, {
         lang,
         next: { revalidate: API_REVALIDATE.BLOGS }
     });

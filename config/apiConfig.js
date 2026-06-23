@@ -15,9 +15,11 @@ export const API_REVALIDATE = {
     SLOW: 0,
 
     // Module specific mappings
+    ONE_MINUTE: 60,
     HOME: 0,
     PRODUCTS: 0,
-    BLOGS: 0,
+    BLOGS: 60,
+    CATEGORIES: 60,
     MENUS: 0,
     PAGES: 0,
     CAMPAIGNS: 0,

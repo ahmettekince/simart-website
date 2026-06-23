@@ -1,31 +1,7 @@
-"use client";
-import React, { useEffect, useState } from "react";
-import apiClient from "@/utils/apiClient";
 import BlogsClient from "./BlogsClient";
 
-export default function Blogs({ lang = "tr" }) {
-  const [blogs, setBlogs] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchBlogs = async () => {
-      try {
-        const response = await apiClient.get(`/blogs?limit=6&lang=${lang}`);
-        if (response.data?.status === "success" && response.data.data?.length > 0) {
-          setBlogs(response.data.data);
-        }
-      } catch (error) {
-        console.error("Blogs client fetch error:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchBlogs();
-  }, [lang]);
-
-  if (loading || blogs.length === 0) {
-    return null;
-  }
+export default function Blogs({ blogs = [], lang = "tr" }) {
+  if (!blogs || blogs.length === 0) return null;
 
   return <BlogsClient blogs={blogs} lang={lang} />;
 }

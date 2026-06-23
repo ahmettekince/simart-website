@@ -1,10 +1,7 @@
 import React from "react";
 import CategoriesClient from "./CategoriesClient";
-import { getCategories } from "@/api/home";
 
-export default async function Categories({ lang = "tr" }) {
-  const categories = await getCategories(lang);
-
+export default function Categories({ categories = [], lang = "tr" }) {
   if (!categories || categories.length === 0) return null;
 
   return (

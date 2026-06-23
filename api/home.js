@@ -11,8 +11,7 @@ export async function getCategories(lang = "tr") {
     const response = await serverFetch("/categories", {
         method: "GET",
         lang,
-        next: { revalidate: API_REVALIDATE.HOME },
-        cache: "no-store"
+        next: { revalidate: API_REVALIDATE.CATEGORIES },
     });
 
     if (response?.status === "success") {

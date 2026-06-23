@@ -15,8 +15,9 @@ const HomeSeoText = nextDynamic(() => import("@/components/homes/home-electronic
 
 
 import React from "react";
-import { getCategories, getBanners, getCollectionBanner, getCollections, getReviews } from "@/api/home";
-import { getMenus } from "@/api/menus";
+import { getBlogs } from "@/api/blogs";
+import { getProducts } from "@/api/products";
+import { getBanners, getCollectionBanner, getCollections, getReviews, getCategories } from "@/api/home";
 import { siteConfig } from "@/config/site";
 import { homeSchemas } from "@/data/homeSchemas";
 
@@ -75,12 +76,14 @@ export const dynamic = "force-dynamic";
 export default async function Home({ params }) {
   const { lang } = await params;
 
-  const [menuItems, banners, collectionBanner, collections, reviews] = await Promise.all([
-    getMenus(lang),
+  const [banners, collectionBanner, collections, reviews, categories, blogs, products] = await Promise.all([
     getBanners(lang),
     getCollectionBanner(lang),
     getCollections(lang),
     getReviews(lang),
+    getCategories(lang),
+    getBlogs(lang, 6),
+    getProducts(lang),
   ]);
   const t = translations[lang] || translations.tr;
 
@@ -100,12 +103,12 @@ export default async function Home({ params }) {
       </h1>
       <div className="color-primary-15">
         <Hero banners={banners} />
-        <Categories lang={lang} />
+        <Categories categories={categories} lang={lang} />
         <CollectionBanner banner={collectionBanner} lang={lang} />
         <Collections collections={collections} lang={lang} />
-        <Products lang={lang} />
+        <Products products={products} lang={lang} />
         <HomeReviews reviews={reviews} lang={lang} />
-        <Blogs lang={lang} />
+        <Blogs blogs={blogs} lang={lang} />
         <Features lang={lang} />
         <HomeSeoText lang={lang} />
       </div>
