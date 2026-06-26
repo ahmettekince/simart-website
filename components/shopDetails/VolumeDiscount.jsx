@@ -13,9 +13,9 @@ const translations = {
   en: {
     defaultCampaignName: "Buy More, Save More",
     tierName: (qty) => `Buy ${qty} Items`,
-    perUnit: "TRY / unit",
+    perUnit: "TL / unit",
     locale: "en-US",
-    currency: "TRY",
+    currency: "TL",
   },
 };
 
