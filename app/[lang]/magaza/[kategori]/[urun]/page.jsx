@@ -185,6 +185,17 @@ export default async function page({ params }) {
       />
       <ProductDetailHit productSlug={urun} />
 
+      {/* Breadcrumb kesinlikle burada olacak silinemez*/}
+      <div className="tf-breadcrumb">
+        <div className="container">
+          <div className="tf-breadcrumb-wrap d-flex justify-content-between flex-wrap align-items-center">
+            <div className="tf-breadcrumb-list">
+
+            </div>
+          </div>
+        </div>
+      </div>
+
       <h1
         style={{
           position: "absolute",
