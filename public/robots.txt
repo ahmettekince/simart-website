@@ -48,7 +48,7 @@ Disallow: /*?kupon=
 # Section 3: AEO (Answer Engine Optimization) Directives
 
 # Discovery file for LLMs
-Discovery: https://simart.me/llms.txt
+# Discovery: https://simart.me/llms.txt
 
 # Section 4: Sitemap Declaration
 Sitemap: https://simart.me/sitemap-pages.xml
