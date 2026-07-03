@@ -434,35 +434,6 @@ html:not([dir="rtl"]) .noUi-horizontal .noUi-handle {
         }
     }
 }
-.widget-featured-products {
-    display: grid;
-    gap: 15px;
-    .featured-product-item {
-        display: flex;
-        gap: 15px;
-        .card-product-wrapper {
-            width: 92px;
-            min-width: 92px;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-        .card-product-info {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            .title {
-                font-size: 16px;
-                line-height: 19.2px;
-                margin-bottom: 1px;
-            }
-            .price {
-                font-size: 14px;
-                font-weight: 600;
-                line-height: 14px;
-            }
-        }
-    }
-}
 .widget-iconbox-list {
     display: grid;
     gap: 18px;
@@ -646,9 +617,6 @@ html:not([dir="rtl"]) .noUi-horizontal .noUi-handle {
     &.hidden{
         display: none !important;
     }
-    &.card-product.style-list:not(.hidden){
-        display: flex !important;
-   }
 }
 
 .sidebar-filter {

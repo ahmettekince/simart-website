@@ -1,4 +1,5 @@
 "use client";
+import "photoswipe/dist/photoswipe.css";
 import Drift from "drift-zoom";
 import { useEffect, useRef, useState, forwardRef, useCallback, useMemo } from "react";
 import { Navigation, Thumbs } from "swiper/modules";

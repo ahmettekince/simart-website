@@ -32,7 +32,7 @@ export default function Hero({ banners = [] }) {
         className="tf-sw-slideshow"
       >
         {banners.map((slide, index) => {
-          const content = <BannerContent images={slide.images} />;
+          const content = <BannerContent images={slide.images} isPriority={index === 0} />;
 
           return (
             <SwiperSlide key={index}>
@@ -65,7 +65,7 @@ export default function Hero({ banners = [] }) {
   );
 }
 
-function BannerContent({ images }) {
+function BannerContent({ images, isPriority = false }) {
   if (!images) return null;
 
   return (
@@ -77,6 +77,7 @@ function BannerContent({ images }) {
           alt="Banner Desktop"
           width={1920}
           height={500}
+          {...(isPriority ? { fetchPriority: "high" } : {})}
           style={{ objectFit: "cover", display: "block" }}
         />
       </div>
@@ -88,6 +89,7 @@ function BannerContent({ images }) {
           alt="Banner Tablet"
           width={1080}
           height={535}
+          {...(isPriority ? { fetchPriority: "high" } : {})}
           style={{ objectFit: "cover", display: "block" }}
         />
       </div>
@@ -99,6 +101,7 @@ function BannerContent({ images }) {
           alt="Banner Mobile"
           width={750}
           height={875}
+          {...(isPriority ? { fetchPriority: "high" } : {})}
           style={{ objectFit: "cover", display: "block" }}
         />
       </div>
