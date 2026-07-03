@@ -87,9 +87,6 @@ export default function CampaignModal({ open, onClose }) {
                         >
                             <Ticket size={18} strokeWidth={2.5} color="#3c81b5" /> Kampanyalar
                         </h5>
-                        <p style={{ fontSize: "12px", color: "#6b7280", margin: "4px 0 0", lineHeight: 1.4 }}>
-                            En yeni fırsatlar ve indirimler.
-                        </p>
                     </div>
                     <button
                         onClick={onClose}
@@ -131,15 +128,6 @@ export default function CampaignModal({ open, onClose }) {
                     ) : campaigns.length > 0 ? (
                         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                             {campaigns.map((campaign, idx) => {
-                                const isInstallment = campaign.type === "installment";
-                                const discountText = isInstallment
-                                    ? (campaign.is_interest_free ? "VADE FARKSIZ" : "TAKSİT FIRSATI")
-                                    : (campaign.details?.discount_value
-                                        ? (campaign.details.discount_type === "fixed"
-                                            ? `-${Number(campaign.details.discount_value).toLocaleString("tr-TR")} TL`
-                                            : `%${campaign.details.discount_value} İNDİRİM`)
-                                        : null);
-
                                 const campaignLink = campaign.description?.startsWith("http") || campaign.description?.startsWith("/")
                                     ? campaign.description
                                     : "/magaza";
@@ -166,31 +154,16 @@ export default function CampaignModal({ open, onClose }) {
                                         }}
                                     >
                                         <div style={{ flex: 1, minWidth: 0 }}>
-                                            <div style={{ display: "flex", alignItems: "baseline", gap: "8px", flexWrap: "wrap", marginBottom: "4px" }}>
-                                                <span
-                                                    style={{
-                                                        fontSize: "13px",
-                                                        fontWeight: 700,
-                                                        color: "#111827",
-                                                        lineHeight: 1.3
-                                                    }}
-                                                >
-                                                    {campaign.name}
-                                                </span>
-                                                {discountText && (
-                                                    <span
-                                                        style={{
-                                                            fontSize: "10px",
-                                                            fontWeight: 700,
-                                                            color: "#3c81b5",
-                                                            whiteSpace: "nowrap"
-                                                        }}
-                                                    >
-                                                        {discountText}
-                                                    </span>
-                                                )}
-                                            </div>
-
+                                            <span
+                                                style={{
+                                                    fontSize: "13px",
+                                                    fontWeight: 700,
+                                                    color: "#111827",
+                                                    lineHeight: 1.3
+                                                }}
+                                            >
+                                                {campaign.name}
+                                            </span>
                                         </div>
                                         <button
                                             style={{

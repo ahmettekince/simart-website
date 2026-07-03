@@ -325,12 +325,6 @@ export default function ShopCart() {
                           <BirlikteAlSepet />
                         </div>
                       )}
-
-                      {hasCrossSale && (
-                        <div className="tf-mini-cart-item ">
-                          <BirlikteAlSepet />
-                        </div>
-                      )}
                       {(() => {
                         // Normal ürünleri ve gift ürünleri ayır
                         const normalItems = items.filter((item) => !item.is_gift);
