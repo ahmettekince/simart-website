@@ -28,14 +28,6 @@ function getImageUrl(image) {
     return null;
 }
 
-function getDisplayImageUrl(image) {
-    if (typeof image === "string") return image;
-    if (image && typeof image === "object") {
-        return image.thumbnail_url || image.url || image.webp_url || image.src || null;
-    }
-    return null;
-}
-
 function getTagUrl(tag) {
     if (typeof tag === "string") return tag;
     if (tag && typeof tag === "object") {
@@ -157,7 +149,6 @@ export default function ProductImageSwiper({
     );
 
     const productHref = detailUrl || `/magaza/${categorySlug}/${productSlug}`;
-    const resolveSlideSrc = lazyGallery ? getDisplayImageUrl : getImageUrl;
     const useLoop = !lazyGallery && !carouselMode;
 
     useEffect(() => {
@@ -214,7 +205,7 @@ export default function ProductImageSwiper({
     }
 
     if (images.length === 1) {
-        const imageUrl = getDisplayImageUrl(images[0]) || FALLBACK_IMAGE;
+        const imageUrl = getImageUrl(images[0]) || FALLBACK_IMAGE;
 
         return (
             <ProductImageFrame productHref={productHref} onLinkClick={onLinkClick} campaignTags={campaignTags}>
@@ -234,7 +225,7 @@ export default function ProductImageSwiper({
     }
 
     const showPreview = lazyGallery && !galleryActive;
-    const previewUrl = getDisplayImageUrl(images[0]) || FALLBACK_IMAGE;
+    const previewUrl = getImageUrl(images[0]) || FALLBACK_IMAGE;
 
     return (
         <div
@@ -271,7 +262,7 @@ export default function ProductImageSwiper({
                             <SwiperSlide key={index}>
                                 <ProductImageLink
                                     href={productHref}
-                                    src={resolveSlideSrc(image) || FALLBACK_IMAGE}
+                                    src={getImageUrl(image) || FALLBACK_IMAGE}
                                     alt={productName}
                                     width={width}
                                     height={height}

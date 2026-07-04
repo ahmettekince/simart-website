@@ -14,9 +14,8 @@ function resolveImageSources(img) {
   }
 
   const fullSrc = img?.url || img?.webp_url || img?.src || "";
-  const displaySrc = img?.thumbnail_url || fullSrc;
 
-  return { displaySrc, fullSrc };
+  return { displaySrc: fullSrc, fullSrc };
 }
 
 const SliderImage = forwardRef(function SliderImage(
